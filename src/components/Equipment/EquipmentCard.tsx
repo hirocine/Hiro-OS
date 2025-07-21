@@ -2,16 +2,18 @@ import { Equipment } from '@/types/equipment';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, MapPin, Calendar } from 'lucide-react';
+import { Edit, Trash2, MapPin, Calendar, UserCheck, RotateCcw } from 'lucide-react';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 
 interface EquipmentCardProps {
   equipment: Equipment;
   onEdit: (equipment: Equipment) => void;
   onDelete: (id: string) => void;
+  onLoan?: (equipment: Equipment) => void;
+  onReturn?: (equipment: Equipment) => void;
 }
 
-export function EquipmentCard({ equipment, onEdit, onDelete }: EquipmentCardProps) {
+export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }: EquipmentCardProps) {
   const getStatusVariant = (status: Equipment['status']) => {
     switch (status) {
       case 'available':
@@ -79,6 +81,20 @@ export function EquipmentCard({ equipment, onEdit, onDelete }: EquipmentCardProp
           )}
         </div>
         
+        {equipment.currentBorrower && (
+          <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+            <div className="flex items-center gap-2 text-sm">
+              <UserCheck className="h-4 w-4 text-warning" />
+              <span className="font-medium">Em uso por:</span> {equipment.currentBorrower}
+            </div>
+            {equipment.lastLoanDate && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Retirado em {new Date(equipment.lastLoanDate).toLocaleDateString('pt-BR')}
+              </p>
+            )}
+          </div>
+        )}
+        
         {equipment.description && (
           <p className="text-sm text-muted-foreground leading-relaxed">
             {equipment.description}
@@ -102,6 +118,29 @@ export function EquipmentCard({ equipment, onEdit, onDelete }: EquipmentCardProp
           <Edit className="h-3 w-3" />
           Editar
         </Button>
+        
+        {equipment.status === 'available' && onLoan && (
+          <Button 
+            variant="success" 
+            size="sm" 
+            onClick={() => onLoan(equipment)}
+          >
+            <UserCheck className="h-3 w-3" />
+            Retirar
+          </Button>
+        )}
+        
+        {equipment.status === 'in-use' && onReturn && (
+          <Button 
+            variant="warning" 
+            size="sm" 
+            onClick={() => onReturn(equipment)}
+          >
+            <RotateCcw className="h-3 w-3" />
+            Devolver
+          </Button>
+        )}
+        
         <Button 
           variant="destructive" 
           size="sm" 

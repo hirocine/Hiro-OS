@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useLoans } from '@/hooks/useLoans';
 import type { Equipment } from '@/types/equipment';
 import { EquipmentCard } from '@/components/Equipment/EquipmentCard';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
+import { LoanDialog } from '@/components/Loans/LoanDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Equipment() {
   const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment } = useEquipment();
+  const { addLoan, returnEquipment, getActiveLoanByEquipment } = useLoans();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
+  const [loanDialogOpen, setLoanDialogOpen] = useState(false);
+  const [loanMode, setLoanMode] = useState<'loan' | 'return'>('loan');
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
   const handleAddEquipment = (equipmentData: Omit<Equipment, 'id'>) => {
@@ -48,9 +54,45 @@ export default function Equipment() {
     });
   };
 
+  const handleLoanEquipment = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setLoanMode('loan');
+    setLoanDialogOpen(true);
+  };
+
+  const handleReturnEquipment = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setLoanMode('return');
+    setLoanDialogOpen(true);
+  };
+
+  const handleLoanSubmit = (data: any) => {
+    if (loanMode === 'loan') {
+      addLoan(data);
+      toast({
+        title: "Equipamento retirado",
+        description: `${selectedEquipment?.name} foi retirado com sucesso.`,
+      });
+    } else {
+      const activeLoan = getActiveLoanByEquipment(selectedEquipment!.id);
+      if (activeLoan) {
+        returnEquipment(activeLoan.id, data);
+        toast({
+          title: "Equipamento devolvido",
+          description: `${selectedEquipment?.name} foi devolvido com sucesso.`,
+        });
+      }
+    }
+  };
+
   const handleDialogClose = () => {
     setDialogOpen(false);
     setEditingEquipment(undefined);
+  };
+
+  const handleLoanDialogClose = () => {
+    setLoanDialogOpen(false);
+    setSelectedEquipment(undefined);
   };
 
   return (
@@ -99,6 +141,8 @@ export default function Equipment() {
                 equipment={item}
                 onEdit={handleEditEquipment}
                 onDelete={handleDeleteEquipment}
+                onLoan={handleLoanEquipment}
+                onReturn={handleReturnEquipment}
               />
             </div>
           ))}
@@ -111,6 +155,17 @@ export default function Equipment() {
         onSubmit={editingEquipment ? handleUpdateEquipment : handleAddEquipment}
         equipment={editingEquipment}
       />
+
+      {selectedEquipment && (
+        <LoanDialog
+          open={loanDialogOpen}
+          onOpenChange={handleLoanDialogClose}
+          equipment={selectedEquipment}
+          mode={loanMode}
+          currentLoan={loanMode === 'return' ? getActiveLoanByEquipment(selectedEquipment.id) : undefined}
+          onSubmit={handleLoanSubmit}
+        />
+      )}
     </div>
   );
 }

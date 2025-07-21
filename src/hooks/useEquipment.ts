@@ -1,13 +1,30 @@
 import { useState, useMemo } from 'react';
 import { Equipment, EquipmentFilters, DashboardStats } from '@/types/equipment';
 import { mockEquipment } from '@/data/mockData';
+import { useLoans } from './useLoans';
 
 export function useEquipment() {
   const [equipment, setEquipment] = useState<Equipment[]>(mockEquipment);
   const [filters, setFilters] = useState<EquipmentFilters>({});
+  const { getActiveLoanByEquipment } = useLoans();
+
+  const enrichedEquipment = useMemo(() => {
+    return equipment.map(item => {
+      const activeLoan = getActiveLoanByEquipment(item.id);
+      const newStatus = activeLoan ? 'in-use' as const : item.status === 'in-use' ? 'available' as const : item.status;
+      return {
+        ...item,
+        currentLoanId: activeLoan?.id,
+        currentBorrower: activeLoan?.borrowerName,
+        lastLoanDate: activeLoan?.loanDate,
+        // Auto-update status based on loan
+        status: newStatus
+      };
+    });
+  }, [equipment, getActiveLoanByEquipment]);
 
   const filteredEquipment = useMemo(() => {
-    return equipment.filter((item) => {
+    return enrichedEquipment.filter((item) => {
       if (filters.category && item.category !== filters.category) return false;
       if (filters.status && item.status !== filters.status) return false;
       if (filters.search) {
@@ -20,15 +37,15 @@ export function useEquipment() {
       }
       return true;
     });
-  }, [equipment, filters]);
+  }, [enrichedEquipment, filters]);
 
   const stats: DashboardStats = useMemo(() => {
-    const total = equipment.length;
-    const available = equipment.filter(item => item.status === 'available').length;
-    const inUse = equipment.filter(item => item.status === 'in-use').length;
-    const maintenance = equipment.filter(item => item.status === 'maintenance').length;
+    const total = enrichedEquipment.length;
+    const available = enrichedEquipment.filter(item => item.status === 'available').length;
+    const inUse = enrichedEquipment.filter(item => item.status === 'in-use').length;
+    const maintenance = enrichedEquipment.filter(item => item.status === 'maintenance').length;
     
-    const byCategory = equipment.reduce((acc, item) => {
+    const byCategory = enrichedEquipment.reduce((acc, item) => {
       acc[item.category] = (acc[item.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -40,7 +57,7 @@ export function useEquipment() {
       maintenance,
       byCategory: byCategory as DashboardStats['byCategory']
     };
-  }, [equipment]);
+  }, [enrichedEquipment]);
 
   const addEquipment = (newEquipment: Omit<Equipment, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);

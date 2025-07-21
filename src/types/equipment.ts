@@ -16,6 +16,9 @@ export interface Equipment {
   description?: string;
   image?: string;
   value?: number;
+  currentLoanId?: string;
+  currentBorrower?: string;
+  lastLoanDate?: string;
 }
 
 export interface EquipmentFilters {
