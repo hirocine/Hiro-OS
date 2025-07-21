@@ -48,14 +48,14 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange }: Equipmen
         </div>
         
         <Select
-          value={filters.category || ''}
-          onValueChange={(value) => updateFilter('category', value)}
+          value={filters.category || 'all'}
+          onValueChange={(value) => updateFilter('category', value === 'all' ? undefined : value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Categoria" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas as categorias</SelectItem>
+            <SelectItem value="all">Todas as categorias</SelectItem>
             {Object.entries(categoryLabels).map(([key, label]) => (
               <SelectItem key={key} value={key}>
                 {label}
@@ -65,14 +65,14 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange }: Equipmen
         </Select>
         
         <Select
-          value={filters.status || ''}
-          onValueChange={(value) => updateFilter('status', value)}
+          value={filters.status || 'all'}
+          onValueChange={(value) => updateFilter('status', value === 'all' ? undefined : value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os status</SelectItem>
+            <SelectItem value="all">Todos os status</SelectItem>
             {Object.entries(statusLabels).map(([key, label]) => (
               <SelectItem key={key} value={key}>
                 {label}
