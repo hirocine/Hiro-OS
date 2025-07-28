@@ -60,10 +60,10 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
             {categoryLabels[equipment.category]}
           </div>
           
-          {equipment.location && (
+          {equipment.patrimonyNumber && (
             <div className="flex items-center gap-2">
-              <MapPin className="h-3 w-3" />
-              {equipment.location}
+              <span className="font-medium">Patrimônio:</span>
+              {equipment.patrimonyNumber}
             </div>
           )}
           

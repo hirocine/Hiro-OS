@@ -25,9 +25,13 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
     serialNumber: equipment?.serialNumber || '',
     purchaseDate: equipment?.purchaseDate || '',
     lastMaintenance: equipment?.lastMaintenance || '',
-    location: equipment?.location || '',
     description: equipment?.description || '',
     value: equipment?.value || 0,
+    patrimonyNumber: equipment?.patrimonyNumber || '',
+    depreciatedValue: equipment?.depreciatedValue || 0,
+    receiveDate: equipment?.receiveDate || '',
+    store: equipment?.store || '',
+    invoice: equipment?.invoice || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,9 +49,13 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
         serialNumber: '',
         purchaseDate: '',
         lastMaintenance: '',
-        location: '',
         description: '',
         value: 0,
+        patrimonyNumber: '',
+        depreciatedValue: 0,
+        receiveDate: '',
+        store: '',
+        invoice: '',
       });
     }
   };
@@ -145,7 +153,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="value">Valor (R$)</Label>
+              <Label htmlFor="value">Valor de Compra (R$)</Label>
               <Input
                 id="value"
                 type="number"
@@ -155,11 +163,11 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="location">Localização</Label>
+              <Label htmlFor="patrimonyNumber">Patrimônio</Label>
               <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => updateField('location', e.target.value)}
+                id="patrimonyNumber"
+                value={formData.patrimonyNumber}
+                onChange={(e) => updateField('patrimonyNumber', e.target.value)}
               />
             </div>
             
@@ -192,6 +200,51 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
               onChange={(e) => updateField('description', e.target.value)}
               rows={3}
             />
+          </div>
+          
+          {/* Hidden fields for additional equipment data */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+            <h3 className="md:col-span-2 text-lg font-semibold">Informações Adicionais</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="depreciatedValue">Valor com Depreciação (R$)</Label>
+              <Input
+                id="depreciatedValue"
+                type="number"
+                value={formData.depreciatedValue || ''}
+                onChange={(e) => updateField('depreciatedValue', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="receiveDate">Data de Recebimento</Label>
+              <Input
+                id="receiveDate"
+                type="date"
+                value={formData.receiveDate}
+                onChange={(e) => updateField('receiveDate', e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="store">Loja</Label>
+              <Input
+                id="store"
+                value={formData.store}
+                onChange={(e) => updateField('store', e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="invoice">NFe ou Recibo (Link)</Label>
+              <Input
+                id="invoice"
+                type="url"
+                value={formData.invoice}
+                onChange={(e) => updateField('invoice', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
           </div>
           
           <DialogFooter>

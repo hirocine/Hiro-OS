@@ -12,10 +12,14 @@ export interface Equipment {
   serialNumber?: string;
   purchaseDate?: string;
   lastMaintenance?: string;
-  location?: string;
   description?: string;
   image?: string;
   value?: number;
+  patrimonyNumber?: string;
+  depreciatedValue?: number;
+  receiveDate?: string;
+  store?: string;
+  invoice?: string;
   currentLoanId?: string;
   currentBorrower?: string;
   lastLoanDate?: string;

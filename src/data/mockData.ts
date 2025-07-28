@@ -10,9 +10,9 @@ export const mockEquipment: Equipment[] = [
     status: 'available',
     serialNumber: 'SN-FX6-001',
     purchaseDate: '2023-01-15',
-    location: 'Estúdio A',
     description: 'Câmera cinema full-frame com sensor de 10.2MP',
-    value: 25000
+    value: 25000,
+    patrimonyNumber: 'PAT-001'
   },
   {
     id: '2',
@@ -23,9 +23,9 @@ export const mockEquipment: Equipment[] = [
     status: 'in-use',
     serialNumber: 'SN-MKE-002',
     purchaseDate: '2022-08-20',
-    location: 'Set Externo',
     description: 'Microfone direcional profissional para captação de áudio',
-    value: 1200
+    value: 1200,
+    patrimonyNumber: 'PAT-002'
   },
   {
     id: '3',
@@ -37,9 +37,9 @@ export const mockEquipment: Equipment[] = [
     serialNumber: 'SN-AP-003',
     purchaseDate: '2023-03-10',
     lastMaintenance: '2024-01-15',
-    location: 'Oficina',
     description: 'Painel LED profissional de 300W com controle remoto',
-    value: 3500
+    value: 3500,
+    patrimonyNumber: 'PAT-003'
   },
   {
     id: '4',
@@ -50,9 +50,9 @@ export const mockEquipment: Equipment[] = [
     status: 'available',
     serialNumber: 'SN-RON-004',
     purchaseDate: '2022-11-05',
-    location: 'Estúdio B',
     description: 'Estabilizador profissional para câmeras DSLR',
-    value: 2800
+    value: 2800,
+    patrimonyNumber: 'PAT-004'
   },
   {
     id: '5',
@@ -63,9 +63,9 @@ export const mockEquipment: Equipment[] = [
     status: 'available',
     serialNumber: 'SN-ZH6-005',
     purchaseDate: '2023-06-12',
-    location: 'Estúdio A',
     description: 'Gravador portátil de 6 canais para captação de áudio',
-    value: 1800
+    value: 1800,
+    patrimonyNumber: 'PAT-005'
   },
   {
     id: '6',
@@ -76,9 +76,9 @@ export const mockEquipment: Equipment[] = [
     status: 'in-use',
     serialNumber: 'SN-RED-006',
     purchaseDate: '2023-09-01',
-    location: 'Set Principal',
     description: 'Câmera cinema 6K super compacta',
-    value: 45000
+    value: 45000,
+    patrimonyNumber: 'PAT-006'
   }
 ];
 

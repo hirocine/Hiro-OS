@@ -106,9 +106,9 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
         </Badge>
       </div>
 
-      {/* Location */}
+      {/* Patrimony */}
       <div className="col-span-1">
-        <div className="text-sm">{equipment.location || '-'}</div>
+        <div className="text-sm">{equipment.patrimonyNumber || '-'}</div>
       </div>
 
       {/* Serial Number */}

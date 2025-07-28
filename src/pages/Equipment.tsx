@@ -107,9 +107,9 @@ export default function Equipment() {
             <div className="col-span-1">Modelo</div>
             <div className="col-span-1">Categoria</div>
             <div className="col-span-1">Status</div>
-            <div className="col-span-1">Local</div>
+            <div className="col-span-1">Patrimônio</div>
             <div className="col-span-1">Serial</div>
-            <div className="col-span-1">Valor</div>
+            <div className="col-span-1">Valor de Compra</div>
             <div className="col-span-2">Ações</div>
           </div>
           
