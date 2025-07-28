@@ -18,7 +18,6 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
   const getStatusVariant = (status: Equipment['status']) => {
     switch (status) {
       case 'available': return 'success';
-      case 'in-use': return 'secondary';
       case 'maintenance': return 'destructive';
       default: return 'default';
     }
@@ -27,7 +26,6 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
   const getStatusLabel = (status: Equipment['status']) => {
     switch (status) {
       case 'available': return 'Disponível';
-      case 'in-use': return 'Em uso';
       case 'maintenance': return 'Manutenção';
       default: return status;
     }

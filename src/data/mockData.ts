@@ -20,7 +20,7 @@ export const mockEquipment: Equipment[] = [
     brand: 'Sennheiser',
     model: 'MKE 600',
     category: 'audio',
-    status: 'in-use',
+    status: 'available',
     serialNumber: 'SN-MKE-002',
     purchaseDate: '2022-08-20',
     description: 'Microfone direcional profissional para captação de áudio',
@@ -73,7 +73,7 @@ export const mockEquipment: Equipment[] = [
     brand: 'RED',
     model: 'Komodo',
     category: 'camera',
-    status: 'in-use',
+    status: 'available',
     serialNumber: 'SN-RED-006',
     purchaseDate: '2023-09-01',
     description: 'Câmera cinema 6K super compacta',
@@ -91,6 +91,5 @@ export const categoryLabels = {
 
 export const statusLabels = {
   available: 'Disponível',
-  'in-use': 'Em Uso',
   maintenance: 'Manutenção'
 };

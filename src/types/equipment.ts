@@ -1,6 +1,6 @@
 export type EquipmentCategory = 'camera' | 'audio' | 'lighting' | 'accessories';
 
-export type EquipmentStatus = 'available' | 'in-use' | 'maintenance';
+export type EquipmentStatus = 'available' | 'maintenance';
 
 export interface Equipment {
   id: string;

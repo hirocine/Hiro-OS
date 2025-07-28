@@ -11,7 +11,7 @@ export function useEquipment() {
   const enrichedEquipment = useMemo(() => {
     return equipment.map(item => {
       const activeLoan = getActiveLoanByEquipment(item.id);
-      const newStatus = activeLoan ? 'in-use' as const : item.status === 'in-use' ? 'available' as const : item.status;
+      const newStatus = activeLoan ? 'available' as const : item.status;
       return {
         ...item,
         currentLoanId: activeLoan?.id,
@@ -42,7 +42,7 @@ export function useEquipment() {
   const stats: DashboardStats = useMemo(() => {
     const total = enrichedEquipment.length;
     const available = enrichedEquipment.filter(item => item.status === 'available').length;
-    const inUse = enrichedEquipment.filter(item => item.status === 'in-use').length;
+    const inUse = 0; // Removed in-use status
     const maintenance = enrichedEquipment.filter(item => item.status === 'maintenance').length;
     
     const byCategory = enrichedEquipment.reduce((acc, item) => {

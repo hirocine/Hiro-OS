@@ -18,8 +18,6 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
     switch (status) {
       case 'available':
         return 'success';
-      case 'in-use':
-        return 'warning';
       case 'maintenance':
         return 'destructive';
       default:
@@ -130,16 +128,6 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
           </Button>
         )}
         
-        {equipment.status === 'in-use' && onReturn && (
-          <Button 
-            variant="warning" 
-            size="sm" 
-            onClick={() => onReturn(equipment)}
-          >
-            <RotateCcw className="h-3 w-3" />
-            Devolver
-          </Button>
-        )}
         
         <Button 
           variant="destructive" 
