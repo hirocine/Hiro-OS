@@ -63,53 +63,26 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      console.log('🔍 Admin: Fetching users...');
+      console.log('🔍 Admin: Fetching users using RPC...');
       setLoadingUsers(true);
       
-      // Fetch profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, position, department, created_at')
-        .order('created_at', { ascending: false });
+      // Use the existing RPC function that properly combines data
+      const { data, error } = await supabase.rpc('get_users_for_admin');
 
-      if (profilesError) {
-        console.error('❌ Admin: Error fetching profiles:', profilesError);
-        throw profilesError;
+      if (error) {
+        console.error('❌ Admin: Error fetching users via RPC:', error);
+        throw error;
       }
 
-      // Fetch roles
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) {
-        console.error('❌ Admin: Error fetching roles:', rolesError);
-        throw rolesError;
-      }
-
-      // Fetch auth users via RPC for emails
-      const { data: authUsers, error: authError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .limit(1);
-
-      if (authError) {
-        console.error('❌ Admin: Error accessing auth data:', authError);
-      }
-
-      // Combine data
-      const usersData: User[] = (profiles || []).map(profile => {
-        const userRole = roles?.find(r => r.user_id === profile.user_id);
-        return {
-          id: profile.user_id,
-          email: 'Email não disponível', // Temporary until we get proper access
-          display_name: profile.display_name || 'Usuário Anônimo',
-          position: profile.position || 'Não informado',
-          department: profile.department || 'Não informado',
-          created_at: profile.created_at,
-          role: (userRole?.role as 'admin' | 'user') || 'user'
-        };
-      });
+      const usersData: User[] = (data || []).map(user => ({
+        id: user.id,
+        email: user.email || 'Email não disponível',
+        display_name: user.display_name || 'Usuário Anônimo',
+        position: user.position || 'Não informado',
+        department: user.department || 'Não informado',
+        created_at: user.created_at,
+        role: user.role || 'user'
+      }));
 
       console.log('✅ Admin: Users fetched successfully:', usersData.length, 'users');
       setUsers(usersData);

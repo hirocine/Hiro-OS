@@ -23,7 +23,11 @@ export function useUserRole() {
   });
 
   useEffect(() => {
-    console.log('🔑 useUserRole: Effect triggered', { user: user?.email });
+    console.log('🔑 useUserRole: Effect triggered', { 
+      userExists: !!user, 
+      userEmail: user?.email,
+      userId: user?.id 
+    });
     
     if (!user) {
       console.log('🔑 useUserRole: No user, setting default state');
@@ -39,7 +43,8 @@ export function useUserRole() {
 
     const fetchUserRole = async () => {
       try {
-        console.log('🔑 useUserRole: Fetching role for user:', user.email);
+        console.log('🔑 useUserRole: Starting role fetch for user:', user.email);
+        setRoleState(prev => ({ ...prev, loading: true }));
         
         const { data, error } = await supabase
           .from('user_roles')
@@ -47,10 +52,31 @@ export function useUserRole() {
           .eq('user_id', user.id)
           .single();
 
+        console.log('🔑 useUserRole: Query result', { data, error });
+
         if (error) {
+          if (error.code === 'PGRST116') {
+            // No role found, create default user role
+            console.log('🔑 useUserRole: No role found, creating default user role');
+            const { error: insertError } = await supabase
+              .from('user_roles')
+              .insert({ user_id: user.id, role: 'user' });
+            
+            if (insertError) {
+              console.error('🔑 useUserRole: Error creating default role:', insertError);
+            }
+            
+            setRoleState({
+              role: 'user',
+              loading: false,
+              isAdmin: false,
+              canDelete: false,
+              canImport: false,
+            });
+            return;
+          }
+          
           console.error('🔑 useUserRole: Error fetching role:', error);
-          // Default to 'user' role if not found
-          console.log('🔑 useUserRole: Defaulting to user role');
           setRoleState({
             role: 'user',
             loading: false,
@@ -64,7 +90,11 @@ export function useUserRole() {
         const role = data?.role as UserRole;
         const isAdmin = role === 'admin';
 
-        console.log('🔑 useUserRole: Role fetched successfully', { role, isAdmin });
+        console.log('🔑 useUserRole: Role fetched successfully', { 
+          role, 
+          isAdmin,
+          userId: user.id 
+        });
 
         setRoleState({
           role,
