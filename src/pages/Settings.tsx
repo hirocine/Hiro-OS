@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
+import { BackupSystem } from '@/components/Settings/BackupSystem';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -174,6 +175,14 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <SettingsActions />
+            <BackupSystem 
+              onExportData={async () => {
+                // This will be handled by SettingsActions
+              }}
+              onImportData={async (file: File) => {
+                // This will be handled by SettingsActions
+              }}
+            />
             
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm font-medium">Versão do Sistema</p>

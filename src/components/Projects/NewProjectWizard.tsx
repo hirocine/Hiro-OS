@@ -18,12 +18,12 @@ interface NewProjectWizardProps {
 
 interface ProjectData {
   name: string;
-  producer: string;
-  recordingDate: string;
-  separationPerson: string;
-  separationDate: string;
-  conferencePerson: string;
-  returnDate: string;
+  description: string;
+  responsibleName: string;
+  responsibleEmail: string;
+  department: string;
+  startDate: string;
+  expectedEndDate: string;
   selectedEquipment: Record<EquipmentCategory, Equipment[]>;
 }
 
@@ -42,12 +42,12 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   const [currentStep, setCurrentStep] = useState(1);
   const [projectData, setProjectData] = useState<ProjectData>({
     name: '',
-    producer: '',
-    recordingDate: '',
-    separationPerson: '',
-    separationDate: '',
-    conferencePerson: '',
-    returnDate: '',
+    description: '',
+    responsibleName: '',
+    responsibleEmail: '',
+    department: '',
+    startDate: new Date().toISOString().split('T')[0],
+    expectedEndDate: '',
     selectedEquipment: {
       camera: [],
       audio: [],
@@ -118,17 +118,17 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   const isStepValid = () => {
     switch (currentStep) {
       case 1: return projectData.name.trim() !== '';
-      case 2: return projectData.producer.trim() !== '';
-      case 3: return projectData.recordingDate !== '';
-      case 4: return projectData.separationPerson.trim() !== '' && projectData.separationDate !== '';
-      case 5: return projectData.conferencePerson.trim() !== '';
-      case 6: return projectData.returnDate !== '';
+      case 2: return projectData.description.trim() !== '';
+      case 3: return projectData.responsibleName.trim() !== '';
+      case 4: return projectData.responsibleEmail.trim() !== '';
+      case 5: return projectData.department.trim() !== '';
+      case 6: return projectData.expectedEndDate !== '';
       default: return true;
     }
   };
 
   const nextStep = () => {
-    if (currentStep < 15) {
+    if (currentStep < 14) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -146,15 +146,15 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     
     const finalData = {
       name: projectData.name,
-      description: `Produção: ${projectData.producer}`,
-      startDate: projectData.separationDate,
-      expectedEndDate: projectData.returnDate,
+      description: projectData.description,
+      startDate: projectData.startDate,
+      expectedEndDate: projectData.expectedEndDate,
       status: 'active' as const,
-      responsibleName: projectData.producer,
-      department: 'Produção',
+      responsibleName: projectData.responsibleName,
+      responsibleEmail: projectData.responsibleEmail,
+      department: projectData.department,
       equipmentCount: totalEquipmentCount,
-      loanIds: [],
-      notes: `Gravação: ${projectData.recordingDate} | Separação: ${projectData.separationPerson} | Conferência: ${projectData.conferencePerson}`
+      loanIds: []
     };
 
     try {
@@ -167,12 +167,12 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       setCurrentStep(1);
       setProjectData({
         name: '',
-        producer: '',
-        recordingDate: '',
-        separationPerson: '',
-        separationDate: '',
-        conferencePerson: '',
-        returnDate: '',
+        description: '',
+        responsibleName: '',
+        responsibleEmail: '',
+        department: '',
+        startDate: new Date().toISOString().split('T')[0],
+        expectedEndDate: '',
         selectedEquipment: {
           camera: [],
           audio: [],
@@ -206,12 +206,13 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       case 2:
         return (
           <div className="space-y-4">
-            <Label htmlFor="producer">Produtor Responsável</Label>
-            <Input
-              id="producer"
-              value={projectData.producer}
-              onChange={(e) => updateField('producer', e.target.value)}
-              placeholder="Nome do produtor responsável"
+            <Label htmlFor="description">Descrição do Projeto</Label>
+            <Textarea
+              id="description"
+              value={projectData.description}
+              onChange={(e) => updateField('description', e.target.value)}
+              placeholder="Descreva brevemente o projeto..."
+              rows={3}
             />
           </div>
         );
@@ -219,12 +220,12 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       case 3:
         return (
           <div className="space-y-4">
-            <Label htmlFor="recordingDate">Data da Gravação</Label>
+            <Label htmlFor="responsibleName">Responsável pelo Projeto</Label>
             <Input
-              id="recordingDate"
-              type="date"
-              value={projectData.recordingDate}
-              onChange={(e) => updateField('recordingDate', e.target.value)}
+              id="responsibleName"
+              value={projectData.responsibleName}
+              onChange={(e) => updateField('responsibleName', e.target.value)}
+              placeholder="Nome do responsável"
             />
           </div>
         );
@@ -232,36 +233,26 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       case 4:
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="separationPerson">Quem fará a separação</Label>
-              <Input
-                id="separationPerson"
-                value={projectData.separationPerson}
-                onChange={(e) => updateField('separationPerson', e.target.value)}
-                placeholder="Nome da pessoa responsável"
-              />
-            </div>
-            <div>
-              <Label htmlFor="separationDate">Data da separação</Label>
-              <Input
-                id="separationDate"
-                type="date"
-                value={projectData.separationDate}
-                onChange={(e) => updateField('separationDate', e.target.value)}
-              />
-            </div>
+            <Label htmlFor="responsibleEmail">Email do Responsável</Label>
+            <Input
+              id="responsibleEmail"
+              type="email"
+              value={projectData.responsibleEmail}
+              onChange={(e) => updateField('responsibleEmail', e.target.value)}
+              placeholder="email@exemplo.com"
+            />
           </div>
         );
 
       case 5:
         return (
           <div className="space-y-4">
-            <Label htmlFor="conferencePerson">Quem fará a conferência</Label>
+            <Label htmlFor="department">Departamento</Label>
             <Input
-              id="conferencePerson"
-              value={projectData.conferencePerson}
-              onChange={(e) => updateField('conferencePerson', e.target.value)}
-              placeholder="Nome da pessoa responsável"
+              id="department"
+              value={projectData.department}
+              onChange={(e) => updateField('department', e.target.value)}
+              placeholder="Ex: Produção, Marketing, etc."
             />
           </div>
         );
@@ -269,17 +260,18 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       case 6:
         return (
           <div className="space-y-4">
-            <Label htmlFor="returnDate">Data de Devolução</Label>
+            <Label htmlFor="expectedEndDate">Data de Devolução Prevista</Label>
             <Input
-              id="returnDate"
+              id="expectedEndDate"
               type="date"
-              value={projectData.returnDate}
-              onChange={(e) => updateField('returnDate', e.target.value)}
+              value={projectData.expectedEndDate}
+              onChange={(e) => updateField('expectedEndDate', e.target.value)}
+              min={projectData.startDate}
             />
           </div>
         );
 
-      case 15:
+      case 14:
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold">Confirmação Final</h3>
@@ -287,9 +279,11 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><strong>Projeto:</strong> {projectData.name}</div>
-                <div><strong>Produtor:</strong> {projectData.producer}</div>
-                <div><strong>Gravação:</strong> {new Date(projectData.recordingDate).toLocaleDateString('pt-BR')}</div>
-                <div><strong>Devolução:</strong> {new Date(projectData.returnDate).toLocaleDateString('pt-BR')}</div>
+                <div><strong>Responsável:</strong> {projectData.responsibleName}</div>
+                <div><strong>Email:</strong> {projectData.responsibleEmail}</div>
+                <div><strong>Departamento:</strong> {projectData.department}</div>
+                <div><strong>Início:</strong> {new Date(projectData.startDate).toLocaleDateString('pt-BR')}</div>
+                <div><strong>Devolução:</strong> {new Date(projectData.expectedEndDate).toLocaleDateString('pt-BR')}</div>
               </div>
               
               <div className="space-y-3">
@@ -317,7 +311,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
         );
 
       default:
-        // Equipment selection steps (7-14)
+        // Equipment selection steps (7-13)
         const equipmentStep = EQUIPMENT_STEPS.find(step => step.step === currentStep);
         if (!equipmentStep) return null;
 
@@ -386,7 +380,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova Retirada - Passo {currentStep} de 15</DialogTitle>
+          <DialogTitle>Novo Projeto - Passo {currentStep} de 14</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
@@ -394,7 +388,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
           <div className="w-full bg-muted rounded-full h-2 mb-6">
             <div 
               className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / 15) * 100}%` }}
+              style={{ width: `${(currentStep / 14) * 100}%` }}
             />
           </div>
 
@@ -416,7 +410,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
               Cancelar
             </Button>
             
-            {currentStep === 15 ? (
+            {currentStep === 14 ? (
               <Button onClick={handleSubmit}>
                 <Check className="h-4 w-4 mr-2" />
                 Finalizar

@@ -11,6 +11,7 @@ import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdminOnly } from '@/components/RoleGuard';
 import { EmptyState } from '@/components/ui/empty-state';
+import { StatsCardSkeleton, EquipmentCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
 
 export default function Equipment() {
   const { 

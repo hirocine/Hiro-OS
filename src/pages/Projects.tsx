@@ -14,6 +14,7 @@ import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
 import { Equipment } from '@/types/equipment';
+import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
 
 export default function Projects() {
   const { 
@@ -199,8 +200,16 @@ export default function Projects() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 bg-muted rounded animate-pulse" />
+            <StatsCardSkeleton key={i} />
           ))}
+        </div>
+        <div className="space-y-4">
+          <FiltersSkeleton />
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );
