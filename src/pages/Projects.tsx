@@ -7,11 +7,15 @@ import { useProjects } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
 import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
+import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { useToast } from '@/hooks/use-toast';
+import { Project } from '@/types/project';
 
 export default function Projects() {
-  const { projects: allFilteredProjects, stats, filters, setFilters, addProject, completeProject, archiveProject } = useProjects();
+  const { projects: allFilteredProjects, stats, filters, setFilters, addProject, updateProject, completeProject, archiveProject } = useProjects();
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const { toast } = useToast();
@@ -44,6 +48,19 @@ export default function Projects() {
     toast({
       title: "Projeto criado com sucesso",
       description: `O projeto "${projectData.name}" foi criado e está ativo.`,
+    });
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateProject = (projectId: string, updates: Partial<Project>) => {
+    updateProject(projectId, updates);
+    toast({
+      title: "Projeto atualizado",
+      description: "As alterações foram salvas com sucesso.",
     });
   };
 
@@ -171,6 +188,7 @@ export default function Projects() {
                     <ProjectCard
                       key={project.id}
                       project={project}
+                      onEdit={handleEditProject}
                       onComplete={handleCompleteProject}
                       onArchive={handleArchiveProject}
                     />
@@ -196,6 +214,7 @@ export default function Projects() {
                     <ProjectCard
                       key={project.id}
                       project={project}
+                      onEdit={handleEditProject}
                       onComplete={handleCompleteProject}
                       onArchive={handleArchiveProject}
                     />
@@ -241,6 +260,7 @@ export default function Projects() {
                       <ProjectCard
                         key={project.id}
                         project={project}
+                        onEdit={handleEditProject}
                         onComplete={handleCompleteProject}
                         onArchive={handleArchiveProject}
                       />
@@ -282,6 +302,7 @@ export default function Projects() {
                       <ProjectCard
                         key={project.id}
                         project={project}
+                        onEdit={handleEditProject}
                         onComplete={handleCompleteProject}
                         onArchive={handleArchiveProject}
                       />
@@ -298,6 +319,13 @@ export default function Projects() {
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
         onSubmit={handleNewProject}
+      />
+
+      <EditProjectDialog
+        project={editingProject}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleUpdateProject}
       />
     </div>
   );
