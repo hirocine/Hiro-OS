@@ -99,6 +99,10 @@ export default function Projects() {
     setShowStepDialog(true);
   };
 
+  const handleQuickStepUpdate = (projectId: string, newStep: ProjectStep, notes?: string) => {
+    updateProjectStep(projectId, newStep, notes);
+  };
+
   const handleUpdateStep = (projectId: string, newStep: ProjectStep, notes?: string) => {
     updateProjectStep(projectId, newStep, notes);
     toast({
@@ -230,7 +234,7 @@ export default function Projects() {
                        onEdit={handleEditProject}
                        onComplete={handleCompleteProject}
                        onArchive={handleArchiveProject}
-                       onStepUpdate={() => handleStepUpdate(project)}
+                       onStepUpdate={handleQuickStepUpdate}
                      />
                   ))}
                 </div>
@@ -257,7 +261,7 @@ export default function Projects() {
                        onEdit={handleEditProject}
                        onComplete={handleCompleteProject}
                        onArchive={handleArchiveProject}
-                       onStepUpdate={() => handleStepUpdate(project)}
+                       onStepUpdate={handleQuickStepUpdate}
                      />
                    ))}
                 </div>
@@ -304,7 +308,7 @@ export default function Projects() {
                          onEdit={handleEditProject}
                          onComplete={handleCompleteProject}
                          onArchive={handleArchiveProject}
-                         onStepUpdate={() => handleStepUpdate(project)}
+                         onStepUpdate={handleQuickStepUpdate}
                        />
                      ))}
                   </div>
@@ -340,16 +344,16 @@ export default function Projects() {
                 </div>
                 {showArchived && (
                   <div className="grid grid-cols-1 gap-4">
-                   {archivedProjects.map((project) => (
-                     <ProjectCard
-                       key={project.id}
-                       project={project}
-                       onEdit={handleEditProject}
-                       onComplete={handleCompleteProject}
-                       onArchive={handleArchiveProject}
-                       onStepUpdate={() => handleStepUpdate(project)}
-                     />
-                   ))}
+                    {archivedProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onEdit={handleEditProject}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                        onStepUpdate={handleQuickStepUpdate}
+                      />
+                    ))}
                   </div>
                 )}
               </div>

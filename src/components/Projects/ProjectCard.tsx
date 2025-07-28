@@ -1,3 +1,4 @@
+import React from 'react';
 import { Project } from '@/types/project';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,18 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { statusLabels } from '@/data/mockProjects';
-import { stepLabels, stepColors, stepIcons, getStepProgress } from '@/lib/projectSteps';
+import { stepLabels, stepColors, stepIcons, getStepProgress, canTransitionTo, stepOrder } from '@/lib/projectSteps';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
   onComplete?: (projectId: string) => void;
   onArchive?: (projectId: string) => void;
-  onStepUpdate?: () => void;
+  onStepUpdate?: (projectId: string, step: import('@/types/project').ProjectStep, notes?: string) => void;
 }
 
 export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpdate }: ProjectCardProps) {
+  const { toast } = useToast();
+  
   const getStatusVariant = (status: Project['status']) => {
     switch (status) {
       case 'active':
@@ -33,6 +37,40 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
   const isOverdue = project.status === 'active' && new Date(project.expectedEndDate) < new Date();
   const StepIcon = stepIcons[project.step];
   const progress = getStepProgress(project.step);
+
+  const getNextStep = () => {
+    const currentIndex = stepOrder.indexOf(project.step);
+    if (currentIndex < stepOrder.length - 1) {
+      return stepOrder[currentIndex + 1];
+    }
+    return null;
+  };
+
+  const getStepActionLabel = (step: import('@/types/project').ProjectStep) => {
+    switch (step) {
+      case 'separated':
+        return 'Marcar como Separado';
+      case 'in_use':
+        return 'Marcar como Em Uso';
+      case 'pending_verification':
+        return 'Solicitar Verificação';
+      case 'verified':
+        return 'Verificar Retorno';
+      default:
+        return 'Próximo Step';
+    }
+  };
+
+  const handleQuickStepUpdate = (nextStep: import('@/types/project').ProjectStep) => {
+    onStepUpdate?.(project.id, nextStep);
+    toast({
+      title: "Status atualizado",
+      description: `Projeto alterado para: ${stepLabels[nextStep]}`,
+    });
+  };
+
+  const nextStep = getNextStep();
+  const canShowQuickAction = nextStep && project.status === 'active' && canTransitionTo(project.step, nextStep);
 
   return (
     <Card 
@@ -89,10 +127,6 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
                 <DropdownMenuItem onClick={() => onEdit?.(project)}>
                   <FileText className="mr-2 h-4 w-4" />
                   Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onStepUpdate}>
-                  <StepIcon className="mr-2 h-4 w-4" />
-                  Atualizar Status
                 </DropdownMenuItem>
                 {project.status === 'active' && (
                   <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
@@ -165,6 +199,24 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
           <div className="text-sm">
             <p className="font-medium mb-1">Observações:</p>
             <p className="text-muted-foreground">{project.notes}</p>
+          </div>
+        )}
+        
+        {/* Quick Action Button */}
+        {canShowQuickAction && nextStep && (
+          <div className="pt-2 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "w-full transition-colors",
+                `hover:bg-${stepColors[nextStep]}/10 hover:border-${stepColors[nextStep]} hover:text-${stepColors[nextStep]}`
+              )}
+              onClick={() => handleQuickStepUpdate(nextStep)}
+            >
+              {React.createElement(stepIcons[nextStep], { className: "w-4 h-4 mr-2" })}
+              {getStepActionLabel(nextStep)}
+            </Button>
           </div>
         )}
       </CardContent>
