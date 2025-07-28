@@ -76,22 +76,6 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
               <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
             )}
             
-            {/* Progress indicator */}
-            <div className="mt-2">
-              <div className="flex items-center gap-2 mb-1">
-                <StepIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">Progresso: {Math.round(progress)}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className={cn(
-                    "h-2 rounded-full transition-all duration-300",
-                    `bg-${stepColors[project.step]}`
-                  )}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-1">
