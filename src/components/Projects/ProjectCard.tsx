@@ -98,24 +98,24 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit?.(project)}>
-                <FileText className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              {project.status === 'active' && (
-                <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
-                  <Package className="mr-2 h-4 w-4" />
-                  Finalizar
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit?.(project)}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Editar
                 </DropdownMenuItem>
-              )}
-              {project.status === 'completed' && (
-                <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
-                  <Package className="mr-2 h-4 w-4" />
-                  Arquivar
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
+                {project.status === 'active' && (
+                  <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
+                    <Package className="mr-2 h-4 w-4" />
+                    Finalizar
+                  </DropdownMenuItem>
+                )}
+                {project.status !== 'archived' && (
+                  <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Arquivar
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </CardHeader>
@@ -179,51 +179,35 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
           </div>
         )}
         
-        {/* Ações e Seletor de Status */}
-        <div className="pt-2 border-t border-border/50 space-y-2">
-          {/* Botão de Arquivar */}
-          {project.status !== 'archived' && onArchive && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onArchive(project.id)}
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <Archive className="h-4 w-4" />
-              Arquivar Projeto
-            </Button>
-          )}
-          
-          {/* Seletor de Status */}
-          {showStepSelector && (
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Alterar Status:</span>
-              </div>
-              <Select onValueChange={handleStepChange} value={project.step}>
-                <SelectTrigger className="w-full h-8">
-                  <SelectValue placeholder="Selecionar novo status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={project.step} disabled>
+        {/* Seletor de Status */}
+        {showStepSelector && (
+          <div className="pt-2 border-t border-border/50">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-medium text-muted-foreground">Alterar Status:</span>
+            </div>
+            <Select onValueChange={handleStepChange} value={project.step}>
+              <SelectTrigger className="w-full h-8">
+                <SelectValue placeholder="Selecionar novo status..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={project.step} disabled>
+                  <div className="flex items-center gap-2">
+                    {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
+                    <span>{stepLabels[project.step]} (atual)</span>
+                  </div>
+                </SelectItem>
+                {availableSteps.map((step) => (
+                  <SelectItem key={step} value={step}>
                     <div className="flex items-center gap-2">
-                      {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
-                      <span>{stepLabels[project.step]} (atual)</span>
+                      {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
+                      <span>{stepLabels[step]}</span>
                     </div>
                   </SelectItem>
-                  {availableSteps.map((step) => (
-                    <SelectItem key={step} value={step}>
-                      <div className="flex items-center gap-2">
-                        {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
-                        <span>{stepLabels[step]}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
