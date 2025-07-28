@@ -1,12 +1,46 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy } from '@/types/equipment';
-import { mockEquipment } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
 import { useLoans } from './useLoans';
 
 export function useEquipment() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [filters, setFilters] = useState<EquipmentFilters>({});
+  const [loading, setLoading] = useState(true);
   const { getActiveLoanByEquipment } = useLoans();
+
+  // Fetch equipment from Supabase
+  useEffect(() => {
+    fetchEquipment();
+  }, []);
+
+  const fetchEquipment = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('equipments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching equipment:', error);
+        return;
+      }
+
+      // Transform database data to match Equipment interface
+      const equipmentData = (data || []).map(item => ({
+        ...item,
+        itemType: item.item_type || 'main',
+        isExpanded: false,
+        parentId: item.parent_id
+      })) as Equipment[];
+      setEquipment(equipmentData);
+    } catch (error) {
+      console.error('Error fetching equipment:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const enrichedEquipment = useMemo(() => {
     return equipment.map(item => {
@@ -87,35 +121,95 @@ export function useEquipment() {
     };
   }, [enrichedEquipment]);
 
-  const addEquipment = (newEquipment: Omit<Equipment, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const equipmentWithDefaults = {
-      ...newEquipment,
-      id,
-      itemType: newEquipment.itemType || 'main',
-      isExpanded: false
-    };
-    setEquipment(prev => [...prev, equipmentWithDefaults]);
+  const addEquipment = async (newEquipment: Omit<Equipment, 'id'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('equipments')
+        .insert([newEquipment])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding equipment:', error);
+        return;
+      }
+
+      if (data) {
+        const equipmentData = {
+          ...data,
+          itemType: data.item_type || 'main',
+          isExpanded: false,
+          parentId: data.parent_id
+        } as Equipment;
+        setEquipment(prev => [...prev, equipmentData]);
+      }
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+    }
   };
 
-  const updateEquipment = (id: string, updates: Partial<Equipment>) => {
-    setEquipment(prev => 
-      prev.map(item => item.id === id ? { ...item, ...updates } : item)
-    );
+  const updateEquipment = async (id: string, updates: Partial<Equipment>) => {
+    try {
+      const { error } = await supabase
+        .from('equipments')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating equipment:', error);
+        return;
+      }
+
+      setEquipment(prev => 
+        prev.map(item => item.id === id ? { ...item, ...updates } : item)
+      );
+    } catch (error) {
+      console.error('Error updating equipment:', error);
+    }
   };
 
-  const deleteEquipment = (id: string) => {
-    setEquipment(prev => prev.filter(item => item.id !== id));
+  const deleteEquipment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('equipments')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting equipment:', error);
+        return;
+      }
+
+      setEquipment(prev => prev.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('Error deleting equipment:', error);
+    }
   };
 
-  const importEquipment = (importedEquipment: Omit<Equipment, 'id'>[]) => {
-    const newEquipment = importedEquipment.map(item => ({
-      ...item,
-      id: Math.random().toString(36).substr(2, 9),
-      itemType: item.itemType || 'main',
-      isExpanded: false
-    }));
-    setEquipment(prev => [...prev, ...newEquipment]);
+  const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
+    try {
+      const { data, error } = await supabase
+        .from('equipments')
+        .insert(importedEquipment)
+        .select();
+
+      if (error) {
+        console.error('Error importing equipment:', error);
+        return;
+      }
+
+      if (data) {
+        const equipmentData = data.map(item => ({
+          ...item,
+          itemType: item.item_type || 'main',
+          isExpanded: false,
+          parentId: item.parent_id
+        })) as Equipment[];
+        setEquipment(prev => [...prev, ...equipmentData]);
+      }
+    } catch (error) {
+      console.error('Error importing equipment:', error);
+    }
   };
 
   const toggleEquipmentExpansion = (id: string) => {
@@ -138,6 +232,7 @@ export function useEquipment() {
     filters,
     setFilters,
     stats,
+    loading,
     addEquipment,
     updateEquipment,
     deleteEquipment,

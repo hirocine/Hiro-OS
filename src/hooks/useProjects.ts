@@ -1,11 +1,50 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectFilters, ProjectStats, ProjectStep } from '@/types/project';
-import { mockProjects } from '@/data/mockProjects';
+import { supabase } from '@/integrations/supabase/client';
 import { shouldAutoUpdateToInUse } from '@/lib/projectSteps';
 
 export function useProjects() {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [filters, setFilters] = useState<ProjectFilters>({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch projects from Supabase
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching projects:', error);
+        return;
+      }
+
+      // Transform database data to match Project interface
+      const projectData = (data || []).map(item => ({
+        ...item,
+        startDate: item.start_date,
+        expectedEndDate: item.expected_end_date,
+        actualEndDate: item.actual_end_date,
+        responsibleName: item.responsible_name,
+        responsibleEmail: item.responsible_email,
+        equipmentCount: item.equipment_count || 0,
+        loanIds: item.loan_ids || [],
+        stepHistory: (item.step_history as any) || []
+      })) as Project[];
+      setProjects(projectData);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Update project status and steps based on current date and automation rules
   const updatedProjects = useMemo(() => {
@@ -74,26 +113,95 @@ export function useProjects() {
     };
   }, [updatedProjects]);
 
-  const addProject = (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>) => {
-    const id = 'proj-' + Math.random().toString(36).substr(2, 9);
-    const projectWithDefaults = {
-      ...newProject,
-      id,
-      step: 'pending_separation' as const,
-      stepHistory: [
-        {
-          step: 'pending_separation' as const,
-          timestamp: new Date().toISOString()
-        }
-      ]
-    };
-    setProjects(prev => [...prev, projectWithDefaults]);
+  const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>) => {
+    try {
+      // Transform to database format
+      const dbProject = {
+        name: newProject.name,
+        description: newProject.description,
+        start_date: newProject.startDate,
+        expected_end_date: newProject.expectedEndDate,
+        responsible_name: newProject.responsibleName,
+        responsible_email: newProject.responsibleEmail,
+        department: newProject.department,
+        status: newProject.status,
+        equipment_count: newProject.equipmentCount || 0,
+        notes: newProject.notes,
+        step: 'pending_separation' as const,
+        step_history: [
+          {
+            step: 'pending_separation' as const,
+            timestamp: new Date().toISOString()
+          }
+        ]
+      };
+
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([dbProject])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding project:', error);
+        return;
+      }
+
+      if (data) {
+        const projectData = {
+          ...data,
+          startDate: data.start_date,
+          expectedEndDate: data.expected_end_date,
+          actualEndDate: data.actual_end_date,
+          responsibleName: data.responsible_name,
+          responsibleEmail: data.responsible_email,
+          equipmentCount: data.equipment_count || 0,
+          loanIds: data.loan_ids || [],
+          stepHistory: (data.step_history as any) || []
+        } as Project;
+        setProjects(prev => [...prev, projectData]);
+      }
+    } catch (error) {
+      console.error('Error adding project:', error);
+    }
   };
 
-  const updateProject = (id: string, updates: Partial<Project>) => {
-    setProjects(prev =>
-      prev.map(project => project.id === id ? { ...project, ...updates } : project)
-    );
+  const updateProject = async (id: string, updates: Partial<Project>) => {
+    try {
+      // Transform updates to database format
+      const dbUpdates: any = {};
+      if (updates.startDate) dbUpdates.start_date = updates.startDate;
+      if (updates.expectedEndDate) dbUpdates.expected_end_date = updates.expectedEndDate;
+      if (updates.actualEndDate) dbUpdates.actual_end_date = updates.actualEndDate;
+      if (updates.responsibleName) dbUpdates.responsible_name = updates.responsibleName;
+      if (updates.responsibleEmail) dbUpdates.responsible_email = updates.responsibleEmail;
+      if (updates.equipmentCount !== undefined) dbUpdates.equipment_count = updates.equipmentCount;
+      if (updates.loanIds) dbUpdates.loan_ids = updates.loanIds;
+      if (updates.stepHistory) dbUpdates.step_history = updates.stepHistory;
+      
+      // Direct mappings
+      ['name', 'description', 'department', 'status', 'notes', 'step'].forEach(field => {
+        if (updates[field as keyof Project] !== undefined) {
+          dbUpdates[field] = updates[field as keyof Project];
+        }
+      });
+
+      const { error } = await supabase
+        .from('projects')
+        .update(dbUpdates)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating project:', error);
+        return;
+      }
+
+      setProjects(prev =>
+        prev.map(project => project.id === id ? { ...project, ...updates } : project)
+      );
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
   };
 
   const completeProject = (projectId: string, notes?: string) => {
@@ -141,6 +249,7 @@ export function useProjects() {
     filters,
     setFilters,
     stats,
+    loading,
     addProject,
     updateProject,
     updateProjectStep,
