@@ -9,14 +9,9 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: 'Equipamentos',
+    name: 'Inventário',
     href: '/equipment',
     icon: Package,
-  },
-  {
-    name: 'Empréstimos',
-    href: '/loans',
-    icon: ArrowRightLeft,
   },
   {
     name: 'Projetos',

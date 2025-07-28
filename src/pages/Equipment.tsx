@@ -1,23 +1,17 @@
 import { useState } from 'react';
 import { useEquipment } from '@/hooks/useEquipment';
-import { useLoans } from '@/hooks/useLoans';
 import type { Equipment } from '@/types/equipment';
-import { EquipmentCard } from '@/components/Equipment/EquipmentCard';
+import { EquipmentRow } from '@/components/Equipment/EquipmentRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
-import { LoanDialog } from '@/components/Loans/LoanDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Equipment() {
   const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment } = useEquipment();
-  const { addLoan, returnEquipment, getActiveLoanByEquipment } = useLoans();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
-  const [loanDialogOpen, setLoanDialogOpen] = useState(false);
-  const [loanMode, setLoanMode] = useState<'loan' | 'return'>('loan');
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
   const handleAddEquipment = (equipmentData: Omit<Equipment, 'id'>) => {
@@ -54,35 +48,14 @@ export default function Equipment() {
     });
   };
 
-  const handleLoanEquipment = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setLoanMode('loan');
-    setLoanDialogOpen(true);
-  };
-
-  const handleReturnEquipment = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setLoanMode('return');
-    setLoanDialogOpen(true);
-  };
-
-  const handleLoanSubmit = (data: any) => {
-    if (loanMode === 'loan') {
-      addLoan(data);
-      toast({
-        title: "Equipamento retirado",
-        description: `${selectedEquipment?.name} foi retirado com sucesso.`,
-      });
-    } else {
-      const activeLoan = getActiveLoanByEquipment(selectedEquipment!.id);
-      if (activeLoan) {
-        returnEquipment(activeLoan.id, data);
-        toast({
-          title: "Equipamento devolvido",
-          description: `${selectedEquipment?.name} foi devolvido com sucesso.`,
-        });
-      }
-    }
+  const handleImageUpload = (equipmentId: string, file: File) => {
+    // Create a URL for the uploaded file (in a real app, you'd upload to a server)
+    const imageUrl = URL.createObjectURL(file);
+    updateEquipment(equipmentId, { image: imageUrl });
+    toast({
+      title: "Imagem atualizada",
+      description: "A imagem do equipamento foi atualizada com sucesso.",
+    });
   };
 
   const handleDialogClose = () => {
@@ -90,16 +63,11 @@ export default function Equipment() {
     setEditingEquipment(undefined);
   };
 
-  const handleLoanDialogClose = () => {
-    setLoanDialogOpen(false);
-    setSelectedEquipment(undefined);
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Equipamentos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Inventário</h1>
           <p className="text-muted-foreground">
             Gerencie todos os equipamentos do seu inventário
           </p>
@@ -130,21 +98,30 @@ export default function Equipment() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {equipment.map((item, index) => (
-            <div 
-              key={item.id} 
-              className="animate-slide-up" 
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <EquipmentCard
-                equipment={item}
-                onEdit={handleEditEquipment}
-                onDelete={handleDeleteEquipment}
-                onLoan={handleLoanEquipment}
-                onReturn={handleReturnEquipment}
-              />
-            </div>
+        <div className="bg-card rounded-lg border shadow-card">
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-4 py-3 px-4 border-b border-border bg-muted/50 font-medium text-sm">
+            <div className="col-span-1">Imagem</div>
+            <div className="col-span-2">Nome</div>
+            <div className="col-span-1">Marca</div>
+            <div className="col-span-1">Modelo</div>
+            <div className="col-span-1">Categoria</div>
+            <div className="col-span-1">Status</div>
+            <div className="col-span-1">Local</div>
+            <div className="col-span-1">Serial</div>
+            <div className="col-span-1">Valor</div>
+            <div className="col-span-2">Ações</div>
+          </div>
+          
+          {/* Rows */}
+          {equipment.map((item) => (
+            <EquipmentRow
+              key={item.id}
+              equipment={item}
+              onEdit={handleEditEquipment}
+              onDelete={handleDeleteEquipment}
+              onImageUpload={handleImageUpload}
+            />
           ))}
         </div>
       )}
@@ -155,17 +132,6 @@ export default function Equipment() {
         onSubmit={editingEquipment ? handleUpdateEquipment : handleAddEquipment}
         equipment={editingEquipment}
       />
-
-      {selectedEquipment && (
-        <LoanDialog
-          open={loanDialogOpen}
-          onOpenChange={handleLoanDialogClose}
-          equipment={selectedEquipment}
-          mode={loanMode}
-          currentLoan={loanMode === 'return' ? getActiveLoanByEquipment(selectedEquipment.id) : undefined}
-          onSubmit={handleLoanSubmit}
-        />
-      )}
     </div>
   );
 }
