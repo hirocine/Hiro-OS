@@ -36,7 +36,9 @@ interface AuditLog {
 }
 
 export default function Admin() {
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, loading: roleLoading, role } = useUserRole();
+  
+  console.log('🏠 Admin: Component loaded', { isAdmin, roleLoading, role });
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -51,51 +53,34 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    if (isAdmin) {
+    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading });
+    if (isAdmin && !roleLoading) {
+      console.log('🚀 Admin: Starting data fetch...');
       fetchUsers();
       fetchAuditLogs();
     }
-  }, [isAdmin]);
+  }, [isAdmin, roleLoading]);
 
   const fetchUsers = async () => {
     try {
+      console.log('🔍 Admin: Fetching users...');
       setLoadingUsers(true);
       
-      // Fetch profiles with roles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use RPC function to get users with emails safely
+      const { data: usersData, error: usersError } = await supabase.rpc('get_users_for_admin');
 
-      if (profilesError) throw profilesError;
+      if (usersError) {
+        console.error('❌ Admin: Error calling RPC function:', usersError);
+        throw usersError;
+      }
 
-      // Fetch roles
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      // Combine data
-      const usersData = profiles.map(profile => {
-        const userRole = roles.find(r => r.user_id === profile.user_id);
-        return {
-          id: profile.user_id,
-          email: '', // We'll need to fetch this separately or store it in profiles
-          display_name: profile.display_name || 'Usuário Anônimo',
-          position: profile.position || 'Não informado',
-          department: profile.department || 'Não informado',
-          created_at: profile.created_at,
-          role: userRole?.role || 'user'
-        };
-      });
-
-      setUsers(usersData);
+      console.log('✅ Admin: Users fetched successfully:', usersData?.length || 0, 'users');
+      setUsers(usersData || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('❌ Admin: Error fetching users:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao carregar usuários',
+        description: 'Erro ao carregar usuários. Verifique se você tem permissões de administrador.',
         variant: 'destructive',
       });
     } finally {
@@ -128,17 +113,25 @@ export default function Admin() {
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
     try {
+      console.log('🔄 Admin: Updating user role', { userId, newRole });
+      
+      // Delete existing role first to avoid conflicts
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Insert new role
       const { error } = await supabase
         .from('user_roles')
-        .upsert({ 
+        .insert({ 
           user_id: userId, 
           role: newRole 
-        }, { 
-          onConflict: 'user_id,role' 
         });
 
       if (error) throw error;
 
+      // Log the action
       await supabase.rpc('log_audit_entry', {
         _action: 'UPDATE_USER_ROLE',
         _table_name: 'user_roles',
@@ -146,6 +139,7 @@ export default function Admin() {
         _new_values: { role: newRole }
       });
 
+      console.log('✅ Admin: User role updated successfully');
       toast({
         title: 'Sucesso',
         description: 'Role do usuário atualizada com sucesso',
@@ -153,7 +147,7 @@ export default function Admin() {
 
       fetchUsers();
     } catch (error) {
-      console.error('Error updating user role:', error);
+      console.error('❌ Admin: Error updating user role:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao atualizar role do usuário',
