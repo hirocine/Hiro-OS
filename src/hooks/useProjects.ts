@@ -7,6 +7,7 @@ export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filters, setFilters] = useState<ProjectFilters>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch projects from Supabase
   useEffect(() => {
@@ -16,6 +17,7 @@ export function useProjects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -23,6 +25,7 @@ export function useProjects() {
 
       if (error) {
         console.error('Error fetching projects:', error);
+        setError('Erro ao carregar projetos');
         return;
       }
 
@@ -41,6 +44,7 @@ export function useProjects() {
       setProjects(projectData);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setError('Erro ao carregar projetos');
     } finally {
       setLoading(false);
     }
@@ -250,6 +254,7 @@ export function useProjects() {
     setFilters,
     stats,
     loading,
+    error,
     addProject,
     updateProject,
     updateProjectStep,

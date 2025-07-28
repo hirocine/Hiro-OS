@@ -18,6 +18,8 @@ export default function Projects() {
     stats, 
     filters, 
     setFilters, 
+    loading,
+    error,
     addProject, 
     updateProject, 
     updateProjectStep,
@@ -149,6 +151,34 @@ export default function Projects() {
       description: 'Itens atualmente retirados'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="space-y-4">
+          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
+          <div className="h-4 w-96 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-24 bg-muted rounded animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">Erro ao carregar projetos</h1>
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
