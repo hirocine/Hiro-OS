@@ -3,6 +3,7 @@ import { Project } from '@/types/project';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { statusLabels } from '@/data/mockProjects';
@@ -38,39 +39,27 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
   const StepIcon = stepIcons[project.step];
   const progress = getStepProgress(project.step);
 
-  const getNextStep = () => {
-    const currentIndex = stepOrder.indexOf(project.step);
-    if (currentIndex < stepOrder.length - 1) {
-      return stepOrder[currentIndex + 1];
-    }
-    return null;
+  const getAvailableSteps = () => {
+    if (project.status !== 'active') return [];
+    
+    return stepOrder.filter(step => 
+      step !== project.step && canTransitionTo(project.step, step)
+    );
   };
 
-  const getStepActionLabel = (step: import('@/types/project').ProjectStep) => {
-    switch (step) {
-      case 'separated':
-        return 'Marcar como Separado';
-      case 'in_use':
-        return 'Marcar como Em Uso';
-      case 'pending_verification':
-        return 'Solicitar Verificação';
-      case 'verified':
-        return 'Verificar Retorno';
-      default:
-        return 'Próximo Step';
-    }
-  };
-
-  const handleQuickStepUpdate = (nextStep: import('@/types/project').ProjectStep) => {
-    onStepUpdate?.(project.id, nextStep);
+  const handleStepChange = (newStep: string) => {
+    if (newStep === project.step) return;
+    
+    const step = newStep as import('@/types/project').ProjectStep;
+    onStepUpdate?.(project.id, step);
     toast({
       title: "Status atualizado",
-      description: `Projeto alterado para: ${stepLabels[nextStep]}`,
+      description: `Projeto alterado para: ${stepLabels[step]}`,
     });
   };
 
-  const nextStep = getNextStep();
-  const canShowQuickAction = nextStep && project.status === 'active' && canTransitionTo(project.step, nextStep);
+  const availableSteps = getAvailableSteps();
+  const showStepSelector = availableSteps.length > 0;
 
   return (
     <Card 
@@ -202,21 +191,30 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
           </div>
         )}
         
-        {/* Quick Action Button */}
-        {canShowQuickAction && nextStep && (
+        {/* Step Selector */}
+        {showStepSelector && (
           <div className="pt-2 border-t">
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "w-full transition-colors",
-                `hover:bg-${stepColors[nextStep]}/10 hover:border-${stepColors[nextStep]} hover:text-${stepColors[nextStep]}`
-              )}
-              onClick={() => handleQuickStepUpdate(nextStep)}
-            >
-              {React.createElement(stepIcons[nextStep], { className: "w-4 h-4 mr-2" })}
-              {getStepActionLabel(nextStep)}
-            </Button>
+            <Select onValueChange={handleStepChange} value={project.step}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Alterar status..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={project.step} disabled>
+                  <div className="flex items-center gap-2">
+                    {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
+                    <span>{stepLabels[project.step]} (atual)</span>
+                  </div>
+                </SelectItem>
+                {availableSteps.map((step) => (
+                  <SelectItem key={step} value={step}>
+                    <div className="flex items-center gap-2">
+                      {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
+                      <span>{stepLabels[step]}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </CardContent>
