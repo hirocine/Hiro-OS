@@ -1,20 +1,35 @@
-import { useState, useMemo } from 'react';
-import { Project, ProjectFilters, ProjectStats } from '@/types/project';
+import { useState, useMemo, useEffect } from 'react';
+import { Project, ProjectFilters, ProjectStats, ProjectStep } from '@/types/project';
 import { mockProjects } from '@/data/mockProjects';
+import { shouldAutoUpdateToInUse } from '@/lib/projectSteps';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [filters, setFilters] = useState<ProjectFilters>({});
 
-  // Update project status based on current date and completion
+  // Update project status and steps based on current date and automation rules
   const updatedProjects = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
     return projects.map(project => {
-      if (project.status === 'active' && project.expectedEndDate < today && !project.actualEndDate) {
-        return { ...project, status: 'active' }; // Keep as active even if overdue
+      let updatedProject = { ...project };
+      
+      // Auto-update step from "separated" to "in_use" if project start date has passed
+      if (shouldAutoUpdateToInUse(project.startDate, project.step)) {
+        updatedProject = {
+          ...updatedProject,
+          step: 'in_use',
+          stepHistory: [
+            ...project.stepHistory,
+            {
+              step: 'in_use',
+              timestamp: new Date().toISOString(),
+              notes: 'Auto-atualizado: projeto iniciado'
+            }
+          ]
+        };
       }
-      return project;
-    }) as Project[];
+      
+      return updatedProject;
+    });
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
@@ -41,18 +56,38 @@ export function useProjects() {
       .filter(project => project.status === 'active')
       .reduce((sum, project) => sum + project.equipmentCount, 0);
 
+    const byStep = {
+      pending_separation: updatedProjects.filter(p => p.step === 'pending_separation').length,
+      separated: updatedProjects.filter(p => p.step === 'separated').length,
+      in_use: updatedProjects.filter(p => p.step === 'in_use').length,
+      pending_verification: updatedProjects.filter(p => p.step === 'pending_verification').length,
+      verified: updatedProjects.filter(p => p.step === 'verified').length,
+    };
+
     return {
       total,
       active,
       completed,
       archived,
-      totalEquipmentOut
+      totalEquipmentOut,
+      byStep
     };
   }, [updatedProjects]);
 
-  const addProject = (newProject: Omit<Project, 'id'>) => {
+  const addProject = (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>) => {
     const id = 'proj-' + Math.random().toString(36).substr(2, 9);
-    setProjects(prev => [...prev, { ...newProject, id }]);
+    const projectWithDefaults = {
+      ...newProject,
+      id,
+      step: 'pending_separation' as const,
+      stepHistory: [
+        {
+          step: 'pending_separation' as const,
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+    setProjects(prev => [...prev, projectWithDefaults]);
   };
 
   const updateProject = (id: string, updates: Partial<Project>) => {
@@ -76,6 +111,30 @@ export function useProjects() {
     });
   };
 
+  const updateProjectStep = (projectId: string, newStep: ProjectStep, notes?: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const stepChange = {
+      step: newStep,
+      timestamp: new Date().toISOString(),
+      notes
+    };
+
+    const updates: Partial<Project> = {
+      step: newStep,
+      stepHistory: [...project.stepHistory, stepChange]
+    };
+
+    // If step is "verified", automatically complete the project
+    if (newStep === 'verified') {
+      updates.status = 'completed';
+      updates.actualEndDate = new Date().toISOString().split('T')[0];
+    }
+
+    updateProject(projectId, updates);
+  };
+
   return {
     projects: filteredProjects,
     allProjects: updatedProjects,
@@ -84,6 +143,7 @@ export function useProjects() {
     stats,
     addProject,
     updateProject,
+    updateProjectStep,
     completeProject,
     archiveProject
   };

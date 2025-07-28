@@ -5,15 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { statusLabels } from '@/data/mockProjects';
+import { stepLabels, stepColors, stepIcons, getStepProgress } from '@/lib/projectSteps';
+import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
   onComplete?: (projectId: string) => void;
   onArchive?: (projectId: string) => void;
+  onStepUpdate?: () => void;
 }
 
-export function ProjectCard({ project, onEdit, onComplete, onArchive }: ProjectCardProps) {
+export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpdate }: ProjectCardProps) {
   const getStatusVariant = (status: Project['status']) => {
     switch (status) {
       case 'active':
@@ -28,9 +31,16 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive }: ProjectC
   };
 
   const isOverdue = project.status === 'active' && new Date(project.expectedEndDate) < new Date();
+  const StepIcon = stepIcons[project.step];
+  const progress = getStepProgress(project.step);
 
   return (
-    <Card className="hover:shadow-elegant transition-all duration-300">
+    <Card 
+      className={cn(
+        "hover:shadow-elegant transition-all duration-300 border-l-4",
+        `border-l-${stepColors[project.step]}`
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -38,14 +48,37 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive }: ProjectC
             {project.description && (
               <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
             )}
+            
+            {/* Progress indicator */}
+            <div className="mt-2">
+              <div className="flex items-center gap-2 mb-1">
+                <StepIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">Progresso: {Math.round(progress)}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-300",
+                    `bg-${stepColors[project.step]}`
+                  )}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={getStatusVariant(project.status)}>
-              {statusLabels[project.status]}
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-1">
+              <Badge variant={getStatusVariant(project.status)}>
+                {statusLabels[project.status]}
+              </Badge>
+              {isOverdue && (
+                <Badge variant="destructive">Atrasado</Badge>
+              )}
+            </div>
+            <Badge variant={stepColors[project.step] as any}>
+              <StepIcon className="w-3 h-3 mr-1" />
+              {stepLabels[project.step]}
             </Badge>
-            {isOverdue && (
-              <Badge variant="destructive">Atrasado</Badge>
-            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -56,6 +89,10 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive }: ProjectC
                 <DropdownMenuItem onClick={() => onEdit?.(project)}>
                   <FileText className="mr-2 h-4 w-4" />
                   Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onStepUpdate}>
+                  <StepIcon className="mr-2 h-4 w-4" />
+                  Atualizar Status
                 </DropdownMenuItem>
                 {project.status === 'active' && (
                   <DropdownMenuItem onClick={() => onComplete?.(project.id)}>

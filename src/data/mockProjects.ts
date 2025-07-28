@@ -8,6 +8,12 @@ export const mockProjects: Project[] = [
     startDate: '2024-01-10',
     expectedEndDate: '2024-01-25',
     status: 'active',
+    step: 'in_use',
+    stepHistory: [
+      { step: 'pending_separation', timestamp: '2024-01-08T10:00:00Z' },
+      { step: 'separated', timestamp: '2024-01-09T14:30:00Z' },
+      { step: 'in_use', timestamp: '2024-01-10T08:00:00Z' }
+    ],
     responsibleName: 'João Silva',
     responsibleEmail: 'joao.silva@produtora.com',
     department: 'Produção',
@@ -22,6 +28,11 @@ export const mockProjects: Project[] = [
     startDate: '2024-01-05',
     expectedEndDate: '2024-02-15',
     status: 'active',
+    step: 'separated',
+    stepHistory: [
+      { step: 'pending_separation', timestamp: '2024-01-03T09:00:00Z' },
+      { step: 'separated', timestamp: '2024-01-04T16:00:00Z' }
+    ],
     responsibleName: 'Maria Santos',
     responsibleEmail: 'maria.santos@produtora.com',
     department: 'Direção',
@@ -37,6 +48,14 @@ export const mockProjects: Project[] = [
     expectedEndDate: '2023-12-30',
     actualEndDate: '2023-12-29',
     status: 'completed',
+    step: 'verified',
+    stepHistory: [
+      { step: 'pending_separation', timestamp: '2023-12-18T10:00:00Z' },
+      { step: 'separated', timestamp: '2023-12-19T11:00:00Z' },
+      { step: 'in_use', timestamp: '2023-12-20T08:00:00Z' },
+      { step: 'pending_verification', timestamp: '2023-12-29T18:00:00Z' },
+      { step: 'verified', timestamp: '2023-12-29T19:30:00Z' }
+    ],
     responsibleName: 'Pedro Costa',
     responsibleEmail: 'pedro.costa@produtora.com',
     department: 'Produção',
@@ -52,6 +71,14 @@ export const mockProjects: Project[] = [
     expectedEndDate: '2023-12-25',
     actualEndDate: '2023-12-24',
     status: 'completed',
+    step: 'verified',
+    stepHistory: [
+      { step: 'pending_separation', timestamp: '2023-12-13T09:00:00Z' },
+      { step: 'separated', timestamp: '2023-12-14T10:00:00Z' },
+      { step: 'in_use', timestamp: '2023-12-15T07:00:00Z' },
+      { step: 'pending_verification', timestamp: '2023-12-24T17:00:00Z' },
+      { step: 'verified', timestamp: '2023-12-24T18:00:00Z' }
+    ],
     responsibleName: 'Ana Oliveira',
     responsibleEmail: 'ana.oliveira@produtora.com',
     department: 'Iluminação',
@@ -67,6 +94,13 @@ export const mockProjects: Project[] = [
     expectedEndDate: '2023-11-30',
     actualEndDate: '2023-11-28',
     status: 'archived',
+    step: 'pending_verification',
+    stepHistory: [
+      { step: 'pending_separation', timestamp: '2023-10-30T10:00:00Z' },
+      { step: 'separated', timestamp: '2023-10-31T11:00:00Z' },
+      { step: 'in_use', timestamp: '2023-11-01T08:00:00Z' },
+      { step: 'pending_verification', timestamp: '2023-11-28T16:00:00Z' }
+    ],
     responsibleName: 'Carlos Mendes',
     responsibleEmail: 'carlos.mendes@produtora.com',
     department: 'P&D',

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 interface NewProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<Project, 'id'>) => void;
+  onSubmit: (data: Omit<Project, 'id' | 'step' | 'stepHistory'>) => void;
 }
 
 export function NewProjectDialog({ open, onOpenChange, onSubmit }: NewProjectDialogProps) {
@@ -26,12 +26,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit }: NewProjectDia
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const projectData: Omit<Project, 'id'> = {
+    const projectData = {
       name: formData.name,
       description: formData.description,
       startDate: new Date().toISOString().split('T')[0],
       expectedEndDate: formData.expectedEndDate,
-      status: 'active',
+      status: 'active' as const,
       responsibleName: formData.responsibleName,
       responsibleEmail: formData.responsibleEmail,
       department: formData.department,

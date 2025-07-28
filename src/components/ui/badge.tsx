@@ -19,6 +19,16 @@ const badgeVariants = cva(
           "border-transparent bg-success text-success-foreground hover:bg-success/80",
         warning:
           "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
+        "step-pending":
+          "border-transparent bg-step-pending text-step-pending-foreground hover:bg-step-pending/80",
+        "step-separated":
+          "border-transparent bg-step-separated text-step-separated-foreground hover:bg-step-separated/80",
+        "step-in-use":
+          "border-transparent bg-step-in-use text-step-in-use-foreground hover:bg-step-in-use/80",
+        "step-verification":
+          "border-transparent bg-step-verification text-step-verification-foreground hover:bg-step-verification/80",
+        "step-verified":
+          "border-transparent bg-step-verified text-step-verified-foreground hover:bg-step-verified/80",
       },
     },
     defaultVariants: {

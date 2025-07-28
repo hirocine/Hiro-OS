@@ -61,6 +61,26 @@ export default {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
 				},
+				'step-pending': {
+					DEFAULT: 'hsl(var(--step-pending))',
+					foreground: 'hsl(var(--step-pending-foreground))'
+				},
+				'step-separated': {
+					DEFAULT: 'hsl(var(--step-separated))',
+					foreground: 'hsl(var(--step-separated-foreground))'
+				},
+				'step-in-use': {
+					DEFAULT: 'hsl(var(--step-in-use))',
+					foreground: 'hsl(var(--step-in-use-foreground))'
+				},
+				'step-verification': {
+					DEFAULT: 'hsl(var(--step-verification))',
+					foreground: 'hsl(var(--step-verification-foreground))'
+				},
+				'step-verified': {
+					DEFAULT: 'hsl(var(--step-verified))',
+					foreground: 'hsl(var(--step-verified-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

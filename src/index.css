@@ -43,6 +43,18 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 220 13% 13%;
 
+    /* Project Steps Colors */
+    --step-pending: 220 13% 60%;
+    --step-pending-foreground: 0 0% 98%;
+    --step-separated: 217 91% 60%;
+    --step-separated-foreground: 0 0% 98%;
+    --step-in-use: 142 76% 36%;
+    --step-in-use-foreground: 210 40% 98%;
+    --step-verification: 38 92% 50%;
+    --step-verification-foreground: 220 13% 13%;
+    --step-verified: 126 100% 65%;
+    --step-verified-foreground: 0 0% 15%;
+
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(220 13% 98%));
     

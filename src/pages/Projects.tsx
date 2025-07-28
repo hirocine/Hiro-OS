@@ -2,20 +2,33 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
 import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
+import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Project } from '@/types/project';
+import { Project, ProjectStep } from '@/types/project';
 
 export default function Projects() {
-  const { projects: allFilteredProjects, stats, filters, setFilters, addProject, updateProject, completeProject, archiveProject } = useProjects();
+  const { 
+    projects: allFilteredProjects, 
+    stats, 
+    filters, 
+    setFilters, 
+    addProject, 
+    updateProject, 
+    updateProjectStep,
+    completeProject, 
+    archiveProject 
+  } = useProjects();
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showStepDialog, setShowStepDialog] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [stepProject, setStepProject] = useState<Project | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const { toast } = useToast();
@@ -81,6 +94,19 @@ export default function Projects() {
     });
   };
 
+  const handleStepUpdate = (project: Project) => {
+    setStepProject(project);
+    setShowStepDialog(true);
+  };
+
+  const handleUpdateStep = (projectId: string, newStep: ProjectStep, notes?: string) => {
+    updateProjectStep(projectId, newStep, notes);
+    toast({
+      title: "Status atualizado",
+      description: `O projeto foi atualizado para "${newStep}".`,
+    });
+  };
+
   const statsCards = [
     {
       title: 'Total de Projetos',
@@ -93,6 +119,18 @@ export default function Projects() {
       value: stats.active,
       icon: Clock,
       description: 'Em andamento'
+    },
+    {
+      title: 'Pendente Separação',
+      value: stats.byStep.pending_separation,
+      icon: ClipboardList,
+      description: 'Aguardando separação'
+    },
+    {
+      title: 'Em Uso',
+      value: stats.byStep.in_use,
+      icon: Play,
+      description: 'Equipamentos em campo'
     },
     {
       title: 'Projetos Finalizados',
@@ -129,7 +167,7 @@ export default function Projects() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statsCards.map((stat) => (
           <Card key={stat.title} className="hover:shadow-elegant transition-all duration-300">
             <CardHeader className="pb-2">
@@ -186,13 +224,14 @@ export default function Projects() {
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   {upcomingProjects.map((project) => (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      onEdit={handleEditProject}
-                      onComplete={handleCompleteProject}
-                      onArchive={handleArchiveProject}
-                    />
+                     <ProjectCard
+                       key={project.id}
+                       project={project}
+                       onEdit={handleEditProject}
+                       onComplete={handleCompleteProject}
+                       onArchive={handleArchiveProject}
+                       onStepUpdate={() => handleStepUpdate(project)}
+                     />
                   ))}
                 </div>
               </div>
@@ -211,15 +250,16 @@ export default function Projects() {
                   <h2 className="text-xl font-semibold text-destructive">Pendente Devolução ({overdueProjects.length})</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
-                  {overdueProjects.map((project) => (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      onEdit={handleEditProject}
-                      onComplete={handleCompleteProject}
-                      onArchive={handleArchiveProject}
-                    />
-                  ))}
+                   {overdueProjects.map((project) => (
+                     <ProjectCard
+                       key={project.id}
+                       project={project}
+                       onEdit={handleEditProject}
+                       onComplete={handleCompleteProject}
+                       onArchive={handleArchiveProject}
+                       onStepUpdate={() => handleStepUpdate(project)}
+                     />
+                   ))}
                 </div>
               </div>
             )}
@@ -257,15 +297,16 @@ export default function Projects() {
                 </div>
                 {showCompleted && (
                   <div className="grid grid-cols-1 gap-4">
-                    {completedProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onEdit={handleEditProject}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                    ))}
+                     {completedProjects.map((project) => (
+                       <ProjectCard
+                         key={project.id}
+                         project={project}
+                         onEdit={handleEditProject}
+                         onComplete={handleCompleteProject}
+                         onArchive={handleArchiveProject}
+                         onStepUpdate={() => handleStepUpdate(project)}
+                       />
+                     ))}
                   </div>
                 )}
               </div>
@@ -299,15 +340,16 @@ export default function Projects() {
                 </div>
                 {showArchived && (
                   <div className="grid grid-cols-1 gap-4">
-                    {archivedProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onEdit={handleEditProject}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                    ))}
+                   {archivedProjects.map((project) => (
+                     <ProjectCard
+                       key={project.id}
+                       project={project}
+                       onEdit={handleEditProject}
+                       onComplete={handleCompleteProject}
+                       onArchive={handleArchiveProject}
+                       onStepUpdate={() => handleStepUpdate(project)}
+                     />
+                   ))}
                   </div>
                 )}
               </div>
@@ -327,6 +369,13 @@ export default function Projects() {
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         onSave={handleUpdateProject}
+      />
+
+      <StepUpdateDialog
+        project={stepProject}
+        open={showStepDialog}
+        onOpenChange={setShowStepDialog}
+        onUpdate={handleUpdateStep}
       />
     </div>
   );
