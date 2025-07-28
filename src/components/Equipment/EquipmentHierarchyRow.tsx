@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package } from 'lucide-react';
 import { categoryLabels, statusLabels } from '@/data/mockData';
+import { AdminOnly } from '@/components/RoleGuard';
 
 interface EquipmentHierarchyRowProps {
   equipment: Equipment;
@@ -169,14 +170,20 @@ export function EquipmentHierarchyRow({
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => onDelete(equipment.id)}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+          <AdminOnly 
+            fallback={
+              <div className="h-8 w-8" /> // Placeholder para manter alinhamento
+            }
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => onDelete(equipment.id)}
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AdminOnly>
         </div>
       </div>
 

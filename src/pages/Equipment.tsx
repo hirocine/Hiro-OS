@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useUserRole } from '@/hooks/useUserRole';
 import type { Equipment } from '@/types/equipment';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
@@ -8,6 +9,7 @@ import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminOnly } from '@/components/RoleGuard';
 
 export default function Equipment() {
   const { 
@@ -23,13 +25,15 @@ export default function Equipment() {
     toggleEquipmentExpansion,
     getMainItems
   } = useEquipment();
+  const { logAuditEntry } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
-  const handleAddEquipment = (equipmentData: Omit<Equipment, 'id'>) => {
+  const handleAddEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
     addEquipment(equipmentData);
+    await logAuditEntry('CREATE_EQUIPMENT', 'equipments', undefined, null, equipmentData);
     toast({
       title: "Equipamento adicionado",
       description: `${equipmentData.name} foi adicionado ao inventário.`,
@@ -41,9 +45,10 @@ export default function Equipment() {
     setDialogOpen(true);
   };
 
-  const handleUpdateEquipment = (equipmentData: Omit<Equipment, 'id'>) => {
+  const handleUpdateEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
     if (editingEquipment) {
       updateEquipment(editingEquipment.id, equipmentData);
+      await logAuditEntry('UPDATE_EQUIPMENT', 'equipments', editingEquipment.id, editingEquipment, equipmentData);
       setEditingEquipment(undefined);
       toast({
         title: "Equipamento atualizado",
@@ -52,9 +57,10 @@ export default function Equipment() {
     }
   };
 
-  const handleDeleteEquipment = (id: string) => {
+  const handleDeleteEquipment = async (id: string) => {
     const equipmentToDelete = equipment.find(eq => eq.id === id);
     deleteEquipment(id);
+    await logAuditEntry('DELETE_EQUIPMENT', 'equipments', id, equipmentToDelete, null);
     toast({
       title: "Equipamento removido",
       description: `${equipmentToDelete?.name} foi removido do inventário.`,
@@ -92,10 +98,12 @@ export default function Equipment() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-            <FileSpreadsheet className="h-4 w-4" />
-            Importar CSV/Excel
-          </Button>
+          <AdminOnly>
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <FileSpreadsheet className="h-4 w-4" />
+              Importar CSV/Excel
+            </Button>
+          </AdminOnly>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             Adicionar Equipamento

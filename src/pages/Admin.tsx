@@ -1,0 +1,385 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Users, Activity, Shield, Settings, Search } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Navigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface User {
+  id: string;
+  email: string;
+  display_name: string;
+  position: string;
+  department: string;
+  created_at: string;
+  role: 'admin' | 'user';
+}
+
+interface AuditLog {
+  id: string;
+  user_email: string;
+  action: string;
+  table_name: string;
+  record_id: string;
+  old_values: any;
+  new_values: any;
+  created_at: string;
+}
+
+export default function Admin() {
+  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { toast } = useToast();
+  const [users, setUsers] = useState<User[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingLogs, setLoadingLogs] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+
+  // Redirect if not admin
+  if (!roleLoading && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchUsers();
+      fetchAuditLogs();
+    }
+  }, [isAdmin]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      
+      // Fetch profiles with roles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
+
+      // Fetch roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Combine data
+      const usersData = profiles.map(profile => {
+        const userRole = roles.find(r => r.user_id === profile.user_id);
+        return {
+          id: profile.user_id,
+          email: '', // We'll need to fetch this separately or store it in profiles
+          display_name: profile.display_name || 'Usuário Anônimo',
+          position: profile.position || 'Não informado',
+          department: profile.department || 'Não informado',
+          created_at: profile.created_at,
+          role: userRole?.role || 'user'
+        };
+      });
+
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar usuários',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setAuditLogs(data || []);
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar logs de auditoria',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId, 
+          role: newRole 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+
+      if (error) throw error;
+
+      await supabase.rpc('log_audit_entry', {
+        _action: 'UPDATE_USER_ROLE',
+        _table_name: 'user_roles',
+        _record_id: userId,
+        _new_values: { role: newRole }
+      });
+
+      toast({
+        title: 'Sucesso',
+        description: 'Role do usuário atualizada com sucesso',
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao atualizar role do usuário',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  if (roleLoading) {
+    return <div className="p-6">Carregando...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Administração</h1>
+        <p className="text-muted-foreground">
+          Gerencie usuários, permissões e monitore atividades do sistema
+        </p>
+      </div>
+
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Usuários
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Logs de Auditoria
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Sistema
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciamento de Usuários</CardTitle>
+              <CardDescription>
+                Visualize e gerencie roles dos usuários do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar usuários..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Filtrar por role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="admin">Administradores</SelectItem>
+                    <SelectItem value="user">Usuários</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Cargo</TableHead>
+                    <TableHead>Departamento</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Cadastrado há</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingUsers ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center">
+                        Carregando usuários...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center">
+                        Nenhum usuário encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">
+                          {user.display_name}
+                        </TableCell>
+                        <TableCell>{user.position}</TableCell>
+                        <TableCell>{user.department}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                            <Shield className="h-3 w-3 mr-1" />
+                            {user.role === 'admin' ? 'Administrador' : 'Usuário'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatDistanceToNow(new Date(user.created_at), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole: 'admin' | 'user') => 
+                              updateUserRole(user.id, newRole)
+                            }
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">Usuário</SelectItem>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logs de Auditoria</CardTitle>
+              <CardDescription>
+                Histórico de todas as ações realizadas no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead>Ação</TableHead>
+                    <TableHead>Tabela</TableHead>
+                    <TableHead>Data</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingLogs ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center">
+                        Carregando logs...
+                      </TableCell>
+                    </TableRow>
+                  ) : auditLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center">
+                        Nenhum log encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    auditLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell>{log.user_email || 'Sistema'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{log.action}</Badge>
+                        </TableCell>
+                        <TableCell>{log.table_name}</TableCell>
+                        <TableCell>
+                          {formatDistanceToNow(new Date(log.created_at), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações do Sistema</CardTitle>
+              <CardDescription>
+                Configurações gerais e manutenção do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Button 
+                  onClick={fetchUsers}
+                  disabled={loadingUsers}
+                >
+                  Atualizar Lista de Usuários
+                </Button>
+                <Button 
+                  onClick={fetchAuditLogs}
+                  disabled={loadingLogs}
+                >
+                  Atualizar Logs de Auditoria
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const navigation = [
   {
@@ -31,6 +32,8 @@ const navigation = [
 ];
 
 export function Sidebar() {
+  const { isAdmin } = useUserRole();
+
   return (
     <div className="w-64 bg-card border-r border-border shadow-card flex flex-col">
       <div className="p-6 border-b border-border">
@@ -65,6 +68,23 @@ export function Sidebar() {
             {item.name}
           </NavLink>
         ))}
+        
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+                isActive
+                  ? 'bg-primary text-primary-foreground shadow-elegant'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+              )
+            }
+          >
+            <Shield className="mr-3 h-4 w-4" />
+            Administração
+          </NavLink>
+        )}
       </nav>
     </div>
   );
