@@ -82,6 +82,10 @@ export function useEquipment() {
     setEquipment(prev => [...prev, ...newEquipment]);
   };
 
+  const clearAllEquipment = () => {
+    setEquipment([]);
+  };
+
   return {
     equipment: filteredEquipment,
     allEquipment: equipment,
@@ -91,6 +95,7 @@ export function useEquipment() {
     addEquipment,
     updateEquipment,
     deleteEquipment,
-    importEquipment
+    importEquipment,
+    clearAllEquipment
   };
 }
