@@ -40,11 +40,15 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
   const progress = getStepProgress(project.step);
 
   const getAvailableSteps = () => {
-    if (project.status !== 'active') return [];
-    
-    return stepOrder.filter(step => 
-      step !== project.step && canTransitionTo(project.step, step)
-    );
+    if (project.status === 'active') {
+      // Para projetos ativos - lógica atual de transição
+      return stepOrder.filter(step => 
+        step !== project.step && canTransitionTo(project.step, step)
+      );
+    } else {
+      // Para projetos finalizados/arquivados - qualquer step
+      return stepOrder.filter(step => step !== project.step);
+    }
   };
 
   const handleStepChange = (newStep: string) => {
