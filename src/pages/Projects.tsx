@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
+import { useLoans } from '@/hooks/useLoans';
+import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
 import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
@@ -11,6 +13,7 @@ import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
+import { Equipment } from '@/types/equipment';
 
 export default function Projects() {
   const { 
@@ -26,6 +29,11 @@ export default function Projects() {
     completeProject, 
     archiveProject 
   } = useProjects();
+  const { addLoan } = useLoans();
+  
+  // Sincronização automática entre equipamentos e projetos
+  useEquipmentProjectSync();
+  
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
@@ -58,12 +66,42 @@ export default function Projects() {
     .filter(project => project.status === 'archived')
     .sort((a, b) => new Date(b.expectedEndDate).getTime() - new Date(a.expectedEndDate).getTime());
 
-  const handleNewProject = (projectData: any) => {
-    addProject(projectData);
-    toast({
-      title: "Projeto criado com sucesso",
-      description: `O projeto "${projectData.name}" foi criado e está ativo.`,
-    });
+  const handleNewProject = async (projectData: any, selectedEquipment: Equipment[] = []) => {
+    try {
+      // Create the project first
+      await addProject(projectData);
+      
+      // Create loans for each selected equipment
+      const loanPromises = selectedEquipment.map(equipment => 
+        addLoan({
+          equipmentId: equipment.id,
+          equipmentName: equipment.name,
+          borrowerName: projectData.responsibleName,
+          borrowerEmail: projectData.responsibleEmail || '',
+          borrowerPhone: '',
+          department: projectData.department || 'Produção',
+          project: projectData.name,
+          loanDate: projectData.startDate,
+          expectedReturnDate: projectData.expectedEndDate,
+          status: 'active',
+          notes: `Empréstimo automático para projeto: ${projectData.name}`
+        })
+      );
+      
+      await Promise.all(loanPromises);
+      
+      toast({
+        title: "Projeto criado com sucesso",
+        description: `O projeto "${projectData.name}" foi criado com ${selectedEquipment.length} equipamentos.`,
+      });
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast({
+        title: "Erro ao criar projeto",
+        description: "Ocorreu um erro ao criar o projeto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditProject = (project: Project) => {

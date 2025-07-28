@@ -6,12 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useLoans } from '@/hooks/useLoans';
 import { Equipment, EquipmentCategory } from '@/types/equipment';
+import { toast } from 'sonner';
 
 interface NewProjectWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, selectedEquipment: Equipment[]) => void;
 }
 
 interface ProjectData {
@@ -55,6 +57,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   });
 
   const { allEquipment } = useEquipment();
+  const { addLoan } = useLoans();
 
   const updateField = (field: keyof ProjectData, value: string) => {
     setProjectData(prev => ({ ...prev, [field]: value }));
@@ -136,9 +139,10 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     }
   };
 
-  const handleSubmit = () => {
-    const totalEquipmentCount = Object.values(projectData.selectedEquipment)
-      .reduce((sum, items) => sum + items.length, 0);
+  const handleSubmit = async () => {
+    const allSelectedEquipment = Object.values(projectData.selectedEquipment)
+      .flat();
+    const totalEquipmentCount = allSelectedEquipment.length;
     
     const finalData = {
       name: projectData.name,
@@ -153,26 +157,35 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       notes: `Gravação: ${projectData.recordingDate} | Separação: ${projectData.separationPerson} | Conferência: ${projectData.conferencePerson}`
     };
 
-    onSubmit(finalData);
-    onOpenChange(false);
-    
-    // Reset form
-    setCurrentStep(1);
-    setProjectData({
-      name: '',
-      producer: '',
-      recordingDate: '',
-      separationPerson: '',
-      separationDate: '',
-      conferencePerson: '',
-      returnDate: '',
-      selectedEquipment: {
-        camera: [],
-        audio: [],
-        lighting: [],
-        accessories: []
-      }
-    });
+    try {
+      // Pass project data and selected equipment to parent
+      await onSubmit(finalData, allSelectedEquipment);
+      
+      onOpenChange(false);
+      
+      // Reset form
+      setCurrentStep(1);
+      setProjectData({
+        name: '',
+        producer: '',
+        recordingDate: '',
+        separationPerson: '',
+        separationDate: '',
+        conferencePerson: '',
+        returnDate: '',
+        selectedEquipment: {
+          camera: [],
+          audio: [],
+          lighting: [],
+          accessories: []
+        }
+      });
+      
+      toast.success('Projeto criado com sucesso!');
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast.error('Erro ao criar projeto');
+    }
   };
 
   const renderStep = () => {

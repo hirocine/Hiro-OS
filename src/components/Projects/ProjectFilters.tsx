@@ -4,7 +4,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { statusLabels } from '@/data/mockProjects';
+// Status labels moved inline
+const statusLabels = {
+  active: 'Ativo',
+  completed: 'Finalizado',
+  archived: 'Arquivado'
+};
 
 interface ProjectFiltersProps {
   filters: ProjectFilters;

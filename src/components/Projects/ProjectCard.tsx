@@ -6,7 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Package, User, Building2, FileText, MoreHorizontal, Archive } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { statusLabels } from '@/data/mockProjects';
+// Status labels moved inline
+const statusLabels = {
+  active: 'Ativo',
+  completed: 'Finalizado',
+  archived: 'Arquivado'
+};
 import { stepLabels, stepColors, stepIcons, getStepProgress, canTransitionTo, stepOrder } from '@/lib/projectSteps';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
