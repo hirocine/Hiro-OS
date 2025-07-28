@@ -74,6 +74,14 @@ export function useEquipment() {
     setEquipment(prev => prev.filter(item => item.id !== id));
   };
 
+  const importEquipment = (importedEquipment: Omit<Equipment, 'id'>[]) => {
+    const newEquipment = importedEquipment.map(item => ({
+      ...item,
+      id: Math.random().toString(36).substr(2, 9)
+    }));
+    setEquipment(prev => [...prev, ...newEquipment]);
+  };
+
   return {
     equipment: filteredEquipment,
     allEquipment: equipment,
@@ -82,6 +90,7 @@ export function useEquipment() {
     stats,
     addEquipment,
     updateEquipment,
-    deleteEquipment
+    deleteEquipment,
+    importEquipment
   };
 }

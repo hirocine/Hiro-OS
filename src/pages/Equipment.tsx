@@ -4,13 +4,15 @@ import type { Equipment } from '@/types/equipment';
 import { EquipmentRow } from '@/components/Equipment/EquipmentRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
+import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Equipment() {
-  const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment } = useEquipment();
+  const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment, importEquipment } = useEquipment();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
@@ -63,6 +65,11 @@ export default function Equipment() {
     setEditingEquipment(undefined);
   };
 
+  const handleImport = (importedEquipment: any[]) => {
+    importEquipment(importedEquipment);
+    setImportDialogOpen(false);
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -72,10 +79,16 @@ export default function Equipment() {
             Gerencie todos os equipamentos do seu inventário
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Adicionar Equipamento
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <FileSpreadsheet className="h-4 w-4" />
+            Importar CSV/Excel
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Adicionar Equipamento
+          </Button>
+        </div>
       </div>
 
       <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} />
@@ -131,6 +144,12 @@ export default function Equipment() {
         onOpenChange={handleDialogClose}
         onSubmit={editingEquipment ? handleUpdateEquipment : handleAddEquipment}
         equipment={editingEquipment}
+      />
+
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleImport}
       />
     </div>
   );
