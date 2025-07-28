@@ -34,10 +34,12 @@ export function Sidebar() {
   return (
     <div className="w-64 bg-card border-r border-border shadow-card flex flex-col">
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          AV Inventory
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <img 
+          src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+          alt="HIRO Logo" 
+          className="h-12 w-auto mb-2"
+        />
+        <p className="text-sm text-muted-foreground">
           Gestão de Equipamentos
         </p>
       </div>
