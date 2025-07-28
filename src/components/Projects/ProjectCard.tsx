@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Package, User, Building2, FileText, MoreHorizontal } from 'lucide-react';
+import { Calendar, Package, User, Building2, FileText, MoreHorizontal, Archive } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { statusLabels } from '@/data/mockProjects';
 import { stepLabels, stepColors, stepIcons, getStepProgress, canTransitionTo, stepOrder } from '@/lib/projectSteps';
@@ -179,35 +179,51 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
           </div>
         )}
         
-        {/* Seletor de Status */}
-        {showStepSelector && (
-          <div className="pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-muted-foreground">Alterar Status:</span>
-            </div>
-            <Select onValueChange={handleStepChange} value={project.step}>
-              <SelectTrigger className="w-full h-8">
-                <SelectValue placeholder="Selecionar novo status..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={project.step} disabled>
-                  <div className="flex items-center gap-2">
-                    {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
-                    <span>{stepLabels[project.step]} (atual)</span>
-                  </div>
-                </SelectItem>
-                {availableSteps.map((step) => (
-                  <SelectItem key={step} value={step}>
+        {/* Ações e Seletor de Status */}
+        <div className="pt-2 border-t border-border/50 space-y-2">
+          {/* Botão de Arquivar */}
+          {project.status !== 'archived' && onArchive && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onArchive(project.id)}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Archive className="h-4 w-4" />
+              Arquivar Projeto
+            </Button>
+          )}
+          
+          {/* Seletor de Status */}
+          {showStepSelector && (
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-medium text-muted-foreground">Alterar Status:</span>
+              </div>
+              <Select onValueChange={handleStepChange} value={project.step}>
+                <SelectTrigger className="w-full h-8">
+                  <SelectValue placeholder="Selecionar novo status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={project.step} disabled>
                     <div className="flex items-center gap-2">
-                      {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
-                      <span>{stepLabels[step]}</span>
+                      {React.createElement(stepIcons[project.step], { className: "w-4 h-4" })}
+                      <span>{stepLabels[project.step]} (atual)</span>
                     </div>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+                  {availableSteps.map((step) => (
+                    <SelectItem key={step} value={step}>
+                      <div className="flex items-center gap-2">
+                        {React.createElement(stepIcons[step], { className: "w-4 h-4" })}
+                        <span>{stepLabels[step]}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
