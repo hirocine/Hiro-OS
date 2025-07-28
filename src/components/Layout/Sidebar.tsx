@@ -34,14 +34,16 @@ export function Sidebar() {
   return (
     <div className="w-64 bg-card border-r border-border shadow-card flex flex-col">
       <div className="p-6 border-b border-border">
-        <img 
-          src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-          alt="HIRO Logo" 
-          className="h-12 w-auto mb-2"
-        />
-        <p className="text-sm text-muted-foreground">
-          Gestão de Equipamentos
-        </p>
+        <div className="flex items-center gap-3">
+          <img 
+            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+            alt="HIRO Logo" 
+            className="h-8 w-auto"
+          />
+          <span className="text-lg font-semibold text-foreground">
+            Inventário
+          </span>
+        </div>
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
