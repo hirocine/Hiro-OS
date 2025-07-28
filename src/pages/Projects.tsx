@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
@@ -9,9 +10,34 @@ import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Projects() {
-  const { projects, stats, filters, setFilters, addProject, completeProject, archiveProject } = useProjects();
+  const { projects: allFilteredProjects, stats, filters, setFilters, addProject, completeProject, archiveProject } = useProjects();
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const { toast } = useToast();
+
+  // Organize projects by categories
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Próximos Projetos - Active projects sorted by start date
+  const upcomingProjects = allFilteredProjects
+    .filter(project => project.status === 'active' && project.expectedEndDate >= today)
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+  // Pendente Devolução - Active projects past expected end date
+  const overdueProjects = allFilteredProjects
+    .filter(project => project.status === 'active' && project.expectedEndDate < today)
+    .sort((a, b) => new Date(a.expectedEndDate).getTime() - new Date(b.expectedEndDate).getTime());
+
+  // Finalizados - Completed projects
+  const completedProjects = allFilteredProjects
+    .filter(project => project.status === 'completed')
+    .sort((a, b) => new Date(b.actualEndDate || b.expectedEndDate).getTime() - new Date(a.actualEndDate || a.expectedEndDate).getTime());
+
+  // Arquivados - Archived projects
+  const archivedProjects = allFilteredProjects
+    .filter(project => project.status === 'archived')
+    .sort((a, b) => new Date(b.expectedEndDate).getTime() - new Date(a.expectedEndDate).getTime());
 
   const handleNewProject = (projectData: any) => {
     addProject(projectData);
@@ -109,15 +135,10 @@ export default function Projects() {
       {/* Filters */}
       <ProjectFilters filters={filters} onFiltersChange={setFilters} />
 
-      {/* Projects Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
-            Lista de Projetos ({projects.length})
-          </h2>
-        </div>
-
-        {projects.length === 0 ? (
+      {/* Projects Sections */}
+      <div className="space-y-6">
+        {/* Check if any projects exist */}
+        {allFilteredProjects.length === 0 ? (
           <Card className="p-8 text-center">
             <div className="flex flex-col items-center gap-4">
               <FolderOpen className="h-12 w-12 text-muted-foreground" />
@@ -137,16 +158,139 @@ export default function Projects() {
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onComplete={handleCompleteProject}
-                onArchive={handleArchiveProject}
-              />
-            ))}
-          </div>
+          <>
+            {/* Próximos Projetos */}
+            {upcomingProjects.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Próximos Projetos ({upcomingProjects.length})</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {upcomingProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      onComplete={handleCompleteProject}
+                      onArchive={handleArchiveProject}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Separator */}
+            {upcomingProjects.length > 0 && overdueProjects.length > 0 && (
+              <Separator className="my-6" />
+            )}
+
+            {/* Pendente Devolução */}
+            {overdueProjects.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Archive className="h-5 w-5 text-destructive" />
+                  <h2 className="text-xl font-semibold text-destructive">Pendente Devolução ({overdueProjects.length})</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {overdueProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      onComplete={handleCompleteProject}
+                      onArchive={handleArchiveProject}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Separator */}
+            {(upcomingProjects.length > 0 || overdueProjects.length > 0) && (completedProjects.length > 0 || archivedProjects.length > 0) && (
+              <Separator className="my-6" />
+            )}
+
+            {/* Finalizados */}
+            {completedProjects.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <h2 className="text-xl font-semibold">Finalizados ({completedProjects.length})</h2>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCompleted(!showCompleted)}
+                  >
+                    {showCompleted ? (
+                      <>
+                        <ChevronUp className="mr-2 h-4 w-4" />
+                        Ocultar
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="mr-2 h-4 w-4" />
+                        Exibir
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {showCompleted && (
+                  <div className="grid grid-cols-1 gap-4">
+                    {completedProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Arquivados */}
+            {archivedProjects.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Archive className="h-5 w-5 text-muted-foreground" />
+                    <h2 className="text-xl font-semibold">Arquivados ({archivedProjects.length})</h2>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowArchived(!showArchived)}
+                  >
+                    {showArchived ? (
+                      <>
+                        <ChevronUp className="mr-2 h-4 w-4" />
+                        Ocultar
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="mr-2 h-4 w-4" />
+                        Exibir
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {showArchived && (
+                  <div className="grid grid-cols-1 gap-4">
+                    {archivedProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
