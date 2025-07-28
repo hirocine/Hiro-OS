@@ -4,7 +4,7 @@ import { mockEquipment } from '@/data/mockData';
 import { useLoans } from './useLoans';
 
 export function useEquipment() {
-  const [equipment, setEquipment] = useState<Equipment[]>(mockEquipment);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [filters, setFilters] = useState<EquipmentFilters>({});
   const { getActiveLoanByEquipment } = useLoans();
 
@@ -82,10 +82,6 @@ export function useEquipment() {
     setEquipment(prev => [...prev, ...newEquipment]);
   };
 
-  const clearAllEquipment = () => {
-    setEquipment([]);
-  };
-
   return {
     equipment: filteredEquipment,
     allEquipment: equipment,
@@ -95,7 +91,6 @@ export function useEquipment() {
     addEquipment,
     updateEquipment,
     deleteEquipment,
-    importEquipment,
-    clearAllEquipment
+    importEquipment
   };
 }

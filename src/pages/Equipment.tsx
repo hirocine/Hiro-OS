@@ -10,7 +10,7 @@ import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Equipment() {
-  const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment, importEquipment, clearAllEquipment } = useEquipment();
+  const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment, importEquipment } = useEquipment();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
@@ -70,14 +70,6 @@ export default function Equipment() {
     setImportDialogOpen(false);
   };
 
-  const handleClearDatabase = () => {
-    clearAllEquipment();
-    toast({
-      title: "Base de dados limpa",
-      description: "Todos os equipamentos foram removidos.",
-    });
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -97,21 +89,6 @@ export default function Equipment() {
             Adicionar Equipamento
           </Button>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-muted-foreground">
-          Total de equipamentos: {equipment.length}
-        </span>
-        {equipment.length > 0 && (
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={handleClearDatabase}
-          >
-            Zerar Base de Dados
-          </Button>
-        )}
       </div>
 
       <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} />
