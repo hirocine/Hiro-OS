@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { Equipment, EquipmentCategory, EquipmentStatus } from '@/types/equipment';
+import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 
 export interface ImportError {
   row: number;
@@ -18,6 +18,7 @@ export interface ImportResult {
 
 const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'audio', 'lighting', 'accessories'];
 const VALID_STATUSES: EquipmentStatus[] = ['available', 'maintenance'];
+const VALID_ITEM_TYPES: EquipmentItemType[] = ['main', 'accessory'];
 
 const COLUMN_MAPPING = {
   'patrimônio': 'patrimonyNumber',
@@ -26,6 +27,14 @@ const COLUMN_MAPPING = {
   'marca': 'brand',
   'modelo': 'model',
   'categoria': 'category',
+  'tipo de item': 'itemType',
+  'tipo item': 'itemType',
+  'tipo': 'itemType',
+  'item principal': 'parentId',
+  'item mae': 'parentId',
+  'item mãe': 'parentId',
+  'principal': 'parentId',
+  'pai': 'parentId',
   'serial': 'serialNumber',
   'valor de compra': 'value',
   'valor': 'value',
@@ -72,6 +81,20 @@ const STATUS_MAPPING = {
   'reparo': 'maintenance'
 };
 
+const ITEM_TYPE_MAPPING = {
+  'principal': 'main',
+  'main': 'main',
+  'item principal': 'main',
+  'mae': 'main',
+  'mãe': 'main',
+  'acessório': 'accessory',
+  'acessorio': 'accessory',
+  'accessory': 'accessory',
+  'sub': 'accessory',
+  'subitem': 'accessory',
+  'sub-item': 'accessory'
+};
+
 function normalizeKey(key: string): string {
   return key.toLowerCase().trim().replace(/[^\w\s]/g, '');
 }
@@ -95,7 +118,14 @@ function validateAndTransformStatus(value: string): EquipmentStatus | null {
   return VALID_STATUSES.includes(mapped as EquipmentStatus) ? mapped as EquipmentStatus : null;
 }
 
-function validateRow(row: any, index: number): { equipment: Omit<Equipment, 'id'> | null; errors: ImportError[] } {
+function validateAndTransformItemType(value: string): EquipmentItemType | null {
+  if (!value) return 'main'; // Default to main item
+  const normalized = normalizeKey(value);
+  const mapped = ITEM_TYPE_MAPPING[normalized as keyof typeof ITEM_TYPE_MAPPING];
+  return VALID_ITEM_TYPES.includes(mapped as EquipmentItemType) ? mapped as EquipmentItemType : null;
+}
+
+function validateRow(row: any, index: number, mainItemsLookup?: Map<string, string>): { equipment: Omit<Equipment, 'id'> | null; errors: ImportError[] } {
   const errors: ImportError[] = [];
   const equipment: Partial<Omit<Equipment, 'id'>> = {};
 
@@ -159,6 +189,41 @@ function validateRow(row: any, index: number): { equipment: Omit<Equipment, 'id'
     equipment.status = status;
   }
 
+  // Item type validation
+  const itemType = validateAndTransformItemType(row.itemType);
+  if (!itemType) {
+    errors.push({
+      row: index + 1,
+      field: 'tipo de item',
+      message: `Tipo de item inválido. Use: principal ou acessório`,
+      value: row.itemType
+    });
+  } else {
+    equipment.itemType = itemType;
+  }
+
+  // Parent ID validation for accessories
+  if (itemType === 'accessory' && row.parentId) {
+    const parentReference = row.parentId.toString().trim();
+    if (mainItemsLookup && mainItemsLookup.has(parentReference)) {
+      equipment.parentId = mainItemsLookup.get(parentReference);
+    } else {
+      errors.push({
+        row: index + 1,
+        field: 'item principal',
+        message: `Item principal '${parentReference}' não encontrado`,
+        value: parentReference
+      });
+    }
+  } else if (itemType === 'accessory' && !row.parentId) {
+    errors.push({
+      row: index + 1,
+      field: 'item principal',
+      message: 'Acessórios devem ter um item principal',
+      value: row.parentId
+    });
+  }
+
   // Optional fields
   if (row.patrimonyNumber) equipment.patrimonyNumber = row.patrimonyNumber.toString().trim();
   if (row.serialNumber) equipment.serialNumber = row.serialNumber.toString().trim();
@@ -209,14 +274,47 @@ export function parseCSV(file: File): Promise<ImportResult> {
         const data: Omit<Equipment, 'id'>[] = [];
         const errors: ImportError[] = [];
 
-        results.data.forEach((row: any, index: number) => {
-          const { equipment, errors: rowErrors } = validateRow(row, index);
-          
-          if (equipment) {
-            data.push(equipment);
+        // Two-pass processing: first main items, then accessories
+        const allRows = results.data as any[];
+        const mainItemsLookup = new Map<string, string>();
+        
+        // First pass: process main items and build lookup
+        allRows.forEach((row: any, index: number) => {
+          const itemType = validateAndTransformItemType(row.itemType);
+          if (itemType === 'main') {
+            const { equipment, errors: rowErrors } = validateRow(row, index);
+            
+            if (equipment) {
+              const equipmentId = `temp_${Date.now()}_${index}`;
+              equipment.itemType = 'main';
+              data.push(equipment);
+              
+              // Build lookup by patrimony number and name
+              if (equipment.patrimonyNumber) {
+                mainItemsLookup.set(equipment.patrimonyNumber, equipmentId);
+              }
+              if (equipment.name) {
+                mainItemsLookup.set(equipment.name, equipmentId);
+              }
+            }
+            
+            errors.push(...rowErrors);
           }
-          
-          errors.push(...rowErrors);
+        });
+
+        // Second pass: process accessories with parent references
+        allRows.forEach((row: any, index: number) => {
+          const itemType = validateAndTransformItemType(row.itemType);
+          if (itemType === 'accessory') {
+            const { equipment, errors: rowErrors } = validateRow(row, index, mainItemsLookup);
+            
+            if (equipment) {
+              equipment.itemType = 'accessory';
+              data.push(equipment);
+            }
+            
+            errors.push(...rowErrors);
+          }
         });
 
         resolve({
@@ -275,6 +373,8 @@ export function parseExcel(file: File): Promise<ImportResult> {
         const equipment: Omit<Equipment, 'id'>[] = [];
         const errors: ImportError[] = [];
 
+        // Two-pass processing for Excel files too
+        const allRows: any[] = [];
         rows.forEach((row: any[], index: number) => {
           if (row.length === 0) return;
 
@@ -284,14 +384,49 @@ export function parseExcel(file: File): Promise<ImportResult> {
               rowObject[header] = row[headerIndex];
             }
           });
+          
+          allRows.push({ row: rowObject, index });
+        });
 
-          const { equipment: equipmentItem, errors: rowErrors } = validateRow(rowObject, index);
-          
-          if (equipmentItem) {
-            equipment.push(equipmentItem);
+        const mainItemsLookup = new Map<string, string>();
+        
+        // First pass: process main items
+        allRows.forEach(({ row: rowObject, index }) => {
+          const itemType = validateAndTransformItemType(rowObject.itemType);
+          if (itemType === 'main') {
+            const { equipment: equipmentItem, errors: rowErrors } = validateRow(rowObject, index);
+            
+            if (equipmentItem) {
+              const equipmentId = `temp_${Date.now()}_${index}`;
+              equipmentItem.itemType = 'main';
+              equipment.push(equipmentItem);
+              
+              // Build lookup
+              if (equipmentItem.patrimonyNumber) {
+                mainItemsLookup.set(equipmentItem.patrimonyNumber, equipmentId);
+              }
+              if (equipmentItem.name) {
+                mainItemsLookup.set(equipmentItem.name, equipmentId);
+              }
+            }
+            
+            errors.push(...rowErrors);
           }
-          
-          errors.push(...rowErrors);
+        });
+
+        // Second pass: process accessories
+        allRows.forEach(({ row: rowObject, index }) => {
+          const itemType = validateAndTransformItemType(rowObject.itemType);
+          if (itemType === 'accessory') {
+            const { equipment: equipmentItem, errors: rowErrors } = validateRow(rowObject, index, mainItemsLookup);
+            
+            if (equipmentItem) {
+              equipmentItem.itemType = 'accessory';
+              equipment.push(equipmentItem);
+            }
+            
+            errors.push(...rowErrors);
+          }
         });
 
         resolve({
@@ -339,6 +474,8 @@ export function generateTemplate(): string {
     'Marca',
     'Modelo',
     'Categoria',
+    'Tipo de Item',
+    'Item Principal',
     'Serial',
     'Valor de Compra',
     'Status',
@@ -351,23 +488,65 @@ export function generateTemplate(): string {
     'NFe ou Recibo'
   ];
 
-  const exampleRow = [
-    'PAT001',
-    'Canon EOS R5',
-    'Canon',
-    'EOS R5',
-    'camera',
-    'SN12345',
-    '15000.00',
-    'disponível',
-    '2024-01-15',
-    '2024-06-01',
-    'Câmera profissional mirrorless',
-    '14000.00',
-    '2024-01-10',
-    'Camera Store',
-    'NF-001234'
+  const exampleRows = [
+    [
+      'PAT001',
+      'Kit Câmera Sony FX6',
+      'Sony',
+      'FX6',
+      'camera',
+      'Principal',
+      '',
+      'SN001',
+      '25000.00',
+      'disponível',
+      '2024-01-15',
+      '2024-06-01',
+      'Kit completo de câmera profissional',
+      '24000.00',
+      '2024-01-10',
+      'Camera Store',
+      'NF-001234'
+    ],
+    [
+      'PAT002',
+      'Lente Sony 24-70mm',
+      'Sony',
+      '24-70mm',
+      'accessories',
+      'Acessório',
+      'PAT001',
+      'SN002',
+      '5000.00',
+      'disponível',
+      '2024-01-15',
+      '',
+      'Lente zoom padrão',
+      '4800.00',
+      '2024-01-10',
+      'Camera Store',
+      'NF-001234'
+    ],
+    [
+      'PAT003',
+      'Tripé Manfrotto',
+      'Manfrotto',
+      'MT055',
+      'accessories',
+      'Acessório',
+      'PAT001',
+      'SN003',
+      '800.00',
+      'disponível',
+      '2024-01-15',
+      '',
+      'Tripé profissional em fibra de carbono',
+      '750.00',
+      '2024-01-10',
+      'Camera Store',
+      'NF-001234'
+    ]
   ];
 
-  return Papa.unparse([headers, exampleRow]);
+  return Papa.unparse([headers, ...exampleRows]);
 }
