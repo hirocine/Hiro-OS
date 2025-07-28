@@ -5,7 +5,7 @@ import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package } from 'lucide-r
 import { useProjects } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
-import { NewProjectDialog } from '@/components/Projects/NewProjectDialog';
+import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Projects() {
@@ -150,7 +150,7 @@ export default function Projects() {
         )}
       </div>
 
-      <NewProjectDialog
+      <NewProjectWizard
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
         onSubmit={handleNewProject}

@@ -3,7 +3,32 @@ import { useEquipment } from '@/hooks/useEquipment';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
 
 export default function Dashboard() {
-  const { stats } = useEquipment();
+  const { stats, allEquipment } = useEquipment();
+
+  // Calculate financial stats
+  const totalInventoryValue = allEquipment.reduce((sum, item) => sum + (item.value || 0), 0);
+  const totalDepreciatedValue = allEquipment.reduce((sum, item) => sum + (item.depreciatedValue || item.value || 0), 0);
+
+  // Calculate equipment by age
+  const today = new Date();
+  const equipmentByAge = allEquipment.reduce((acc, item) => {
+    if (item.purchaseDate) {
+      const purchaseDate = new Date(item.purchaseDate);
+      const ageInYears = (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+      
+      if (ageInYears >= 3) acc.over3Years++;
+      else if (ageInYears >= 2) acc.over2Years++;
+      else if (ageInYears >= 1) acc.over1Year++;
+    }
+    return acc;
+  }, { over1Year: 0, over2Years: 0, over3Years: 0 });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
 
   const mainStats = [
     {
@@ -64,6 +89,38 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {/* Financial Summary */}
+      <div className="bg-gradient-card rounded-lg p-6 shadow-elegant">
+        <h2 className="text-xl font-semibold mb-6">Resumo Financeiro</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Valor Total do Inventário</p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(totalInventoryValue)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Valor pago</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Valor Total Real</p>
+            <p className="text-2xl font-bold text-success">{formatCurrency(totalDepreciatedValue)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Com depreciação</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">+1 Ano de Uso</p>
+            <p className="text-2xl font-bold text-warning">{equipmentByAge.over1Year}</p>
+            <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">+2 Anos de Uso</p>
+            <p className="text-2xl font-bold text-warning">{equipmentByAge.over2Years}</p>
+            <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">+3 Anos de Uso</p>
+            <p className="text-2xl font-bold text-destructive">{equipmentByAge.over3Years}</p>
+            <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {mainStats.map((stat, index) => (
           <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
@@ -80,24 +137,6 @@ export default function Dashboard() {
               <StatsCard {...stat} />
             </div>
           ))}
-        </div>
-      </div>
-
-      <div className="bg-gradient-card rounded-lg p-6 shadow-elegant">
-        <h2 className="text-xl font-semibold mb-4">Resumo Financeiro</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Valor Total do Inventário</p>
-            <p className="text-2xl font-bold text-primary">R$ 78.300,00</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Equipamentos Disponíveis</p>
-            <p className="text-2xl font-bold text-success">R$ 52.800,00</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Em Uso/Manutenção</p>
-            <p className="text-2xl font-bold text-warning">R$ 25.500,00</p>
-          </div>
         </div>
       </div>
     </div>
