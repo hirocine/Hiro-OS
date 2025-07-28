@@ -52,6 +52,7 @@ export default function Projects() {
   };
 
   const handleEditProject = (project: Project) => {
+    console.log('Editing project:', project.id); // Debug log
     setEditingProject(project);
     setShowEditDialog(true);
   };
