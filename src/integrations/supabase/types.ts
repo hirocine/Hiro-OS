@@ -14,7 +14,256 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      equipments: {
+        Row: {
+          brand: string
+          category: string
+          created_at: string
+          current_borrower: string | null
+          current_loan_id: string | null
+          depreciated_value: number | null
+          description: string | null
+          id: string
+          image: string | null
+          invoice: string | null
+          item_type: string
+          last_loan_date: string | null
+          last_maintenance: string | null
+          model: string
+          name: string
+          parent_id: string | null
+          patrimony_number: string | null
+          purchase_date: string | null
+          receive_date: string | null
+          serial_number: string | null
+          status: string
+          store: string | null
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          brand: string
+          category: string
+          created_at?: string
+          current_borrower?: string | null
+          current_loan_id?: string | null
+          depreciated_value?: number | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          invoice?: string | null
+          item_type?: string
+          last_loan_date?: string | null
+          last_maintenance?: string | null
+          model: string
+          name: string
+          parent_id?: string | null
+          patrimony_number?: string | null
+          purchase_date?: string | null
+          receive_date?: string | null
+          serial_number?: string | null
+          status?: string
+          store?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          brand?: string
+          category?: string
+          created_at?: string
+          current_borrower?: string | null
+          current_loan_id?: string | null
+          depreciated_value?: number | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          invoice?: string | null
+          item_type?: string
+          last_loan_date?: string | null
+          last_maintenance?: string | null
+          model?: string
+          name?: string
+          parent_id?: string | null
+          patrimony_number?: string | null
+          purchase_date?: string | null
+          receive_date?: string | null
+          serial_number?: string | null
+          status?: string
+          store?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          actual_return_date: string | null
+          borrower_email: string | null
+          borrower_name: string
+          borrower_phone: string | null
+          created_at: string
+          department: string | null
+          equipment_id: string
+          equipment_name: string
+          expected_return_date: string
+          id: string
+          loan_date: string
+          notes: string | null
+          project: string | null
+          return_condition: string | null
+          return_notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_return_date?: string | null
+          borrower_email?: string | null
+          borrower_name: string
+          borrower_phone?: string | null
+          created_at?: string
+          department?: string | null
+          equipment_id: string
+          equipment_name: string
+          expected_return_date: string
+          id?: string
+          loan_date: string
+          notes?: string | null
+          project?: string | null
+          return_condition?: string | null
+          return_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_return_date?: string | null
+          borrower_email?: string | null
+          borrower_name?: string
+          borrower_phone?: string | null
+          created_at?: string
+          department?: string | null
+          equipment_id?: string
+          equipment_name?: string
+          expected_return_date?: string
+          id?: string
+          loan_date?: string
+          notes?: string | null
+          project?: string | null
+          return_condition?: string | null
+          return_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          display_name: string | null
+          id: string
+          position: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          display_name?: string | null
+          id?: string
+          position?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          display_name?: string | null
+          id?: string
+          position?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          actual_end_date: string | null
+          created_at: string
+          department: string | null
+          description: string | null
+          equipment_count: number | null
+          expected_end_date: string
+          id: string
+          loan_ids: string[] | null
+          name: string
+          notes: string | null
+          responsible_email: string | null
+          responsible_name: string
+          start_date: string
+          status: string
+          step: string
+          step_history: Json | null
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          equipment_count?: number | null
+          expected_end_date: string
+          id?: string
+          loan_ids?: string[] | null
+          name: string
+          notes?: string | null
+          responsible_email?: string | null
+          responsible_name: string
+          start_date: string
+          status?: string
+          step?: string
+          step_history?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          equipment_count?: number | null
+          expected_end_date?: string
+          id?: string
+          loan_ids?: string[] | null
+          name?: string
+          notes?: string | null
+          responsible_email?: string | null
+          responsible_name?: string
+          start_date?: string
+          status?: string
+          step?: string
+          step_history?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
