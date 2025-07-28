@@ -66,16 +66,53 @@ export default function Admin() {
       console.log('🔍 Admin: Fetching users...');
       setLoadingUsers(true);
       
-      // Use RPC function to get users with emails safely
-      const { data: usersData, error: usersError } = await supabase.rpc('get_users_for_admin');
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, position, department, created_at')
+        .order('created_at', { ascending: false });
 
-      if (usersError) {
-        console.error('❌ Admin: Error calling RPC function:', usersError);
-        throw usersError;
+      if (profilesError) {
+        console.error('❌ Admin: Error fetching profiles:', profilesError);
+        throw profilesError;
       }
 
-      console.log('✅ Admin: Users fetched successfully:', usersData?.length || 0, 'users');
-      setUsers(usersData || []);
+      // Fetch roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        console.error('❌ Admin: Error fetching roles:', rolesError);
+        throw rolesError;
+      }
+
+      // Fetch auth users via RPC for emails
+      const { data: authUsers, error: authError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .limit(1);
+
+      if (authError) {
+        console.error('❌ Admin: Error accessing auth data:', authError);
+      }
+
+      // Combine data
+      const usersData: User[] = (profiles || []).map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.user_id);
+        return {
+          id: profile.user_id,
+          email: 'Email não disponível', // Temporary until we get proper access
+          display_name: profile.display_name || 'Usuário Anônimo',
+          position: profile.position || 'Não informado',
+          department: profile.department || 'Não informado',
+          created_at: profile.created_at,
+          role: (userRole?.role as 'admin' | 'user') || 'user'
+        };
+      });
+
+      console.log('✅ Admin: Users fetched successfully:', usersData.length, 'users');
+      setUsers(usersData);
     } catch (error) {
       console.error('❌ Admin: Error fetching users:', error);
       toast({

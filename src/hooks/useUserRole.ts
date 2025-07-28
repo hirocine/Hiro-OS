@@ -23,7 +23,10 @@ export function useUserRole() {
   });
 
   useEffect(() => {
+    console.log('🔑 useUserRole: Effect triggered', { user: user?.email });
+    
     if (!user) {
+      console.log('🔑 useUserRole: No user, setting default state');
       setRoleState({
         role: null,
         loading: false,
@@ -36,6 +39,8 @@ export function useUserRole() {
 
     const fetchUserRole = async () => {
       try {
+        console.log('🔑 useUserRole: Fetching role for user:', user.email);
+        
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -43,8 +48,9 @@ export function useUserRole() {
           .single();
 
         if (error) {
-          console.error('Error fetching user role:', error);
+          console.error('🔑 useUserRole: Error fetching role:', error);
           // Default to 'user' role if not found
+          console.log('🔑 useUserRole: Defaulting to user role');
           setRoleState({
             role: 'user',
             loading: false,
@@ -58,6 +64,8 @@ export function useUserRole() {
         const role = data?.role as UserRole;
         const isAdmin = role === 'admin';
 
+        console.log('🔑 useUserRole: Role fetched successfully', { role, isAdmin });
+
         setRoleState({
           role,
           loading: false,
@@ -66,7 +74,7 @@ export function useUserRole() {
           canImport: isAdmin,
         });
       } catch (error) {
-        console.error('Error in fetchUserRole:', error);
+        console.error('🔑 useUserRole: Error in fetchUserRole:', error);
         setRoleState({
           role: 'user',
           loading: false,
