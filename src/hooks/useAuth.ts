@@ -16,9 +16,12 @@ export function useAuth() {
   });
 
   useEffect(() => {
+    console.log('useAuth: Setting up auth listeners');
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('useAuth: Auth state changed', { event, user: session?.user?.email, hasSession: !!session });
         setAuthState({
           session,
           user: session?.user ?? null,
@@ -28,7 +31,12 @@ export function useAuth() {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('useAuth: Initial session check', { 
+        user: session?.user?.email, 
+        hasSession: !!session, 
+        error 
+      });
       setAuthState({
         session,
         user: session?.user ?? null,

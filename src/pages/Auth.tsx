@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,12 +22,31 @@ export default function Auth() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  const { user, signIn, signUp, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  console.log('Auth page: Current user state', { user: user?.email, authLoading });
+
+  // Redirect if already authenticated (but wait for loading to finish)
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('Auth page: User authenticated, redirecting to dashboard');
+      navigate('/', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
+
+  // Don't render auth form if user is authenticated or still loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   if (user) {
-    return <Navigate to="/" replace />;
+    return null; // Will redirect via useEffect
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
