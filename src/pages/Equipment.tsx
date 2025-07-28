@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdminOnly } from '@/components/RoleGuard';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function Equipment() {
   const { 
@@ -114,22 +115,19 @@ export default function Equipment() {
       <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
       {equipmentHierarchy.length === 0 && unlinkedAccessories.length === 0 ? (
-        <div className="text-center py-12">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Nenhum equipamento encontrado</h3>
-          <p className="text-muted-foreground mb-4">
-            {Object.keys(filters).length > 0 
+        <EmptyState
+          icon={Package}
+          title="Nenhum equipamento encontrado"
+          description={
+            Object.keys(filters).length > 0 
               ? "Tente ajustar os filtros para encontrar equipamentos." 
               : "Comece adicionando seu primeiro equipamento ao inventário."
-            }
-          </p>
-          {Object.keys(filters).length === 0 && (
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="h-4 w-4" />
-              Adicionar Primeiro Equipamento
-            </Button>
-          )}
-        </div>
+          }
+          action={Object.keys(filters).length === 0 ? {
+            label: "Adicionar Primeiro Equipamento",
+            onClick: () => setDialogOpen(true)
+          } : undefined}
+        />
       ) : (
         <div className="bg-card rounded-lg border shadow">
           {/* Header */}

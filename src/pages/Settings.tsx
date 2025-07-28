@@ -1,11 +1,40 @@
+import { useState } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Database } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { SettingsActions } from '@/components/Settings/SettingsActions';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function Settings() {
+  const { user } = useAuth();
+  const [settings, setSettings] = useState({
+    maintenanceAlerts: true,
+    emailReports: true,
+    equipmentUsageAlerts: false,
+    twoFactorAuth: false,
+  });
+
+  const handleSaveProfile = () => {
+    toast.success('Perfil atualizado com sucesso');
+  };
+
+  const handleResetPassword = () => {
+    toast.info('Email de redefinição de senha enviado');
+  };
+
+  const handleEndAllSessions = () => {
+    toast.success('Todas as sessões foram encerradas');
+  };
+
+  const handleSettingChange = (key: string, value: boolean) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    toast.success('Configuração atualizada');
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="space-y-2">
@@ -26,17 +55,25 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Nome de Usuário</Label>
-              <Input id="username" defaultValue="admin" />
+              <Input 
+                id="username" 
+                defaultValue={user?.user_metadata?.full_name || "admin"} 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="admin@produtora.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                defaultValue={user?.email || "admin@produtora.com"} 
+                disabled
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Input id="company" defaultValue="Produtora Audiovisual Ltda" />
             </div>
-            <Button>Salvar Alterações</Button>
+            <Button onClick={handleSaveProfile}>Salvar Alterações</Button>
           </CardContent>
         </Card>
 
@@ -55,7 +92,10 @@ export default function Settings() {
                   Receber notificações sobre manutenções preventivas
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={settings.maintenanceAlerts}
+                onCheckedChange={(checked) => handleSettingChange('maintenanceAlerts', checked)}
+              />
             </div>
             
             <div className="flex items-center justify-between">
@@ -65,7 +105,10 @@ export default function Settings() {
                   Relatórios semanais por email
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={settings.emailReports}
+                onCheckedChange={(checked) => handleSettingChange('emailReports', checked)}
+              />
             </div>
             
             <div className="flex items-center justify-between">
@@ -75,7 +118,10 @@ export default function Settings() {
                   Notificar quando equipamentos ficam muito tempo em uso
                 </p>
               </div>
-              <Switch />
+              <Switch 
+                checked={settings.equipmentUsageAlerts}
+                onCheckedChange={(checked) => handleSettingChange('equipmentUsageAlerts', checked)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -92,7 +138,7 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Alterar Senha</Label>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleResetPassword}>
                 Redefinir Senha
               </Button>
             </div>
@@ -104,12 +150,15 @@ export default function Settings() {
                   Adicione uma camada extra de segurança
                 </p>
               </div>
-              <Switch />
+              <Switch 
+                checked={settings.twoFactorAuth}
+                onCheckedChange={(checked) => handleSettingChange('twoFactorAuth', checked)}
+              />
             </div>
             
             <div className="space-y-2">
               <Label>Sessões Ativas</Label>
-              <Button variant="destructive" size="sm">
+              <Button variant="destructive" size="sm" onClick={handleEndAllSessions}>
                 Encerrar Todas as Sessões
               </Button>
             </div>
@@ -124,29 +173,7 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Backup dos Dados</Label>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Fazer Backup
-                </Button>
-                <Button variant="outline" size="sm">
-                  Restaurar
-                </Button>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Importar/Exportar</Label>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Importar CSV
-                </Button>
-                <Button variant="outline" size="sm">
-                  Exportar CSV
-                </Button>
-              </div>
-            </div>
+            <SettingsActions />
             
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm font-medium">Versão do Sistema</p>

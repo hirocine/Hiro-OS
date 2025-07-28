@@ -1,9 +1,13 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
 
 export default function Dashboard() {
   const { stats, allEquipment } = useEquipment();
+  
+  // Initialize notifications
+  useNotifications();
 
   // Calculate financial stats
   const totalInventoryValue = allEquipment.reduce((sum, item) => sum + (item.value || 0), 0);
