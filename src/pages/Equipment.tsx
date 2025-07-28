@@ -102,14 +102,14 @@ export default function Equipment() {
           {/* Header */}
           <div className="grid grid-cols-12 gap-4 py-3 px-4 border-b border-border bg-muted/50 font-medium text-sm">
             <div className="col-span-1">Imagem</div>
+            <div className="col-span-1">Patrimônio</div>
             <div className="col-span-2">Nome</div>
             <div className="col-span-1">Marca</div>
             <div className="col-span-1">Modelo</div>
             <div className="col-span-1">Categoria</div>
-            <div className="col-span-1">Status</div>
-            <div className="col-span-1">Patrimônio</div>
             <div className="col-span-1">Serial</div>
             <div className="col-span-1">Valor de Compra</div>
+            <div className="col-span-1">Status</div>
             <div className="col-span-2">Ações</div>
           </div>
           

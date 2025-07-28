@@ -79,6 +79,11 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
         />
       </div>
 
+      {/* Patrimony */}
+      <div className="col-span-1">
+        <div className="text-sm">{equipment.patrimonyNumber || '-'}</div>
+      </div>
+
       {/* Name */}
       <div className="col-span-2">
         <div className="font-medium">{equipment.name}</div>
@@ -99,18 +104,6 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
         <div className="text-sm capitalize">{equipment.category}</div>
       </div>
 
-      {/* Status */}
-      <div className="col-span-1">
-        <Badge variant={getStatusVariant(equipment.status)}>
-          {getStatusLabel(equipment.status)}
-        </Badge>
-      </div>
-
-      {/* Patrimony */}
-      <div className="col-span-1">
-        <div className="text-sm">{equipment.patrimonyNumber || '-'}</div>
-      </div>
-
       {/* Serial Number */}
       <div className="col-span-1">
         <div className="text-sm font-mono">{equipment.serialNumber || '-'}</div>
@@ -119,6 +112,13 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
       {/* Value */}
       <div className="col-span-1">
         <div className="text-sm">{formatCurrency(equipment.value)}</div>
+      </div>
+
+      {/* Status */}
+      <div className="col-span-1">
+        <Badge variant={getStatusVariant(equipment.status)}>
+          {getStatusLabel(equipment.status)}
+        </Badge>
       </div>
 
       {/* Actions */}
