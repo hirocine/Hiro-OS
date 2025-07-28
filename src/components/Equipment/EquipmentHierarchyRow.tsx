@@ -1,0 +1,197 @@
+import React, { useRef } from 'react';
+import { Equipment } from '@/types/equipment';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package } from 'lucide-react';
+import { categoryLabels, statusLabels } from '@/data/mockData';
+
+interface EquipmentHierarchyRowProps {
+  equipment: Equipment;
+  accessories?: Equipment[];
+  onEdit: (equipment: Equipment) => void;
+  onDelete: (id: string) => void;
+  onToggleExpansion: (id: string) => void;
+  onImageUpload?: (equipmentId: string, file: File) => void;
+  level?: number;
+}
+
+export function EquipmentHierarchyRow({
+  equipment,
+  accessories = [],
+  onEdit,
+  onDelete,
+  onToggleExpansion,
+  onImageUpload,
+  level = 0
+}: EquipmentHierarchyRowProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'available': return 'default';
+      case 'maintenance': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    return statusLabels[status as keyof typeof statusLabels] || status;
+  };
+
+  const formatCurrency = (value?: number) => {
+    if (!value) return '-';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && onImageUpload) {
+      onImageUpload(equipment.id, file);
+    }
+  };
+
+  const isMainItem = equipment.itemType === 'main';
+  const hasAccessories = accessories.length > 0;
+  const isExpanded = equipment.isExpanded;
+
+  return (
+    <>
+      <div 
+        className={`grid grid-cols-12 gap-4 p-4 border-b hover:bg-accent/50 transition-colors ${
+          level > 0 ? 'ml-8 border-l-2 border-primary/20' : ''
+        }`}
+      >
+        {/* Expansão / Tipo */}
+        <div className="col-span-1 flex items-center">
+          {isMainItem && hasAccessories ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleExpansion(equipment.id)}
+              className="h-6 w-6 p-0"
+            >
+              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          ) : (
+            <div className="h-6 w-6 flex items-center justify-center">
+              {isMainItem ? (
+                <Package className="h-4 w-4 text-primary" />
+              ) : (
+                <span className="text-muted-foreground text-xs">├─</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Imagem */}
+        <div className="col-span-1">
+          <div 
+            className="w-12 h-12 rounded border-2 border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-colors flex items-center justify-center"
+            onClick={handleImageClick}
+          >
+            {equipment.image ? (
+              <img src={equipment.image} alt={equipment.name} className="w-full h-full object-cover rounded" />
+            ) : (
+              <Camera className="h-5 w-5 text-gray-400" />
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
+
+        {/* Patrimônio */}
+        <div className="col-span-1 flex items-center text-sm font-mono">
+          {equipment.patrimonyNumber || '-'}
+        </div>
+
+        {/* Nome/Tipo */}
+        <div className="col-span-2 flex flex-col">
+          <span className="font-medium">{equipment.name}</span>
+          <div className="flex gap-1 mt-1">
+            <Badge variant={isMainItem ? 'default' : 'secondary'} className="text-xs">
+              {isMainItem ? 'Principal' : 'Acessório'}
+            </Badge>
+            {isMainItem && hasAccessories && (
+              <Badge variant="outline" className="text-xs">
+                {accessories.length} acessório{accessories.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Marca/Modelo */}
+        <div className="col-span-2 flex flex-col text-sm">
+          <span className="font-medium">{equipment.brand}</span>
+          <span className="text-muted-foreground">{equipment.model}</span>
+        </div>
+
+        {/* Categoria */}
+        <div className="col-span-1 flex items-center text-sm">
+          {categoryLabels[equipment.category]}
+        </div>
+
+        {/* Serial */}
+        <div className="col-span-1 flex items-center text-sm font-mono">
+          {equipment.serialNumber || '-'}
+        </div>
+
+        {/* Valor */}
+        <div className="col-span-1 flex items-center text-sm font-medium">
+          {formatCurrency(equipment.value)}
+        </div>
+
+        {/* Status */}
+        <div className="col-span-1 flex items-center">
+          <Badge variant={getStatusVariant(equipment.status)}>
+            {getStatusLabel(equipment.status)}
+          </Badge>
+        </div>
+
+        {/* Ações */}
+        <div className="col-span-1 flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onEdit(equipment)}
+            className="h-8 w-8 p-0"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onDelete(equipment.id)}
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Acessórios expandidos */}
+      {isMainItem && isExpanded && accessories.map((accessory) => (
+        <EquipmentHierarchyRow
+          key={accessory.id}
+          equipment={accessory}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggleExpansion={onToggleExpansion}
+          onImageUpload={onImageUpload}
+          level={level + 1}
+        />
+      ))}
+    </>
+  );
+}

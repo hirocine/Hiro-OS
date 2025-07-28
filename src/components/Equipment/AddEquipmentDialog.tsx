@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Equipment, EquipmentCategory, EquipmentStatus } from '@/types/equipment';
+import { useState, useEffect } from 'react';
+import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,26 +13,55 @@ interface AddEquipmentDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (equipment: Omit<Equipment, 'id'>) => void;
   equipment?: Equipment;
+  mainItems?: Equipment[];
 }
 
-export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: AddEquipmentDialogProps) {
+export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, mainItems = [] }: AddEquipmentDialogProps) {
   const [formData, setFormData] = useState<Omit<Equipment, 'id'>>({
-    name: equipment?.name || '',
-    brand: equipment?.brand || '',
-    model: equipment?.model || '',
-    category: equipment?.category || 'camera',
-    status: equipment?.status || 'available',
-    serialNumber: equipment?.serialNumber || '',
-    purchaseDate: equipment?.purchaseDate || '',
-    lastMaintenance: equipment?.lastMaintenance || '',
-    description: equipment?.description || '',
-    value: equipment?.value || 0,
-    patrimonyNumber: equipment?.patrimonyNumber || '',
-    depreciatedValue: equipment?.depreciatedValue || 0,
-    receiveDate: equipment?.receiveDate || '',
-    store: equipment?.store || '',
-    invoice: equipment?.invoice || '',
+    name: '',
+    brand: '',
+    model: '',
+    category: 'camera',
+    status: 'available',
+    itemType: 'main' as EquipmentItemType,
+    parentId: '',
+    serialNumber: '',
+    purchaseDate: '',
+    lastMaintenance: '',
+    description: '',
+    value: 0,
+    patrimonyNumber: '',
+    depreciatedValue: 0,
+    receiveDate: '',
+    store: '',
+    invoice: '',
   });
+
+  useEffect(() => {
+    if (equipment) {
+      setFormData(equipment);
+    } else {
+      setFormData({
+        name: '',
+        brand: '',
+        model: '',
+        category: 'camera',
+        status: 'available',
+        itemType: 'main' as EquipmentItemType,
+        parentId: '',
+        serialNumber: '',
+        purchaseDate: '',
+        lastMaintenance: '',
+        description: '',
+        value: 0,
+        patrimonyNumber: '',
+        depreciatedValue: 0,
+        receiveDate: '',
+        store: '',
+        invoice: '',
+      });
+    }
+  }, [equipment]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +75,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
         model: '',
         category: 'camera',
         status: 'available',
+        itemType: 'main' as EquipmentItemType,
+        parentId: '',
         serialNumber: '',
         purchaseDate: '',
         lastMaintenance: '',
@@ -142,6 +173,49 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment }: 
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="itemType">Tipo de Item *</Label>
+              <Select 
+                value={formData.itemType} 
+                onValueChange={(value: EquipmentItemType) => {
+                  updateField('itemType', value);
+                  if (value === 'main') {
+                    updateField('parentId', '');
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="main">Item Principal</SelectItem>
+                  <SelectItem value="accessory">Acessório</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.itemType === 'accessory' && (
+              <div className="space-y-2">
+                <Label htmlFor="parentId">Item Principal</Label>
+                <Select 
+                  value={formData.parentId || ''} 
+                  onValueChange={(value) => updateField('parentId', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um item principal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum (acessório independente)</SelectItem>
+                    {mainItems.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.patrimonyNumber ? `${item.patrimonyNumber} - ` : ''}{item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="serialNumber">Número de Série</Label>

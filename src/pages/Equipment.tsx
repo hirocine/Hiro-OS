@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useEquipment } from '@/hooks/useEquipment';
 import type { Equipment } from '@/types/equipment';
-import { EquipmentRow } from '@/components/Equipment/EquipmentRow';
+import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
@@ -10,7 +10,19 @@ import { Plus, Package, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Equipment() {
-  const { equipment, filters, setFilters, addEquipment, updateEquipment, deleteEquipment, importEquipment } = useEquipment();
+  const { 
+    equipment, 
+    equipmentHierarchy, 
+    unlinkedAccessories, 
+    filters, 
+    setFilters, 
+    addEquipment, 
+    updateEquipment, 
+    deleteEquipment, 
+    importEquipment, 
+    toggleEquipmentExpansion,
+    getMainItems
+  } = useEquipment();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
@@ -93,7 +105,7 @@ export default function Equipment() {
 
       <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
-      {equipment.length === 0 ? (
+      {equipmentHierarchy.length === 0 && unlinkedAccessories.length === 0 ? (
         <div className="text-center py-12">
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Nenhum equipamento encontrado</h3>
@@ -111,28 +123,42 @@ export default function Equipment() {
           )}
         </div>
       ) : (
-        <div className="bg-card rounded-lg border shadow-card">
+        <div className="bg-card rounded-lg border shadow">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 py-3 px-4 border-b border-border bg-muted/50 font-medium text-sm">
+          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 font-medium text-sm">
+            <div className="col-span-1">Tipo</div>
             <div className="col-span-1">Imagem</div>
             <div className="col-span-1">Patrimônio</div>
             <div className="col-span-2">Nome</div>
-            <div className="col-span-1">Marca</div>
-            <div className="col-span-1">Modelo</div>
+            <div className="col-span-2">Marca/Modelo</div>
             <div className="col-span-1">Categoria</div>
             <div className="col-span-1">Serial</div>
-            <div className="col-span-1">Valor de Compra</div>
+            <div className="col-span-1">Valor</div>
             <div className="col-span-1">Status</div>
-            <div className="col-span-2">Ações</div>
+            <div className="col-span-1">Ações</div>
           </div>
           
-          {/* Rows */}
-          {equipment.map((item) => (
-            <EquipmentRow
+          {/* Itens principais com acessórios */}
+          {equipmentHierarchy.map((hierarchy) => (
+            <EquipmentHierarchyRow
+              key={hierarchy.item.id}
+              equipment={hierarchy.item}
+              accessories={hierarchy.accessories}
+              onEdit={handleEditEquipment}
+              onDelete={handleDeleteEquipment}
+              onToggleExpansion={toggleEquipmentExpansion}
+              onImageUpload={handleImageUpload}
+            />
+          ))}
+          
+          {/* Acessórios não vinculados */}
+          {unlinkedAccessories.map((item) => (
+            <EquipmentHierarchyRow
               key={item.id}
               equipment={item}
               onEdit={handleEditEquipment}
               onDelete={handleDeleteEquipment}
+              onToggleExpansion={toggleEquipmentExpansion}
               onImageUpload={handleImageUpload}
             />
           ))}
@@ -144,6 +170,7 @@ export default function Equipment() {
         onOpenChange={handleDialogClose}
         onSubmit={editingEquipment ? handleUpdateEquipment : handleAddEquipment}
         equipment={editingEquipment}
+        mainItems={getMainItems()}
       />
 
       <ImportDialog

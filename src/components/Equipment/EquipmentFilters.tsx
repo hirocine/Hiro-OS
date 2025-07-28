@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, X } from 'lucide-react';
-import { categoryLabels, statusLabels } from '@/data/mockData';
+import { categoryLabels, statusLabels, itemTypeLabels } from '@/data/mockData';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -22,7 +22,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange }: Equipmen
     onFiltersChange({});
   };
 
-  const hasActiveFilters = filters.category || filters.status || filters.search;
+  const hasActiveFilters = filters.category || filters.status || filters.itemType || filters.search;
 
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg shadow-card border">
@@ -36,7 +36,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange }: Equipmen
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -74,6 +74,23 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange }: Equipmen
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
             {Object.entries(statusLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filters.itemType || 'all'}
+          onValueChange={(value) => updateFilter('itemType', value === 'all' ? undefined : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            {Object.entries(itemTypeLabels).map(([key, label]) => (
               <SelectItem key={key} value={key}>
                 {label}
               </SelectItem>
