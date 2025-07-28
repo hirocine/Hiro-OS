@@ -1,0 +1,136 @@
+import { Project } from '@/types/project';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar, Package, User, Building2, FileText, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { statusLabels } from '@/data/mockProjects';
+
+interface ProjectCardProps {
+  project: Project;
+  onEdit?: (project: Project) => void;
+  onComplete?: (projectId: string) => void;
+  onArchive?: (projectId: string) => void;
+}
+
+export function ProjectCard({ project, onEdit, onComplete, onArchive }: ProjectCardProps) {
+  const getStatusVariant = (status: Project['status']) => {
+    switch (status) {
+      case 'active':
+        return 'default';
+      case 'completed':
+        return 'secondary';
+      case 'archived':
+        return 'outline';
+      default:
+        return 'default';
+    }
+  };
+
+  const isOverdue = project.status === 'active' && new Date(project.expectedEndDate) < new Date();
+
+  return (
+    <Card className="hover:shadow-elegant transition-all duration-300">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
+            {project.description && (
+              <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={getStatusVariant(project.status)}>
+              {statusLabels[project.status]}
+            </Badge>
+            {isOverdue && (
+              <Badge variant="destructive">Atrasado</Badge>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit?.(project)}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+                {project.status === 'active' && (
+                  <DropdownMenuItem onClick={() => onComplete?.(project.id)}>
+                    <Package className="mr-2 h-4 w-4" />
+                    Finalizar
+                  </DropdownMenuItem>
+                )}
+                {project.status === 'completed' && (
+                  <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
+                    <Package className="mr-2 h-4 w-4" />
+                    Arquivar
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="font-medium">Retirada</p>
+              <p className="text-muted-foreground">
+                {new Date(project.startDate).toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="font-medium">Devolução</p>
+              <p className="text-muted-foreground">
+                {project.actualEndDate
+                  ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
+                  : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
+                }
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="font-medium">Equipamentos</p>
+              <p className="text-muted-foreground">{project.equipmentCount} itens</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="font-medium">Responsável</p>
+              <p className="text-muted-foreground">{project.responsibleName}</p>
+            </div>
+          </div>
+        </div>
+        
+        {project.department && (
+          <div className="flex items-center gap-2 text-sm">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">{project.department}</span>
+          </div>
+        )}
+        
+        {project.notes && (
+          <div className="text-sm">
+            <p className="font-medium mb-1">Observações:</p>
+            <p className="text-muted-foreground">{project.notes}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

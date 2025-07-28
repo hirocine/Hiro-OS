@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -17,6 +17,11 @@ const navigation = [
     name: 'Empréstimos',
     href: '/loans',
     icon: ArrowRightLeft,
+  },
+  {
+    name: 'Projetos',
+    href: '/projects',
+    icon: FolderOpen,
   },
   {
     name: 'Relatórios',
