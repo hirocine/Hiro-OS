@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Activity, Shield, Settings, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -36,9 +36,16 @@ interface AuditLog {
 }
 
 export default function Admin() {
+  const { user } = useAuth();
   const { isAdmin, loading: roleLoading, role } = useUserRole();
   
-  console.log('🏠 Admin: Component loaded', { isAdmin, roleLoading, role });
+  console.log('🏠 Admin: Component loaded', { 
+    isAdmin, 
+    roleLoading, 
+    role,
+    userEmail: user?.email,
+    userId: user?.id 
+  });
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -47,9 +54,44 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
-  // Redirect if not admin
-  if (!roleLoading && !isAdmin) {
-    return <Navigate to="/" replace />;
+  // Better loading and error handling
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show helpful message for non-admin users
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <Shield className="h-12 w-12 text-muted-foreground mx-auto" />
+            <div>
+              <h3 className="text-lg font-semibold">Acesso Restrito</h3>
+              <p className="text-muted-foreground">
+                Você precisa de permissões de administrador para acessar esta página.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Usuário atual: {user?.email}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Role atual: {role || 'não definida'}
+              </p>
+            </div>
+            <Button onClick={() => window.location.href = '/'}>
+              Voltar ao Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   useEffect(() => {
@@ -174,9 +216,6 @@ export default function Admin() {
     return matchesSearch && matchesRole;
   });
 
-  if (roleLoading) {
-    return <div className="p-6">Carregando...</div>;
-  }
 
   return (
     <div className="space-y-6">

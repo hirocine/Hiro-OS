@@ -13,7 +13,7 @@ interface UserRoleState {
 }
 
 export function useUserRole() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [roleState, setRoleState] = useState<UserRoleState>({
     role: null,
     loading: true,
@@ -26,8 +26,15 @@ export function useUserRole() {
     console.log('🔑 useUserRole: Effect triggered', { 
       userExists: !!user, 
       userEmail: user?.email,
-      userId: user?.id 
+      userId: user?.id,
+      authLoading 
     });
+    
+    // Wait for auth to complete loading
+    if (authLoading) {
+      console.log('🔑 useUserRole: Auth still loading, waiting...');
+      return;
+    }
     
     if (!user) {
       console.log('🔑 useUserRole: No user, setting default state');
@@ -116,7 +123,7 @@ export function useUserRole() {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user, authLoading]);
 
   const logAuditEntry = async (
     action: string,
