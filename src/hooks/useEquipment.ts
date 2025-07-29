@@ -198,48 +198,121 @@ export function useEquipment() {
 
   const addEquipment = async (newEquipment: Omit<Equipment, 'id'>) => {
     try {
+      // Convert camelCase to snake_case for database
+      const dbEquipment = {
+        name: newEquipment.name,
+        brand: newEquipment.brand,
+        category: newEquipment.category,
+        status: newEquipment.status,
+        item_type: newEquipment.itemType,
+        parent_id: newEquipment.parentId || null,
+        serial_number: newEquipment.serialNumber || null,
+        purchase_date: newEquipment.purchaseDate || null,
+        last_maintenance: newEquipment.lastMaintenance || null,
+        description: newEquipment.description || null,
+        image: newEquipment.image || null,
+        value: newEquipment.value || null,
+        patrimony_number: newEquipment.patrimonyNumber || null,
+        depreciated_value: newEquipment.depreciatedValue || null,
+        receive_date: newEquipment.receiveDate || null,
+        store: newEquipment.store || null,
+        invoice: newEquipment.invoice || null
+      };
+
       const { data, error } = await supabase
         .from('equipments')
-        .insert([newEquipment])
+        .insert([dbEquipment])
         .select()
         .single();
 
       if (error) {
         console.error('Error adding equipment:', error);
-        return;
+        throw error;
       }
 
       if (data) {
         const equipmentData = {
-          ...data,
+          id: data.id,
+          name: data.name,
+          brand: data.brand,
+          category: data.category,
+          status: data.status,
           itemType: data.item_type || 'main',
+          parentId: data.parent_id,
           isExpanded: false,
-          parentId: data.parent_id
+          serialNumber: data.serial_number,
+          purchaseDate: data.purchase_date,
+          lastMaintenance: data.last_maintenance,
+          description: data.description,
+          image: data.image,
+          value: data.value,
+          patrimonyNumber: data.patrimony_number,
+          depreciatedValue: data.depreciated_value,
+          receiveDate: data.receive_date,
+          store: data.store,
+          invoice: data.invoice,
+          currentLoanId: data.current_loan_id,
+          currentBorrower: data.current_borrower,
+          lastLoanDate: data.last_loan_date
         } as Equipment;
         setEquipment(prev => [...prev, equipmentData]);
+        return { success: true };
       }
     } catch (error) {
       console.error('Error adding equipment:', error);
+      throw error;
     }
   };
 
   const updateEquipment = async (id: string, updates: Partial<Equipment>) => {
     try {
+      // Convert camelCase to snake_case for database
+      const dbUpdates = {
+        name: updates.name,
+        brand: updates.brand,
+        category: updates.category,
+        status: updates.status,
+        item_type: updates.itemType,
+        parent_id: updates.parentId,
+        serial_number: updates.serialNumber,
+        purchase_date: updates.purchaseDate,
+        last_maintenance: updates.lastMaintenance,
+        description: updates.description,
+        image: updates.image,
+        value: updates.value,
+        patrimony_number: updates.patrimonyNumber,
+        depreciated_value: updates.depreciatedValue,
+        receive_date: updates.receiveDate,
+        store: updates.store,
+        invoice: updates.invoice,
+        current_loan_id: updates.currentLoanId,
+        current_borrower: updates.currentBorrower,
+        last_loan_date: updates.lastLoanDate
+      };
+
+      // Remove undefined values
+      const cleanedUpdates = Object.fromEntries(
+        Object.entries(dbUpdates).filter(([_, value]) => value !== undefined)
+      );
+
       const { error } = await supabase
         .from('equipments')
-        .update(updates)
+        .update(cleanedUpdates)
         .eq('id', id);
 
       if (error) {
         console.error('Error updating equipment:', error);
-        return;
+        throw error;
       }
 
       setEquipment(prev => 
         prev.map(item => item.id === id ? { ...item, ...updates } : item)
       );
+
+      return { success: true };
     } catch (error) {
       console.error('Error updating equipment:', error);
+      throw error;
     }
   };
 

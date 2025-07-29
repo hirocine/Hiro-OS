@@ -38,12 +38,14 @@ export default function Equipment() {
   const { toast } = useToast();
 
   const handleAddEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
-    addEquipment(equipmentData);
-    await logAuditEntry('CREATE_EQUIPMENT', 'equipments', undefined, null, equipmentData);
-    toast({
-      title: "Equipamento adicionado",
-      description: `${equipmentData.name} foi adicionado ao inventário.`,
-    });
+    try {
+      const result = await addEquipment(equipmentData);
+      await logAuditEntry('CREATE_EQUIPMENT', 'equipments', undefined, null, equipmentData);
+      return result;
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+      throw error;
+    }
   };
 
   const handleEditEquipment = (equipment: Equipment) => {
@@ -53,14 +55,17 @@ export default function Equipment() {
 
   const handleUpdateEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
     if (editingEquipment) {
-      updateEquipment(editingEquipment.id, equipmentData);
-      await logAuditEntry('UPDATE_EQUIPMENT', 'equipments', editingEquipment.id, editingEquipment, equipmentData);
-      setEditingEquipment(undefined);
-      toast({
-        title: "Equipamento atualizado",
-        description: `${equipmentData.name} foi atualizado com sucesso.`,
-      });
+      try {
+        const result = await updateEquipment(editingEquipment.id, equipmentData);
+        await logAuditEntry('UPDATE_EQUIPMENT', 'equipments', editingEquipment.id, editingEquipment, equipmentData);
+        setEditingEquipment(undefined);
+        return result;
+      } catch (error) {
+        console.error('Error updating equipment:', error);
+        throw error;
+      }
     }
+    return { success: false };
   };
 
   const handleDeleteEquipment = async (id: string) => {

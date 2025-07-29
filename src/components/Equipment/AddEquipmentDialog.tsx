@@ -7,11 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { categoryLabels, statusLabels } from '@/data/mockData';
+import { Loader2 } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface AddEquipmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (equipment: Omit<Equipment, 'id'>) => void;
+  onSubmit: (equipment: Omit<Equipment, 'id'>) => Promise<{ success: boolean } | undefined>;
   equipment?: Equipment;
   mainItems?: Equipment[];
 }
@@ -35,6 +37,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     store: '',
     invoice: '',
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (equipment) {
@@ -61,35 +65,83 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     }
   }, [equipment]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onOpenChange(false);
-    // Reset form if it's a new equipment
-    if (!equipment) {
-      setFormData({
-        name: '',
-        brand: '',
-        category: 'camera',
-        status: 'available',
-        itemType: 'main' as EquipmentItemType,
-        parentId: '',
-        serialNumber: '',
-        purchaseDate: '',
-        lastMaintenance: '',
-        description: '',
-        value: 0,
-        patrimonyNumber: '',
-        depreciatedValue: 0,
-        receiveDate: '',
-        store: '',
-        invoice: '',
+    
+    // Validação básica
+    if (!formData.name.trim() || !formData.brand.trim()) {
+      enhancedToast.error({
+        title: 'Campos obrigatórios',
+        description: 'Nome e marca são obrigatórios.'
       });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const result = await onSubmit(formData);
+      
+      if (result?.success) {
+        enhancedToast.success({
+          title: equipment ? 'Equipamento atualizado' : 'Equipamento adicionado',
+          description: equipment ? 
+            'As informações do equipamento foram atualizadas com sucesso.' :
+            'O novo equipamento foi adicionado ao inventário.'
+        });
+        onOpenChange(false);
+        
+        // Reset form if it's a new equipment
+        if (!equipment) {
+          setFormData({
+            name: '',
+            brand: '',
+            category: 'camera',
+            status: 'available',
+            itemType: 'main' as EquipmentItemType,
+            parentId: '',
+            serialNumber: '',
+            purchaseDate: '',
+            lastMaintenance: '',
+            description: '',
+            value: 0,
+            patrimonyNumber: '',
+            depreciatedValue: 0,
+            receiveDate: '',
+            store: '',
+            invoice: '',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting equipment:', error);
+      enhancedToast.error({
+        title: 'Erro ao salvar',
+        description: 'Ocorreu um erro ao salvar o equipamento. Tente novamente.'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const updateField = (field: keyof typeof formData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const formatCurrency = (value: number | string): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num)) return '';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(num);
+  };
+
+  const parseCurrencyInput = (value: string): number => {
+    if (!value) return 0;
+    const numStr = value.replace(/[^\d,.-]/g, '').replace(',', '.');
+    const num = parseFloat(numStr);
+    return isNaN(num) ? 0 : num;
   };
 
   return (
@@ -219,8 +271,14 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               <Input
                 id="value"
                 type="number"
+                step="0.01"
+                min="0"
                 value={formData.value || ''}
-                onChange={(e) => updateField('value', parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  updateField('value', value === '' ? 0 : parseFloat(value) || 0);
+                }}
+                placeholder="0,00"
               />
             </div>
             
@@ -273,8 +331,14 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               <Input
                 id="depreciatedValue"
                 type="number"
+                step="0.01"
+                min="0"
                 value={formData.depreciatedValue || ''}
-                onChange={(e) => updateField('depreciatedValue', parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  updateField('depreciatedValue', value === '' ? 0 : parseFloat(value) || 0);
+                }}
+                placeholder="0,00"
               />
             </div>
             
@@ -310,10 +374,16 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {equipment ? 'Atualizar' : 'Adicionar'}
             </Button>
           </DialogFooter>
