@@ -256,36 +256,44 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             </div>
 
             {formData.itemType === 'accessory' && (
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="parentId">Item Principal</Label>
-                <Select 
-                  value={formData.parentId || ''} 
-                  onValueChange={(value) => updateField('parentId', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um item principal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
-                        <span className="text-muted-foreground">Nenhum (acessório independente)</span>
-                      </div>
-                    </SelectItem>
-                    {mainItems.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
+                {mainItems.length === 0 ? (
+                  <div className="p-4 bg-muted rounded-lg text-center">
+                    <p className="text-muted-foreground">
+                      Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
+                    </p>
+                  </div>
+                ) : (
+                  <Select 
+                    value={formData.parentId || ''} 
+                    onValueChange={(value) => updateField('parentId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um item principal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-primary rounded-full"></div>
-                          <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
-                          <span className="text-muted-foreground">-</span>
-                          <span>{item.name}</span>
-                          <span className="text-muted-foreground text-sm">({item.brand})</span>
+                          <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
+                          <span className="text-muted-foreground">Nenhum (acessório independente)</span>
                         </div>
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formData.parentId && (
+                      {mainItems.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-primary rounded-full"></div>
+                            <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
+                            <span className="text-muted-foreground">-</span>
+                            <span>{item.name}</span>
+                            <span className="text-muted-foreground text-sm">({item.brand})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {formData.parentId && mainItems.length > 0 && (
                   <p className="text-sm text-green-600">
                     ✓ Este acessório será vinculado ao item selecionado
                   </p>
