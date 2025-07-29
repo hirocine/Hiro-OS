@@ -27,9 +27,7 @@ export function useUserRole() {
       userExists: !!user, 
       userEmail: user?.email,
       userId: user?.id,
-      authLoading,
-      currentRole: roleState.role,
-      currentLoading: roleState.loading
+      authLoading
     });
     
     // Wait for auth to complete loading
