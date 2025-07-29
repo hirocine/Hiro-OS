@@ -88,7 +88,10 @@ export function EquipmentHierarchyRow({
               {isMainItem ? (
                 <Package className="h-4 w-4 text-primary" />
               ) : (
-                <span className="text-muted-foreground text-xs">├─</span>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-3 h-3 border-l-2 border-b-2 border-muted-foreground/40 mr-1"></div>
+                  <Package className="h-3 w-3" />
+                </div>
               )}
             </div>
           )}
