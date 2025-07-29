@@ -168,21 +168,34 @@ export default function Admin() {
     try {
       console.log('🔄 Admin: Updating user role', { userId, newRole });
       
-      // Delete existing role first to avoid conflicts
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      // Security check: prevent self-role-elevation on frontend
+      if (userId === user?.id) {
+        toast({
+          title: 'Erro de Segurança',
+          description: 'Você não pode alterar sua própria role por motivos de segurança.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      // Insert new role
+      // Update the role using direct database operation
+      // The RLS policies now prevent self-role-elevation on the database level
       const { error } = await supabase
         .from('user_roles')
-        .insert({ 
-          user_id: userId, 
-          role: newRole 
-        });
+        .update({ role: newRole })
+        .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        // If update fails, try insert (user might not have a role yet)
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({ 
+            user_id: userId, 
+            role: newRole 
+          });
+        
+        if (insertError) throw insertError;
+      }
 
       // Log the action
       await supabase.rpc('log_audit_entry', {
@@ -199,13 +212,23 @@ export default function Admin() {
       });
 
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Admin: Error updating user role:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao atualizar role do usuário',
-        variant: 'destructive',
-      });
+      
+      // Check for specific security-related errors
+      if (error.message?.includes('row-level security') || error.message?.includes('policy')) {
+        toast({
+          title: 'Erro de Permissão',
+          description: 'Você não tem permissão para alterar essa role ou não pode alterar sua própria role.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao atualizar role do usuário: ' + (error.message || 'Erro desconhecido'),
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -347,38 +370,38 @@ export default function Admin() {
                         </TableCell>
                       </TableRow>
                   ) : (
-                      filteredUsers.map((user) => (
-                        <TableRow key={user.id} className="hover:bg-muted/50">
+                      filteredUsers.map((tableUser) => (
+                        <TableRow key={tableUser.id} className="hover:bg-muted/50">
                           <TableCell>
                             <div className="space-y-1">
-                              <div className="font-medium">{user.display_name}</div>
-                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                              <div className="font-medium">{tableUser.display_name}</div>
+                              <div className="text-sm text-muted-foreground">{tableUser.email}</div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">{user.position}</span>
+                            <span className="text-sm">{tableUser.position}</span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">{user.department}</span>
+                            <span className="text-sm">{tableUser.department}</span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="gap-1">
+                            <Badge variant={tableUser.role === 'admin' ? 'default' : 'secondary'} className="gap-1">
                               <Shield className="h-3 w-3" />
-                              {user.role === 'admin' ? 'Admin' : 'Usuário'}
+                              {tableUser.role === 'admin' ? 'Admin' : 'Usuário'}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {getStatusBadge(user.is_active, !!user.email_confirmed_at)}
+                            {getStatusBadge(tableUser.is_active, !!tableUser.email_confirmed_at)}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1 text-sm">
                               <Clock className="h-3 w-3 text-muted-foreground" />
-                              {formatLastAccess(user.last_sign_in_at)}
+                              {formatLastAccess(tableUser.last_sign_in_at)}
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(user.created_at), { 
+                              {formatDistanceToNow(new Date(tableUser.created_at), { 
                                 addSuffix: true, 
                                 locale: ptBR 
                               })}
@@ -387,10 +410,11 @@ export default function Admin() {
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <Select
-                                value={user.role}
+                                value={tableUser.role}
                                 onValueChange={(newRole: 'admin' | 'user') => 
-                                  updateUserRole(user.id, newRole)
+                                  updateUserRole(tableUser.id, newRole)
                                 }
+                                disabled={tableUser.id === user?.id} // Prevent self-role changes
                               >
                                 <SelectTrigger className="w-28 h-8">
                                   <SelectValue />
@@ -401,7 +425,7 @@ export default function Admin() {
                                 </SelectContent>
                               </Select>
                               
-                              {user.is_active && (
+                              {tableUser.is_active && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button 
@@ -416,14 +440,14 @@ export default function Admin() {
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Desativar Usuário</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Tem certeza que deseja desativar <strong>{user.display_name}</strong>? 
+                                        Tem certeza que deseja desativar <strong>{tableUser.display_name}</strong>? 
                                         Esta ação impedirá o usuário de acessar o sistema.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                       <AlertDialogAction 
-                                        onClick={() => deactivateUser(user.id, user.display_name)}
+                                        onClick={() => deactivateUser(tableUser.id, tableUser.display_name)}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
                                         Desativar
