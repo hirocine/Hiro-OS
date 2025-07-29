@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Package2, Package, Search } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
+import { Loader2, Package2, Package, Search, Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface ConvertToAccessoryDialogProps {
@@ -25,7 +26,7 @@ export function ConvertToAccessoryDialog({
 }: ConvertToAccessoryDialogProps) {
   const [selectedParentId, setSelectedParentId] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const handleConvert = async () => {
     if (!selectedParentId) {
@@ -61,16 +62,7 @@ export function ConvertToAccessoryDialog({
   };
 
   const availableMainItems = mainItems.filter(item => item.id !== equipment.id);
-  
-  const filteredMainItems = availableMainItems.filter(item => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      item.name.toLowerCase().includes(searchLower) ||
-      item.brand.toLowerCase().includes(searchLower) ||
-      (item.patrimonyNumber && item.patrimonyNumber.toLowerCase().includes(searchLower))
-    );
-  });
+  const selectedItem = availableMainItems.find(item => item.id === selectedParentId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,38 +88,61 @@ export function ConvertToAccessoryDialog({
 
           <div className="space-y-2">
             <Label htmlFor="parentId">Selecionar Item Principal *</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Pesquisar itens principais..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={selectedParentId} onValueChange={setSelectedParentId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um item principal" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {filteredMainItems.map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-primary rounded-full"></div>
-                      <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={popoverOpen}
+                  className="w-full justify-between"
+                  disabled={availableMainItems.length === 0}
+                >
+                  {selectedItem ? (
+                    <div className="flex items-center gap-2 truncate">
+                      <div className="w-3 h-3 bg-primary rounded-full flex-shrink-0"></div>
+                      <span className="font-medium">{selectedItem.patrimonyNumber || 'S/N'}</span>
                       <span className="text-muted-foreground">-</span>
-                      <span>{item.name}</span>
-                      <span className="text-muted-foreground text-sm">({item.brand})</span>
+                      <span className="truncate">{selectedItem.name}</span>
                     </div>
-                  </SelectItem>
-                ))}
-                {filteredMainItems.length === 0 && searchTerm && (
-                  <div className="p-2 text-sm text-muted-foreground text-center">
-                    Nenhum item encontrado para "{searchTerm}"
-                  </div>
-                )}
-              </SelectContent>
-            </Select>
+                  ) : (
+                    "Selecione um item principal..."
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Pesquisar itens principais..." />
+                  <CommandList>
+                    <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                    {availableMainItems.map((item) => (
+                      <CommandItem
+                        key={item.id}
+                        value={`${item.patrimonyNumber || ''} ${item.name} ${item.brand}`}
+                        onSelect={() => {
+                          setSelectedParentId(item.id === selectedParentId ? '' : item.id);
+                          setPopoverOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedParentId === item.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-3 h-3 bg-primary rounded-full flex-shrink-0"></div>
+                          <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
+                          <span className="text-muted-foreground">-</span>
+                          <span className="truncate">{item.name}</span>
+                          <span className="text-muted-foreground text-sm">({item.brand})</span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {availableMainItems.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 Não há itens principais disponíveis para associação.
