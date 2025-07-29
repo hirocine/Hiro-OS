@@ -24,11 +24,6 @@ const navigation = [
     href: '/reports',
     icon: BarChart3,
   },
-  {
-    name: 'Configurações',
-    href: '/settings',
-    icon: Settings,
-  },
 ];
 
 export function Sidebar() {
