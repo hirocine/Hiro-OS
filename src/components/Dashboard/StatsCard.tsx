@@ -24,14 +24,6 @@ export function StatsCard({ title, value, icon: Icon, trend, className }: StatsC
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {trend && (
-          <p className={`text-xs ${trend.isPositive ? 'text-success' : 'text-destructive'} flex items-center mt-1`}>
-            <span className="mr-1">
-              {trend.isPositive ? '↗' : '↘'}
-            </span>
-            {Math.abs(trend.value)}%
-          </p>
-        )}
       </CardContent>
     </Card>
   );
