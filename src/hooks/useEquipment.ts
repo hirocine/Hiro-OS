@@ -273,7 +273,7 @@ export function useEquipment() {
         category: updates.category,
         status: updates.status,
         item_type: updates.itemType,
-        parent_id: updates.parentId,
+        parent_id: updates.parentId || null,
         serial_number: updates.serialNumber,
         purchase_date: updates.purchaseDate,
         last_maintenance: updates.lastMaintenance,

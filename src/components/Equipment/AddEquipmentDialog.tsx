@@ -84,7 +84,13 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     setIsSubmitting(true);
     
     try {
-      const result = await onSubmit(formData);
+      // Sanitize parentId - convert empty string to null for proper UUID handling
+      const sanitizedData = {
+        ...formData,
+        parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : undefined
+      };
+      
+      const result = await onSubmit(sanitizedData);
       
       if (result?.success) {
         enhancedToast.success({
