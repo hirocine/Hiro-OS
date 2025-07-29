@@ -74,17 +74,32 @@ export default function Profile() {
 
     try {
       setSaving(true);
+      console.log('🔧 Profile: Starting profile update', {
+        userId: user.id,
+        formData
+      });
+      
+      const updateData = {
+        user_id: user.id,
+        display_name: formData.display_name || null,
+        position: formData.position || null,
+        department: formData.department || null
+      };
+
+      console.log('🔧 Profile: Upsert data', updateData);
       
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          display_name: formData.display_name,
-          position: formData.position,
-          department: formData.department
+        .upsert(updateData, {
+          onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('🔧 Profile: Upsert error', error);
+        throw error;
+      }
+
+      console.log('🔧 Profile: Update successful');
 
       toast({
         title: "Perfil atualizado",
@@ -92,11 +107,11 @@ export default function Profile() {
       });
 
       await fetchProfile();
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch (error: any) {
+      console.error('🔧 Profile: Error updating profile:', error);
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível salvar as alterações.",
+        description: error.message || "Não foi possível salvar as alterações.",
         variant: "destructive",
       });
     } finally {

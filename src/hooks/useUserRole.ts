@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -21,16 +21,107 @@ export function useUserRole() {
     canDelete: false,
     canImport: false,
   });
+  
+  // Cache de role para evitar múltiplas consultas
+  const roleCache = useRef<{ [userId: string]: UserRole }>({});
+  const isInitialized = useRef(false);
+
+  const fetchUserRole = useCallback(async (userId: string) => {
+    // Se já está no cache, usar o valor cacheado
+    if (roleCache.current[userId]) {
+      const cachedRole = roleCache.current[userId];
+      const isAdmin = cachedRole === 'admin';
+      setRoleState({
+        role: cachedRole,
+        loading: false,
+        isAdmin,
+        canDelete: isAdmin,
+        canImport: isAdmin,
+      });
+      return;
+    }
+
+    try {
+      console.log('🔑 useUserRole: Fetching role for user:', userId);
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('🔑 useUserRole: Error fetching role:', error);
+        // Se erro, assume role 'user' e cacheia
+        roleCache.current[userId] = 'user';
+        setRoleState({
+          role: 'user',
+          loading: false,
+          isAdmin: false,
+          canDelete: false,
+          canImport: false,
+        });
+        return;
+      }
+
+      let role: UserRole = 'user';
+      
+      if (data?.role) {
+        role = data.role as UserRole;
+      } else {
+        // Se não há role, criar uma default
+        console.log('🔑 useUserRole: No role found, creating default');
+        try {
+          await supabase
+            .from('user_roles')
+            .insert({ user_id: userId, role: 'user' });
+        } catch (insertError) {
+          console.error('🔑 useUserRole: Error creating default role:', insertError);
+        }
+      }
+
+      // Cache a role
+      roleCache.current[userId] = role;
+      const isAdmin = role === 'admin';
+
+      console.log('🔑 useUserRole: Role fetched and cached:', { 
+        role, 
+        isAdmin,
+        userId 
+      });
+
+      setRoleState({
+        role,
+        loading: false,
+        isAdmin,
+        canDelete: isAdmin,
+        canImport: isAdmin,
+      });
+    } catch (error) {
+      console.error('🔑 useUserRole: Unexpected error:', error);
+      roleCache.current[userId] = 'user';
+      setRoleState({
+        role: 'user',
+        loading: false,
+        isAdmin: false,
+        canDelete: false,
+        canImport: false,
+      });
+    }
+  }, []);
 
   useEffect(() => {
+    // Evitar múltiplas inicializações
+    if (isInitialized.current) return;
+    
     console.log('🔑 useUserRole: Effect triggered', { 
       userExists: !!user, 
       userEmail: user?.email,
       userId: user?.id,
-      authLoading
+      authLoading,
+      isInitialized: isInitialized.current
     });
     
-    // Wait for auth to complete loading
     if (authLoading) {
       console.log('🔑 useUserRole: Auth still loading, waiting...');
       return;
@@ -45,94 +136,13 @@ export function useUserRole() {
         canDelete: false,
         canImport: false,
       });
+      isInitialized.current = true;
       return;
     }
 
-    const fetchUserRole = async () => {
-      try {
-        console.log('🔑 useUserRole: Starting role fetch for user:', user.email);
-        setRoleState(prev => ({ ...prev, loading: true }));
-        
-        // Com a constraint unique, agora sempre haverá apenas uma role por usuário
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        console.log('🔑 useUserRole: Query result', { data, error });
-
-        if (error) {
-          console.error('🔑 useUserRole: Error fetching role:', error);
-          // Se não conseguir buscar role, assume como 'user'
-          setRoleState({
-            role: 'user',
-            loading: false,
-            isAdmin: false,
-            canDelete: false,
-            canImport: false,
-          });
-          return;
-        }
-
-        // Se não há role definida, cria uma role 'user' padrão
-        if (!data) {
-          console.log('🔑 useUserRole: No role found, creating default user role');
-          try {
-            await supabase
-              .from('user_roles')
-              .insert({ user_id: user.id, role: 'user' });
-            
-            setRoleState({
-              role: 'user',
-              loading: false,
-              isAdmin: false,
-              canDelete: false,
-              canImport: false,
-            });
-          } catch (insertError) {
-            console.error('🔑 useUserRole: Error creating default role:', insertError);
-            setRoleState({
-              role: 'user',
-              loading: false,
-              isAdmin: false,
-              canDelete: false,
-              canImport: false,
-            });
-          }
-          return;
-        }
-
-        const role = data.role as UserRole;
-        const isAdmin = role === 'admin';
-
-        console.log('🔑 useUserRole: Role fetched successfully', { 
-          role, 
-          isAdmin,
-          userId: user.id 
-        });
-
-        setRoleState({
-          role,
-          loading: false,
-          isAdmin,
-          canDelete: isAdmin,
-          canImport: isAdmin,
-        });
-      } catch (error) {
-        console.error('🔑 useUserRole: Error in fetchUserRole:', error);
-        setRoleState({
-          role: 'user',
-          loading: false,
-          isAdmin: false,
-          canDelete: false,
-          canImport: false,
-        });
-      }
-    };
-
-    fetchUserRole();
-  }, [user, authLoading]);
+    isInitialized.current = true;
+    fetchUserRole(user.id);
+  }, [user, authLoading, fetchUserRole]);
 
   const logAuditEntry = async (
     action: string,
