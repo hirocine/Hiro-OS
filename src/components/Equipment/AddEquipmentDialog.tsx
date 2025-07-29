@@ -229,13 +229,13 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               <Label htmlFor="subcategory">Subcategoria</Label>
               <Select 
                 value={formData.subcategory || ''} 
-                onValueChange={(value) => updateField('subcategory', value)}
+                onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar subcategoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {getSubcategoriesForCategory(formData.category).map((subcategory) => (
                     <SelectItem key={subcategory} value={subcategory}>
                       {subcategory}
