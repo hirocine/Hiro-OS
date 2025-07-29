@@ -142,8 +142,8 @@ export default function Equipment() {
             <div className="col-span-1">Tipo</div>
             <div className="col-span-1">Imagem</div>
             <div className="col-span-1">Patrimônio</div>
-            <div className="col-span-2">Nome</div>
-            <div className="col-span-2">Marca/Modelo</div>
+            <div className="col-span-3">Nome</div>
+            <div className="col-span-1">Marca/Modelo</div>
             <div className="col-span-1">Categoria</div>
             <div className="col-span-1">Serial</div>
             <div className="col-span-1">Valor</div>

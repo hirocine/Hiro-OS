@@ -119,7 +119,7 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Nome/Tipo */}
-        <div className="col-span-2 flex flex-col min-w-0">
+        <div className="col-span-3 flex flex-col min-w-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -145,8 +145,19 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Marca */}
-        <div className="col-span-2 flex items-center text-sm">
-          <span className="font-medium">{equipment.brand}</span>
+        <div className="col-span-1 flex items-center text-sm min-w-0">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="font-medium truncate" title={equipment.brand}>
+                  {equipment.brand}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{equipment.brand}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Categoria */}
