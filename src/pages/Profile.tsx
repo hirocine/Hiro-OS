@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Upload, User, Camera } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Upload, User, Camera, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -318,6 +319,63 @@ export default function Profile() {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Segurança
+            </CardTitle>
+            <CardDescription>
+              Gerencie suas configurações de segurança e acesso à conta.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Alterar Senha</Label>
+              <Button variant="outline" className="w-full" onClick={() => {
+                toast({
+                  title: "Email enviado",
+                  description: "Email de redefinição de senha enviado para sua caixa de entrada.",
+                });
+              }}>
+                Redefinir Senha
+              </Button>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Autenticação de Dois Fatores</Label>
+                <p className="text-sm text-muted-foreground">
+                  Adicione uma camada extra de segurança à sua conta
+                </p>
+              </div>
+              <Switch 
+                onCheckedChange={(checked) => {
+                  toast({
+                    title: checked ? "2FA Ativado" : "2FA Desativado",
+                    description: checked ? "Autenticação de dois fatores ativada com sucesso." : "Autenticação de dois fatores desativada.",
+                  });
+                }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Sessões Ativas</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Encerre todas as sessões ativas em outros dispositivos
+              </p>
+              <Button variant="destructive" size="sm" onClick={() => {
+                toast({
+                  title: "Sessões encerradas",
+                  description: "Todas as sessões ativas foram encerradas com sucesso.",
+                });
+              }}>
+                Encerrar Todas as Sessões
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

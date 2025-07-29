@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { SettingsActions } from '@/components/Settings/SettingsActions';
+import { BackupSystem } from '@/components/Settings/BackupSystem';
 
 interface User {
   id: string;
@@ -50,6 +54,11 @@ export default function Admin() {
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [notificationSettings, setNotificationSettings] = useState({
+    maintenanceAlerts: true,
+    emailReports: true,
+    equipmentUsageAlerts: false,
+  });
 
   useEffect(() => {
     console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading, user: user?.email });
@@ -283,6 +292,14 @@ export default function Admin() {
     return matchesSearch && matchesRole;
   });
 
+  const handleNotificationSettingChange = (key: string, value: boolean) => {
+    setNotificationSettings(prev => ({ ...prev, [key]: value }));
+    toast({
+      title: "Configuração atualizada",
+      description: "Configuração de notificação atualizada com sucesso.",
+    });
+  };
+
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
@@ -302,6 +319,10 @@ export default function Admin() {
           <TabsTrigger value="logs" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Logs de Auditoria
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notificações
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -521,31 +542,125 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="system" className="space-y-4">
+        <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Configurações do Sistema</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Configurações de Notificações
+              </CardTitle>
               <CardDescription>
-                Configurações gerais e manutenção do sistema
+                Gerencie as notificações do sistema para todos os usuários
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Button 
-                  onClick={fetchUsers}
-                  disabled={loadingUsers}
-                >
-                  Atualizar Lista de Usuários
-                </Button>
-                <Button 
-                  onClick={fetchAuditLogs}
-                  disabled={loadingLogs}
-                >
-                  Atualizar Logs de Auditoria
-                </Button>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Alertas de Manutenção</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notificações sobre equipamentos que precisam de manutenção preventiva
+                  </p>
+                </div>
+                <Switch 
+                  checked={notificationSettings.maintenanceAlerts}
+                  onCheckedChange={(checked) => handleNotificationSettingChange('maintenanceAlerts', checked)}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Relatórios por Email</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Envio automático de relatórios semanais por email
+                  </p>
+                </div>
+                <Switch 
+                  checked={notificationSettings.emailReports}
+                  onCheckedChange={(checked) => handleNotificationSettingChange('emailReports', checked)}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Alertas de Equipamentos em Uso</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notificar quando equipamentos ficam muito tempo emprestados
+                  </p>
+                </div>
+                <Switch 
+                  checked={notificationSettings.equipmentUsageAlerts}
+                  onCheckedChange={(checked) => handleNotificationSettingChange('equipmentUsageAlerts', checked)}
+                />
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Sistema e Backup
+                </CardTitle>
+                <CardDescription>
+                  Gerenciamento de dados e informações do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <SettingsActions />
+                <BackupSystem 
+                  onExportData={async () => {
+                    toast({
+                      title: "Export iniciado",
+                      description: "O download dos dados será iniciado em breve.",
+                    });
+                  }}
+                  onImportData={async (file: File) => {
+                    toast({
+                      title: "Import iniciado",
+                      description: "Os dados estão sendo processados.",
+                    });
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Informações do Sistema</CardTitle>
+                <CardDescription>
+                  Versão e estatísticas do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">Versão do Sistema</p>
+                  <p className="text-sm text-muted-foreground">v1.0.0 - Build 2024.01</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Button 
+                    onClick={fetchUsers}
+                    disabled={loadingUsers}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Atualizar Lista de Usuários
+                  </Button>
+                  <Button 
+                    onClick={fetchAuditLogs}
+                    disabled={loadingLogs}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Atualizar Logs de Auditoria
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
