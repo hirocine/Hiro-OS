@@ -38,15 +38,6 @@ interface AuditLog {
 export default function Admin() {
   const { user } = useAuth();
   const { isAdmin, loading: roleLoading, role } = useUserRole();
-  
-  console.log('🏠 Admin: Component rendered', { 
-    isAdmin, 
-    roleLoading, 
-    role,
-    userEmail: user?.email,
-    userId: user?.id,
-    timestamp: new Date().toISOString()
-  });
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -96,13 +87,13 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading });
-    if (isAdmin && !roleLoading) {
+    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading, user: user?.email });
+    if (isAdmin && !roleLoading && user) {
       console.log('🚀 Admin: Starting data fetch...');
       fetchUsers();
       fetchAuditLogs();
     }
-  }, [isAdmin, roleLoading]);
+  }, [isAdmin, roleLoading, user]);
 
   const fetchUsers = async () => {
     try {

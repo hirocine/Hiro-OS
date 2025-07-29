@@ -22,20 +22,14 @@ export function useUserRole() {
     canImport: false,
   });
 
-  console.log('🔑 useUserRole: Hook called', { 
-    userEmail: user?.email,
-    userId: user?.id,
-    authLoading,
-    currentRole: roleState.role,
-    currentLoading: roleState.loading
-  });
-
   useEffect(() => {
     console.log('🔑 useUserRole: Effect triggered', { 
       userExists: !!user, 
       userEmail: user?.email,
       userId: user?.id,
-      authLoading 
+      authLoading,
+      currentRole: roleState.role,
+      currentLoading: roleState.loading
     });
     
     // Wait for auth to complete loading
@@ -71,22 +65,24 @@ export function useUserRole() {
 
         if (error) {
           if (error.code === 'PGRST116') {
-            // No role found, create default user role
-            console.log('🔑 useUserRole: No role found, creating default user role');
-            const { error: insertError } = await supabase
+            // Multiple rows found - query for first admin role or default to user
+            console.log('🔑 useUserRole: Multiple roles found, querying for admin role');
+            const { data: adminData } = await supabase
               .from('user_roles')
-              .insert({ user_id: user.id, role: 'user' });
+              .select('role')
+              .eq('user_id', user.id)
+              .eq('role', 'admin')
+              .maybeSingle();
             
-            if (insertError) {
-              console.error('🔑 useUserRole: Error creating default role:', insertError);
-            }
+            const role = adminData?.role || 'user';
+            const isAdmin = role === 'admin';
             
             setRoleState({
-              role: 'user',
+              role,
               loading: false,
-              isAdmin: false,
-              canDelete: false,
-              canImport: false,
+              isAdmin,
+              canDelete: isAdmin,
+              canImport: isAdmin,
             });
             return;
           }
