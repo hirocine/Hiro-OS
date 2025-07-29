@@ -188,27 +188,67 @@ export function useEquipment() {
 
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
     try {
+      // Transform the data to match database schema
+      const dbEquipment = importedEquipment.map(item => ({
+        name: item.name,
+        brand: item.brand,
+        model: item.model,
+        category: item.category,
+        status: item.status,
+        item_type: item.itemType,
+        parent_id: item.parentId,
+        serial_number: item.serialNumber,
+        purchase_date: item.purchaseDate,
+        last_maintenance: item.lastMaintenance,
+        description: item.description,
+        image: item.image,
+        value: item.value,
+        patrimony_number: item.patrimonyNumber,
+        depreciated_value: item.depreciatedValue,
+        receive_date: item.receiveDate,
+        store: item.store,
+        invoice: item.invoice
+      }));
+
       const { data, error } = await supabase
         .from('equipments')
-        .insert(importedEquipment)
+        .insert(dbEquipment)
         .select();
 
       if (error) {
         console.error('Error importing equipment:', error);
-        return;
+        throw error;
       }
 
       if (data) {
         const equipmentData = data.map(item => ({
-          ...item,
+          id: item.id,
+          name: item.name,
+          brand: item.brand,
+          model: item.model,
+          category: item.category,
+          status: item.status,
           itemType: item.item_type || 'main',
+          parentId: item.parent_id,
           isExpanded: false,
-          parentId: item.parent_id
+          serialNumber: item.serial_number,
+          purchaseDate: item.purchase_date,
+          lastMaintenance: item.last_maintenance,
+          description: item.description,
+          image: item.image,
+          value: item.value,
+          patrimonyNumber: item.patrimony_number,
+          depreciatedValue: item.depreciated_value,
+          receiveDate: item.receive_date,
+          store: item.store,
+          invoice: item.invoice
         })) as Equipment[];
+        
         setEquipment(prev => [...prev, ...equipmentData]);
       }
     } catch (error) {
       console.error('Error importing equipment:', error);
+      throw error;
     }
   };
 
