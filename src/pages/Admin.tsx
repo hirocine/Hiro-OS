@@ -36,6 +36,7 @@ interface AuditLog {
 }
 
 export default function Admin() {
+  // TODOS OS HOOKS DEVEM VIR PRIMEIRO - ANTES DE QUALQUER RETURN CONDICIONAL
   const { user } = useAuth();
   const { isAdmin, loading: roleLoading, role } = useUserRole();
   const { toast } = useToast();
@@ -46,6 +47,16 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
+  useEffect(() => {
+    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading, user: user?.email });
+    if (isAdmin && !roleLoading && user) {
+      console.log('🚀 Admin: Starting data fetch...');
+      fetchUsers();
+      fetchAuditLogs();
+    }
+  }, [isAdmin, roleLoading, user]);
+
+  // AGORA SIM PODEMOS TER RETURNS CONDICIONAIS
   // Better loading and error handling
   if (roleLoading) {
     return (
@@ -85,15 +96,6 @@ export default function Admin() {
       </div>
     );
   }
-
-  useEffect(() => {
-    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading, user: user?.email });
-    if (isAdmin && !roleLoading && user) {
-      console.log('🚀 Admin: Starting data fetch...');
-      fetchUsers();
-      fetchAuditLogs();
-    }
-  }, [isAdmin, roleLoading, user]);
 
   const fetchUsers = async () => {
     try {
