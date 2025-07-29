@@ -49,11 +49,11 @@ export function SortableHeader({
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className={`h-auto p-1 font-medium justify-start hover:bg-muted/50 ${
+      className={`h-6 p-0 w-full font-medium justify-between hover:bg-muted/50 min-w-0 ${
         isActive ? 'text-primary' : 'text-foreground'
       } ${className}`}
     >
-      <span className="mr-1">{label}</span>
+      <span className="truncate mr-1">{label}</span>
       {getIcon()}
     </Button>
   );

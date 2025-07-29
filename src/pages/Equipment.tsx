@@ -140,7 +140,7 @@ export default function Equipment() {
       ) : (
         <div className="bg-card rounded-lg border shadow">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 text-sm">
+          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 text-sm items-center">
             <div className="col-span-1 font-medium">Tipo</div>
             <div className="col-span-1 font-medium">Imagem</div>
             <div className="col-span-1">
