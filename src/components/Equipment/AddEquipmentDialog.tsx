@@ -20,7 +20,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
   const [formData, setFormData] = useState<Omit<Equipment, 'id'>>({
     name: '',
     brand: '',
-    model: '',
     category: 'camera',
     status: 'available',
     itemType: 'main' as EquipmentItemType,
@@ -44,7 +43,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
       setFormData({
         name: '',
         brand: '',
-        model: '',
         category: 'camera',
         status: 'available',
         itemType: 'main' as EquipmentItemType,
@@ -72,7 +70,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
       setFormData({
         name: '',
         brand: '',
-        model: '',
         category: 'camera',
         status: 'available',
         itemType: 'main' as EquipmentItemType,
@@ -126,15 +123,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="model">Modelo *</Label>
-              <Input
-                id="model"
-                value={formData.model}
-                onChange={(e) => updateField('model', e.target.value)}
-                required
-              />
-            </div>
             
             <div className="space-y-2">
               <Label htmlFor="category">Categoria *</Label>

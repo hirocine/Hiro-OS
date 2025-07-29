@@ -25,7 +25,6 @@ export function SettingsActions() {
         equipment: equipment.map(eq => ({
           name: eq.name,
           brand: eq.brand,
-          model: eq.model,
           category: eq.category,
           status: eq.status,
           serial_number: eq.serialNumber,

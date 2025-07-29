@@ -142,7 +142,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            O arquivo deve conter as colunas: Nome*, Marca*, Modelo*, Categoria* (* obrigatórios)
+            O arquivo deve conter as colunas: Nome*, Marca*, Categoria* (* obrigatórios)
           </AlertDescription>
         </Alert>
 
@@ -195,7 +195,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{equipment.itemType === 'main' ? '📦' : '🔧'}</span>
                       <div>
-                        <span className="font-medium">{equipment.name}</span> - {equipment.brand} {equipment.model}
+                        <span className="font-medium">{equipment.name}</span> - {equipment.brand}
                         <Badge variant="outline" className="ml-2 text-xs">
                           {equipment.category}
                         </Badge>

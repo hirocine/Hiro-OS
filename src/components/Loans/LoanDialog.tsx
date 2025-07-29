@@ -87,7 +87,7 @@ export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, o
         
         <div className="mb-4 p-4 bg-muted rounded-lg">
           <h4 className="font-medium">{equipment.name}</h4>
-          <p className="text-sm text-muted-foreground">{equipment.brand} • {equipment.model}</p>
+          <p className="text-sm text-muted-foreground">{equipment.brand}</p>
           {currentLoan && (
             <div className="mt-2 text-sm">
               <p><strong>Retirado por:</strong> {currentLoan.borrowerName}</p>

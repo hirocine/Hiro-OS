@@ -66,8 +66,7 @@ export function useEquipment() {
         const searchTerm = filters.search.toLowerCase();
         return (
           item.name.toLowerCase().includes(searchTerm) ||
-          item.brand.toLowerCase().includes(searchTerm) ||
-          item.model.toLowerCase().includes(searchTerm)
+          item.brand.toLowerCase().includes(searchTerm)
         );
       }
       return true;
@@ -202,7 +201,6 @@ export function useEquipment() {
         const dbMainItems = mainItems.map(item => ({
           name: item.name,
           brand: item.brand,
-          model: item.model,
           category: item.category,
           status: item.status,
           item_type: item.itemType,
@@ -235,7 +233,6 @@ export function useEquipment() {
             id: item.id,
             name: item.name,
             brand: item.brand,
-            model: item.model,
             category: item.category,
             status: item.status,
             itemType: item.item_type || 'main',
@@ -297,7 +294,6 @@ export function useEquipment() {
           return {
             name: item.name,
             brand: item.brand,
-            model: item.model,
             category: item.category,
             status: item.status,
             item_type: item.itemType,
@@ -331,7 +327,6 @@ export function useEquipment() {
             id: item.id,
             name: item.name,
             brand: item.brand,
-            model: item.model,
             category: item.category,
             status: item.status,
             itemType: item.item_type || 'accessory',

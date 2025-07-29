@@ -92,10 +92,6 @@ export function EquipmentRow({ equipment, onEdit, onDelete, onImageUpload }: Equ
         <div className="text-sm text-muted-foreground">{equipment.brand}</div>
       </div>
 
-      {/* Model */}
-      <div className="col-span-1">
-        <div className="text-sm">{equipment.model}</div>
-      </div>
 
       {/* Category */}
       <div className="col-span-1">

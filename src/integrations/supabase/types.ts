@@ -71,7 +71,6 @@ export type Database = {
           item_type: string
           last_loan_date: string | null
           last_maintenance: string | null
-          model: string
           name: string
           parent_id: string | null
           patrimony_number: string | null
@@ -97,7 +96,6 @@ export type Database = {
           item_type?: string
           last_loan_date?: string | null
           last_maintenance?: string | null
-          model: string
           name: string
           parent_id?: string | null
           patrimony_number?: string | null
@@ -123,7 +121,6 @@ export type Database = {
           item_type?: string
           last_loan_date?: string | null
           last_maintenance?: string | null
-          model?: string
           name?: string
           parent_id?: string | null
           patrimony_number?: string | null

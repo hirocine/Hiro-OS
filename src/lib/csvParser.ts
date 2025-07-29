@@ -25,7 +25,6 @@ const COLUMN_MAPPING = {
   'patrimonio': 'patrimonyNumber',
   'nome': 'name',
   'marca': 'brand',
-  'modelo': 'model',
   'categoria': 'category',
   'tipo de item': 'itemType',
   'tipo item': 'itemType',
@@ -148,14 +147,6 @@ function validateRow(row: any, index: number, mainItemsLookup?: Map<string, stri
     });
   }
 
-  if (!row.model?.trim()) {
-    errors.push({
-      row: rowNumber,
-      field: 'model',
-      message: 'Modelo é obrigatório',
-      value: row.model
-    });
-  }
 
   // Validate and transform category
   const category = validateAndTransformCategory(row.category);
@@ -274,7 +265,6 @@ function validateRow(row: any, index: number, mainItemsLookup?: Map<string, stri
   const equipment: Omit<Equipment, 'id'> = {
     name: row.name.trim(),
     brand: row.brand.trim(),
-    model: row.model.trim(),
     category: category!,
     status: status!,
     itemType: itemType!,
@@ -514,7 +504,6 @@ export function generateTemplate(): string {
     'Patrimônio',
     'Nome',
     'Marca',
-    'Modelo',
     'Categoria',
     'Tipo de Item',
     'Item Principal',
@@ -535,7 +524,6 @@ export function generateTemplate(): string {
       'PAT001',
       'Kit Câmera Sony FX6',
       'Sony',
-      'FX6',
       'camera',
       'Principal',
       '',
@@ -554,7 +542,6 @@ export function generateTemplate(): string {
       'PAT002',
       'Lente Sony 24-70mm',
       'Sony',
-      '24-70mm',
       'accessories',
       'Acessório',
       'PAT001',
@@ -573,7 +560,6 @@ export function generateTemplate(): string {
       'PAT003',
       'Tripé Manfrotto',
       'Manfrotto',
-      'MT055',
       'accessories',
       'Acessório',
       'PAT001',

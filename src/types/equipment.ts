@@ -8,7 +8,6 @@ export interface Equipment {
   id: string;
   name: string;
   brand: string;
-  model: string;
   category: EquipmentCategory;
   status: EquipmentStatus;
   itemType: EquipmentItemType;

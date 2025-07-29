@@ -42,7 +42,7 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
               {equipment.name}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {equipment.brand} • {equipment.model}
+              {equipment.brand}
             </p>
           </div>
           <Badge variant={getStatusVariant(equipment.status)}>

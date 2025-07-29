@@ -132,10 +132,9 @@ export function EquipmentHierarchyRow({
           </div>
         </div>
 
-        {/* Marca/Modelo */}
-        <div className="col-span-2 flex flex-col text-sm">
+        {/* Marca */}
+        <div className="col-span-2 flex items-center text-sm">
           <span className="font-medium">{equipment.brand}</span>
-          <span className="text-muted-foreground">{equipment.model}</span>
         </div>
 
         {/* Categoria */}
