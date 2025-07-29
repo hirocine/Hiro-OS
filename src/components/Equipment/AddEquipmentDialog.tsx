@@ -266,14 +266,14 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                   </div>
                 ) : (
                   <Select 
-                    value={formData.parentId || ''} 
-                    onValueChange={(value) => updateField('parentId', value)}
+                    value={formData.parentId || 'none'} 
+                    onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um item principal" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">
+                      <SelectItem value="none">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
                           <span className="text-muted-foreground">Nenhum (acessório independente)</span>
@@ -293,7 +293,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                     </SelectContent>
                   </Select>
                 )}
-                {formData.parentId && mainItems.length > 0 && (
+                {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
                   <p className="text-sm text-green-600">
                     ✓ Este acessório será vinculado ao item selecionado
                   </p>
