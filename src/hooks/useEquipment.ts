@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
 import { useLoans } from './useLoans';
+import { naturalSort } from '@/lib/utils';
 
 export function useEquipment() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -107,9 +108,12 @@ export function useEquipment() {
           valueB = b.value || 0;
           break;
         case 'patrimonyNumber':
-          valueA = a.patrimonyNumber?.toLowerCase() || '';
-          valueB = b.patrimonyNumber?.toLowerCase() || '';
-          break;
+          // Use natural sorting for patrimony numbers to handle numeric ordering correctly
+          const patrimonySortResult = naturalSort(
+            a.patrimonyNumber || '', 
+            b.patrimonyNumber || ''
+          );
+          return sortOrder === 'asc' ? patrimonySortResult : -patrimonySortResult;
         case 'purchaseDate':
           valueA = a.purchaseDate ? new Date(a.purchaseDate).getTime() : 0;
           valueB = b.purchaseDate ? new Date(b.purchaseDate).getTime() : 0;
