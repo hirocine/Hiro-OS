@@ -29,10 +29,31 @@ export function useEquipment() {
 
       // Transform database data to match Equipment interface
       const equipmentData = (data || []).map(item => ({
-        ...item,
+        id: item.id,
+        name: item.name,
+        brand: item.brand,
+        category: item.category,
+        status: item.status,
         itemType: item.item_type || 'main',
+        parentId: item.parent_id,
+        hasAccessories: false,
         isExpanded: false,
-        parentId: item.parent_id
+        serialNumber: item.serial_number,
+        purchaseDate: item.purchase_date,
+        lastMaintenance: item.last_maintenance,
+        description: item.description,
+        image: item.image,
+        value: item.value,
+        patrimonyNumber: item.patrimony_number,
+        depreciatedValue: item.depreciated_value,
+        receiveDate: item.receive_date,
+        store: item.store,
+        invoice: item.invoice,
+        currentLoanId: item.current_loan_id,
+        currentBorrower: item.current_borrower,
+        lastLoanDate: item.last_loan_date,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
       })) as Equipment[];
       setEquipment(equipmentData);
     } catch (error) {
