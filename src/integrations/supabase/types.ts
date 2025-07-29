@@ -335,6 +335,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_user: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -349,6 +353,9 @@ export type Database = {
           department: string
           created_at: string
           role: Database["public"]["Enums"]["app_role"]
+          last_sign_in_at: string
+          email_confirmed_at: string
+          is_active: boolean
         }[]
       }
       has_role: {

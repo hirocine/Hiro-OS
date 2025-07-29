@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Activity, Shield, Settings, Search } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
@@ -22,6 +23,9 @@ interface User {
   department: string;
   created_at: string;
   role: 'admin' | 'user';
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  is_active: boolean;
 }
 
 interface AuditLog {
@@ -117,7 +121,10 @@ export default function Admin() {
         position: user.position || 'Não informado',
         department: user.department || 'Não informado',
         created_at: user.created_at,
-        role: user.role || 'user'
+        role: user.role || 'user',
+        last_sign_in_at: user.last_sign_in_at || null,
+        email_confirmed_at: user.email_confirmed_at || null,
+        is_active: user.is_active ?? true
       }));
 
       console.log('✅ Admin: Users fetched successfully:', usersData.length, 'users');
@@ -202,6 +209,49 @@ export default function Admin() {
     }
   };
 
+  const deactivateUser = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase.rpc('deactivate_user', {
+        _user_id: userId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Usuário desativado',
+        description: `${userName} foi desativado com sucesso.`,
+      });
+
+      // Atualizar a lista de usuários
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deactivating user:', error);
+      toast({
+        title: 'Erro ao desativar usuário',
+        description: error.message || 'Ocorreu um erro inesperado.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getStatusBadge = (isActive: boolean, emailConfirmed: boolean) => {
+    if (!isActive) {
+      return <Badge variant="destructive">Desativado</Badge>;
+    }
+    if (!emailConfirmed) {
+      return <Badge variant="secondary">Email não confirmado</Badge>;
+    }
+    return <Badge variant="outline" className="text-green-600 border-green-600">Ativo</Badge>;
+  };
+
+  const formatLastAccess = (lastSignIn: string | null) => {
+    if (!lastSignIn) return 'Nunca';
+    return formatDistanceToNow(new Date(lastSignIn), { 
+      addSuffix: true, 
+      locale: ptBR 
+    });
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -267,71 +317,128 @@ export default function Admin() {
                 </Select>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Cargo</TableHead>
-                    <TableHead>Departamento</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Cadastrado há</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loadingUsers ? (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center">
-                        Carregando usuários...
-                      </TableCell>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead>Cargo</TableHead>
+                      <TableHead>Departamento</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Último Acesso</TableHead>
+                      <TableHead>Cadastrado</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ) : filteredUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center">
-                        Nenhum usuário encontrado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          {user.display_name}
-                        </TableCell>
-                        <TableCell>{user.position}</TableCell>
-                        <TableCell>{user.department}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                            <Shield className="h-3 w-3 mr-1" />
-                            {user.role === 'admin' ? 'Administrador' : 'Usuário'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatDistanceToNow(new Date(user.created_at), { 
-                            addSuffix: true, 
-                            locale: ptBR 
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={user.role}
-                            onValueChange={(newRole: 'admin' | 'user') => 
-                              updateUserRole(user.id, newRole)
-                            }
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">Usuário</SelectItem>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                            </SelectContent>
-                          </Select>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingUsers ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          <div className="flex items-center justify-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                            <span>Carregando usuários...</span>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : filteredUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          Nenhum usuário encontrado
+                        </TableCell>
+                      </TableRow>
+                  ) : (
+                      filteredUsers.map((user) => (
+                        <TableRow key={user.id} className="hover:bg-muted/50">
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium">{user.display_name}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">{user.position}</span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">{user.department}</span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="gap-1">
+                              <Shield className="h-3 w-3" />
+                              {user.role === 'admin' ? 'Admin' : 'Usuário'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(user.is_active, !!user.email_confirmed_at)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-sm">
+                              <Clock className="h-3 w-3 text-muted-foreground" />
+                              {formatLastAccess(user.last_sign_in_at)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(user.created_at), { 
+                                addSuffix: true, 
+                                locale: ptBR 
+                              })}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Select
+                                value={user.role}
+                                onValueChange={(newRole: 'admin' | 'user') => 
+                                  updateUserRole(user.id, newRole)
+                                }
+                              >
+                                <SelectTrigger className="w-28 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">Usuário</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              {user.is_active && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Desativar Usuário</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Tem certeza que deseja desativar <strong>{user.display_name}</strong>? 
+                                        Esta ação impedirá o usuário de acessar o sistema.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => deactivateUser(user.id, user.display_name)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Desativar
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
             </CardContent>
           </Card>
         </TabsContent>
