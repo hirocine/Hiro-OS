@@ -122,35 +122,73 @@ export default function Profile() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
+      console.log('🖼️ Avatar: Starting upload process');
       
+      if (!user?.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Você deve selecionar uma imagem para upload.');
       }
 
       const file = event.target.files[0];
+      console.log('🖼️ Avatar: File selected', { 
+        name: file.name, 
+        size: file.size, 
+        type: file.type 
+      });
+
+      // Validar tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Por favor, selecione apenas arquivos de imagem.');
+      }
+
+      // Validar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('A imagem deve ter no máximo 5MB.');
+      }
+
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user?.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}/avatar.${fileExt}`;
+      console.log('🖼️ Avatar: Upload path', filePath);
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
+        console.error('🖼️ Avatar: Upload error', uploadError);
         throw uploadError;
       }
+
+      console.log('🖼️ Avatar: Upload successful, getting public URL');
 
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
+      console.log('🖼️ Avatar: Public URL obtained', data.publicUrl);
+
+      const updateData = {
+        user_id: user.id,
+        avatar_url: data.publicUrl
+      };
+
+      console.log('🖼️ Avatar: Updating profile with avatar URL', updateData);
+
       const { error: updateError } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user?.id,
-          avatar_url: data.publicUrl
+        .upsert(updateData, {
+          onConflict: 'user_id'
         });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('🖼️ Avatar: Profile update error', updateError);
+        throw updateError;
+      }
+
+      console.log('🖼️ Avatar: Profile updated successfully');
 
       toast({
         title: "Avatar atualizado",
@@ -159,9 +197,10 @@ export default function Profile() {
 
       await fetchProfile();
     } catch (error: any) {
+      console.error('🖼️ Avatar: Error in upload process:', error);
       toast({
         title: "Erro ao fazer upload",
-        description: error.message,
+        description: error.message || "Não foi possível atualizar o avatar.",
         variant: "destructive",
       });
     } finally {
