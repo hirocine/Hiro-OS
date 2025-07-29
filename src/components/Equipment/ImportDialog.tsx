@@ -70,14 +70,28 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
     }
   };
 
-  const handleImport = () => {
-    if (importResult?.data) {
-      onImport(importResult.data);
+  const handleImport = async () => {
+    if (!importResult?.data?.length) return;
+
+    setIsProcessing(true);
+    try {
+      console.log('🚀 Starting import of', importResult.data.length, 'items...');
+      await onImport(importResult.data);
       setStep('complete');
+      console.log('✅ Import completed successfully');
       toast({
         title: "Importação concluída",
         description: `${importResult.successRows} equipamentos importados com sucesso.`,
       });
+    } catch (error) {
+      console.error('💥 Import failed:', error);
+      toast({
+        title: "Erro na importação",
+        description: error instanceof Error ? error.message : 'Erro desconhecido na importação',
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -170,14 +184,28 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
         {importResult.successRows > 0 && (
           <div>
             <h4 className="text-sm font-medium mb-2">Equipamentos válidos ({importResult.successRows})</h4>
+            <div className="text-xs text-muted-foreground mb-2">
+              • {importResult.data.filter(item => item.itemType === 'main').length} itens principais
+              • {importResult.data.filter(item => item.itemType === 'accessory').length} acessórios
+            </div>
             <ScrollArea className="h-40 border rounded-md p-2">
               <div className="space-y-1">
                 {importResult.data.slice(0, 10).map((equipment, index) => (
                   <div key={index} className="text-sm p-2 bg-muted/50 rounded">
-                    <span className="font-medium">{equipment.name}</span> - {equipment.brand} {equipment.model}
-                    <Badge variant="outline" className="ml-2 text-xs">
-                      {equipment.category}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{equipment.itemType === 'main' ? '📦' : '🔧'}</span>
+                      <div>
+                        <span className="font-medium">{equipment.name}</span> - {equipment.brand} {equipment.model}
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {equipment.category}
+                        </Badge>
+                        {equipment.patrimonyNumber && (
+                          <Badge variant="secondary" className="ml-1 text-xs">
+                            #{equipment.patrimonyNumber}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {importResult.data.length > 10 && (
@@ -221,9 +249,9 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
             </Button>
             <Button 
               onClick={handleImport} 
-              disabled={importResult.successRows === 0}
+              disabled={importResult.successRows === 0 || isProcessing}
             >
-              Importar ({importResult.successRows})
+              {isProcessing ? 'Importando...' : `Importar (${importResult.successRows})`}
             </Button>
           </div>
         </div>

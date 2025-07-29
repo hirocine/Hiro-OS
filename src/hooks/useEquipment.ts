@@ -188,66 +188,181 @@ export function useEquipment() {
 
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
     try {
-      // Transform the data to match database schema
-      const dbEquipment = importedEquipment.map(item => ({
-        name: item.name,
-        brand: item.brand,
-        model: item.model,
-        category: item.category,
-        status: item.status,
-        item_type: item.itemType,
-        parent_id: item.parentId,
-        serial_number: item.serialNumber,
-        purchase_date: item.purchaseDate,
-        last_maintenance: item.lastMaintenance,
-        description: item.description,
-        image: item.image,
-        value: item.value,
-        patrimony_number: item.patrimonyNumber,
-        depreciated_value: item.depreciatedValue,
-        receive_date: item.receiveDate,
-        store: item.store,
-        invoice: item.invoice
-      }));
-
-      const { data, error } = await supabase
-        .from('equipments')
-        .insert(dbEquipment)
-        .select();
-
-      if (error) {
-        console.error('Error importing equipment:', error);
-        throw error;
-      }
-
-      if (data) {
-        const equipmentData = data.map(item => ({
-          id: item.id,
+      console.log('🔄 Starting import process with', importedEquipment.length, 'items');
+      
+      // Separate main items and accessories for proper processing
+      const mainItems = importedEquipment.filter(item => item.itemType === 'main');
+      const accessories = importedEquipment.filter(item => item.itemType === 'accessory');
+      
+      console.log('📦 Processing', mainItems.length, 'main items and', accessories.length, 'accessories');
+      
+      // Step 1: Insert main items first
+      const insertedMainItems: Equipment[] = [];
+      if (mainItems.length > 0) {
+        const dbMainItems = mainItems.map(item => ({
           name: item.name,
           brand: item.brand,
           model: item.model,
           category: item.category,
           status: item.status,
-          itemType: item.item_type || 'main',
-          parentId: item.parent_id,
-          isExpanded: false,
-          serialNumber: item.serial_number,
-          purchaseDate: item.purchase_date,
-          lastMaintenance: item.last_maintenance,
-          description: item.description,
-          image: item.image,
-          value: item.value,
-          patrimonyNumber: item.patrimony_number,
-          depreciatedValue: item.depreciated_value,
-          receiveDate: item.receive_date,
-          store: item.store,
-          invoice: item.invoice
-        })) as Equipment[];
-        
-        setEquipment(prev => [...prev, ...equipmentData]);
+          item_type: item.itemType,
+          parent_id: null, // Main items have no parent
+          serial_number: item.serialNumber || null,
+          purchase_date: item.purchaseDate || null,
+          last_maintenance: item.lastMaintenance || null,
+          description: item.description || null,
+          image: item.image || null,
+          value: item.value || null,
+          patrimony_number: item.patrimonyNumber || null,
+          depreciated_value: item.depreciatedValue || null,
+          receive_date: item.receiveDate || null,
+          store: item.store || null,
+          invoice: item.invoice || null
+        }));
+
+        const { data: mainData, error: mainError } = await supabase
+          .from('equipments')
+          .insert(dbMainItems)
+          .select();
+
+        if (mainError) {
+          console.error('❌ Error inserting main items:', mainError);
+          throw new Error(`Erro ao inserir itens principais: ${mainError.message}`);
+        }
+
+        if (mainData) {
+          const transformedMainItems = mainData.map(item => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand,
+            model: item.model,
+            category: item.category,
+            status: item.status,
+            itemType: item.item_type || 'main',
+            parentId: item.parent_id,
+            isExpanded: false,
+            serialNumber: item.serial_number,
+            purchaseDate: item.purchase_date,
+            lastMaintenance: item.last_maintenance,
+            description: item.description,
+            image: item.image,
+            value: item.value,
+            patrimonyNumber: item.patrimony_number,
+            depreciatedValue: item.depreciated_value,
+            receiveDate: item.receive_date,
+            store: item.store,
+            invoice: item.invoice
+          })) as Equipment[];
+          
+          insertedMainItems.push(...transformedMainItems);
+          console.log('✅ Successfully inserted', transformedMainItems.length, 'main items');
+        }
       }
+
+      // Step 2: Process accessories with correct parent IDs
+      const insertedAccessories: Equipment[] = [];
+      if (accessories.length > 0) {
+        // Create a mapping from temporary parent IDs to real database IDs
+        const parentIdMapping = new Map<string, string>();
+        
+        // Map original main items to their new database IDs
+        mainItems.forEach((originalMainItem, index) => {
+          if (insertedMainItems[index]) {
+            // Use patrimony number or name as temporary key for mapping
+            const tempKey = originalMainItem.patrimonyNumber || originalMainItem.name;
+            parentIdMapping.set(tempKey, insertedMainItems[index].id);
+          }
+        });
+
+        // Also map existing main items for accessories that reference them
+        const existingMainItems = equipment.filter(item => item.itemType === 'main');
+        existingMainItems.forEach(item => {
+          const tempKey = item.patrimonyNumber || item.name;
+          parentIdMapping.set(tempKey, item.id);
+        });
+
+        console.log('🔗 Created parent ID mapping with', parentIdMapping.size, 'entries');
+
+        const dbAccessories = accessories.map(item => {
+          let parentId: string | null = null;
+          
+          // Try to find parent ID using the mapping
+          if (item.parentId) {
+            parentId = parentIdMapping.get(item.parentId) || null;
+            if (!parentId) {
+              console.warn('⚠️ Could not find parent for accessory:', item.name, 'with parentId:', item.parentId);
+            }
+          }
+
+          return {
+            name: item.name,
+            brand: item.brand,
+            model: item.model,
+            category: item.category,
+            status: item.status,
+            item_type: item.itemType,
+            parent_id: parentId,
+            serial_number: item.serialNumber || null,
+            purchase_date: item.purchaseDate || null,
+            last_maintenance: item.lastMaintenance || null,
+            description: item.description || null,
+            image: item.image || null,
+            value: item.value || null,
+            patrimony_number: item.patrimonyNumber || null,
+            depreciated_value: item.depreciatedValue || null,
+            receive_date: item.receiveDate || null,
+            store: item.store || null,
+            invoice: item.invoice || null
+          };
+        });
+
+        const { data: accessoryData, error: accessoryError } = await supabase
+          .from('equipments')
+          .insert(dbAccessories)
+          .select();
+
+        if (accessoryError) {
+          console.error('❌ Error inserting accessories:', accessoryError);
+          throw new Error(`Erro ao inserir acessórios: ${accessoryError.message}`);
+        }
+
+        if (accessoryData) {
+          const transformedAccessories = accessoryData.map(item => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand,
+            model: item.model,
+            category: item.category,
+            status: item.status,
+            itemType: item.item_type || 'accessory',
+            parentId: item.parent_id,
+            isExpanded: false,
+            serialNumber: item.serial_number,
+            purchaseDate: item.purchase_date,
+            lastMaintenance: item.last_maintenance,
+            description: item.description,
+            image: item.image,
+            value: item.value,
+            patrimonyNumber: item.patrimony_number,
+            depreciatedValue: item.depreciated_value,
+            receiveDate: item.receive_date,
+            store: item.store,
+            invoice: item.invoice
+          })) as Equipment[];
+          
+          insertedAccessories.push(...transformedAccessories);
+          console.log('✅ Successfully inserted', transformedAccessories.length, 'accessories');
+        }
+      }
+
+      // Update state with all new equipment
+      const allNewEquipment = [...insertedMainItems, ...insertedAccessories];
+      setEquipment(prev => [...prev, ...allNewEquipment]);
+      
+      console.log('🎉 Import completed successfully! Total items imported:', allNewEquipment.length);
+      
     } catch (error) {
-      console.error('Error importing equipment:', error);
+      console.error('💥 Import failed:', error);
       throw error;
     }
   };

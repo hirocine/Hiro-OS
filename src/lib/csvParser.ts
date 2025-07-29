@@ -127,131 +127,173 @@ function validateAndTransformItemType(value: string): EquipmentItemType | null {
 
 function validateRow(row: any, index: number, mainItemsLookup?: Map<string, string>): { equipment: Omit<Equipment, 'id'> | null; errors: ImportError[] } {
   const errors: ImportError[] = [];
-  const equipment: Partial<Omit<Equipment, 'id'>> = {};
+  const rowNumber = index + 2; // +2 because index is 0-based and we have a header row
 
   // Required fields validation
-  if (!row.name || !row.name.trim()) {
+  if (!row.name?.trim()) {
     errors.push({
-      row: index + 1,
-      field: 'nome',
+      row: rowNumber,
+      field: 'name',
       message: 'Nome é obrigatório',
       value: row.name
     });
-  } else {
-    equipment.name = row.name.trim();
   }
 
-  if (!row.brand || !row.brand.trim()) {
+  if (!row.brand?.trim()) {
     errors.push({
-      row: index + 1,
-      field: 'marca',
+      row: rowNumber,
+      field: 'brand',
       message: 'Marca é obrigatória',
       value: row.brand
     });
-  } else {
-    equipment.brand = row.brand.trim();
   }
 
-  if (!row.model || !row.model.trim()) {
+  if (!row.model?.trim()) {
     errors.push({
-      row: index + 1,
-      field: 'modelo',
+      row: rowNumber,
+      field: 'model',
       message: 'Modelo é obrigatório',
       value: row.model
     });
-  } else {
-    equipment.model = row.model.trim();
   }
 
-  // Category validation
+  // Validate and transform category
   const category = validateAndTransformCategory(row.category);
   if (!category) {
     errors.push({
-      row: index + 1,
-      field: 'categoria',
-      message: `Categoria inválida. Use: ${VALID_CATEGORIES.join(', ')}`,
+      row: rowNumber,
+      field: 'category',
+      message: `Categoria inválida. Valores aceitos: ${VALID_CATEGORIES.join(', ')}`,
       value: row.category
     });
-  } else {
-    equipment.category = category;
   }
 
-  // Status validation
+  // Validate and transform status
   const status = validateAndTransformStatus(row.status);
   if (!status) {
     errors.push({
-      row: index + 1,
+      row: rowNumber,
       field: 'status',
-      message: `Status inválido. Use: disponível ou manutenção`,
+      message: `Status inválido. Valores aceitos: ${VALID_STATUSES.join(', ')}`,
       value: row.status
     });
-  } else {
-    equipment.status = status;
   }
 
-  // Item type validation
+  // Validate and transform item type
   const itemType = validateAndTransformItemType(row.itemType);
   if (!itemType) {
     errors.push({
-      row: index + 1,
-      field: 'tipo de item',
-      message: `Tipo de item inválido. Use: principal ou acessório`,
+      row: rowNumber,
+      field: 'itemType',
+      message: `Tipo de item inválido. Valores aceitos: ${VALID_ITEM_TYPES.join(', ')}`,
       value: row.itemType
     });
-  } else {
-    equipment.itemType = itemType;
   }
 
-  // Parent ID validation for accessories
-  if (itemType === 'accessory' && row.parentId) {
-    const parentReference = row.parentId.toString().trim();
-    if (mainItemsLookup && mainItemsLookup.has(parentReference)) {
-      equipment.parentId = mainItemsLookup.get(parentReference);
-    } else {
+  // Parent ID validation for accessories - use patrimony number or name as key
+  let parentId: string | undefined;
+  if (itemType === 'accessory' && row.parentId?.trim()) {
+    // Store the parent reference as provided in the CSV for later mapping
+    parentId = row.parentId.trim();
+  }
+
+  // Date validation with improved format checking
+  const validateDate = (dateStr: string, fieldName: string) => {
+    if (dateStr && dateStr.trim()) {
+      // Support multiple date formats
+      const cleanDate = dateStr.trim();
+      let date: Date;
+      
+      // Try parsing as ISO format first (YYYY-MM-DD)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+        date = new Date(cleanDate + 'T00:00:00.000Z');
+      } else {
+        date = new Date(cleanDate);
+      }
+      
+      if (isNaN(date.getTime())) {
+        errors.push({
+          row: rowNumber,
+          field: fieldName,
+          message: 'Data inválida (use formato YYYY-MM-DD)',
+          value: dateStr
+        });
+        return null;
+      }
+      
+      // Return in YYYY-MM-DD format for database consistency
+      return date.toISOString().split('T')[0];
+    }
+    return null;
+  };
+
+  const purchaseDate = validateDate(row.purchaseDate, 'purchaseDate');
+  const lastMaintenance = validateDate(row.lastMaintenance, 'lastMaintenance');
+  const receiveDate = validateDate(row.receiveDate, 'receiveDate');
+
+  // Number validation with better handling
+  const validateNumber = (numStr: string, fieldName: string) => {
+    if (numStr && numStr.trim()) {
+      // Remove currency symbols and spaces
+      const cleanNum = numStr.trim().replace(/[R$\s]/g, '').replace(',', '.');
+      const num = parseFloat(cleanNum);
+      if (isNaN(num) || num < 0) {
+        errors.push({
+          row: rowNumber,
+          field: fieldName,
+          message: 'Valor numérico inválido (deve ser um número positivo)',
+          value: numStr
+        });
+        return null;
+      }
+      return num;
+    }
+    return null;
+  };
+
+  const value = validateNumber(row.value, 'value');
+  const depreciatedValue = validateNumber(row.depreciatedValue, 'depreciatedValue');
+
+  // Validate patrimony number uniqueness (basic format check)
+  if (row.patrimonyNumber?.trim()) {
+    const patrimonyNumber = row.patrimonyNumber.trim();
+    if (patrimonyNumber.length < 3) {
       errors.push({
-        row: index + 1,
-        field: 'item principal',
-        message: `Item principal '${parentReference}' não encontrado`,
-        value: parentReference
+        row: rowNumber,
+        field: 'patrimonyNumber',
+        message: 'Número de patrimônio deve ter pelo menos 3 caracteres',
+        value: patrimonyNumber
       });
     }
-  } else if (itemType === 'accessory' && !row.parentId) {
-    errors.push({
-      row: index + 1,
-      field: 'item principal',
-      message: 'Acessórios devem ter um item principal',
-      value: row.parentId
-    });
-  }
-
-  // Optional fields
-  if (row.patrimonyNumber) equipment.patrimonyNumber = row.patrimonyNumber.toString().trim();
-  if (row.serialNumber) equipment.serialNumber = row.serialNumber.toString().trim();
-  if (row.description) equipment.description = row.description.trim();
-  if (row.store) equipment.store = row.store.trim();
-  if (row.invoice) equipment.invoice = row.invoice.trim();
-
-  // Date fields
-  if (row.purchaseDate) equipment.purchaseDate = row.purchaseDate;
-  if (row.lastMaintenance) equipment.lastMaintenance = row.lastMaintenance;
-  if (row.receiveDate) equipment.receiveDate = row.receiveDate;
-
-  // Numeric fields
-  if (row.value) {
-    const value = parseFloat(row.value.toString().replace(/[^\d.,]/g, '').replace(',', '.'));
-    if (!isNaN(value)) equipment.value = value;
-  }
-
-  if (row.depreciatedValue) {
-    const depreciatedValue = parseFloat(row.depreciatedValue.toString().replace(/[^\d.,]/g, '').replace(',', '.'));
-    if (!isNaN(depreciatedValue)) equipment.depreciatedValue = depreciatedValue;
   }
 
   if (errors.length > 0) {
     return { equipment: null, errors };
   }
 
-  return { equipment: equipment as Omit<Equipment, 'id'>, errors: [] };
+  const equipment: Omit<Equipment, 'id'> = {
+    name: row.name.trim(),
+    brand: row.brand.trim(),
+    model: row.model.trim(),
+    category: category!,
+    status: status!,
+    itemType: itemType!,
+    parentId,
+    serialNumber: row.serialNumber?.trim() || undefined,
+    purchaseDate,
+    lastMaintenance,
+    description: row.description?.trim() || undefined,
+    image: row.image?.trim() || undefined,
+    value,
+    patrimonyNumber: row.patrimonyNumber?.trim() || undefined,
+    depreciatedValue,
+    receiveDate,
+    store: row.store?.trim() || undefined,
+    invoice: row.invoice?.trim() || undefined,
+    isExpanded: false,
+  };
+
+  return { equipment, errors };
 }
 
 function transformHeaders(headers: string[]): string[] {
