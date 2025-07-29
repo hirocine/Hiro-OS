@@ -30,11 +30,17 @@ export interface Equipment {
   lastLoanDate?: string;
 }
 
+export type SortableField = 'name' | 'brand' | 'category' | 'status' | 'value' | 'patrimonyNumber' | 'purchaseDate';
+
+export type SortOrder = 'asc' | 'desc';
+
 export interface EquipmentFilters {
   category?: EquipmentCategory;
   status?: EquipmentStatus;
   itemType?: EquipmentItemType;
   search?: string;
+  sortBy?: SortableField;
+  sortOrder?: SortOrder;
 }
 
 export interface DashboardStats {

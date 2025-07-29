@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy } from '@/types/equipment';
+import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
 import { useLoans } from './useLoans';
 
@@ -78,8 +78,56 @@ export function useEquipment() {
     });
   }, [equipment, getActiveLoanByEquipment]);
 
+  const sortEquipment = (items: Equipment[], sortBy: SortableField, sortOrder: SortOrder) => {
+    return [...items].sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      switch (sortBy) {
+        case 'name':
+          valueA = a.name.toLowerCase();
+          valueB = b.name.toLowerCase();
+          break;
+        case 'brand':
+          valueA = a.brand.toLowerCase();
+          valueB = b.brand.toLowerCase();
+          break;
+        case 'category':
+          valueA = a.category.toLowerCase();
+          valueB = b.category.toLowerCase();
+          break;
+        case 'status':
+          valueA = a.status.toLowerCase();
+          valueB = b.status.toLowerCase();
+          break;
+        case 'value':
+          valueA = a.value || 0;
+          valueB = b.value || 0;
+          break;
+        case 'patrimonyNumber':
+          valueA = a.patrimonyNumber?.toLowerCase() || '';
+          valueB = b.patrimonyNumber?.toLowerCase() || '';
+          break;
+        case 'purchaseDate':
+          valueA = a.purchaseDate ? new Date(a.purchaseDate).getTime() : 0;
+          valueB = b.purchaseDate ? new Date(b.purchaseDate).getTime() : 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (valueA < valueB) {
+        return sortOrder === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortOrder === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
   const filteredEquipment = useMemo(() => {
-    return enrichedEquipment.filter((item) => {
+    let filtered = enrichedEquipment.filter((item) => {
       if (filters.category && item.category !== filters.category) return false;
       if (filters.status && item.status !== filters.status) return false;
       if (filters.itemType && item.itemType !== filters.itemType) return false;
@@ -92,6 +140,13 @@ export function useEquipment() {
       }
       return true;
     });
+
+    // Apply sorting if specified
+    if (filters.sortBy && filters.sortOrder) {
+      return sortEquipment(filtered, filters.sortBy, filters.sortOrder);
+    }
+
+    return filtered;
   }, [enrichedEquipment, filters]);
 
   const equipmentHierarchy = useMemo(() => {
@@ -395,6 +450,22 @@ export function useEquipment() {
     return enrichedEquipment.filter(item => item.itemType === 'main');
   };
 
+  const handleSort = (field: SortableField, order: SortOrder) => {
+    setFilters(prev => ({
+      ...prev,
+      sortBy: field,
+      sortOrder: order
+    }));
+  };
+
+  const clearSort = () => {
+    setFilters(prev => ({
+      ...prev,
+      sortBy: undefined,
+      sortOrder: undefined
+    }));
+  };
+
   return {
     equipment: filteredEquipment,
     allEquipment: equipment,
@@ -409,6 +480,8 @@ export function useEquipment() {
     deleteEquipment,
     importEquipment,
     toggleEquipmentExpansion,
-    getMainItems
+    getMainItems,
+    handleSort,
+    clearSort
   };
 }

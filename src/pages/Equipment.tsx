@@ -4,6 +4,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import type { Equipment } from '@/types/equipment';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
+import { SortableHeader } from '@/components/Equipment/SortableHeader';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { BulkImageUploadDialog } from '@/components/Equipment/BulkImageUploadDialog';
@@ -26,7 +27,8 @@ export default function Equipment() {
     deleteEquipment, 
     importEquipment, 
     toggleEquipmentExpansion,
-    getMainItems
+    getMainItems,
+    handleSort
   } = useEquipment();
   const { logAuditEntry } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -138,17 +140,65 @@ export default function Equipment() {
       ) : (
         <div className="bg-card rounded-lg border shadow">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 font-medium text-sm">
-            <div className="col-span-1">Tipo</div>
-            <div className="col-span-1">Imagem</div>
-            <div className="col-span-1">Patrimônio</div>
-            <div className="col-span-3">Nome</div>
-            <div className="col-span-1">Marca/Modelo</div>
-            <div className="col-span-1">Categoria</div>
-            <div className="col-span-1">Serial</div>
-            <div className="col-span-1">Valor</div>
-            <div className="col-span-1">Status</div>
-            <div className="col-span-1">Ações</div>
+          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 text-sm">
+            <div className="col-span-1 font-medium">Tipo</div>
+            <div className="col-span-1 font-medium">Imagem</div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="patrimonyNumber"
+                label="Patrimônio"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-3">
+              <SortableHeader
+                field="name"
+                label="Nome"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="brand"
+                label="Marca/Modelo"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="category"
+                label="Categoria"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-1 font-medium">Serial</div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="value"
+                label="Valor"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="status"
+                label="Status"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
+            <div className="col-span-1 font-medium">Ações</div>
           </div>
           
           {/* Itens principais com acessórios */}
