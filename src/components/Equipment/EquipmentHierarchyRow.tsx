@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package } from 'lucide-react';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
@@ -118,8 +119,19 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Nome/Tipo */}
-        <div className="col-span-2 flex flex-col">
-          <span className="font-medium">{equipment.name}</span>
+        <div className="col-span-2 flex flex-col min-w-0">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="font-medium truncate" title={equipment.name}>
+                  {equipment.name}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{equipment.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div className="flex gap-1 mt-1">
             <Badge variant={isMainItem ? 'default' : 'secondary'} className="text-xs">
               {isMainItem ? 'Principal' : 'Acessório'}
