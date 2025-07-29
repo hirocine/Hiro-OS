@@ -92,7 +92,7 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Imagem */}
-        <div className="col-span-1 flex justify-center items-center">
+        <div className="col-span-1 flex items-center">
           <div 
             className="w-12 h-12 rounded border-2 border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-colors flex items-center justify-center"
             onClick={handleImageClick}
