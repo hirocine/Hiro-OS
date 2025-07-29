@@ -6,7 +6,10 @@ import { naturalSort } from '@/lib/utils';
 
 export function useEquipment() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [filters, setFilters] = useState<EquipmentFilters>({});
+  const [filters, setFilters] = useState<EquipmentFilters>({
+    sortBy: 'patrimonyNumber',
+    sortOrder: 'asc'
+  });
   const [loading, setLoading] = useState(true);
   const { getActiveLoanByEquipment } = useLoans();
 
