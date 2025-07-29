@@ -2,15 +2,24 @@ import { EquipmentFilters } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, X, Package, Package2 } from 'lucide-react';
 import { categoryLabels, statusLabels, itemTypeLabels } from '@/data/mockData';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
   onFiltersChange: (filters: EquipmentFilters) => void;
+  stats?: {
+    total: number;
+    available: number;
+    inUse: number;
+    maintenance: number;
+    mainItems: number;
+    accessories: number;
+  };
 }
 
-export function EquipmentFiltersComponent({ filters, onFiltersChange }: EquipmentFiltersProps) {
+export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: EquipmentFiltersProps) {
   const updateFilter = (key: keyof EquipmentFilters, value: string | undefined) => {
     onFiltersChange({
       ...filters,

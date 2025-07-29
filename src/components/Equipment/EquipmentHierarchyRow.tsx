@@ -3,7 +3,7 @@ import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package } from 'lucide-react';
+import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, MoreVertical, ArrowUpRight } from 'lucide-react';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
 
@@ -14,6 +14,7 @@ interface EquipmentHierarchyRowProps {
   onDelete: (id: string) => void;
   onToggleExpansion: (id: string) => void;
   onImageUpload?: (equipmentId: string, file: File) => void;
+  onConvertToAccessory?: (equipment: Equipment) => void;
   level?: number;
 }
 
@@ -24,6 +25,7 @@ export function EquipmentHierarchyRow({
   onDelete,
   onToggleExpansion,
   onImageUpload,
+  onConvertToAccessory,
   level = 0
 }: EquipmentHierarchyRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -194,6 +196,27 @@ export function EquipmentHierarchyRow({
           >
             <Edit className="h-4 w-4" />
           </Button>
+          
+          {isMainItem && onConvertToAccessory && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => onConvertToAccessory(equipment)}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                  >
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Converter para acessório</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
           <AdminOnly 
             fallback={
               <div className="h-8 w-8" /> // Placeholder para manter alinhamento
@@ -220,6 +243,7 @@ export function EquipmentHierarchyRow({
           onDelete={onDelete}
           onToggleExpansion={onToggleExpansion}
           onImageUpload={onImageUpload}
+          onConvertToAccessory={onConvertToAccessory}
           level={level + 1}
         />
       ))}

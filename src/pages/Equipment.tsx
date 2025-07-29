@@ -8,9 +8,11 @@ import { SortableHeader } from '@/components/Equipment/SortableHeader';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { BulkImageUploadDialog } from '@/components/Equipment/BulkImageUploadDialog';
+import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Package, FileSpreadsheet, Images } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { AdminOnly } from '@/components/RoleGuard';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatsCardSkeleton, EquipmentCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
@@ -22,6 +24,7 @@ export default function Equipment() {
     unlinkedAccessories, 
     filters, 
     setFilters, 
+    stats,
     addEquipment, 
     updateEquipment, 
     deleteEquipment, 
@@ -34,7 +37,9 @@ export default function Equipment() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [bulkImageDialogOpen, setBulkImageDialogOpen] = useState(false);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
+  const [convertingEquipment, setConvertingEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
   const handleAddEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
@@ -99,6 +104,31 @@ export default function Equipment() {
     setImportDialogOpen(false);
   };
 
+  const handleConvertToAccessory = async (equipmentId: string, parentId: string) => {
+    try {
+      const result = await updateEquipment(equipmentId, {
+        itemType: 'accessory',
+        parentId: parentId
+      });
+
+      if (result?.success) {
+        enhancedToast.success({
+          title: 'Item convertido',
+          description: 'O item foi convertido para acessório com sucesso.'
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error converting to accessory:', error);
+      enhancedToast.error({
+        title: 'Erro na conversão',
+        description: 'Ocorreu um erro ao converter o item.'
+      });
+      return { success: false };
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -126,7 +156,7 @@ export default function Equipment() {
         </div>
       </div>
 
-      <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} />
+      <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} stats={stats} />
 
       {equipmentHierarchy.length === 0 && unlinkedAccessories.length === 0 ? (
         <EmptyState
@@ -206,30 +236,38 @@ export default function Equipment() {
             <div className="col-span-1 font-medium">Ações</div>
           </div>
           
-          {/* Itens principais com acessórios */}
-          {equipmentHierarchy.map((hierarchy) => (
-            <EquipmentHierarchyRow
-              key={hierarchy.item.id}
-              equipment={hierarchy.item}
-              accessories={hierarchy.accessories}
-              onEdit={handleEditEquipment}
-              onDelete={handleDeleteEquipment}
-              onToggleExpansion={toggleEquipmentExpansion}
-              onImageUpload={handleImageUpload}
-            />
-          ))}
-          
-          {/* Acessórios não vinculados */}
-          {unlinkedAccessories.map((item) => (
-            <EquipmentHierarchyRow
-              key={item.id}
-              equipment={item}
-              onEdit={handleEditEquipment}
-              onDelete={handleDeleteEquipment}
-              onToggleExpansion={toggleEquipmentExpansion}
-              onImageUpload={handleImageUpload}
-            />
-          ))}
+           {/* Itens principais com acessórios */}
+           {equipmentHierarchy.map((hierarchy) => (
+             <EquipmentHierarchyRow
+               key={hierarchy.item.id}
+               equipment={hierarchy.item}
+               accessories={hierarchy.accessories}
+               onEdit={handleEditEquipment}
+               onDelete={handleDeleteEquipment}
+               onToggleExpansion={toggleEquipmentExpansion}
+               onImageUpload={handleImageUpload}
+               onConvertToAccessory={(equipment) => {
+                 setConvertingEquipment(equipment);
+                 setConvertDialogOpen(true);
+               }}
+             />
+           ))}
+           
+           {/* Acessórios não vinculados */}
+           {unlinkedAccessories.map((item) => (
+             <EquipmentHierarchyRow
+               key={item.id}
+               equipment={item}
+               onEdit={handleEditEquipment}
+               onDelete={handleDeleteEquipment}
+               onToggleExpansion={toggleEquipmentExpansion}
+               onImageUpload={handleImageUpload}
+               onConvertToAccessory={(equipment) => {
+                 setConvertingEquipment(equipment);
+                 setConvertDialogOpen(true);
+               }}
+             />
+           ))}
         </div>
       )}
 
@@ -256,6 +294,19 @@ export default function Equipment() {
         }}
         equipments={equipment}
       />
+
+      {convertingEquipment && (
+        <ConvertToAccessoryDialog
+          open={convertDialogOpen}
+          onOpenChange={(open) => {
+            setConvertDialogOpen(open);
+            if (!open) setConvertingEquipment(undefined);
+          }}
+          equipment={convertingEquipment}
+          mainItems={getMainItems()}
+          onConvert={handleConvertToAccessory}
+        />
+      )}
     </div>
   );
 }
