@@ -121,7 +121,7 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Nome/Tipo */}
-        <div className="col-span-2 flex flex-col min-w-0">
+        <div className="col-span-3 flex flex-col min-w-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -179,13 +179,6 @@ export function EquipmentHierarchyRow({
         {/* Valor */}
         <div className="col-span-1 flex items-center text-sm font-medium">
           {formatCurrency(equipment.value)}
-        </div>
-
-        {/* Status */}
-        <div className="col-span-1 flex items-center">
-          <Badge variant={getStatusVariant(equipment.status)}>
-            {getStatusLabel(equipment.status)}
-          </Badge>
         </div>
 
         {/* Ações */}
