@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export function StatsCard({ title, value, icon: Icon, trend, className }: StatsC
             <span className="mr-1">
               {trend.isPositive ? '↗' : '↘'}
             </span>
-            {Math.abs(trend.value)}% em relação ao mês anterior
+            {Math.abs(trend.value)}%
           </p>
         )}
       </CardContent>
