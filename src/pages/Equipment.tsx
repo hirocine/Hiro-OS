@@ -6,8 +6,9 @@ import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchy
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
+import { BulkImageUploadDialog } from '@/components/Equipment/BulkImageUploadDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Package, FileSpreadsheet } from 'lucide-react';
+import { Plus, Package, FileSpreadsheet, Images } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdminOnly } from '@/components/RoleGuard';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -30,6 +31,7 @@ export default function Equipment() {
   const { logAuditEntry } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [bulkImageDialogOpen, setBulkImageDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
   const { toast } = useToast();
 
@@ -104,6 +106,10 @@ export default function Equipment() {
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <FileSpreadsheet className="h-4 w-4" />
               Importar CSV/Excel
+            </Button>
+            <Button variant="outline" onClick={() => setBulkImageDialogOpen(true)}>
+              <Images className="h-4 w-4" />
+              Upload de Imagens
             </Button>
           </AdminOnly>
           <Button onClick={() => setDialogOpen(true)}>
@@ -184,6 +190,16 @@ export default function Equipment() {
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
         onImport={handleImport}
+      />
+
+      <BulkImageUploadDialog
+        open={bulkImageDialogOpen}
+        onOpenChange={setBulkImageDialogOpen}
+        onComplete={() => {
+          // Recarregar equipamentos após upload
+          window.location.reload();
+        }}
+        equipments={equipment}
       />
     </div>
   );
