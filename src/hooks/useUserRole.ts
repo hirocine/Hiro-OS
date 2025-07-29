@@ -53,39 +53,18 @@ export function useUserRole() {
         console.log('🔑 useUserRole: Starting role fetch for user:', user.email);
         setRoleState(prev => ({ ...prev, loading: true }));
         
+        // Com a constraint unique, agora sempre haverá apenas uma role por usuário
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         console.log('🔑 useUserRole: Query result', { data, error });
 
         if (error) {
-          if (error.code === 'PGRST116') {
-            // Multiple rows found - query for first admin role or default to user
-            console.log('🔑 useUserRole: Multiple roles found, querying for admin role');
-            const { data: adminData } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            
-            const role = adminData?.role || 'user';
-            const isAdmin = role === 'admin';
-            
-            setRoleState({
-              role,
-              loading: false,
-              isAdmin,
-              canDelete: isAdmin,
-              canImport: isAdmin,
-            });
-            return;
-          }
-          
           console.error('🔑 useUserRole: Error fetching role:', error);
+          // Se não conseguir buscar role, assume como 'user'
           setRoleState({
             role: 'user',
             loading: false,
@@ -96,7 +75,35 @@ export function useUserRole() {
           return;
         }
 
-        const role = data?.role as UserRole;
+        // Se não há role definida, cria uma role 'user' padrão
+        if (!data) {
+          console.log('🔑 useUserRole: No role found, creating default user role');
+          try {
+            await supabase
+              .from('user_roles')
+              .insert({ user_id: user.id, role: 'user' });
+            
+            setRoleState({
+              role: 'user',
+              loading: false,
+              isAdmin: false,
+              canDelete: false,
+              canImport: false,
+            });
+          } catch (insertError) {
+            console.error('🔑 useUserRole: Error creating default role:', insertError);
+            setRoleState({
+              role: 'user',
+              loading: false,
+              isAdmin: false,
+              canDelete: false,
+              canImport: false,
+            });
+          }
+          return;
+        }
+
+        const role = data.role as UserRole;
         const isAdmin = role === 'admin';
 
         console.log('🔑 useUserRole: Role fetched successfully', { 
