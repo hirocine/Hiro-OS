@@ -120,8 +120,8 @@ export function EquipmentHierarchyRow({
           {equipment.patrimonyNumber || '-'}
         </div>
 
-        {/* Nome/Tipo */}
-        <div className="col-span-3 flex flex-col min-w-0">
+        {/* Nome */}
+        <div className="col-span-3 flex items-center min-w-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -134,16 +134,6 @@ export function EquipmentHierarchyRow({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <div className="flex gap-1 mt-1">
-            <Badge variant={isMainItem ? 'default' : 'secondary'} className="text-xs">
-              {isMainItem ? 'Principal' : 'Acessório'}
-            </Badge>
-            {isMainItem && hasAccessories && (
-              <Badge variant="outline" className="text-xs">
-                {accessories.length} acessório{accessories.length !== 1 ? 's' : ''}
-              </Badge>
-            )}
-          </div>
         </div>
 
         {/* Marca */}
