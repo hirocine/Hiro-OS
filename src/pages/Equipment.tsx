@@ -187,7 +187,7 @@ export default function Equipment() {
                 onSort={handleSort}
               />
             </div>
-            <div className="col-span-3">
+            <div className="col-span-2">
               <SortableHeader
                 field="name"
                 label="Nome"
@@ -214,7 +214,15 @@ export default function Equipment() {
                 onSort={handleSort}
               />
             </div>
-            <div className="col-span-1 font-medium">Serial</div>
+            <div className="col-span-1">
+              <SortableHeader
+                field="subcategory"
+                label="Subcategoria"
+                currentSortBy={filters.sortBy}
+                currentSortOrder={filters.sortOrder}
+                onSort={handleSort}
+              />
+            </div>
             <div className="col-span-1">
               <SortableHeader
                 field="value"
@@ -233,7 +241,7 @@ export default function Equipment() {
                 onSort={handleSort}
               />
             </div>
-            <div className="col-span-1 font-medium">Ações</div>
+            <div className="col-span-2 font-medium">Ações</div>
           </div>
           
            {/* Itens principais com acessórios */}

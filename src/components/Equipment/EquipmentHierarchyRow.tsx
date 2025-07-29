@@ -121,7 +121,7 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Nome/Tipo */}
-        <div className="col-span-3 flex flex-col min-w-0">
+        <div className="col-span-2 flex flex-col min-w-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -169,9 +169,11 @@ export function EquipmentHierarchyRow({
           </span>
         </div>
 
-        {/* Serial */}
-        <div className="col-span-1 flex items-center text-sm font-mono">
-          {equipment.serialNumber || '-'}
+        {/* Subcategoria */}
+        <div className="col-span-1 flex items-center text-sm min-w-0 overflow-hidden">
+          <span className="truncate">
+            {equipment.subcategory || '-'}
+          </span>
         </div>
 
         {/* Valor */}
@@ -187,7 +189,7 @@ export function EquipmentHierarchyRow({
         </div>
 
         {/* Ações */}
-        <div className="col-span-1 flex items-center gap-1">
+        <div className="col-span-2 flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="sm"
