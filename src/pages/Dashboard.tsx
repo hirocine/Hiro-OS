@@ -104,7 +104,7 @@ export default function Dashboard() {
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground">Valor Total Real</p>
-            <p className="text-2xl font-bold text-success">{formatCurrency(totalDepreciatedValue)}</p>
+            <p className="text-2xl font-bold text-destructive">{formatCurrency(totalDepreciatedValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Com depreciação</p>
           </div>
           <div className="text-center">
