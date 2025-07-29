@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { categoryLabels, statusLabels } from '@/data/mockData';
-import { Loader2, Check, ChevronsUpDown, Search } from 'lucide-react';
+import { useCategories } from '@/hooks/useCategories';
+import { Loader2, Check, ChevronsUpDown, Search, Plus } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     name: '',
     brand: '',
     category: 'camera',
+    subcategory: '',
+    customCategory: '',
     status: 'available',
     itemType: 'main' as EquipmentItemType,
     parentId: '',
@@ -43,6 +46,10 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parentSearchOpen, setParentSearchOpen] = useState(false);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
+  const { getSubcategoriesForCategory, addCustomCategory } = useCategories();
 
   useEffect(() => {
     if (equipment) {
@@ -52,6 +59,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
         name: '',
         brand: '',
         category: 'camera',
+        subcategory: '',
+        customCategory: '',
         status: 'available',
         itemType: 'main' as EquipmentItemType,
         parentId: '',
@@ -107,6 +116,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             name: '',
             brand: '',
             category: 'camera',
+            subcategory: '',
+            customCategory: '',
             status: 'available',
             itemType: 'main' as EquipmentItemType,
             parentId: '',
@@ -196,7 +207,10 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               <Label htmlFor="category">Categoria *</Label>
               <Select 
                 value={formData.category} 
-                onValueChange={(value) => updateField('category', value as EquipmentCategory)}
+                onValueChange={(value) => {
+                  updateField('category', value as EquipmentCategory);
+                  updateField('subcategory', ''); // Reset subcategory when category changes
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -209,6 +223,96 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subcategory">Subcategoria</Label>
+              <Select 
+                value={formData.subcategory || ''} 
+                onValueChange={(value) => updateField('subcategory', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar subcategoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {getSubcategoriesForCategory(formData.category).map((subcategory) => (
+                    <SelectItem key={subcategory} value={subcategory}>
+                      {subcategory}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Custom Category Section */}
+            <div className="space-y-2 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <Label>Adicionar Nova Categoria/Subcategoria</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCustomCategory(!showCustomCategory)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  {showCustomCategory ? 'Cancelar' : 'Nova Categoria'}
+                </Button>
+              </div>
+              
+              {showCustomCategory && (
+                <div className="p-4 border rounded-lg space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="newCategory">Categoria</Label>
+                      <Input
+                        id="newCategory"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Ex: storage, camera..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newSubcategory">Subcategoria</Label>
+                      <Input
+                        id="newSubcategory"
+                        value={newSubcategoryName}
+                        onChange={(e) => setNewSubcategoryName(e.target.value)}
+                        placeholder="Ex: SSD/HD, Filtro..."
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={async () => {
+                      if (newCategoryName && newSubcategoryName) {
+                        try {
+                          await addCustomCategory(newCategoryName, newSubcategoryName);
+                          updateField('category', newCategoryName as EquipmentCategory);
+                          updateField('subcategory', newSubcategoryName);
+                          setNewCategoryName('');
+                          setNewSubcategoryName('');
+                          setShowCustomCategory(false);
+                          enhancedToast.success({
+                            title: 'Categoria adicionada',
+                            description: 'Nova categoria/subcategoria criada com sucesso!'
+                          });
+                        } catch (error) {
+                          enhancedToast.error({
+                            title: 'Erro',
+                            description: 'Erro ao criar nova categoria. Tente novamente.'
+                          });
+                        }
+                      }
+                    }}
+                    disabled={!newCategoryName || !newSubcategoryName}
+                  >
+                    Adicionar e Usar
+                  </Button>
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">

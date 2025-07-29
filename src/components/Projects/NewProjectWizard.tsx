@@ -52,7 +52,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       camera: [],
       audio: [],
       lighting: [],
-      accessories: []
+      accessories: [],
+      storage: []
     }
   });
 
@@ -177,7 +178,8 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
           camera: [],
           audio: [],
           lighting: [],
-          accessories: []
+          accessories: [],
+          storage: []
         }
       });
       

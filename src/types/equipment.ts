@@ -1,4 +1,4 @@
-export type EquipmentCategory = 'camera' | 'audio' | 'lighting' | 'accessories';
+export type EquipmentCategory = 'camera' | 'audio' | 'lighting' | 'accessories' | 'storage';
 
 export type EquipmentStatus = 'available' | 'maintenance';
 
@@ -9,6 +9,8 @@ export interface Equipment {
   name: string;
   brand: string;
   category: EquipmentCategory;
+  subcategory?: string;
+  customCategory?: string;
   status: EquipmentStatus;
   itemType: EquipmentItemType;
   parentId?: string;
@@ -28,6 +30,15 @@ export interface Equipment {
   currentLoanId?: string;
   currentBorrower?: string;
   lastLoanDate?: string;
+}
+
+export interface EquipmentCategoryData {
+  id: string;
+  category: string;
+  subcategory: string;
+  isCustom: boolean;
+  createdAt: string;
+  createdBy?: string;
 }
 
 export type SortableField = 'name' | 'brand' | 'category' | 'status' | 'value' | 'patrimonyNumber' | 'purchaseDate';

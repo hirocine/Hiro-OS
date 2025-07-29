@@ -6,7 +6,8 @@ export const categoryLabels = {
   camera: 'Câmeras',
   audio: 'Áudio',
   lighting: 'Iluminação',
-  accessories: 'Acessórios'
+  accessories: 'Acessórios',
+  storage: 'Armazenamento'
 };
 
 export const statusLabels = {

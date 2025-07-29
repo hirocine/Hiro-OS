@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment_categories: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_custom: boolean | null
+          subcategory: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_custom?: boolean | null
+          subcategory: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_custom?: boolean | null
+          subcategory?: string
+        }
+        Relationships: []
+      }
       equipments: {
         Row: {
           brand: string
@@ -63,6 +90,7 @@ export type Database = {
           created_at: string
           current_borrower: string | null
           current_loan_id: string | null
+          custom_category: string | null
           depreciated_value: number | null
           description: string | null
           id: string
@@ -79,6 +107,7 @@ export type Database = {
           serial_number: string | null
           status: string
           store: string | null
+          subcategory: string | null
           updated_at: string
           value: number | null
         }
@@ -88,6 +117,7 @@ export type Database = {
           created_at?: string
           current_borrower?: string | null
           current_loan_id?: string | null
+          custom_category?: string | null
           depreciated_value?: number | null
           description?: string | null
           id?: string
@@ -104,6 +134,7 @@ export type Database = {
           serial_number?: string | null
           status?: string
           store?: string | null
+          subcategory?: string | null
           updated_at?: string
           value?: number | null
         }
@@ -113,6 +144,7 @@ export type Database = {
           created_at?: string
           current_borrower?: string | null
           current_loan_id?: string | null
+          custom_category?: string | null
           depreciated_value?: number | null
           description?: string | null
           id?: string
@@ -129,6 +161,7 @@ export type Database = {
           serial_number?: string | null
           status?: string
           store?: string | null
+          subcategory?: string | null
           updated_at?: string
           value?: number | null
         }
