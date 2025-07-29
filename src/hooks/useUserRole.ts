@@ -22,6 +22,14 @@ export function useUserRole() {
     canImport: false,
   });
 
+  console.log('🔑 useUserRole: Hook called', { 
+    userEmail: user?.email,
+    userId: user?.id,
+    authLoading,
+    currentRole: roleState.role,
+    currentLoading: roleState.loading
+  });
+
   useEffect(() => {
     console.log('🔑 useUserRole: Effect triggered', { 
       userExists: !!user, 

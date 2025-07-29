@@ -39,12 +39,13 @@ export default function Admin() {
   const { user } = useAuth();
   const { isAdmin, loading: roleLoading, role } = useUserRole();
   
-  console.log('🏠 Admin: Component loaded', { 
+  console.log('🏠 Admin: Component rendered', { 
     isAdmin, 
     roleLoading, 
     role,
     userEmail: user?.email,
-    userId: user?.id 
+    userId: user?.id,
+    timestamp: new Date().toISOString()
   });
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
