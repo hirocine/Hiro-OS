@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Package2, Package } from 'lucide-react';
+import { Loader2, Package2, Package, Search } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface ConvertToAccessoryDialogProps {
@@ -24,6 +25,7 @@ export function ConvertToAccessoryDialog({
 }: ConvertToAccessoryDialogProps) {
   const [selectedParentId, setSelectedParentId] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleConvert = async () => {
     if (!selectedParentId) {
@@ -59,6 +61,16 @@ export function ConvertToAccessoryDialog({
   };
 
   const availableMainItems = mainItems.filter(item => item.id !== equipment.id);
+  
+  const filteredMainItems = availableMainItems.filter(item => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      item.name.toLowerCase().includes(searchLower) ||
+      item.brand.toLowerCase().includes(searchLower) ||
+      (item.patrimonyNumber && item.patrimonyNumber.toLowerCase().includes(searchLower))
+    );
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -84,12 +96,21 @@ export function ConvertToAccessoryDialog({
 
           <div className="space-y-2">
             <Label htmlFor="parentId">Selecionar Item Principal *</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Pesquisar itens principais..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
             <Select value={selectedParentId} onValueChange={setSelectedParentId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um item principal" />
               </SelectTrigger>
-              <SelectContent>
-                {availableMainItems.map((item) => (
+              <SelectContent className="max-h-60">
+                {filteredMainItems.map((item) => (
                   <SelectItem key={item.id} value={item.id}>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-primary rounded-full"></div>
@@ -100,6 +121,11 @@ export function ConvertToAccessoryDialog({
                     </div>
                   </SelectItem>
                 ))}
+                {filteredMainItems.length === 0 && searchTerm && (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    Nenhum item encontrado para "{searchTerm}"
+                  </div>
+                )}
               </SelectContent>
             </Select>
             {availableMainItems.length === 0 && (
