@@ -106,7 +106,20 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
+      <div className="w-full max-w-md space-y-6">
+        {/* Logo e título da empresa */}
+        <div className="text-center space-y-4">
+          <img 
+            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+            alt="Logo da empresa" 
+            className="h-16 w-auto mx-auto"
+          />
+          <h1 className="text-xl font-semibold text-foreground">
+            Sistema de Inventário - Produtora Audiovisual
+          </h1>
+        </div>
+
+        <Card className="w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
             {mode === 'login' ? 'Entrar' : 'Criar Conta'}
@@ -230,7 +243,8 @@ export default function Auth() {
             </button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
