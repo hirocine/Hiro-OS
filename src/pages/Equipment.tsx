@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 import type { Equipment } from '@/types/equipment';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
@@ -84,14 +85,44 @@ export default function Equipment() {
     });
   };
 
-  const handleImageUpload = (equipmentId: string, file: File) => {
-    // Create a URL for the uploaded file (in a real app, you'd upload to a server)
-    const imageUrl = URL.createObjectURL(file);
-    updateEquipment(equipmentId, { image: imageUrl });
-    toast({
-      title: "Imagem atualizada",
-      description: "A imagem do equipamento foi atualizada com sucesso.",
-    });
+  const handleImageUpload = async (equipmentId: string, file: File) => {
+    try {
+      // Gerar um nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${equipmentId}-${Date.now()}.${fileExt}`;
+      const filePath = `equipment/${fileName}`;
+
+      // Upload para Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('equipment-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Obter URL pública da imagem
+      const { data } = supabase.storage
+        .from('equipment-images')
+        .getPublicUrl(filePath);
+
+      // Atualizar o equipamento com a nova URL da imagem
+      await updateEquipment(equipmentId, { image: data.publicUrl });
+      
+      await logAuditEntry('UPDATE_EQUIPMENT_IMAGE', 'equipments', equipmentId, null, { image: data.publicUrl });
+      
+      toast({
+        title: "Imagem atualizada",
+        description: "A imagem do equipamento foi atualizada com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      toast({
+        title: "Erro ao atualizar imagem",
+        description: "Ocorreu um erro ao fazer upload da imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDialogClose = () => {
