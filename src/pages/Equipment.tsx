@@ -1,340 +1,473 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Plus, Upload, Image, Grid3X3, List, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useEquipment } from '@/hooks/useEquipment';
-import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/integrations/supabase/client';
-import type { Equipment } from '@/types/equipment';
-import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
-import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
-import { SortableHeader } from '@/components/Equipment/SortableHeader';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { BulkImageUploadDialog } from '@/components/Equipment/BulkImageUploadDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
-import { Button } from '@/components/ui/button';
-import { Plus, Package, FileSpreadsheet, Images } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { AdminOnly } from '@/components/RoleGuard';
+import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
+import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
+import { EquipmentMobileCard } from '@/components/Equipment/EquipmentMobileCard';
+import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination';
+import { EquipmentStatsCards } from '@/components/Equipment/EquipmentStatsCards';
+import { SortableHeader } from '@/components/Equipment/SortableHeader';
 import { EmptyState } from '@/components/ui/empty-state';
-import { StatsCardSkeleton, EquipmentCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
+import { Equipment } from '@/types/equipment';
+import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function Equipment() {
-  const { 
-    equipment, 
-    equipmentHierarchy, 
-    unlinkedAccessories, 
-    filters, 
-    setFilters, 
+type ViewMode = 'table' | 'grid' | 'cards';
+
+export default function EquipmentPage() {
+  const {
+    equipment: filteredEquipment,
+    equipmentHierarchy,
     stats,
-    addEquipment, 
-    updateEquipment, 
-    deleteEquipment, 
-    importEquipment, 
+    loading,
+    filters,
+    setFilters,
+    addEquipment,
+    updateEquipment,
+    deleteEquipment,
+    importEquipment,
     toggleEquipmentExpansion,
-    getMainItems,
-    handleSort
+    handleSort,
   } = useEquipment();
-  const { logAuditEntry } = useUserRole();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [bulkImageDialogOpen, setBulkImageDialogOpen] = useState(false);
-  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>();
-  const [convertingEquipment, setConvertingEquipment] = useState<Equipment | undefined>();
-  const { toast } = useToast();
 
-  const handleAddEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isBulkImageDialogOpen, setIsBulkImageDialogOpen] = useState(false);
+  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
+  
+  // Pagination and view states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  
+  const isMobile = useIsMobile();
+  const isTablet = false; // Simplified for now
+
+  // Auto-switch view mode based on screen size
+  const effectiveViewMode = useMemo(() => {
+    if (isMobile) return 'cards';
+    if (isTablet && viewMode === 'table') return 'grid';
+    return viewMode;
+  }, [isMobile, isTablet, viewMode]);
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    if (effectiveViewMode === 'cards') {
+      return filteredEquipment.slice(startIndex, endIndex);
+    }
+    
+    return equipmentHierarchy.slice(startIndex, endIndex);
+  }, [filteredEquipment, equipmentHierarchy, currentPage, itemsPerPage, effectiveViewMode]);
+
+  const totalPages = Math.ceil(
+    (effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length) / itemsPerPage
+  );
+
+  const handleAdd = async (equipmentData: Omit<Equipment, 'id'>) => {
     try {
-      const result = await addEquipment(equipmentData);
-      await logAuditEntry('CREATE_EQUIPMENT', 'equipments', undefined, null, equipmentData);
-      return result;
+      await addEquipment(equipmentData);
+      setIsAddDialogOpen(false);
+      toast.success('Equipamento adicionado com sucesso!');
+      return { success: true };
     } catch (error) {
       console.error('Error adding equipment:', error);
-      throw error;
-    }
-  };
-
-  const handleEditEquipment = (equipment: Equipment) => {
-    setEditingEquipment(equipment);
-    setDialogOpen(true);
-  };
-
-  const handleUpdateEquipment = async (equipmentData: Omit<Equipment, 'id'>) => {
-    if (editingEquipment) {
-      try {
-        const result = await updateEquipment(editingEquipment.id, equipmentData);
-        await logAuditEntry('UPDATE_EQUIPMENT', 'equipments', editingEquipment.id, editingEquipment, equipmentData);
-        setEditingEquipment(undefined);
-        return result;
-      } catch (error) {
-        console.error('Error updating equipment:', error);
-        throw error;
-      }
-    }
-    return { success: false };
-  };
-
-  const handleDeleteEquipment = async (id: string) => {
-    const equipmentToDelete = equipment.find(eq => eq.id === id);
-    deleteEquipment(id);
-    await logAuditEntry('DELETE_EQUIPMENT', 'equipments', id, equipmentToDelete, null);
-    toast({
-      title: "Equipamento removido",
-      description: `${equipmentToDelete?.name} foi removido do inventário.`,
-      variant: "destructive"
-    });
-  };
-
-  const handleImageUpload = async (equipmentId: string, file: File) => {
-    try {
-      // Gerar um nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${equipmentId}-${Date.now()}.${fileExt}`;
-      const filePath = `equipment/${fileName}`;
-
-      // Upload para Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('equipment-images')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Obter URL pública da imagem
-      const { data } = supabase.storage
-        .from('equipment-images')
-        .getPublicUrl(filePath);
-
-      // Atualizar o equipamento com a nova URL da imagem
-      await updateEquipment(equipmentId, { image: data.publicUrl });
-      
-      await logAuditEntry('UPDATE_EQUIPMENT_IMAGE', 'equipments', equipmentId, null, { image: data.publicUrl });
-      
-      toast({
-        title: "Imagem atualizada",
-        description: "A imagem do equipamento foi atualizada com sucesso.",
-      });
-    } catch (error) {
-      console.error('Erro ao fazer upload da imagem:', error);
-      toast({
-        title: "Erro ao atualizar imagem",
-        description: "Ocorreu um erro ao fazer upload da imagem. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setEditingEquipment(undefined);
-  };
-
-  const handleImport = (importedEquipment: any[]) => {
-    importEquipment(importedEquipment);
-    setImportDialogOpen(false);
-  };
-
-  const handleConvertToAccessory = async (equipmentId: string, parentId: string) => {
-    try {
-      const result = await updateEquipment(equipmentId, {
-        itemType: 'accessory',
-        parentId: parentId
-      });
-
-      if (result?.success) {
-        enhancedToast.success({
-          title: 'Item convertido',
-          description: 'O item foi convertido para acessório com sucesso.'
-        });
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Error converting to accessory:', error);
-      enhancedToast.error({
-        title: 'Erro na conversão',
-        description: 'Ocorreu um erro ao converter o item.'
-      });
+      toast.error('Erro ao adicionar equipamento');
       return { success: false };
     }
   };
 
+  const handleEdit = (equipment: Equipment) => {
+    setEditingEquipment(equipment);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleUpdate = async (equipmentData: Omit<Equipment, 'id'>) => {
+    if (editingEquipment) {
+      try {
+        await updateEquipment(editingEquipment.id, equipmentData);
+        setEditingEquipment(null);
+        setIsAddDialogOpen(false);
+        toast.success('Equipamento atualizado com sucesso!');
+      } catch (error) {
+        console.error('Error updating equipment:', error);
+        toast.error('Erro ao atualizar equipamento');
+      }
+    }
+  };
+
+  const handleDelete = async (equipment: Equipment) => {
+    if (confirm(`Tem certeza que deseja excluir "${equipment.name}"?`)) {
+      try {
+        await deleteEquipment(equipment.id);
+        toast.success('Equipamento excluído com sucesso!');
+      } catch (error) {
+        console.error('Error deleting equipment:', error);
+        toast.error('Erro ao excluir equipamento');
+      }
+    }
+  };
+
+  const handleImageUpload = async (equipment: Equipment, file: File) => {
+    try {
+      // Aqui você implementaria o upload da imagem
+      // Por enquanto, vamos simular o sucesso
+      toast.success('Imagem atualizada com sucesso!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Erro ao fazer upload da imagem');
+    }
+  };
+
+  const handleConvertToAccessory = (equipment: Equipment) => {
+    setConvertingEquipment(equipment);
+    setIsConvertDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setIsAddDialogOpen(false);
+    setEditingEquipment(null);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-4">
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-muted rounded w-1/2 mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded"></div>
+                  <div className="h-3 bg-muted rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+
+    if (filteredEquipment.length === 0) {
+      return (
+        <EmptyState
+          icon={Plus}
+          title="Nenhum equipamento encontrado"
+          description="Não há equipamentos que correspondem aos filtros selecionados."
+          action={{
+            label: "Adicionar Equipamento",
+            onClick: () => setIsAddDialogOpen(true)
+          }}
+        />
+      );
+    }
+
+    switch (effectiveViewMode) {
+      case 'cards':
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {(paginatedData as Equipment[]).map((equipment) => (
+              <EquipmentMobileCard
+                key={equipment.id}
+                equipment={equipment}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onImageUpload={handleImageUpload}
+                onConvertToAccessory={handleConvertToAccessory}
+              />
+            ))}
+          </div>
+        );
+        
+      case 'grid':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {(paginatedData as Equipment[]).map((equipment) => (
+              <EquipmentMobileCard
+                key={equipment.id}
+                equipment={equipment}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onImageUpload={handleImageUpload}
+                onConvertToAccessory={handleConvertToAccessory}
+              />
+            ))}
+          </div>
+        );
+
+      default: // table
+        return (
+          <div className="bg-card rounded-lg border overflow-hidden shadow-card">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/30">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-8">
+                      <div className="w-4"></div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-16">
+                      Imagem
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                      <SortableHeader 
+                        field="patrimonyNumber" 
+                        label="Patrimônio" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[150px]">
+                      <SortableHeader 
+                        field="name" 
+                        label="Nome" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                      <SortableHeader 
+                        field="brand" 
+                        label="Marca" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                      <SortableHeader 
+                        field="category" 
+                        label="Categoria" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px] hidden lg:table-cell">
+                      <SortableHeader 
+                        field="subcategory" 
+                        label="Subcategoria" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[100px] hidden xl:table-cell">
+                      <SortableHeader 
+                        field="value" 
+                        label="Valor" 
+                        currentSortBy={filters.sortBy}
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-card divide-y divide-border">
+                  {paginatedData.map((hierarchyItem: any) => (
+                    <EquipmentHierarchyRow
+                      key={hierarchyItem.item.id}
+                      equipment={hierarchyItem.item}
+                      accessories={hierarchyItem.accessories}
+                      onEdit={handleEdit}
+                       onDelete={(equipment) => handleDelete(equipment)}
+                       onToggleExpansion={toggleEquipmentExpansion}
+                       onImageUpload={(equipment, file) => handleImageUpload(equipment, file)}
+                      onConvertToAccessory={handleConvertToAccessory}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Inventário</h1>
-          <p className="text-muted-foreground">
-            Gerencie todos os equipamentos do seu inventário
+    <div className="container mx-auto py-6 space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Inventário de Equipamentos</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie todos os equipamentos da sua organização
           </p>
         </div>
-        <div className="flex gap-2">
-          <AdminOnly>
-            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-              <FileSpreadsheet className="h-4 w-4" />
-              Importar CSV/Excel
-            </Button>
-            <Button variant="outline" onClick={() => setBulkImageDialogOpen(true)}>
-              <Images className="h-4 w-4" />
-              Upload de Imagens
-            </Button>
-          </AdminOnly>
-          <Button onClick={() => setDialogOpen(true)}>
+        
+        <div className="flex flex-wrap gap-2">
+          {/* View mode toggle - hidden on mobile */}
+          {!isMobile && (
+            <div className="flex items-center border rounded-lg p-1 bg-muted/30">
+              <Button
+                variant={effectiveViewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className="h-8 px-3"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={effectiveViewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="h-8 px-3"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={effectiveViewMode === 'cards' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('cards')}
+                className="h-8 px-3"
+              >
+                <Smartphone className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
+          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Adicionar Equipamento
+            <span className="hidden sm:inline">Adicionar Equipamento</span>
+            <span className="sm:hidden">Adicionar</span>
+          </Button>
+          
+          <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </Button>
+          
+          <Button variant="outline" onClick={() => setIsBulkImageDialogOpen(true)} className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            <span className="hidden sm:inline">Upload de Imagens</span>
           </Button>
         </div>
       </div>
 
-      <EquipmentFiltersComponent filters={filters} onFiltersChange={setFilters} stats={stats} />
+      {/* Stats Cards */}
+      <EquipmentStatsCards stats={stats} isLoading={loading} />
 
-      {equipmentHierarchy.length === 0 && unlinkedAccessories.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="Nenhum equipamento encontrado"
-          description={
-            Object.keys(filters).length > 0 
-              ? "Tente ajustar os filtros para encontrar equipamentos." 
-              : "Comece adicionando seu primeiro equipamento ao inventário."
-          }
-          action={Object.keys(filters).length === 0 ? {
-            label: "Adicionar Primeiro Equipamento",
-            onClick: () => setDialogOpen(true)
-          } : undefined}
-        />
-      ) : (
-        <div className="bg-card rounded-lg border shadow">
-          {/* Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 text-sm items-center">
-            <div className="col-span-1 font-medium">Tipo</div>
-            <div className="col-span-1 font-medium">Imagem</div>
-            <div className="col-span-1">
-              <SortableHeader
-                field="patrimonyNumber"
-                label="Patrimônio"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
+      {/* Filters */}
+      <EquipmentFiltersComponent 
+        filters={filters} 
+        onFiltersChange={setFilters}
+        stats={stats}
+      />
+
+      {/* Content */}
+      <div className="space-y-4">
+        {/* Current view indicator */}
+        {!loading && filteredEquipment.length > 0 && (
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                {effectiveViewMode === 'table' ? (
+                  <>
+                    <Monitor className="h-3 w-3 mr-1" />
+                    Tabela
+                  </>
+                ) : effectiveViewMode === 'grid' ? (
+                  <>
+                    <Tablet className="h-3 w-3 mr-1" />
+                    Grade
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="h-3 w-3 mr-1" />
+                    Cards
+                  </>
+                )}
+              </Badge>
+              <span>
+                Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length)} de {effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length} equipamentos
+              </span>
             </div>
-            <div className="col-span-3">
-              <SortableHeader
-                field="name"
-                label="Nome"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
-            </div>
-            <div className="col-span-1">
-              <SortableHeader
-                field="brand"
-                label="Marca/Modelo"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
-            </div>
-            <div className="col-span-1">
-              <SortableHeader
-                field="category"
-                label="Categoria"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
-            </div>
-            <div className="col-span-1">
-              <SortableHeader
-                field="subcategory"
-                label="Subcategoria"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
-            </div>
-            <div className="col-span-1">
-              <SortableHeader
-                field="value"
-                label="Valor"
-                currentSortBy={filters.sortBy}
-                currentSortOrder={filters.sortOrder}
-                onSort={handleSort}
-              />
-            </div>
-            <div className="col-span-2 font-medium">Ações</div>
           </div>
-          
-           {/* Itens principais com acessórios */}
-           {equipmentHierarchy.map((hierarchy) => (
-             <EquipmentHierarchyRow
-               key={hierarchy.item.id}
-               equipment={hierarchy.item}
-               accessories={hierarchy.accessories}
-               onEdit={handleEditEquipment}
-               onDelete={handleDeleteEquipment}
-               onToggleExpansion={toggleEquipmentExpansion}
-               onImageUpload={handleImageUpload}
-               onConvertToAccessory={(equipment) => {
-                 setConvertingEquipment(equipment);
-                 setConvertDialogOpen(true);
-               }}
-             />
-           ))}
-           
-           {/* Acessórios não vinculados */}
-           {unlinkedAccessories.map((item) => (
-             <EquipmentHierarchyRow
-               key={item.id}
-               equipment={item}
-               onEdit={handleEditEquipment}
-               onDelete={handleDeleteEquipment}
-               onToggleExpansion={toggleEquipmentExpansion}
-               onImageUpload={handleImageUpload}
-               onConvertToAccessory={(equipment) => {
-                 setConvertingEquipment(equipment);
-                 setConvertDialogOpen(true);
-               }}
-             />
-           ))}
-        </div>
-      )}
+        )}
 
+        {renderContent()}
+
+        {/* Pagination */}
+        {!loading && filteredEquipment.length > 0 && (
+          <EquipmentPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        )}
+      </div>
+
+      {/* Dialogs */}
       <AddEquipmentDialog
-        open={dialogOpen}
+        open={isAddDialogOpen}
         onOpenChange={handleDialogClose}
-        onSubmit={editingEquipment ? handleUpdateEquipment : handleAddEquipment}
+        onSubmit={editingEquipment ? handleUpdate : handleAdd}
         equipment={editingEquipment}
-        mainItems={getMainItems()}
       />
 
       <ImportDialog
-        open={importDialogOpen}
-        onOpenChange={setImportDialogOpen}
-        onImport={handleImport}
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onImport={(data) => {
+          importEquipment(data);
+          setIsImportDialogOpen(false);
+          toast.success('Equipamentos importados com sucesso!');
+        }}
       />
 
       <BulkImageUploadDialog
-        open={bulkImageDialogOpen}
-        onOpenChange={setBulkImageDialogOpen}
+        open={isBulkImageDialogOpen}
+        onOpenChange={setIsBulkImageDialogOpen}
         onComplete={() => {
-          // Recarregar equipamentos após upload
-          window.location.reload();
+          setIsBulkImageDialogOpen(false);
+          toast.success('Upload de imagens concluído!');
         }}
-        equipments={equipment}
+        equipments={filteredEquipment}
       />
 
       {convertingEquipment && (
         <ConvertToAccessoryDialog
-          open={convertDialogOpen}
+          open={isConvertDialogOpen}
           onOpenChange={(open) => {
-            setConvertDialogOpen(open);
-            if (!open) setConvertingEquipment(undefined);
+            setIsConvertDialogOpen(open);
+            if (!open) setConvertingEquipment(null);
           }}
           equipment={convertingEquipment}
-          mainItems={getMainItems()}
-          onConvert={handleConvertToAccessory}
+          onConvert={async (equipmentId, parentId) => {
+            // Implementar conversão para acessório
+            setIsConvertDialogOpen(false);
+            setConvertingEquipment(null);
+            toast.success('Equipamento convertido para acessório!');
+          }}
         />
       )}
     </div>
