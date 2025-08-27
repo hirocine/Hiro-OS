@@ -114,7 +114,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as categorias</SelectItem>
+                <SelectItem value="all">Todas as categorias</SelectItem>
                 {Object.entries(categoryLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
@@ -129,7 +129,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os status</SelectItem>
+                <SelectItem value="all">Todos os status</SelectItem>
                 {Object.entries(statusLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
@@ -144,7 +144,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os tipos</SelectItem>
+                <SelectItem value="all">Todos os tipos</SelectItem>
                 {Object.entries(itemTypeLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
