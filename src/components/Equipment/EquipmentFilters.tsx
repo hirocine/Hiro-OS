@@ -17,7 +17,8 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
   const [isExpanded, setIsExpanded] = useState(false);
   
   const updateFilter = (key: keyof EquipmentFilters, value: string | undefined) => {
-    onFiltersChange({ ...filters, [key]: value || undefined });
+    const filterValue = value === 'all' ? undefined : value;
+    onFiltersChange({ ...filters, [key]: filterValue || undefined });
   };
 
   const clearFilters = () => {
@@ -109,7 +110,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${!isExpanded ? 'hidden md:grid' : ''}`}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Categoria</label>
-            <Select value={filters.category || ''} onValueChange={(value) => updateFilter('category', value)}>
+            <Select value={filters.category || 'all'} onValueChange={(value) => updateFilter('category', value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
@@ -124,7 +125,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Status</label>
-            <Select value={filters.status || ''} onValueChange={(value) => updateFilter('status', value)}>
+            <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
@@ -139,7 +140,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Tipo</label>
-            <Select value={filters.itemType || ''} onValueChange={(value) => updateFilter('itemType', value)}>
+            <Select value={filters.itemType || 'all'} onValueChange={(value) => updateFilter('itemType', value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
