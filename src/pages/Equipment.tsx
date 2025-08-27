@@ -100,11 +100,14 @@ export default function EquipmentPage() {
         setEditingEquipment(null);
         setIsAddDialogOpen(false);
         toast.success('Equipamento atualizado com sucesso!');
+        return { success: true };
       } catch (error) {
         console.error('Error updating equipment:', error);
         toast.error('Erro ao atualizar equipamento');
+        return { success: false };
       }
     }
+    return { success: false };
   };
 
   const handleDelete = async (equipment: Equipment) => {
@@ -119,6 +122,12 @@ export default function EquipmentPage() {
     }
   };
 
+  const handleDeleteById = async (equipmentId: string) => {
+    const equipment = filteredEquipment.find(e => e.id === equipmentId);
+    if (!equipment) return;
+    await handleDelete(equipment);
+  };
+
   const handleImageUpload = async (equipment: Equipment, file: File) => {
     try {
       // Aqui você implementaria o upload da imagem
@@ -128,6 +137,12 @@ export default function EquipmentPage() {
       console.error('Error uploading image:', error);
       toast.error('Erro ao fazer upload da imagem');
     }
+  };
+
+  const handleImageUploadById = async (equipmentId: string, file: File) => {
+    const equipment = filteredEquipment.find(e => e.id === equipmentId);
+    if (!equipment) return;
+    await handleImageUpload(equipment, file);
   };
 
   const handleConvertToAccessory = (equipment: Equipment) => {
@@ -296,9 +311,9 @@ export default function EquipmentPage() {
                       equipment={hierarchyItem.item}
                       accessories={hierarchyItem.accessories}
                       onEdit={handleEdit}
-                       onDelete={(equipment) => handleDelete(equipment)}
-                       onToggleExpansion={toggleEquipmentExpansion}
-                       onImageUpload={(equipment, file) => handleImageUpload(equipment, file)}
+                        onDelete={handleDeleteById}
+                        onToggleExpansion={toggleEquipmentExpansion}
+                        onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
                     />
                   ))}
@@ -462,11 +477,19 @@ export default function EquipmentPage() {
             if (!open) setConvertingEquipment(null);
           }}
           equipment={convertingEquipment}
+          mainItems={filteredEquipment.filter(e => e.itemType === 'main')}
           onConvert={async (equipmentId, parentId) => {
-            // Implementar conversão para acessório
-            setIsConvertDialogOpen(false);
-            setConvertingEquipment(null);
-            toast.success('Equipamento convertido para acessório!');
+            try {
+              // Implementar conversão para acessório
+              setIsConvertDialogOpen(false);
+              setConvertingEquipment(null);
+              toast.success('Equipamento convertido para acessório!');
+              return { success: true };
+            } catch (error) {
+              console.error('Error converting equipment:', error);
+              toast.error('Erro ao converter equipamento');
+              return { success: false };
+            }
           }}
         />
       )}
