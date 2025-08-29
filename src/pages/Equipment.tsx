@@ -282,8 +282,8 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      Subcategoria
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center min-w-0">
+                      <span className="truncate">Subcategoria</span>
                     </div>
                     <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
