@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, memo, useCallback } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ interface EquipmentHierarchyRowProps {
   level?: number;
 }
 
-export function EquipmentHierarchyRow({
+export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   equipment,
   accessories = [],
   onEdit,
@@ -50,16 +50,16 @@ export function EquipmentHierarchyRow({
     }).format(value);
   };
 
-  const handleImageClick = () => {
+  const handleImageClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && onImageUpload) {
       onImageUpload(equipment.id, file);
     }
-  };
+  }, [equipment.id, onImageUpload]);
 
   const isMainItem = equipment.itemType === 'main';
   const hasAccessories = accessories.length > 0;
@@ -68,7 +68,7 @@ export function EquipmentHierarchyRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-12 gap-4 p-4 border-b hover:bg-accent/50 transition-colors ${
+        className={`grid grid-cols-12 gap-4 px-4 py-4 border-b hover:bg-accent/50 transition-colors ${
           level > 0 ? 'ml-8 border-l-2 border-primary/20' : ''
         }`}
       >
@@ -244,4 +244,4 @@ export function EquipmentHierarchyRow({
       ))}
     </>
   );
-}
+});

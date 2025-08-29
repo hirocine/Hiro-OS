@@ -46,7 +46,7 @@ export default function EquipmentPage() {
   
   // Pagination and view states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   
   const isMobile = useIsMobile();
@@ -59,7 +59,7 @@ export default function EquipmentPage() {
     return viewMode;
   }, [isMobile, isTablet, viewMode]);
 
-  // Paginated data
+  // Paginated data - memoized for performance
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -236,16 +236,17 @@ export default function EquipmentPage() {
         return (
           <div className="bg-card rounded-lg border overflow-hidden shadow-card">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-border">
-                <thead className="bg-muted/30">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-8">
-                      <div className="w-4"></div>
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-16">
+              <div className="min-w-full">
+                {/* Header */}
+                <div className="bg-muted/30 border-b border-border">
+                  <div className="grid grid-cols-12 gap-4 px-4 py-3">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Tipo
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Imagem
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       <SortableHeader 
                         field="patrimonyNumber" 
                         label="Patrimônio" 
@@ -253,8 +254,8 @@ export default function EquipmentPage() {
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[150px]">
+                    </div>
+                    <div className="col-span-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       <SortableHeader 
                         field="name" 
                         label="Nome" 
@@ -262,8 +263,8 @@ export default function EquipmentPage() {
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       <SortableHeader 
                         field="brand" 
                         label="Marca" 
@@ -271,8 +272,8 @@ export default function EquipmentPage() {
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px]">
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       <SortableHeader 
                         field="category" 
                         label="Categoria" 
@@ -280,17 +281,11 @@ export default function EquipmentPage() {
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[120px] hidden lg:table-cell">
-                      <SortableHeader 
-                        field="subcategory" 
-                        label="Subcategoria" 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[100px] hidden xl:table-cell">
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Subcategoria
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       <SortableHeader 
                         field="value" 
                         label="Valor" 
@@ -298,27 +293,29 @@ export default function EquipmentPage() {
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                    </div>
+                    <div className="col-span-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-card divide-y divide-border">
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="bg-card">
                   {paginatedData.map((hierarchyItem: any) => (
                     <EquipmentHierarchyRow
                       key={hierarchyItem.item.id}
                       equipment={hierarchyItem.item}
                       accessories={hierarchyItem.accessories}
                       onEdit={handleEdit}
-                        onDelete={handleDeleteById}
-                        onToggleExpansion={toggleEquipmentExpansion}
-                        onImageUpload={handleImageUploadById}
+                      onDelete={handleDeleteById}
+                      onToggleExpansion={toggleEquipmentExpansion}
+                      onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
                     />
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
         );

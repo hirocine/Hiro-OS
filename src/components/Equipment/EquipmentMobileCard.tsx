@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,7 +19,7 @@ interface EquipmentMobileCardProps {
   onConvertToAccessory?: (equipment: Equipment) => void;
 }
 
-export function EquipmentMobileCard({
+export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   equipment,
   onEdit,
   onDelete,
@@ -181,4 +182,4 @@ export function EquipmentMobileCard({
       </CardContent>
     </Card>
   );
-}
+});
