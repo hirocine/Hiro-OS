@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -15,17 +15,31 @@ export function useAuth() {
     loading: true,
   });
 
+  const isInitialized = useRef(false);
+
   useEffect(() => {
+    // Prevent multiple initializations
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+
     console.log('useAuth: Setting up auth listeners');
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('useAuth: Auth state changed', { event, user: session?.user?.email, hasSession: !!session });
-        setAuthState({
-          session,
-          user: session?.user ?? null,
-          loading: false,
+        setAuthState(prevState => {
+          // Prevent unnecessary state updates
+          if (prevState.session?.access_token === session?.access_token && 
+              prevState.user?.id === session?.user?.id) {
+            return prevState;
+          }
+          
+          return {
+            session,
+            user: session?.user ?? null,
+            loading: false,
+          };
         });
       }
     );
@@ -44,7 +58,10 @@ export function useAuth() {
       });
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      isInitialized.current = false;
+    };
   }, []);
 
   const signUp = async (email: string, password: string, metadata?: { 
