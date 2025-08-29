@@ -20,64 +20,55 @@ export function useEquipment() {
 
   const fetchEquipment = async () => {
     try {
-      console.log('🚀 Starting fetchEquipment...');
       setLoading(true);
       const { data, error } = await supabase
         .from('equipments')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('📊 Supabase response:', { data: data?.length || 0, error });
-
       if (error) {
-        console.error('❌ Error fetching equipment:', error);
+        console.error('Error fetching equipment:', error);
         return;
       }
 
-      // Transform database data to match Equipment interface
-      const equipmentData = (data || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        brand: item.brand,
-        category: item.category,
-        subcategory: item.subcategory,
-        customCategory: item.custom_category,
-        status: item.status,
-        itemType: item.item_type || 'main',
-        parentId: item.parent_id,
+      // Transform database data with proper type safety and fallbacks
+      const equipmentData = (data || []).map((item: any): Equipment => ({
+        id: String(item.id || ''),
+        name: String(item.name || 'Nome não informado'),
+        brand: String(item.brand || 'Marca não informada'),
+        category: (item.category || 'accessories') as any,
+        subcategory: item.subcategory || undefined,
+        customCategory: item.custom_category || undefined,
+        status: (item.status || 'available') as any,
+        itemType: (item.item_type || 'main') as any,
+        parentId: item.parent_id || undefined,
         hasAccessories: false,
         isExpanded: false,
-        serialNumber: item.serial_number,
-        purchaseDate: item.purchase_date,
-        lastMaintenance: item.last_maintenance,
-        description: item.description,
-        image: item.image,
-        value: item.value,
-        patrimonyNumber: item.patrimony_number,
-        depreciatedValue: item.depreciated_value,
-        receiveDate: item.receive_date,
-        store: item.store,
-        invoice: item.invoice,
-        currentLoanId: item.current_loan_id,
-        currentBorrower: item.current_borrower,
-        lastLoanDate: item.last_loan_date,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at
-      })) as Equipment[];
+        serialNumber: item.serial_number || undefined,
+        purchaseDate: item.purchase_date || undefined,
+        lastMaintenance: item.last_maintenance || undefined,
+        description: item.description || undefined,
+        image: item.image || undefined,
+        value: item.value || undefined,
+        patrimonyNumber: item.patrimony_number || undefined,
+        depreciatedValue: item.depreciated_value || undefined,
+        receiveDate: item.receive_date || undefined,
+        store: item.store || undefined,
+        invoice: item.invoice || undefined,
+        currentLoanId: item.current_loan_id || undefined,
+        currentBorrower: item.current_borrower || undefined,
+        lastLoanDate: item.last_loan_date || undefined,
+      }));
       
-      console.log('✅ Transformed equipment data:', equipmentData.length, 'items');
-      console.log('📋 Sample item:', equipmentData[0]);
       setEquipment(equipmentData);
     } catch (error) {
-      console.error('💥 Catch block error:', error);
+      console.error('Error fetching equipment:', error);
     } finally {
       setLoading(false);
-      console.log('🏁 fetchEquipment completed');
     }
   };
 
   const enrichedEquipment = useMemo(() => {
-    console.log('🔄 Enriching equipment data, total items:', equipment.length);
     const enriched = equipment.map(item => {
       const activeLoan = getActiveLoanByEquipment(item.id);
       // FIX: If there's an active loan, equipment is NOT available
@@ -92,7 +83,6 @@ export function useEquipment() {
       };
       return enrichedItem;
     });
-    console.log('✅ Enriched equipment:', enriched.length, 'items processed');
     return enriched;
   }, [equipment, getActiveLoanByEquipment]);
 
@@ -148,9 +138,6 @@ export function useEquipment() {
   };
 
   const filteredEquipment = useMemo(() => {
-    console.log('🔍 Starting filtering process, enriched items:', enrichedEquipment.length);
-    console.log('📋 Current filters:', filters);
-    
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
       if (filters.category && item.category !== filters.category) return false;
@@ -176,12 +163,9 @@ export function useEquipment() {
       return true;
     });
 
-    console.log('✅ Filtered equipment:', filtered.length, 'items after filtering');
-
     // Apply sorting if specified - ensure correct typing
     if (filters.sortBy && filters.sortOrder) {
       filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
-      console.log('📊 Applied sorting by', filters.sortBy, filters.sortOrder);
     }
 
     return filtered;
@@ -191,12 +175,6 @@ export function useEquipment() {
     const mainItems = filteredEquipment.filter(item => item.itemType === 'main');
     const accessories = filteredEquipment.filter(item => item.itemType === 'accessory');
     
-    console.log('🏗️ Building equipment hierarchy:', {
-      totalFiltered: filteredEquipment.length,
-      mainItems: mainItems.length,
-      accessories: accessories.length
-    });
-    
     const hierarchy = mainItems.map(mainItem => {
       const itemAccessories = accessories.filter(acc => acc.parentId === mainItem.id);
       return {
@@ -205,7 +183,6 @@ export function useEquipment() {
       };
     });
     
-    console.log('✅ Equipment hierarchy built:', hierarchy.length, 'main items with accessories');
     return hierarchy;
   }, [filteredEquipment]);
 

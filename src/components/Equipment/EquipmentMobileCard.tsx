@@ -26,11 +26,6 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onImageUpload,
   onConvertToAccessory,
 }: EquipmentMobileCardProps) {
-  console.log('🃏 EquipmentMobileCard received:', {
-    id: equipment?.id,
-    name: equipment?.name,
-    hasData: !!equipment
-  });
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'available':
