@@ -12,6 +12,7 @@ import { ptBR } from 'date-fns/locale';
 import type { EquipmentFilters } from '@/types/equipment';
 import { useSavedFilters } from '@/hooks/useSavedFilters';
 import { useFilterHistory } from '@/hooks/useFilterHistory';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface SavedFiltersProps {
   currentFilters: EquipmentFilters;
@@ -41,8 +42,15 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
       await saveFilter(filterName.trim(), currentFilters);
       setFilterName('');
       setSaveDialogOpen(false);
+      enhancedToast.success({
+        title: 'Filtro salvo!',
+        description: `Filtro "${filterName}" foi salvo com sucesso.`
+      });
     } catch (error) {
-      // Erro já tratado no hook
+      enhancedToast.error({
+        title: 'Erro ao salvar filtro',
+        description: 'Não foi possível salvar o filtro.'
+      });
     }
   };
 
@@ -54,8 +62,15 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
       setFilterName('');
       setEditingFilter(null);
       setEditDialogOpen(false);
+      enhancedToast.success({
+        title: 'Filtro atualizado!',
+        description: `Filtro "${filterName}" foi atualizado com sucesso.`
+      });
     } catch (error) {
-      // Erro já tratado no hook
+      enhancedToast.error({
+        title: 'Erro ao atualizar filtro',
+        description: 'Não foi possível atualizar o filtro.'
+      });
     }
   };
 
@@ -66,8 +81,15 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
       await deleteFilter(deletingFilter);
       setDeletingFilter(null);
       setDeleteDialogOpen(false);
+      enhancedToast.success({
+        title: 'Filtro removido!',
+        description: 'Filtro foi removido com sucesso.'
+      });
     } catch (error) {
-      // Erro já tratado no hook
+      enhancedToast.error({
+        title: 'Erro ao remover filtro',
+        description: 'Não foi possível remover o filtro.'
+      });
     }
   };
 

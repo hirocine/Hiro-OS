@@ -1,37 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import type { EquipmentFilters, SavedFilter } from '@/types/equipment';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 
+// Implementação simplificada usando localStorage até os tipos do Supabase serem atualizados
 export function useSavedFilters() {
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Carrega filtros salvos
+  const STORAGE_KEY = 'equipment-saved-filters';
+
+  // Carrega filtros salvos do localStorage
   const loadSavedFilters = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('saved_filters' as any)
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Mapeia os dados para o formato esperado
-      const mappedData: SavedFilter[] = (data || []).map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        filters: item.filters,
-        userId: item.user_id,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at
-      }));
-      
-      setSavedFilters(mappedData);
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsedFilters = JSON.parse(stored);
+        setSavedFilters(parsedFilters);
+      }
     } catch (error) {
       console.error('Erro ao carregar filtros salvos:', error);
-      // Toast removido para evitar spam durante desenvolvimento
     } finally {
       setLoading(false);
     }
@@ -42,124 +29,73 @@ export function useSavedFilters() {
     try {
       setLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
-      const { data, error } = await supabase
-        .from('saved_filters' as any)
-        .insert({
-          name,
-          filters,
-          user_id: user.id
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const mappedData: SavedFilter = {
-        id: data.id,
-        name: data.name,
-        filters: data.filters,
-        userId: data.user_id,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
+      const newFilter: SavedFilter = {
+        id: Date.now().toString(),
+        name,
+        filters,
+        userId: 'current-user', // Temporário
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      setSavedFilters(prev => [mappedData, ...prev]);
-      
-      enhancedToast.success({
-        title: 'Filtro salvo!',
-        description: `Filtro "${name}" foi salvo com sucesso.`
-      });
+      const updatedFilters = [newFilter, ...savedFilters];
+      setSavedFilters(updatedFilters);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFilters));
 
-      return mappedData;
+      return newFilter;
     } catch (error) {
       console.error('Erro ao salvar filtro:', error);
-      enhancedToast.error({
-        title: 'Erro ao salvar filtro',
-        description: 'Não foi possível salvar o filtro.'
-      });
       throw error;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [savedFilters]);
 
   // Atualiza um filtro
   const updateFilter = useCallback(async (id: string, name: string, filters: EquipmentFilters) => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('saved_filters' as any)
-        .update({ name, filters })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const mappedData: SavedFilter = {
-        id: data.id,
-        name: data.name,
-        filters: data.filters,
-        userId: data.user_id,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
+      const updatedFilter: SavedFilter = {
+        id,
+        name,
+        filters,
+        userId: 'current-user', // Temporário
+        createdAt: savedFilters.find(f => f.id === id)?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      setSavedFilters(prev => 
-        prev.map(filter => filter.id === id ? mappedData : filter)
+      const updatedFilters = savedFilters.map(filter => 
+        filter.id === id ? updatedFilter : filter
       );
       
-      enhancedToast.success({
-        title: 'Filtro atualizado!',
-        description: `Filtro "${name}" foi atualizado com sucesso.`
-      });
+      setSavedFilters(updatedFilters);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFilters));
 
-      return mappedData;
+      return updatedFilter;
     } catch (error) {
       console.error('Erro ao atualizar filtro:', error);
-      enhancedToast.error({
-        title: 'Erro ao atualizar filtro',
-        description: 'Não foi possível atualizar o filtro.'
-      });
       throw error;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [savedFilters]);
 
   // Remove um filtro
   const deleteFilter = useCallback(async (id: string) => {
     try {
       setLoading(true);
       
-      const { error } = await supabase
-        .from('saved_filters' as any)
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setSavedFilters(prev => prev.filter(filter => filter.id !== id));
-      
-      enhancedToast.success({
-        title: 'Filtro removido!',
-        description: 'Filtro foi removido com sucesso.'
-      });
+      const updatedFilters = savedFilters.filter(filter => filter.id !== id);
+      setSavedFilters(updatedFilters);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFilters));
     } catch (error) {
       console.error('Erro ao remover filtro:', error);
-      enhancedToast.error({
-        title: 'Erro ao remover filtro',
-        description: 'Não foi possível remover o filtro.'
-      });
       throw error;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [savedFilters]);
 
   // Carrega filtros na inicialização
   useEffect(() => {

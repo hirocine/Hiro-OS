@@ -88,76 +88,10 @@ export function useAdvancedFilters(
     addToHistory(newFilters);
   }, [onFiltersChange, addToHistory]);
 
-  // Filtros aplicados com lógica avançada
-  const applyAdvancedFilters = useCallback((equipment: Equipment[]): Equipment[] => {
-    return equipment.filter(item => {
-      // Filtro de faixa de valor
-      if (filters.minValue !== undefined && (item.value || 0) < filters.minValue) {
-        return false;
-      }
-      
-      if (filters.maxValue !== undefined && (item.value || 0) > filters.maxValue) {
-        return false;
-      }
-
-      // Filtro de período de compra
-      if (filters.purchaseDateFrom && item.purchaseDate) {
-        if (new Date(item.purchaseDate) < new Date(filters.purchaseDateFrom)) {
-          return false;
-        }
-      }
-      
-      if (filters.purchaseDateTo && item.purchaseDate) {
-        if (new Date(item.purchaseDate) > new Date(filters.purchaseDateTo)) {
-          return false;
-        }
-      }
-
-      // Filtro de marca
-      if (filters.brand && !item.brand.toLowerCase().includes(filters.brand.toLowerCase())) {
-        return false;
-      }
-
-      // Filtro de série do patrimônio
-      if (filters.patrimonySeries && item.patrimonyNumber) {
-        if (!item.patrimonyNumber.toLowerCase().startsWith(filters.patrimonySeries.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // Filtro de status de empréstimo
-      if (filters.loanStatus) {
-        switch (filters.loanStatus) {
-          case 'available':
-            if (item.currentLoanId || item.status !== 'available') return false;
-            break;
-          case 'on_loan':
-            if (!item.currentLoanId) return false;
-            break;
-          case 'overdue':
-            // Seria necessário verificar datas de empréstimo para implementar corretamente
-            if (!item.currentLoanId) return false;
-            break;
-        }
-      }
-
-      // Filtro de imagem
-      if (filters.hasImage !== undefined) {
-        const hasImage = Boolean(item.image && item.image !== '');
-        if (filters.hasImage !== hasImage) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [filters]);
-
   return {
     suggestions,
     valueRange,
     quickFilterStats,
     applyFiltersWithHistory,
-    applyAdvancedFilters,
   };
 }
