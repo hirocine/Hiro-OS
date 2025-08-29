@@ -20,14 +20,17 @@ export function useEquipment() {
 
   const fetchEquipment = async () => {
     try {
+      console.log('🚀 Starting fetchEquipment...');
       setLoading(true);
       const { data, error } = await supabase
         .from('equipments')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('📊 Supabase response:', { data: data?.length || 0, error });
+
       if (error) {
-        console.error('Error fetching equipment:', error);
+        console.error('❌ Error fetching equipment:', error);
         return;
       }
 
@@ -61,11 +64,15 @@ export function useEquipment() {
         createdAt: item.created_at,
         updatedAt: item.updated_at
       })) as Equipment[];
+      
+      console.log('✅ Transformed equipment data:', equipmentData.length, 'items');
+      console.log('📋 Sample item:', equipmentData[0]);
       setEquipment(equipmentData);
     } catch (error) {
-      console.error('Error fetching equipment:', error);
+      console.error('💥 Catch block error:', error);
     } finally {
       setLoading(false);
+      console.log('🏁 fetchEquipment completed');
     }
   };
 

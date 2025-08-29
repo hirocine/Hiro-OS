@@ -84,14 +84,27 @@ export default function EquipmentPage() {
 
   // Paginated data - memoized for performance
   const paginatedData = useMemo(() => {
+    console.log('🔍 Equipment Page Debug:', {
+      filteredEquipment: filteredEquipment?.length || 0,
+      equipmentHierarchy: equipmentHierarchy?.length || 0,
+      effectiveViewMode,
+      currentPage,
+      itemsPerPage,
+      loading
+    });
+    
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     
     if (effectiveViewMode === 'cards') {
-      return filteredEquipment.slice(startIndex, endIndex);
+      const cardsData = filteredEquipment.slice(startIndex, endIndex);
+      console.log('📱 Cards data:', cardsData?.length || 0, 'items');
+      return cardsData;
     }
     
-    return equipmentHierarchy.slice(startIndex, endIndex);
+    const hierarchyData = equipmentHierarchy.slice(startIndex, endIndex);
+    console.log('📋 Hierarchy data:', hierarchyData?.length || 0, 'items');
+    return hierarchyData;
   }, [filteredEquipment, equipmentHierarchy, currentPage, itemsPerPage, effectiveViewMode]);
 
   const totalPages = Math.ceil(
