@@ -22,7 +22,7 @@ export function RangeSlider({
   step = 1,
   value,
   onValueChange,
-  formatValue = (v) => v.toString(),
+  formatValue,
   className
 }: RangeSliderProps) {
   const [localValue, setLocalValue] = React.useState(value);
@@ -37,8 +37,8 @@ export function RangeSlider({
     onValueChange(rangeValue);
   };
 
-  const handleInputChange = (index: 0 | 1, inputValue: string) => {
-    const numValue = parseFloat(inputValue) || 0;
+  const handleInputChange = (index: 0 | 1, inputValue: number) => {
+    const numValue = inputValue || 0;
     const newValue = [...localValue] as [number, number];
     newValue[index] = Math.max(min, Math.min(max, numValue));
     setLocalValue(newValue);
@@ -64,29 +64,37 @@ export function RangeSlider({
           <Input
             type="number"
             value={localValue[0]}
-            onChange={(e) => handleInputChange(0, e.target.value)}
+            onChange={(e) => handleInputChange(0, parseInt(e.target.value))}
             min={min}
             max={max}
             step={step}
             className="h-8"
+            placeholder={formatValue ? formatValue(min) : min.toString()}
           />
+          {formatValue && (
+            <div className="text-xs text-muted-foreground mt-1">
+              {formatValue(localValue[0])}
+            </div>
+          )}
         </div>
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Máximo</Label>
           <Input
             type="number"
             value={localValue[1]}
-            onChange={(e) => handleInputChange(1, e.target.value)}
+            onChange={(e) => handleInputChange(1, parseInt(e.target.value))}
             min={min}
             max={max}
             step={step}
             className="h-8"
+            placeholder={formatValue ? formatValue(max) : max.toString()}
           />
+          {formatValue && (
+            <div className="text-xs text-muted-foreground mt-1">
+              {formatValue(localValue[1])}
+            </div>
+          )}
         </div>
-      </div>
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{formatValue(localValue[0])}</span>
-        <span>{formatValue(localValue[1])}</span>
       </div>
     </div>
   );

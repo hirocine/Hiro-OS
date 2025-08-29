@@ -9,9 +9,16 @@ export function useAdvancedFilters(
 ) {
   const { addToHistory } = useFilterHistory();
 
-  // Sugestões baseadas nos dados existentes
+  // Sugestões baseadas nos dados existentes - memoizado para performance
   const suggestions = useMemo(() => {
-    const brands = Array.from(new Set(allEquipment.map(item => item.brand))).filter(Boolean).sort();
+    if (!allEquipment?.length) return { brands: [], patrimonySeries: [] };
+    
+    const brands = Array.from(new Set(
+      allEquipment
+        .map(item => item.brand)
+        .filter(Boolean)
+        .filter(brand => typeof brand === 'string' && brand.trim() !== '')
+    )).sort();
     
     const patrimonySeries = Array.from(
       new Set(
@@ -19,8 +26,9 @@ export function useAdvancedFilters(
           .map(item => item.patrimonyNumber)
           .filter(Boolean)
           .map(patrimony => {
+            if (typeof patrimony !== 'string') return null;
             // Extrai prefixos comuns (ex: "2024-001" -> "2024-", "EQUIP-123" -> "EQUIP-")
-            const matches = patrimony!.match(/^([A-Za-z0-9]+[-_])/);
+            const matches = patrimony.match(/^([A-Za-z0-9]+[-_])/);
             return matches ? matches[1] : null;
           })
           .filter(Boolean)
@@ -30,8 +38,10 @@ export function useAdvancedFilters(
     return { brands, patrimonySeries };
   }, [allEquipment]);
 
-  // Range de valores baseado nos dados
+  // Range de valores baseado nos dados - memoizado
   const valueRange = useMemo(() => {
+    if (!allEquipment?.length) return { min: 0, max: 50000 };
+    
     const values = allEquipment
       .map(item => item.value)
       .filter((value): value is number => typeof value === 'number' && value > 0);
@@ -44,45 +54,62 @@ export function useAdvancedFilters(
     return { min, max };
   }, [allEquipment]);
 
-  // Estatísticas para filtros rápidos
+  // Estatísticas otimizadas para filtros rápidos
   const quickFilterStats = useMemo(() => {
-    const available = allEquipment.filter(item => 
-      item.status === 'available' && !item.currentLoanId
-    ).length;
-    
-    const maintenance = allEquipment.filter(item => 
-      item.status === 'maintenance'
-    ).length;
-    
-    const onLoan = allEquipment.filter(item => 
-      item.currentLoanId && item.currentLoanId !== ''
-    ).length;
-    
-    const withoutImage = allEquipment.filter(item => 
-      !item.image || item.image === ''
-    ).length;
-    
-    const highValue = allEquipment.filter(item => 
-      (item.value || 0) >= 5000
-    ).length;
+    if (!allEquipment?.length) {
+      return {
+        available: 0,
+        maintenance: 0,
+        onLoan: 0,
+        overdue: 0,
+        withoutImage: 0,
+        highValue: 0,
+        byCategory: {}
+      };
+    }
 
-    const byCategory = allEquipment.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
+    const stats = allEquipment.reduce((acc, item) => {
+      // Status
+      if (item.status === 'available' && !item.currentLoanId) {
+        acc.available++;
+      }
+      if (item.status === 'maintenance') {
+        acc.maintenance++;
+      }
+      if (item.currentLoanId && item.currentLoanId !== '') {
+        acc.onLoan++;
+      }
+      
+      // Imagem
+      if (!item.image || item.image === '') {
+        acc.withoutImage++;
+      }
+      
+      // Alto valor
+      if ((item.value || 0) >= 5000) {
+        acc.highValue++;
+      }
+
+      // Por categoria
+      if (item.category) {
+        acc.byCategory[item.category] = (acc.byCategory[item.category] || 0) + 1;
+      }
+
       return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      available,
-      maintenance,
-      onLoan,
+    }, {
+      available: 0,
+      maintenance: 0,
+      onLoan: 0,
       overdue: 0, // Seria necessário verificar datas de empréstimo
-      withoutImage,
-      highValue,
-      byCategory
-    };
+      withoutImage: 0,
+      highValue: 0,
+      byCategory: {} as Record<string, number>
+    });
+
+    return stats;
   }, [allEquipment]);
 
-  // Aplica filtros com histórico
+  // Aplica filtros com histórico - função memoizada
   const applyFiltersWithHistory = useCallback((newFilters: EquipmentFilters) => {
     onFiltersChange(newFilters);
     addToHistory(newFilters);

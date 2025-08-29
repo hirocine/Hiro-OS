@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Camera, Mic, Zap, Package, HardDrive, Wrench, User, Clock, ImageIcon, DollarSign } from 'lucide-react';
@@ -180,3 +181,6 @@ export function QuickFilters({ filters, onFiltersChange, stats }: QuickFiltersPr
     </div>
   );
 }
+
+// Componente otimizado com React.memo
+export default React.memo(QuickFilters);

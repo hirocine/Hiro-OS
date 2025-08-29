@@ -1,18 +1,20 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { EquipmentFilters } from '@/types/equipment';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { X, Filter, ChevronDown, Search } from 'lucide-react';
+import { X, Filter, ChevronDown, Search, Settings, History, Save } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { QuickFilters } from './QuickFilters';
 import { AdvancedFilters } from './AdvancedFilters';
 import { SavedFilters } from './SavedFilters';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
+import { useFilterHistory } from '@/hooks/useFilterHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Separator } from '@/components/ui/separator';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -35,6 +37,7 @@ interface EquipmentFiltersProps {
 export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipment = [], stats }: EquipmentFiltersProps) {
   const [isBasicExpanded, setIsBasicExpanded] = useState(true);
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
+  const [isQuickFiltersExpanded, setIsQuickFiltersExpanded] = useState(true);
   const [searchInput, setSearchInput] = useState(filters.search || '');
   const [isSearching, setIsSearching] = useState(false);
   
@@ -46,6 +49,8 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     quickFilterStats, 
     applyFiltersWithHistory 
   } = useAdvancedFilters(allEquipment, filters, onFiltersChange);
+
+  const { history, getFilterDisplayName } = useFilterHistory();
 
   useEffect(() => {
     if (debouncedSearch !== filters.search) {
@@ -60,20 +65,26 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     }
   }, [debouncedSearch]);
 
-  const updateFilter = (key: keyof EquipmentFilters, value: string | undefined) => {
+  const updateFilter = useCallback((key: keyof EquipmentFilters, value: string | undefined) => {
     onFiltersChange({ ...filters, [key]: value || undefined });
-  };
+  }, [filters, onFiltersChange]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchInput('');
     onFiltersChange({});
-  };
+  }, [onFiltersChange]);
 
-  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => 
-    // Excluir campos de ordenação da contagem de filtros ativos
-    !['sortBy', 'sortOrder', 'sortFields'].includes(key) &&
-    value !== undefined && value !== '' && value !== null
-  ).length;
+  const handleFiltersChange = useCallback((newFilters: EquipmentFilters) => {
+    onFiltersChange(newFilters);
+  }, [onFiltersChange]);
+
+  const activeFiltersCount = useMemo(() => 
+    Object.entries(filters).filter(([key, value]) => 
+      // Excluir campos de ordenação da contagem de filtros ativos
+      !['sortBy', 'sortOrder', 'sortFields'].includes(key) &&
+      value !== undefined && value !== '' && value !== null
+    ).length
+  , [filters]);
 
   const categoryLabels = {
     camera: 'Câmeras',
@@ -109,6 +120,10 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
               )}
             </CardTitle>
             <div className="flex items-center gap-2">
+              <SavedFilters 
+                currentFilters={filters} 
+                onFiltersChange={handleFiltersChange}
+              />
               {activeFiltersCount > 0 && (
                 <Button
                   variant="outline"
@@ -140,6 +155,29 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
             )}
           </div>
         </CardContent>
+      </Card>
+
+      {/* Filtros Rápidos */}
+      <Card>
+        <Collapsible open={isQuickFiltersExpanded} onOpenChange={setIsQuickFiltersExpanded}>
+          <CardHeader className="pb-3">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                <CardTitle className="text-base font-medium">Filtros Rápidos</CardTitle>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isQuickFiltersExpanded ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <QuickFilters 
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                stats={quickFilterStats}
+              />
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
 
       {/* Filtros Básicos */}
@@ -222,6 +260,33 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
         </Collapsible>
       </Card>
 
+      {/* Filtros Avançados */}
+      <Card>
+        <Collapsible open={isAdvancedExpanded} onOpenChange={setIsAdvancedExpanded}>
+          <CardHeader className="pb-3">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Filtros Avançados
+                </CardTitle>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedExpanded ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <AdvancedFilters 
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                suggestions={suggestions}
+                valueRange={valueRange}
+              />
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       {/* Active Filters Display */}
       {activeFiltersCount > 0 && (
         <Card>
@@ -272,8 +337,8 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
                   Marca: {filters.brand}
                   <X 
                     className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                    onClick={() => updateFilter('brand', undefined)}
-                  />
+                   onClick={() => updateFilter('brand', undefined)}
+                 />
                 </Badge>
               )}
               {(filters.minValue || filters.maxValue) && (
@@ -288,6 +353,80 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
                   />
                 </Badge>
               )}
+              {filters.loanStatus && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Status: {filters.loanStatus === 'available' ? 'Disponível' : 
+                          filters.loanStatus === 'on_loan' ? 'Emprestado' : 'Atrasado'}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => updateFilter('loanStatus', undefined)}
+                  />
+                </Badge>
+              )}
+              {filters.hasImage === true && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Com imagem
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => updateFilter('hasImage', undefined)}
+                  />
+                </Badge>
+              )}
+              {filters.patrimonySeries && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Série: {filters.patrimonySeries}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => updateFilter('patrimonySeries', undefined)}
+                  />
+                </Badge>
+              )}
+              {(filters.purchaseDateFrom || filters.purchaseDateTo) && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Período: {filters.purchaseDateFrom || '...'} - {filters.purchaseDateTo || '...'}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => {
+                      updateFilter('purchaseDateFrom', undefined);
+                      updateFilter('purchaseDateTo', undefined);
+                    }}
+                  />
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Histórico de Filtros */}
+      {history.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Histórico Recente
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {history.slice(0, 3).map((item) => (
+                <Button
+                  key={item.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleFiltersChange(item.filters)}
+                  className="w-full justify-start text-left h-auto py-2 px-3"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium">
+                      {item.name || getFilterDisplayName(item.filters)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(item.timestamp).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                </Button>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -295,3 +434,6 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     </div>
   );
 }
+
+// Componente com React.memo para otimização
+export default React.memo(EquipmentFiltersComponent);

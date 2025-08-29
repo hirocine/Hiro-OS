@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Calendar, DollarSign, Hash, Clock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,7 +32,7 @@ export function AdvancedFilters({
   const [purchaseDateFromOpen, setPurchaseDateFromOpen] = useState(false);
   const [purchaseDateToOpen, setPurchaseDateToOpen] = useState(false);
 
-  const updateFilter = (key: keyof EquipmentFilters, value: any) => {
+  const updateFilter = useCallback((key: keyof EquipmentFilters, value: any) => {
     if (value === undefined || value === null || value === '') {
       const newFilters = { ...filters };
       delete newFilters[key];
@@ -40,23 +40,18 @@ export function AdvancedFilters({
     } else {
       onFiltersChange({ ...filters, [key]: value });
     }
-  };
+  }, [filters, onFiltersChange]);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = useCallback((value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);
-  };
+  }, []);
 
-  const currentValueRange: [number, number] = [
-    filters.minValue ?? valueRange.min,
-    filters.maxValue ?? valueRange.max
-  ];
-
-  const handleValueRangeChange = (value: [number, number]) => {
+  const handleValueRangeChange = useCallback((value: [number, number]) => {
     const [min, max] = value;
     
     // Se os valores são iguais ao range completo, remove os filtros
@@ -67,7 +62,7 @@ export function AdvancedFilters({
       updateFilter('minValue', min === valueRange.min ? undefined : min);
       updateFilter('maxValue', max === valueRange.max ? undefined : max);
     }
-  };
+  }, [valueRange, updateFilter]);
 
   return (
     <div className="space-y-6">
@@ -82,7 +77,10 @@ export function AdvancedFilters({
           min={valueRange.min}
           max={valueRange.max}
           step={100}
-          value={currentValueRange}
+          value={[
+            filters.minValue ?? valueRange.min,
+            filters.maxValue ?? valueRange.max
+          ]}
           onValueChange={handleValueRangeChange}
           formatValue={formatCurrency}
           className="pl-4"
@@ -237,3 +235,6 @@ export function AdvancedFilters({
     </div>
   );
 }
+
+// Componente otimizado com React.memo
+export default React.memo(AdvancedFilters);

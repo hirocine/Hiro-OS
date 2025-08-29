@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Save, BookOpen, Edit2, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,10 +32,11 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
 
   const hasActiveFilters = Object.keys(currentFilters).some(key => {
     const value = currentFilters[key as keyof EquipmentFilters];
-    return value !== undefined && value !== null && value !== '';
+    return !['sortBy', 'sortOrder', 'sortFields'].includes(key) && 
+           value !== undefined && value !== null && value !== '';
   });
 
-  const handleSaveFilter = async () => {
+  const handleSaveFilter = useCallback(async () => {
     if (!filterName.trim() || !hasActiveFilters) return;
 
     try {
@@ -52,9 +53,9 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
         description: 'Não foi possível salvar o filtro.'
       });
     }
-  };
+  }, [filterName, hasActiveFilters, currentFilters, saveFilter]);
 
-  const handleEditFilter = async () => {
+  const handleEditFilter = useCallback(async () => {
     if (!editingFilter || !filterName.trim()) return;
 
     try {
@@ -72,9 +73,9 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
         description: 'Não foi possível atualizar o filtro.'
       });
     }
-  };
+  }, [editingFilter, filterName, currentFilters, updateFilter]);
 
-  const handleDeleteFilter = async () => {
+  const handleDeleteFilter = useCallback(async () => {
     if (!deletingFilter) return;
 
     try {
@@ -91,22 +92,22 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
         description: 'Não foi possível remover o filtro.'
       });
     }
-  };
+  }, [deletingFilter, deleteFilter]);
 
-  const startEdit = (filterId: string, currentName: string) => {
+  const startEdit = useCallback((filterId: string, currentName: string) => {
     setEditingFilter(filterId);
     setFilterName(currentName);
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const startDelete = (filterId: string) => {
+  const startDelete = useCallback((filterId: string) => {
     setDeletingFilter(filterId);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const applyFilter = (filters: EquipmentFilters) => {
+  const applyFilter = useCallback((filters: EquipmentFilters) => {
     onFiltersChange(filters);
-  };
+  }, [onFiltersChange]);
 
   return (
     <div className="flex items-center gap-2">
@@ -293,3 +294,6 @@ export function SavedFilters({ currentFilters, onFiltersChange }: SavedFiltersPr
     </div>
   );
 }
+
+// Componente otimizado com React.memo
+export default React.memo(SavedFilters);
