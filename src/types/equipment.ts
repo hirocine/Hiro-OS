@@ -52,6 +52,24 @@ export interface EquipmentFilters {
   search?: string;
   sortBy?: SortableField;
   sortOrder?: SortOrder;
+  minValue?: number;
+  maxValue?: number;
+  purchaseDateFrom?: string;
+  purchaseDateTo?: string;
+  patrimonySeries?: string;
+  loanStatus?: 'available' | 'on_loan' | 'overdue';
+  sortFields?: Array<{field: SortableField, order: SortOrder}>;
+  brand?: string;
+  hasImage?: boolean;
+}
+
+export interface SavedFilter {
+  id: string;
+  name: string;
+  filters: EquipmentFilters;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DashboardStats {
