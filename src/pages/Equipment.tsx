@@ -559,6 +559,7 @@ export default function EquipmentPage() {
         onOpenChange={handleDialogClose}
         onSubmit={editingEquipment ? handleUpdate : handleAdd}
         equipment={editingEquipment}
+        mainItems={filteredEquipment.filter(e => e.itemType === 'main')}
       />
 
       <ImportDialog
