@@ -152,7 +152,7 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
                       </p>
                     </div>
                     <Badge variant="outline" className="ml-2 text-xs">
-                      {count}
+                      {formatCurrency(stats.valueByCategory[category] || 0)}
                     </Badge>
                   </div>
                 );

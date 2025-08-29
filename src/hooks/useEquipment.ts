@@ -193,6 +193,14 @@ export function useEquipment() {
       return acc;
     }, {} as Record<string, number>);
 
+    // Calculate total values
+    const totalValue = enrichedEquipment.reduce((acc, item) => acc + (item.value || 0), 0);
+    
+    const valueByCategory = enrichedEquipment.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + (item.value || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
     return {
       total,
       available,
@@ -201,7 +209,9 @@ export function useEquipment() {
       mainItems,
       accessories,
       byCategory: byCategory as DashboardStats['byCategory'],
-      byItemType: byItemType as DashboardStats['byItemType']
+      byItemType: byItemType as DashboardStats['byItemType'],
+      totalValue,
+      valueByCategory: valueByCategory as DashboardStats['valueByCategory']
     };
   }, [enrichedEquipment]);
 

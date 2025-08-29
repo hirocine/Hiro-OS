@@ -63,6 +63,8 @@ export interface DashboardStats {
   accessories: number;
   byCategory: Record<EquipmentCategory, number>;
   byItemType: Record<EquipmentItemType, number>;
+  totalValue: number;
+  valueByCategory: Record<EquipmentCategory, number>;
 }
 
 export interface EquipmentHierarchy {
