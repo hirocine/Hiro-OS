@@ -70,10 +70,12 @@ export function useEquipment() {
   };
 
   const enrichedEquipment = useMemo(() => {
-    return equipment.map(item => {
+    console.log('🔄 Enriching equipment data, total items:', equipment.length);
+    const enriched = equipment.map(item => {
       const activeLoan = getActiveLoanByEquipment(item.id);
-      const newStatus = activeLoan ? 'available' as const : item.status;
-      return {
+      // FIX: If there's an active loan, equipment is NOT available
+      const newStatus = activeLoan ? 'maintenance' as const : item.status;
+      const enrichedItem = {
         ...item,
         currentLoanId: activeLoan?.id,
         currentBorrower: activeLoan?.borrowerName,
@@ -81,10 +83,13 @@ export function useEquipment() {
         // Auto-update status based on loan
         status: newStatus
       };
+      return enrichedItem;
     });
+    console.log('✅ Enriched equipment:', enriched.length, 'items processed');
+    return enriched;
   }, [equipment, getActiveLoanByEquipment]);
 
-  const sortEquipment = (items: Equipment[], sortBy: SortableField, sortOrder: SortOrder) => {
+  const sortEquipment = <T extends Equipment>(items: T[], sortBy: SortableField, sortOrder: SortOrder): T[] => {
     return [...items].sort((a, b) => {
       let valueA: any;
       let valueB: any;
@@ -136,6 +141,9 @@ export function useEquipment() {
   };
 
   const filteredEquipment = useMemo(() => {
+    console.log('🔍 Starting filtering process, enriched items:', enrichedEquipment.length);
+    console.log('📋 Current filters:', filters);
+    
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
       if (filters.category && item.category !== filters.category) return false;
@@ -161,9 +169,12 @@ export function useEquipment() {
       return true;
     });
 
-    // Apply sorting if specified
+    console.log('✅ Filtered equipment:', filtered.length, 'items after filtering');
+
+    // Apply sorting if specified - ensure correct typing
     if (filters.sortBy && filters.sortOrder) {
-      return sortEquipment(filtered, filters.sortBy, filters.sortOrder);
+      filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
+      console.log('📊 Applied sorting by', filters.sortBy, filters.sortOrder);
     }
 
     return filtered;
@@ -173,13 +184,22 @@ export function useEquipment() {
     const mainItems = filteredEquipment.filter(item => item.itemType === 'main');
     const accessories = filteredEquipment.filter(item => item.itemType === 'accessory');
     
-    return mainItems.map(mainItem => {
+    console.log('🏗️ Building equipment hierarchy:', {
+      totalFiltered: filteredEquipment.length,
+      mainItems: mainItems.length,
+      accessories: accessories.length
+    });
+    
+    const hierarchy = mainItems.map(mainItem => {
       const itemAccessories = accessories.filter(acc => acc.parentId === mainItem.id);
       return {
         item: { ...mainItem, hasAccessories: itemAccessories.length > 0 },
         accessories: itemAccessories
       };
     });
+    
+    console.log('✅ Equipment hierarchy built:', hierarchy.length, 'main items with accessories');
+    return hierarchy;
   }, [filteredEquipment]);
 
   const unlinkedAccessories = useMemo(() => {
