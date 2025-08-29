@@ -9,7 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Equipment from "./pages/Equipment";
 import Projects from "./pages/Projects";
 import Reports from "./pages/Reports";
-
+import Loans from "./pages/Loans";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -33,6 +33,7 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="equipment" element={<Equipment />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="loans" element={<Loans />} />
             <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
             

@@ -1,20 +1,31 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Loan, LoanFilters, LoanStats } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from './useUserRole';
 
 export function useLoans() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [filters, setFilters] = useState<LoanFilters>({});
   const [loading, setLoading] = useState(true);
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
-  // Fetch loans from Supabase
+  // Fetch loans from Supabase (admin only)
   useEffect(() => {
-    fetchLoans();
-  }, []);
+    if (!roleLoading) {
+      fetchLoans();
+    }
+  }, [isAdmin, roleLoading]);
 
   const fetchLoans = async () => {
     try {
       setLoading(true);
+      
+      // Only admins can access loan data
+      if (!isAdmin) {
+        setLoans([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('loans')
         .select('*')
@@ -91,6 +102,11 @@ export function useLoans() {
   }, [updatedLoans]);
 
   const addLoan = async (newLoan: Omit<Loan, 'id'>) => {
+    if (!isAdmin) {
+      console.error('Only admins can add loans');
+      return;
+    }
+    
     try {
       // Transform to database format
       const dbLoan = {
@@ -143,6 +159,11 @@ export function useLoans() {
   };
 
   const updateLoan = async (id: string, updates: Partial<Loan>) => {
+    if (!isAdmin) {
+      console.error('Only admins can update loans');
+      return;
+    }
+    
     try {
       // Transform updates to database format
       const dbUpdates: any = {};

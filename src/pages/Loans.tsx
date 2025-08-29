@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, User, Package, AlertTriangle } from 'lucide-react';
 import { statusLabels } from '@/data/mockLoans';
+import { AdminOnly } from '@/components/RoleGuard';
 
 export default function Loans() {
   const { loans, stats } = useLoans();
@@ -17,8 +18,18 @@ export default function Loans() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
-      <div className="space-y-2">
+    <AdminOnly fallback={
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-muted-foreground">Acesso Restrito</h2>
+          <p className="text-muted-foreground mt-2">
+            Esta página é restrita a administradores.
+          </p>
+        </div>
+      </div>
+    }>
+      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+        <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Empréstimos</h1>
         <p className="text-muted-foreground">
           Gerencie retiradas e devoluções de equipamentos
@@ -106,6 +117,7 @@ export default function Loans() {
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+    </AdminOnly>
   );
 }

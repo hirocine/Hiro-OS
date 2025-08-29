@@ -3,7 +3,14 @@ import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft, FolderOp
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 
-const navigation = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  adminOnly?: boolean;
+}
+
+const navigation: NavigationItem[] = [
   {
     name: 'Dashboard',
     href: '/',
@@ -18,6 +25,12 @@ const navigation = [
     name: 'Projetos',
     href: '/projects',
     icon: FolderOpen,
+  },
+  {
+    name: 'Empréstimos',
+    href: '/loans',
+    icon: ArrowRightLeft,
+    adminOnly: true,
   },
   {
     name: 'Relatórios',
@@ -45,24 +58,31 @@ export function Sidebar() {
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
-        {navigation.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.href}
-            end={item.href === '/'}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-elegant'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-              )
-            }
-          >
-            <item.icon className="mr-3 h-4 w-4" />
-            {item.name}
-          </NavLink>
-        ))}
+        {navigation.map((item) => {
+          // Hide admin-only items for non-admin users
+          if (item.adminOnly && !isAdmin) {
+            return null;
+          }
+          
+          return (
+            <NavLink
+              key={item.name}
+              to={item.href}
+              end={item.href === '/'}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-elegant'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                )
+              }
+            >
+              <item.icon className="mr-3 h-4 w-4" />
+              {item.name}
+            </NavLink>
+          );
+        })}
         
         {isAdmin && (
           <NavLink
