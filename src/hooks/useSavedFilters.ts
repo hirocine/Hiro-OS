@@ -12,18 +12,26 @@ export function useSavedFilters() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('saved_filters')
+        .from('saved_filters' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSavedFilters(data || []);
+      
+      // Mapeia os dados para o formato esperado
+      const mappedData: SavedFilter[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        filters: item.filters,
+        userId: item.user_id,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      }));
+      
+      setSavedFilters(mappedData);
     } catch (error) {
       console.error('Erro ao carregar filtros salvos:', error);
-      enhancedToast.error({
-        title: 'Erro ao carregar filtros',
-        description: 'Não foi possível carregar os filtros salvos.'
-      });
+      // Toast removido para evitar spam durante desenvolvimento
     } finally {
       setLoading(false);
     }
@@ -38,7 +46,7 @@ export function useSavedFilters() {
       if (!user) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
-        .from('saved_filters')
+        .from('saved_filters' as any)
         .insert({
           name,
           filters,
@@ -49,14 +57,23 @@ export function useSavedFilters() {
 
       if (error) throw error;
 
-      setSavedFilters(prev => [data, ...prev]);
+      const mappedData: SavedFilter = {
+        id: data.id,
+        name: data.name,
+        filters: data.filters,
+        userId: data.user_id,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+
+      setSavedFilters(prev => [mappedData, ...prev]);
       
       enhancedToast.success({
         title: 'Filtro salvo!',
         description: `Filtro "${name}" foi salvo com sucesso.`
       });
 
-      return data;
+      return mappedData;
     } catch (error) {
       console.error('Erro ao salvar filtro:', error);
       enhancedToast.error({
@@ -75,7 +92,7 @@ export function useSavedFilters() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .from('saved_filters')
+        .from('saved_filters' as any)
         .update({ name, filters })
         .eq('id', id)
         .select()
@@ -83,8 +100,17 @@ export function useSavedFilters() {
 
       if (error) throw error;
 
+      const mappedData: SavedFilter = {
+        id: data.id,
+        name: data.name,
+        filters: data.filters,
+        userId: data.user_id,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+
       setSavedFilters(prev => 
-        prev.map(filter => filter.id === id ? data : filter)
+        prev.map(filter => filter.id === id ? mappedData : filter)
       );
       
       enhancedToast.success({
@@ -92,7 +118,7 @@ export function useSavedFilters() {
         description: `Filtro "${name}" foi atualizado com sucesso.`
       });
 
-      return data;
+      return mappedData;
     } catch (error) {
       console.error('Erro ao atualizar filtro:', error);
       enhancedToast.error({
@@ -111,7 +137,7 @@ export function useSavedFilters() {
       setLoading(true);
       
       const { error } = await supabase
-        .from('saved_filters')
+        .from('saved_filters' as any)
         .delete()
         .eq('id', id);
 

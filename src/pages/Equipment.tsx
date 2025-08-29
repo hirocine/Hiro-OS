@@ -499,8 +499,9 @@ export default function EquipmentPage() {
 
       {/* Filters */}
       <EquipmentFiltersComponent 
-        filters={filters} 
+        filters={filters}
         onFiltersChange={setFilters}
+        allEquipment={filteredEquipment}
         stats={stats}
       />
 
