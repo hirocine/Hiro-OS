@@ -333,6 +333,94 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                   </p>
                 )}
               </div>
+
+              {/* Associação de Item Principal (apenas para acessórios) */}
+              {formData.itemType === 'accessory' && (
+                <div className="space-y-2 pt-4 border-t">
+                  <Label htmlFor="parentId">Item Principal</Label>
+                  {mainItems.length === 0 ? (
+                    <div className="p-4 bg-muted/50 rounded-lg text-center">
+                      <p className="text-muted-foreground">
+                        Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
+                      </p>
+                    </div>
+                  ) : (
+                    <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={parentSearchOpen}
+                          className="w-full justify-between"
+                        >
+                          {getSelectedParentName()}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Pesquisar item principal..." 
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem
+                                value="none"
+                                onSelect={() => {
+                                  updateField('parentId', '');
+                                  setParentSearchOpen(false);
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
+                                  <span className="text-muted-foreground">Nenhum (acessório independente)</span>
+                                </div>
+                                <Check
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                              {mainItems.map((item) => (
+                                <CommandItem
+                                  key={item.id}
+                                  value={`${item.patrimonyNumber || 'S/N'} ${item.name} ${item.brand}`}
+                                  onSelect={() => {
+                                    updateField('parentId', item.id);
+                                    setParentSearchOpen(false);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <div className="w-3 h-3 bg-primary rounded-full"></div>
+                                    <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
+                                    <span className="text-muted-foreground">-</span>
+                                    <span className="truncate">{item.name}</span>
+                                    <span className="text-muted-foreground text-sm">({item.brand})</span>
+                                  </div>
+                                  <Check
+                                    className={cn(
+                                      "ml-auto h-4 w-4",
+                                      formData.parentId === item.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
+                    <p className="text-sm text-green-600">
+                      ✓ Este acessório será vinculado ao item selecionado
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Nova Categoria/Subcategoria */}
@@ -526,100 +614,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             </div>
           </div>
 
-          {/* Seção 6: Hierarquia (apenas para acessórios) */}
-          {formData.itemType === 'accessory' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Associação</h3>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="parentId">Item Principal</Label>
-                {mainItems.length === 0 ? (
-                  <div className="p-4 bg-muted/50 rounded-lg text-center">
-                    <p className="text-muted-foreground">
-                      Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
-                    </p>
-                  </div>
-                ) : (
-                  <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={parentSearchOpen}
-                        className="w-full justify-between"
-                      >
-                        {getSelectedParentName()}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Pesquisar item principal..." 
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                          <CommandGroup>
-                            <CommandItem
-                              value="none"
-                              onSelect={() => {
-                                updateField('parentId', '');
-                                setParentSearchOpen(false);
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
-                                <span className="text-muted-foreground">Nenhum (acessório independente)</span>
-                              </div>
-                              <Check
-                                className={cn(
-                                  "ml-auto h-4 w-4",
-                                  (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                            </CommandItem>
-                            {mainItems.map((item) => (
-                              <CommandItem
-                                key={item.id}
-                                value={`${item.patrimonyNumber || 'S/N'} ${item.name} ${item.brand}`}
-                                onSelect={() => {
-                                  updateField('parentId', item.id);
-                                  setParentSearchOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center gap-2 flex-1">
-                                  <div className="w-3 h-3 bg-primary rounded-full"></div>
-                                  <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
-                                  <span className="text-muted-foreground">-</span>
-                                  <span className="truncate">{item.name}</span>
-                                  <span className="text-muted-foreground text-sm">({item.brand})</span>
-                                </div>
-                                <Check
-                                  className={cn(
-                                    "ml-auto h-4 w-4",
-                                    formData.parentId === item.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                )}
-                {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
-                  <p className="text-sm text-green-600">
-                    ✓ Este acessório será vinculado ao item selecionado
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
           
           <DialogFooter>
             <Button 
