@@ -8,7 +8,7 @@ import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
-import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
+import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentMobileCard } from '@/components/Equipment/EquipmentMobileCard';
 import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination';
@@ -500,7 +500,7 @@ export default function EquipmentPage() {
       <EquipmentStatsCards stats={stats} isLoading={loading} />
 
       {/* Filters */}
-      <EquipmentFiltersComponent 
+      <UnifiedEquipmentFilters
         filters={filters}
         onFiltersChange={setFilters}
         allEquipment={filteredEquipment}
