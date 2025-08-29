@@ -239,14 +239,14 @@ export default function EquipmentPage() {
               <div className="min-w-full">
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-12 gap-4 px-4 py-3">
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <div className="grid grid-cols-12 gap-4 px-4 py-3 items-center">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       Tipo
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       Imagem
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="patrimonyNumber" 
                         label="Patrimônio" 
@@ -255,7 +255,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-3 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="name" 
                         label="Nome" 
@@ -264,7 +264,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="brand" 
                         label="Marca" 
@@ -273,7 +273,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="category" 
                         label="Categoria" 
@@ -282,10 +282,10 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       Subcategoria
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="value" 
                         label="Valor" 
@@ -294,7 +294,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="col-span-2 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       Ações
                     </div>
                   </div>
