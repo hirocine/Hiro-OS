@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Plus, Upload, Image, Grid3X3, List, Monitor, Tablet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,8 +15,9 @@ import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination'
 import { EquipmentStatsCards } from '@/components/Equipment/EquipmentStatsCards';
 import { SortableHeader } from '@/components/Equipment/SortableHeader';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Equipment } from '@/types/equipment';
-import { toast } from 'sonner';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 type ViewMode = 'table' | 'grid' | 'cards';
@@ -44,10 +45,28 @@ export default function EquipmentPage() {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
   
+  // Loading states for individual actions
+  const [loadingStates, setLoadingStates] = useState<{
+    deleting: string | null;
+    updating: string | null;
+    uploading: string | null;
+  }>({
+    deleting: null,
+    updating: null,
+    uploading: null
+  });
+  
+  // Confirmation dialog state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    open: boolean;
+    equipment: Equipment | null;
+  }>({ open: false, equipment: null });
+  
   // Pagination and view states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [lastFiltersHash, setLastFiltersHash] = useState('');
   
   const isMobile = useIsMobile();
   const isTablet = false; // Simplified for now
@@ -75,15 +94,43 @@ export default function EquipmentPage() {
     (effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length) / itemsPerPage
   );
 
+  // Smart pagination - reset only when filters significantly change
+  useEffect(() => {
+    const filtersHash = JSON.stringify({
+      search: filters.search,
+      category: filters.category,
+      status: filters.status,
+      itemType: filters.itemType
+    });
+    
+    if (lastFiltersHash && filtersHash !== lastFiltersHash) {
+      // Only reset to page 1 if current page would be empty
+      const totalItems = effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length;
+      const maxValidPage = Math.ceil(totalItems / itemsPerPage) || 1;
+      
+      if (currentPage > maxValidPage) {
+        setCurrentPage(1);
+      }
+    }
+    
+    setLastFiltersHash(filtersHash);
+  }, [filters, currentPage, itemsPerPage, filteredEquipment.length, equipmentHierarchy.length, effectiveViewMode, lastFiltersHash]);
+
   const handleAdd = async (equipmentData: Omit<Equipment, 'id'>) => {
     try {
       await addEquipment(equipmentData);
       setIsAddDialogOpen(false);
-      toast.success('Equipamento adicionado com sucesso!');
+      enhancedToast.success({
+        title: 'Equipamento adicionado!',
+        description: `${equipmentData.name} foi adicionado ao inventário.`
+      });
       return { success: true };
     } catch (error) {
       console.error('Error adding equipment:', error);
-      toast.error('Erro ao adicionar equipamento');
+      enhancedToast.error({
+        title: 'Erro ao adicionar equipamento',
+        description: 'Tente novamente ou contate o suporte.'
+      });
       return { success: false };
     }
   };
@@ -96,29 +143,61 @@ export default function EquipmentPage() {
   const handleUpdate = async (equipmentData: Omit<Equipment, 'id'>) => {
     if (editingEquipment) {
       try {
+        setLoadingStates(prev => ({ ...prev, updating: editingEquipment.id }));
         await updateEquipment(editingEquipment.id, equipmentData);
         setEditingEquipment(null);
         setIsAddDialogOpen(false);
-        toast.success('Equipamento atualizado com sucesso!');
+        enhancedToast.success({
+          title: 'Equipamento atualizado!',
+          description: `${equipmentData.name} foi atualizado com sucesso.`
+        });
         return { success: true };
       } catch (error) {
         console.error('Error updating equipment:', error);
-        toast.error('Erro ao atualizar equipamento');
+        enhancedToast.error({
+          title: 'Erro ao atualizar equipamento',
+          description: 'Tente novamente ou contate o suporte.'
+        });
         return { success: false };
+      } finally {
+        setLoadingStates(prev => ({ ...prev, updating: null }));
       }
     }
     return { success: false };
   };
 
-  const handleDelete = async (equipment: Equipment) => {
-    if (confirm(`Tem certeza que deseja excluir "${equipment.name}"?`)) {
-      try {
-        await deleteEquipment(equipment.id);
-        toast.success('Equipamento excluído com sucesso!');
-      } catch (error) {
-        console.error('Error deleting equipment:', error);
-        toast.error('Erro ao excluir equipamento');
-      }
+  const handleDelete = (equipment: Equipment) => {
+    setDeleteConfirmation({ open: true, equipment });
+  };
+
+  const confirmDelete = async () => {
+    const equipment = deleteConfirmation.equipment;
+    if (!equipment) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, deleting: equipment.id }));
+      await deleteEquipment(equipment.id);
+      
+      enhancedToast.success({
+        title: 'Equipamento excluído!',
+        description: `${equipment.name} foi removido do inventário.`,
+        action: {
+          label: 'Desfazer',
+          onClick: () => {
+            // TODO: Implement undo functionality
+            enhancedToast.info({ title: 'Funcionalidade em desenvolvimento' });
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting equipment:', error);
+      enhancedToast.error({
+        title: 'Erro ao excluir equipamento',
+        description: 'Tente novamente ou contate o suporte.'
+      });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, deleting: null }));
+      setDeleteConfirmation({ open: false, equipment: null });
     }
   };
 
@@ -130,12 +209,23 @@ export default function EquipmentPage() {
 
   const handleImageUpload = async (equipment: Equipment, file: File) => {
     try {
-      // Aqui você implementaria o upload da imagem
-      // Por enquanto, vamos simular o sucesso
-      toast.success('Imagem atualizada com sucesso!');
+      setLoadingStates(prev => ({ ...prev, uploading: equipment.id }));
+      // TODO: Implementar upload real da imagem
+      // Simulando delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      enhancedToast.success({
+        title: 'Imagem atualizada!',
+        description: `Imagem de ${equipment.name} foi atualizada.`
+      });
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Erro ao fazer upload da imagem');
+      enhancedToast.error({
+        title: 'Erro ao fazer upload da imagem',
+        description: 'Tente novamente ou contate o suporte.'
+      });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, uploading: null }));
     }
   };
 
@@ -157,7 +247,13 @@ export default function EquipmentPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Smooth scroll to top with better UX
+    const header = document.querySelector('h1');
+    if (header) {
+      header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
@@ -452,7 +548,10 @@ export default function EquipmentPage() {
         onImport={(data) => {
           importEquipment(data);
           setIsImportDialogOpen(false);
-          toast.success('Equipamentos importados com sucesso!');
+          enhancedToast.success({
+            title: 'Equipamentos importados!',
+            description: 'Todos os equipamentos foram importados com sucesso.'
+          });
         }}
       />
 
@@ -461,7 +560,10 @@ export default function EquipmentPage() {
         onOpenChange={setIsBulkImageDialogOpen}
         onComplete={() => {
           setIsBulkImageDialogOpen(false);
-          toast.success('Upload de imagens concluído!');
+          enhancedToast.success({
+            title: 'Upload concluído!',
+            description: 'Todas as imagens foram processadas.'
+          });
         }}
         equipments={filteredEquipment}
       />
@@ -480,16 +582,39 @@ export default function EquipmentPage() {
               // Implementar conversão para acessório
               setIsConvertDialogOpen(false);
               setConvertingEquipment(null);
-              toast.success('Equipamento convertido para acessório!');
+              enhancedToast.success({
+                title: 'Equipamento convertido!',
+                description: 'Equipamento foi convertido para acessório.'
+              });
               return { success: true };
             } catch (error) {
               console.error('Error converting equipment:', error);
-              toast.error('Erro ao converter equipamento');
+              enhancedToast.error({
+                title: 'Erro ao converter equipamento',
+                description: 'Tente novamente ou contate o suporte.'
+              });
               return { success: false };
             }
           }}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteConfirmation.open}
+        onOpenChange={(open) => setDeleteConfirmation({ open, equipment: null })}
+        title="Excluir Equipamento"
+        description={
+          deleteConfirmation.equipment
+            ? `Tem certeza que deseja excluir "${deleteConfirmation.equipment.name}"? Esta ação não pode ser desfeita.`
+            : ''
+        }
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="destructive"
+        icon="delete"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

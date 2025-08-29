@@ -3,9 +3,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { X, Search, Filter, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { EquipmentFilters, DashboardStats } from '@/types/equipment';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -15,6 +16,26 @@ interface EquipmentFiltersProps {
 
 export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: EquipmentFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchValue, setSearchValue] = useState(filters.search || '');
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Debounce search input
+  const debouncedSearch = useDebounce(searchValue, 300);
+  
+  // Update filters when debounced search changes
+  useEffect(() => {
+    if (debouncedSearch !== filters.search) {
+      onFiltersChange({ ...filters, search: debouncedSearch || undefined });
+      setIsSearching(false);
+    }
+  }, [debouncedSearch, filters, onFiltersChange]);
+  
+  // Show searching indicator when typing
+  useEffect(() => {
+    if (searchValue !== debouncedSearch && searchValue !== (filters.search || '')) {
+      setIsSearching(true);
+    }
+  }, [searchValue, debouncedSearch, filters.search]);
   
   const updateFilter = (key: keyof EquipmentFilters, value: string | undefined) => {
     const filterValue = value === 'all' ? undefined : value;
@@ -94,14 +115,19 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, stats }: E
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, marca, série, patrimônio..."
-              value={filters.search || ''}
-              onChange={(e) => updateFilter('search', e.target.value)}
-              className="pl-10 h-9"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="pl-10 pr-10 h-9"
             />
+            {isSearching && (
+              <div className="absolute right-3 top-2.5">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
-          {hasSearch && (
+          {(hasSearch || isSearching) && (
             <p className="text-xs text-muted-foreground mt-1">
-              Buscando por: "{filters.search}"
+              {isSearching ? 'Buscando...' : `Buscando por: "${filters.search}"`}
             </p>
           )}
         </div>
