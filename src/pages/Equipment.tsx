@@ -19,6 +19,7 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 type ViewMode = 'table' | 'grid' | 'cards';
 
@@ -213,9 +214,24 @@ export default function EquipmentPage() {
   const handleImageUpload = async (equipment: Equipment, file: File) => {
     try {
       setLoadingStates(prev => ({ ...prev, uploading: equipment.id }));
-      // TODO: Implementar upload real da imagem
-      // Simulando delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${equipment.id}-${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('equipment-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('equipment-images')
+        .getPublicUrl(fileName);
+
+      await updateEquipment(equipment.id, { image: publicUrl });
       
       enhancedToast.success({
         title: 'Imagem atualizada!',

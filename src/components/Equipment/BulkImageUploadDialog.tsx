@@ -11,10 +11,12 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from 'sonner';
-import { Upload, Check, AlertTriangle, X, Eye } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { Check, AlertTriangle, X, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ImageUploadArea } from '@/components/ui/image-upload-area';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface ImageUploadResult {
   filename: string;
@@ -42,26 +44,27 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
   onComplete,
   equipments
 }) => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const {
+    images,
+    isUploading,
+    addImages,
+    removeImage,
+    uploadAll,
+    clearImages,
+    retryUpload
+  } = useImageUpload();
+  
   const [uploadProgress, setUploadProgress] = useState(0);
   const [results, setResults] = useState<ImageUploadResult[]>([]);
   const [step, setStep] = useState<'select' | 'preview' | 'processing' | 'review'>('select');
   const [manualMatches, setManualMatches] = useState<Record<string, string>>({});
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
-    if (imageFiles.length !== files.length) {
-      toast.warning(`${files.length - imageFiles.length} arquivos não são imagens e foram ignorados`);
-    }
-    
-    setSelectedFiles(imageFiles);
-    if (imageFiles.length > 0) {
+  const handleFilesAdded = useCallback((files: File[]) => {
+    addImages(files);
+    if (files.length > 0) {
       setStep('preview');
     }
-  }, []);
+  }, [addImages]);
 
   const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -73,15 +76,14 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
   };
 
   const processImages = async () => {
-    setUploading(true);
     setStep('processing');
     
     try {
       // Converter arquivos para base64
       const imagesData = await Promise.all(
-        selectedFiles.map(async (file) => ({
-          filename: file.name,
-          fileData: await convertFileToBase64(file)
+        images.map(async (imageFile) => ({
+          filename: imageFile.file.name,
+          fileData: await convertFileToBase64(imageFile.file)
         }))
       );
 
@@ -98,14 +100,18 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
       setResults(data.results);
       setUploadProgress(100);
       
-      toast.success(`Processamento concluído: ${data.summary.success} sucessos, ${data.summary.pending} pendentes, ${data.summary.errors} erros`);
+      enhancedToast.success({
+        title: 'Processamento concluído',
+        description: `${data.summary.success} sucessos, ${data.summary.pending} pendentes, ${data.summary.errors} erros`
+      });
       
       setStep('review');
     } catch (error) {
       console.error('Erro no upload em massa:', error);
-      toast.error('Erro durante o processamento das imagens');
-    } finally {
-      setUploading(false);
+      enhancedToast.error({
+        title: 'Erro durante processamento',
+        description: 'Falha ao processar as imagens'
+      });
     }
   };
 
@@ -154,10 +160,16 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
           : r
       ));
 
-      toast.success(`Imagem ${filename} associada com sucesso!`);
+      enhancedToast.success({
+        title: 'Imagem associada',
+        description: `${filename} associada com sucesso!`
+      });
     } catch (error) {
       console.error('Erro no match manual:', error);
-      toast.error(`Erro ao associar ${filename}`);
+      enhancedToast.error({
+        title: 'Erro na associação',
+        description: `Falha ao associar ${filename}`
+      });
     }
   };
 
@@ -165,7 +177,7 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
     onComplete();
     onOpenChange(false);
     // Reset state
-    setSelectedFiles([]);
+    clearImages();
     setResults([]);
     setStep('select');
     setUploadProgress(0);
@@ -198,61 +210,27 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
         </DialogHeader>
 
         {step === 'select' && (
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium mb-2">Selecione as imagens dos equipamentos</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Nomeie os arquivos com patrimônio, serial ou nome do equipamento para associação automática
-              </p>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="bulk-upload"
-              />
-              <label htmlFor="bulk-upload">
-                <Button className="cursor-pointer">
-                  Selecionar Imagens
-                </Button>
-              </label>
-            </div>
-            
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Dicas para melhor reconhecimento:</h4>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Use "pat_123" ou "patrimonio_123" no nome do arquivo</li>
-                <li>• Use "sn_ABC123" ou "serial_ABC123" para número de série</li>
-                <li>• Include o nome do equipamento no arquivo</li>
-                <li>• Formatos aceitos: JPG, PNG, WEBP</li>
-              </ul>
-            </div>
-          </div>
+          <ImageUploadArea
+            images={images}
+            onFilesAdded={handleFilesAdded}
+            onRemoveImage={removeImage}
+            onRetryUpload={retryUpload}
+            className="min-h-[300px]"
+          />
         )}
 
         {step === 'preview' && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              {selectedFiles.length} imagens selecionadas. Clique em "Processar" para iniciar o upload.
+              {images.length} imagens selecionadas. Clique em "Processar" para iniciar o upload.
             </p>
-            <ScrollArea className="h-60">
-              <div className="grid grid-cols-3 gap-2">
-                {selectedFiles.map((file, index) => (
-                  <Card key={index} className="p-2">
-                    <CardContent className="p-0">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={file.name}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                      <p className="text-xs text-muted-foreground truncate">{file.name}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
+            <ImageUploadArea
+              images={images}
+              onFilesAdded={handleFilesAdded}
+              onRemoveImage={removeImage}
+              onRetryUpload={retryUpload}
+              className="max-h-[400px] overflow-y-auto"
+            />
           </div>
         )}
 
@@ -369,8 +347,8 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
               <Button variant="outline" onClick={() => setStep('select')}>
                 Voltar
               </Button>
-              <Button onClick={processImages} disabled={selectedFiles.length === 0}>
-                Processar {selectedFiles.length} Imagens
+              <Button onClick={processImages} disabled={images.length === 0}>
+                Processar {images.length} Imagens
               </Button>
             </>
           )}
