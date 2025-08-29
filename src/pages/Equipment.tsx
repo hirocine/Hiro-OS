@@ -33,6 +33,7 @@ export default function EquipmentPage() {
     addEquipment,
     updateEquipment,
     deleteEquipment,
+    convertToAccessory,
     importEquipment,
     toggleEquipmentExpansion,
     handleSort,
@@ -50,10 +51,12 @@ export default function EquipmentPage() {
     deleting: string | null;
     updating: string | null;
     uploading: string | null;
+    convert: boolean;
   }>({
     deleting: null,
     updating: null,
-    uploading: null
+    uploading: null,
+    convert: false
   });
   
   // Confirmation dialog state
@@ -578,22 +581,61 @@ export default function EquipmentPage() {
           equipment={convertingEquipment}
           mainItems={filteredEquipment.filter(e => e.itemType === 'main')}
           onConvert={async (equipmentId, parentId) => {
+            setLoadingStates(prev => ({ ...prev, convert: true }));
             try {
-              // Implementar conversão para acessório
-              setIsConvertDialogOpen(false);
-              setConvertingEquipment(null);
-              enhancedToast.success({
-                title: 'Equipamento convertido!',
-                description: 'Equipamento foi convertido para acessório.'
-              });
-              return { success: true };
-            } catch (error) {
-              console.error('Error converting equipment:', error);
+              const result = await convertToAccessory(equipmentId, parentId);
+              
+              if (result?.success) {
+                const convertedItem = filteredEquipment.find(item => item.id === equipmentId);
+                const parentItem = filteredEquipment.find(item => item.id === parentId);
+                
+                setIsConvertDialogOpen(false);
+                setConvertingEquipment(null);
+                
+                enhancedToast.success({
+                  title: 'Item convertido com sucesso',
+                  description: `"${convertedItem?.name}" foi convertido em acessório de "${parentItem?.name}".`,
+                  action: {
+                    label: 'Desfazer',
+                    onClick: async () => {
+                      try {
+                        await updateEquipment(equipmentId, { itemType: 'main', parentId: undefined });
+                        enhancedToast.info({
+                          title: 'Conversão desfeita',
+                          description: 'O item foi restaurado como item principal.'
+                        });
+                      } catch (error) {
+                        enhancedToast.error({
+                          title: 'Erro ao desfazer',
+                          description: 'Não foi possível desfazer a conversão.'
+                        });
+                      }
+                    }
+                  }
+                });
+              }
+              
+              return result;
+            } catch (error: any) {
+              console.error('Error converting to accessory:', error);
+              
+              let errorMessage = 'Ocorreu um erro ao converter o item.';
+              if (error.message?.includes('accessories attached')) {
+                errorMessage = 'Este item possui acessórios vinculados. Converta ou reatribua os acessórios primeiro.';
+              } else if (error.message?.includes('Parent item not found')) {
+                errorMessage = 'Item principal não encontrado.';  
+              } else if (error.message?.includes('must be a main equipment')) {
+                errorMessage = 'O item principal selecionado deve ser um item principal válido.';
+              }
+
               enhancedToast.error({
-                title: 'Erro ao converter equipamento',
-                description: 'Tente novamente ou contate o suporte.'
+                title: 'Erro na conversão',
+                description: errorMessage
               });
-              return { success: false };
+              
+              throw error;
+            } finally {
+              setLoadingStates(prev => ({ ...prev, convert: false }));
             }
           }}
         />

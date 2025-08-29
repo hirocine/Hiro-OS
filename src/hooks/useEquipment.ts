@@ -359,6 +359,59 @@ export function useEquipment() {
     }
   };
 
+  const convertToAccessory = async (equipmentId: string, parentId: string) => {
+    try {
+      // First, check if the equipment has accessories attached to it
+      const equipmentToConvert = equipment.find(item => item.id === equipmentId);
+      if (!equipmentToConvert) {
+        throw new Error('Equipment not found');
+      }
+
+      // Check if this equipment has accessories (it's a main item with accessories)
+      const hasAccessories = equipment.some(item => item.parentId === equipmentId);
+      if (hasAccessories) {
+        throw new Error('Cannot convert equipment that has accessories attached. Please convert or reassign accessories first.');
+      }
+
+      // Validate that the parent exists and is a main item
+      const parentItem = equipment.find(item => item.id === parentId);
+      if (!parentItem) {
+        throw new Error('Parent item not found');
+      }
+      if (parentItem.itemType !== 'main') {
+        throw new Error('Parent item must be a main equipment item');
+      }
+
+      // Update the equipment to be an accessory
+      const { error } = await supabase
+        .from('equipments')
+        .update({
+          item_type: 'accessory',
+          parent_id: parentId
+        })
+        .eq('id', equipmentId);
+
+      if (error) {
+        console.error('Error converting to accessory:', error);
+        throw error;
+      }
+
+      // Update local state
+      setEquipment(prev => 
+        prev.map(item => 
+          item.id === equipmentId 
+            ? { ...item, itemType: 'accessory', parentId: parentId }
+            : item
+        )
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error converting to accessory:', error);
+      throw error;
+    }
+  };
+
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
     try {
       console.log('🔄 Starting import process with', importedEquipment.length, 'items');
@@ -576,6 +629,7 @@ export function useEquipment() {
     addEquipment,
     updateEquipment,
     deleteEquipment,
+    convertToAccessory,
     importEquipment,
     toggleEquipmentExpansion,
     getMainItems,
