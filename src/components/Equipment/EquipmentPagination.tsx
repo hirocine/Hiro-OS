@@ -100,7 +100,7 @@ export function EquipmentPagination({
           {getVisiblePages().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={index} className="px-2 py-1 text-sm text-muted-foreground">
+                <span key={`ellipsis-${index}`} className="px-2 py-1 text-sm text-muted-foreground">
                   ...
                 </span>
               );
@@ -109,7 +109,7 @@ export function EquipmentPagination({
             const pageNumber = page as number;
             return (
               <Button
-                key={pageNumber}
+                key={`page-${pageNumber}`}
                 variant={currentPage === pageNumber ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onPageChange(pageNumber)}
