@@ -69,7 +69,9 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     onFiltersChange({});
   };
 
-  const activeFiltersCount = Object.values(filters).filter(value => 
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => 
+    // Excluir campos de ordenação da contagem de filtros ativos
+    !['sortBy', 'sortOrder', 'sortFields'].includes(key) &&
     value !== undefined && value !== '' && value !== null
   ).length;
 
