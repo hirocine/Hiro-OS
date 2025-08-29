@@ -94,7 +94,7 @@ export function AdvancedFilters({
           <Label className="text-sm font-medium">Período de Compra</Label>
         </div>
         
-        <div className="grid grid-cols-2 gap-3 pl-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-4">
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Data Inicial</Label>
             <Popover open={purchaseDateFromOpen} onOpenChange={setPurchaseDateFromOpen}>
@@ -102,15 +102,17 @@ export function AdvancedFilters({
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal h-9",
+                    "w-full justify-start text-left font-normal h-9 min-w-0",
                     !filters.purchaseDateFrom && "text-muted-foreground"
                   )}
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {filters.purchaseDateFrom 
-                    ? format(new Date(filters.purchaseDateFrom), "dd/MM/yyyy", { locale: ptBR })
-                    : "Selecionar"
-                  }
+                  <Calendar className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {filters.purchaseDateFrom 
+                      ? format(new Date(filters.purchaseDateFrom), "dd/MM/yyyy", { locale: ptBR })
+                      : "Selecionar"
+                    }
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -135,15 +137,17 @@ export function AdvancedFilters({
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal h-9",
+                    "w-full justify-start text-left font-normal h-9 min-w-0",
                     !filters.purchaseDateTo && "text-muted-foreground"
                   )}
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {filters.purchaseDateTo 
-                    ? format(new Date(filters.purchaseDateTo), "dd/MM/yyyy", { locale: ptBR })
-                    : "Selecionar"
-                  }
+                  <Calendar className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {filters.purchaseDateTo 
+                      ? format(new Date(filters.purchaseDateTo), "dd/MM/yyyy", { locale: ptBR })
+                      : "Selecionar"
+                    }
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
