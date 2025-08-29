@@ -137,16 +137,27 @@ export function useEquipment() {
 
   const filteredEquipment = useMemo(() => {
     let filtered = enrichedEquipment.filter((item) => {
+      // Apply category filter
       if (filters.category && item.category !== filters.category) return false;
+      
+      // Apply status filter
       if (filters.status && item.status !== filters.status) return false;
+      
+      // Apply item type filter
       if (filters.itemType && item.itemType !== filters.itemType) return false;
+      
+      // Apply search filter (in addition to other filters, not exclusively)
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
-        return (
+        const matchesSearch = (
           item.name.toLowerCase().includes(searchTerm) ||
-          item.brand.toLowerCase().includes(searchTerm)
+          item.brand.toLowerCase().includes(searchTerm) ||
+          item.serialNumber?.toLowerCase().includes(searchTerm) ||
+          item.description?.toLowerCase().includes(searchTerm)
         );
+        if (!matchesSearch) return false;
       }
+      
       return true;
     });
 
