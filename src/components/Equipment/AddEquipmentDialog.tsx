@@ -180,73 +180,163 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           </DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                required
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Seção 1: Informações Básicas */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Informações Básicas</h3>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="brand">Marca *</Label>
-              <Input
-                id="brand"
-                value={formData.brand}
-                onChange={(e) => updateField('brand', e.target.value)}
-                required
-              />
-            </div>
-            
-            
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria *</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => {
-                  updateField('category', value as EquipmentCategory);
-                  updateField('subcategory', ''); // Reset subcategory when category changes
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(categoryLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="Ex: Canon EOS R5, Microfone Shure..."
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="brand">Marca *</Label>
+                <Input
+                  id="brand"
+                  value={formData.brand}
+                  onChange={(e) => updateField('brand', e.target.value)}
+                  placeholder="Ex: Canon, Sony, Shure..."
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="subcategory">Subcategoria</Label>
-              <Select 
-                value={formData.subcategory || ''} 
-                onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecionar subcategoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {getSubcategoriesForCategory(formData.category).map((subcategory) => (
-                    <SelectItem key={subcategory} value={subcategory}>
-                      {subcategory}
+              <Label htmlFor="description">Descrição</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                placeholder="Descrição detalhada do equipamento, características especiais, etc."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          {/* Seção 2: Classificação */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Classificação</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Categoria *</Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => {
+                    updateField('category', value as EquipmentCategory);
+                    updateField('subcategory', ''); // Reset subcategory when category changes
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subcategory">Subcategoria</Label>
+                <Select 
+                  value={formData.subcategory || ''} 
+                  onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar subcategoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhuma</SelectItem>
+                    {getSubcategoriesForCategory(formData.category).map((subcategory) => (
+                      <SelectItem key={subcategory} value={subcategory}>
+                        {subcategory}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Status *</Label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(value) => updateField('status', value as EquipmentStatus)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(statusLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="itemType">Tipo de Item *</Label>
+                <Select 
+                  value={formData.itemType} 
+                  onValueChange={(value: EquipmentItemType) => {
+                    updateField('itemType', value);
+                    if (value === 'main') {
+                      updateField('parentId', '');
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="main">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-primary rounded-full"></div>
+                        <span className="font-medium">Item Principal</span>
+                      </div>
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    <SelectItem value="accessory">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
+                        <span className="font-medium">Acessório</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.itemType === 'main' && (
+                  <p className="text-sm text-muted-foreground">
+                    Este item pode ter acessórios associados a ele
+                  </p>
+                )}
+                {formData.itemType === 'accessory' && (
+                  <p className="text-sm text-muted-foreground">
+                    Este item será vinculado a um item principal
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Custom Category Section */}
-            <div className="space-y-2 md:col-span-2">
+            {/* Nova Categoria/Subcategoria */}
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Adicionar Nova Categoria/Subcategoria</Label>
                 <Button
@@ -261,7 +351,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               </div>
               
               {showCustomCategory && (
-                <div className="p-4 border rounded-lg space-y-3">
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="newCategory">Categoria</Label>
@@ -314,72 +404,140 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Seção 3: Identificação */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Identificação</h3>
+            </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value) => updateField('status', value as EquipmentStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="serialNumber">Número de Série</Label>
+                <Input
+                  id="serialNumber"
+                  value={formData.serialNumber}
+                  onChange={(e) => updateField('serialNumber', e.target.value)}
+                  placeholder="Número de série do fabricante"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="patrimonyNumber">Número do Patrimônio</Label>
+                <Input
+                  id="patrimonyNumber"
+                  value={formData.patrimonyNumber}
+                  onChange={(e) => updateField('patrimonyNumber', e.target.value)}
+                  placeholder="Código interno de patrimônio"
+                />
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="itemType">Tipo de Item *</Label>
-              <Select 
-                value={formData.itemType} 
-                onValueChange={(value: EquipmentItemType) => {
-                  updateField('itemType', value);
-                  if (value === 'main') {
-                    updateField('parentId', '');
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="main">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-primary rounded-full"></div>
-                      <span className="font-medium">Item Principal</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="accessory">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                      <span className="font-medium">Acessório</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {formData.itemType === 'main' && (
-                <p className="text-sm text-muted-foreground">
-                  Este item pode ter acessórios associados a ele
-                </p>
-              )}
-              {formData.itemType === 'accessory' && (
-                <p className="text-sm text-muted-foreground">
-                  Este item será vinculado a um item principal
-                </p>
-              )}
+          {/* Seção 4: Informações Financeiras */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Informações Financeiras</h3>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="value">Valor de Compra</Label>
+                <Input
+                  id="value"
+                  value={formData.value > 0 ? formatCurrency(formData.value) : ''}
+                  onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
+                  placeholder="R$ 0,00"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="depreciatedValue">Valor Depreciado</Label>
+                <Input
+                  id="depreciatedValue"
+                  value={formData.depreciatedValue > 0 ? formatCurrency(formData.depreciatedValue) : ''}
+                  onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
+                  placeholder="R$ 0,00"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="store">Loja/Fornecedor</Label>
+                <Input
+                  id="store"
+                  value={formData.store}
+                  onChange={(e) => updateField('store', e.target.value)}
+                  placeholder="Nome da loja ou fornecedor"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="invoice">Nota Fiscal</Label>
+                <Input
+                  id="invoice"
+                  value={formData.invoice}
+                  onChange={(e) => updateField('invoice', e.target.value)}
+                  placeholder="Número da nota fiscal"
+                />
+              </div>
+            </div>
+          </div>
 
-            {formData.itemType === 'accessory' && (
-              <div className="space-y-2 md:col-span-2">
+          {/* Seção 5: Datas */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Datas</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="purchaseDate">Data de Compra</Label>
+                <Input
+                  id="purchaseDate"
+                  type="date"
+                  value={formData.purchaseDate}
+                  onChange={(e) => updateField('purchaseDate', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="receiveDate">Data de Recebimento</Label>
+                <Input
+                  id="receiveDate"
+                  type="date"
+                  value={formData.receiveDate}
+                  onChange={(e) => updateField('receiveDate', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="lastMaintenance">Última Manutenção</Label>
+                <Input
+                  id="lastMaintenance"
+                  type="date"
+                  value={formData.lastMaintenance}
+                  onChange={(e) => updateField('lastMaintenance', e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Seção 6: Hierarquia (apenas para acessórios) */}
+          {formData.itemType === 'accessory' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Associação</h3>
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="parentId">Item Principal</Label>
                 {mainItems.length === 0 ? (
-                  <div className="p-4 bg-muted rounded-lg text-center">
+                  <div className="p-4 bg-muted/50 rounded-lg text-center">
                     <p className="text-muted-foreground">
                       Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
                     </p>
@@ -460,123 +618,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                   </p>
                 )}
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="serialNumber">Número de Série</Label>
-              <Input
-                id="serialNumber"
-                value={formData.serialNumber}
-                onChange={(e) => updateField('serialNumber', e.target.value)}
-              />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="value">Valor de Compra (R$)</Label>
-              <Input
-                id="value"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.value || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  updateField('value', value === '' ? 0 : parseFloat(value) || 0);
-                }}
-                placeholder="0,00"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="patrimonyNumber">Patrimônio</Label>
-              <Input
-                id="patrimonyNumber"
-                value={formData.patrimonyNumber}
-                onChange={(e) => updateField('patrimonyNumber', e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="purchaseDate">Data de Compra</Label>
-              <Input
-                id="purchaseDate"
-                type="date"
-                value={formData.purchaseDate}
-                onChange={(e) => updateField('purchaseDate', e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastMaintenance">Última Manutenção</Label>
-              <Input
-                id="lastMaintenance"
-                type="date"
-                value={formData.lastMaintenance}
-                onChange={(e) => updateField('lastMaintenance', e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => updateField('description', e.target.value)}
-              rows={3}
-            />
-          </div>
-          
-          {/* Hidden fields for additional equipment data */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-            <h3 className="md:col-span-2 text-lg font-semibold">Informações Adicionais</h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="depreciatedValue">Valor com Depreciação (R$)</Label>
-              <Input
-                id="depreciatedValue"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.depreciatedValue || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  updateField('depreciatedValue', value === '' ? 0 : parseFloat(value) || 0);
-                }}
-                placeholder="0,00"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="receiveDate">Data de Recebimento</Label>
-              <Input
-                id="receiveDate"
-                type="date"
-                value={formData.receiveDate}
-                onChange={(e) => updateField('receiveDate', e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="store">Loja</Label>
-              <Input
-                id="store"
-                value={formData.store}
-                onChange={(e) => updateField('store', e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="invoice">NFe ou Recibo (Link)</Label>
-              <Input
-                id="invoice"
-                type="url"
-                value={formData.invoice}
-                onChange={(e) => updateField('invoice', e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-          </div>
+          )}
           
           <DialogFooter>
             <Button 
