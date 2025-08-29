@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Upload, Image, Grid3X3, List, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useEquipment } from '@/hooks/useEquipment';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
-import { BulkImageUploadDialog } from '@/components/Equipment/BulkImageUploadDialog';
+
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { EquipmentFiltersComponent } from '@/components/Equipment/EquipmentFilters';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
@@ -42,7 +42,7 @@ export default function EquipmentPage() {
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [isBulkImageDialogOpen, setIsBulkImageDialogOpen] = useState(false);
+  
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
@@ -448,7 +448,7 @@ export default function EquipmentPage() {
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
           {/* View mode toggle - hidden on mobile */}
           {!isMobile && (
             <div className="flex items-center border rounded-lg p-1 bg-muted/30">
@@ -479,21 +479,18 @@ export default function EquipmentPage() {
             </div>
           )}
           
-          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Adicionar Equipamento</span>
-            <span className="sm:hidden">Adicionar</span>
-          </Button>
-          
-          <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Importar</span>
-          </Button>
-          
-          <Button variant="outline" onClick={() => setIsBulkImageDialogOpen(true)} className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
-            <span className="hidden sm:inline">Upload de Imagens</span>
-          </Button>
+          <div className="flex gap-2 ml-auto">
+            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Adicionar Equipamento</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
+            
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Importar</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -574,18 +571,6 @@ export default function EquipmentPage() {
         }}
       />
 
-      <BulkImageUploadDialog
-        open={isBulkImageDialogOpen}
-        onOpenChange={setIsBulkImageDialogOpen}
-        onComplete={() => {
-          setIsBulkImageDialogOpen(false);
-          enhancedToast.success({
-            title: 'Upload concluído!',
-            description: 'Todas as imagens foram processadas.'
-          });
-        }}
-        equipments={filteredEquipment}
-      />
 
       {convertingEquipment && (
         <ConvertToAccessoryDialog
