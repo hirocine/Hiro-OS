@@ -87,15 +87,17 @@ export default function EquipmentPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     
-    if (effectiveViewMode === 'cards') {
+    // Use flat equipment data for grid and cards views
+    if (effectiveViewMode === 'grid' || effectiveViewMode === 'cards') {
       return filteredEquipment.slice(startIndex, endIndex);
     }
     
+    // Use hierarchy data for table view
     return equipmentHierarchy.slice(startIndex, endIndex);
   }, [filteredEquipment, equipmentHierarchy, currentPage, itemsPerPage, effectiveViewMode]);
 
   const totalPages = Math.ceil(
-    (effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length) / itemsPerPage
+    (effectiveViewMode === 'grid' || effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length) / itemsPerPage
   );
 
   // Smart pagination - reset only when filters significantly change
@@ -109,7 +111,7 @@ export default function EquipmentPage() {
     
     if (lastFiltersHash && filtersHash !== lastFiltersHash) {
       // Only reset to page 1 if current page would be empty
-      const totalItems = effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length;
+      const totalItems = effectiveViewMode === 'grid' || effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length;
       const maxValidPage = Math.ceil(totalItems / itemsPerPage) || 1;
       
       if (currentPage > maxValidPage) {

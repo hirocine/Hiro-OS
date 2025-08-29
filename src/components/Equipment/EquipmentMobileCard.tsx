@@ -91,10 +91,10 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
             </button>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-card-foreground truncate">
-                {equipment.name}
+                {String(equipment?.name || 'Nome não informado')}
               </h3>
               <p className="text-sm text-muted-foreground truncate">
-                {equipment.brand}
+                {String(equipment?.brand || 'Marca não informada')}
               </p>
             </div>
           </div>
