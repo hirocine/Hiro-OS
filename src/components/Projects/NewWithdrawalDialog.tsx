@@ -9,7 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -344,6 +346,127 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       newExpanded.add(cameraId);
     }
     setExpandedCameras(newExpanded);
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    
+    // Configurações iniciais
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 20;
+    let yPosition = margin;
+    
+    // Cabeçalho
+    doc.setFontSize(20);
+    doc.text('Lista de Equipamentos - Retirada', margin, yPosition);
+    yPosition += 15;
+    
+    // Informações do projeto
+    doc.setFontSize(12);
+    doc.text(`Projeto: ${data.projectNumber} - ${data.projectName}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`Empresa: ${data.company}`, margin, yPosition);
+    yPosition += 8;
+    
+    const responsibleUser = users.find(user => user.id === data.responsibleUserId);
+    doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, margin, yPosition);
+    yPosition += 8;
+    
+    if (data.withdrawalDate) {
+      doc.text(`Data de Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
+      yPosition += 8;
+    }
+    
+    if (data.returnDate) {
+      doc.text(`Data de Devolução: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
+      yPosition += 8;
+    }
+    
+    doc.text(`Tipo de Gravação: ${data.recordingType}`, margin, yPosition);
+    yPosition += 15;
+    
+    // Preparar dados para a tabela
+    const tableData: string[][] = [];
+    
+    // Processar câmeras e seus acessórios
+    data.selectedEquipment.cameras.forEach(selectedCamera => {
+      tableData.push([
+        'Câmeras',
+        selectedCamera.camera.name || 'N/A',
+        selectedCamera.camera.brand || 'N/A',
+        'Principal',
+        ''
+      ]);
+      
+      selectedCamera.accessories.forEach(accessory => {
+        tableData.push([
+          'Câmeras',
+          accessory.name || 'N/A',
+          accessory.brand || 'N/A',
+          'Acessório',
+          selectedCamera.camera.name || 'N/A'
+        ]);
+      });
+    });
+    
+    // Processar outras categorias
+    const categories = [
+      { items: data.selectedEquipment.lenses, category: 'Lentes' },
+      { items: data.selectedEquipment.cameraAccessories, category: 'Acessórios de Câmera' },
+      { items: data.selectedEquipment.tripods, category: 'Tripés' },
+      { items: data.selectedEquipment.lights, category: 'Iluminação' },
+      { items: data.selectedEquipment.lightModifiers, category: 'Modificadores de Luz' },
+      { items: data.selectedEquipment.machinery, category: 'Maquinário' },
+      { items: data.selectedEquipment.electrical, category: 'Elétrica' },
+      { items: data.selectedEquipment.storage, category: 'Armazenamento' },
+      { items: data.selectedEquipment.computers, category: 'Computadores' }
+    ];
+    
+    categories.forEach(({ items, category }) => {
+      items.forEach(item => {
+        tableData.push([
+          category,
+          item.name || 'N/A',
+          item.brand || 'N/A',
+          'Principal',
+          ''
+        ]);
+      });
+    });
+    
+    // Gerar tabela
+    (doc as any).autoTable({
+      head: [['Categoria', 'Nome', 'Marca', 'Tipo', 'Relacionado a']],
+      body: tableData,
+      startY: yPosition,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 10,
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      }
+    });
+    
+    // Adicionar total de itens
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(`Total de itens: ${tableData.length}`, margin, finalY);
+    
+    // Download do arquivo
+    const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
+    doc.save(fileName);
+    
+    toast({
+      title: "PDF Gerado",
+      description: "Lista de equipamentos baixada com sucesso!",
+    });
   };
 
   const handleSubmit = async () => {
@@ -2571,10 +2694,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </Button>
               
               {currentStep === 15 ? (
-                <Button onClick={handleSubmit} disabled={!isStepValid()}>
-                  <Check className="h-4 w-4 mr-2" />
-                  Criar Retirada
-                </Button>
+                <>
+                  <Button variant="outline" onClick={generatePDF}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar PDF
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={!isStepValid()}>
+                    <Check className="h-4 w-4 mr-2" />
+                    Criar Retirada
+                  </Button>
+                </>
               ) : (
                 <Button
                   onClick={nextStep}
