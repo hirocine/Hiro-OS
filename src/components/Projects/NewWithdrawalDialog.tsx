@@ -735,14 +735,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       ))}
                     </div>
                   ) : getAvailableCameras().length === 0 ? (
-                    <Card className="border-dashed">
-                      <CardContent className="pt-6">
-                        <div className="text-center text-sm text-muted-foreground">
-                          <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          Nenhuma câmera disponível
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                      <Card className="border-dashed h-full">
+                        <CardContent className="pt-6 h-full flex items-center justify-center">
+                          <div className="text-center text-sm text-muted-foreground">
+                            <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            Nenhuma câmera disponível
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   ) : (
                      <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {getAvailableCameras().map((cameraHierarchy) => (
