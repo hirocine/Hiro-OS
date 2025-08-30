@@ -479,8 +479,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     }
 
     return (
-      <Card key={title} className="h-40">
-        <CardHeader>
+      <Card key={title} className="h-40 flex flex-col overflow-hidden">
+        <CardHeader className="flex-shrink-0 h-16">
           <div className="flex items-center gap-3">
             <IconComponent className="h-6 w-6 text-primary" />
             <div>
@@ -489,8 +489,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2 h-24 overflow-y-auto">
+        <CardContent className="flex-1 overflow-hidden flex flex-col p-6 pt-0">
+          <div className="space-y-2 flex-1 overflow-y-auto">
             {title === 'Câmeras' ? (
               (items as SelectedCamera[]).map((selectedCamera, index) => (
                 <div key={selectedCamera.camera.id} className="text-sm space-y-1">
