@@ -89,6 +89,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     return equipmentHierarchy
       .filter(item => 
         item.item.category === 'camera' && 
+        item.item.subcategory === 'camera' &&
         item.item.itemType === 'main' && 
         item.item.status === 'available' &&
         !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
