@@ -663,59 +663,45 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   ) : (
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {data.selectedEquipment.cameras.map((selectedCamera) => (
-                        <Card key={selectedCamera.camera.id} className="border-primary/20">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-green-600" />
-                                </div>
-                                <div>
-                                  <CardTitle className="text-sm">{selectedCamera.camera.name}</CardTitle>
-                                  <p className="text-xs text-muted-foreground">
-                                    {selectedCamera.camera.brand}
-                                  </p>
+                        <Card key={selectedCamera.camera.id} className="border-primary/20 h-24">
+                          <CardContent className="p-4 h-full">
+                            <div className="flex items-center gap-3 h-full">
+                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Check className="h-6 w-6 text-green-600" />
+                              </div>
+                              <div className="flex-1 min-w-0 h-full">
+                                <div className="flex items-center justify-between h-full">
+                                  <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                    <p className="font-medium text-sm truncate">
+                                      {selectedCamera.camera.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {selectedCamera.camera.brand}
+                                    </p>
+                                    {selectedCamera.accessories.length > 0 && (
+                                      <div className="flex items-center gap-1">
+                                        <Package className="h-3 w-3 text-muted-foreground" />
+                                        <span className="text-xs text-muted-foreground">
+                                          {selectedCamera.accessories.length} acessórios
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCameraDeselect(selectedCamera.camera.id);
+                                    }}
+                                  >
+                                    Remover
+                                  </Button>
                                 </div>
                               </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleCameraDeselect(selectedCamera.camera.id)}
-                              >
-                                Remover
-                              </Button>
                             </div>
-                          </CardHeader>
-                          {selectedCamera.accessories.length > 0 && (
-                            <CardContent className="pt-0">
-                              <div 
-                                className="flex items-center gap-2 cursor-pointer hover:bg-muted/30 p-2 -m-2 rounded transition-colors"
-                                onClick={() => toggleAccessoriesExpansion(selectedCamera.camera.id)}
-                              >
-                                <Package className="h-3 w-3 text-muted-foreground" />
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {selectedCamera.accessories.length} acessórios
-                                </span>
-                                {expandedCameras.has(selectedCamera.camera.id) ? (
-                                  <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                                ) : (
-                                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                                )}
-                              </div>
-                              {expandedCameras.has(selectedCamera.camera.id) && (
-                                <div className="mt-2 space-y-1">
-                                  {selectedCamera.accessories.map((accessory) => (
-                                    <div key={accessory.id} className="flex items-center gap-2 text-xs ml-4">
-                                      <div className="w-1 h-1 bg-primary rounded-full" />
-                                      <span>{accessory.name}</span>
-                                      <span className="text-muted-foreground">({accessory.brand})</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </CardContent>
-                          )}
+                          </CardContent>
                         </Card>
                       ))}
                     </div>
