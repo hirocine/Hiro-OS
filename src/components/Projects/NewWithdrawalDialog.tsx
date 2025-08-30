@@ -31,18 +31,18 @@ interface WithdrawalData {
 }
 
 const RECORDING_TYPES = [
-  'Criativos/VSLs',
-  'Entrevistas/Depoimentos',
-  'Documentários',
-  'Aulas',
-  'Workshop/PGM',
-  'Institucionais',
-  'Eventos',
-  'Fotografia',
-  'Live',
-  'Publicidade',
-  'Appetite Appeal',
-  'Making Of'
+  'Criativos/VSLs 🎬',
+  'Entrevistas/Depoimentos 🎙️',
+  'Documentários 🎥',
+  'Aulas 📚',
+  'Workshop/PGM 🧑‍🏫',
+  'Institucionais 🏛️',
+  'Eventos 🎤',
+  'Fotografia 📸',
+  'Live 🔴',
+  'Publicidade 📺',
+  'Appetite Appeal 🍫',
+  'Making Of 🎞️'
 ];
 
 export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdrawalDialogProps) {
