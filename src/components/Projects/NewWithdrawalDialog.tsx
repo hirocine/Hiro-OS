@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,15 @@ interface WithdrawalData {
   selectedEquipment: {
     cameraQuantity: number;
     cameras: SelectedCamera[];
+    lenses: Equipment[];
+    cameraAccessories: Equipment[];
+    tripods: Equipment[];
+    lights: Equipment[];
+    lightModifiers: Equipment[];
+    machinery: Equipment[];
+    electrical: Equipment[];
+    storage: Equipment[];
+    computers: Equipment[];
   };
 }
 
@@ -74,6 +83,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     selectedEquipment: {
       cameraQuantity: 1,
       cameras: [],
+      lenses: [],
+      cameraAccessories: [],
+      tripods: [],
+      lights: [],
+      lightModifiers: [],
+      machinery: [],
+      electrical: [],
+      storage: [],
+      computers: [],
     },
   });
 
@@ -95,6 +113,117 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         item.item.status === 'available' &&
         !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
       );
+  };
+
+  // Get available lenses
+  const getAvailableLenses = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'camera' && 
+        item.item.subcategory === 'Lente' &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.lenses.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available camera accessories
+  const getAvailableCameraAccessories = () => {
+    const cameraAccessorySubcategories = ['Acessórios', 'Bateria', 'Cabo', 'Carregador', 'Case', 'Filtro', 'Monitor', 'Transmissão', 'Cage'];
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'camera' && 
+        cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.cameraAccessories.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available tripods and movement equipment
+  const getAvailableTripods = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        ((item.item.category === 'accessories' && item.item.subcategory === 'Tripé de Câmera') ||
+         (item.item.category === 'camera' && item.item.subcategory === 'Estabilizador')) &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.tripods.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available lights
+  const getAvailableLights = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'lighting' && 
+        item.item.subcategory === 'Luz' &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.lights.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available light modifiers
+  const getAvailableLightModifiers = () => {
+    const lightModifierSubcategories = ['Modificador de Luz', 'Tripé de Luz'];
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'lighting' && 
+        lightModifierSubcategories.includes(item.item.subcategory || '') &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.lightModifiers.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available machinery
+  const getAvailableMachinery = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'accessories' && 
+        item.item.subcategory === 'Maquinária' &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.machinery.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available electrical equipment
+  const getAvailableElectrical = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'accessories' && 
+        (item.item.subcategory === 'Cabo' || item.item.subcategory === 'Elétrica') &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.electrical.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available storage equipment
+  const getAvailableStorage = () => {
+    const storageSubcategories = ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD'];
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'storage' && 
+        storageSubcategories.includes(item.item.subcategory || '') &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.storage.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
+  };
+
+  // Get available computers
+  const getAvailableComputers = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'accessories' && 
+        item.item.subcategory === 'Computador' &&
+        item.item.status === 'available' &&
+        !data.selectedEquipment.computers.some(selected => selected.id === item.item.id)
+      )
+      .map(item => item.item);
   };
 
   const handleCameraQuantityChange = (quantity: number) => {
@@ -140,6 +269,29 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     });
   };
 
+  // Generic equipment selection handlers
+  const handleEquipmentSelect = (equipment: Equipment, type: keyof WithdrawalData['selectedEquipment']) => {
+    if (type === 'cameras' || type === 'cameraQuantity') return; // Cameras have special handling
+    
+    const currentEquipment = data.selectedEquipment[type] as Equipment[];
+    updateField('selectedEquipment', {
+      ...data.selectedEquipment,
+      [type]: [...currentEquipment, equipment],
+    });
+  };
+
+  const handleEquipmentDeselect = (equipmentId: string, type: keyof WithdrawalData['selectedEquipment']) => {
+    if (type === 'cameras' || type === 'cameraQuantity') return; // Cameras have special handling
+    
+    const currentEquipment = data.selectedEquipment[type] as Equipment[];
+    const updatedEquipment = currentEquipment.filter(item => item.id !== equipmentId);
+    
+    updateField('selectedEquipment', {
+      ...data.selectedEquipment,
+      [type]: updatedEquipment,
+    });
+  };
+
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -155,13 +307,24 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         return data.recordingType !== '';
       case 5:
         return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
+      // Steps 6-14 are optional - any selection is valid
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+      case 14:
+        return true;
       default:
         return true;
     }
   };
 
   const nextStep = () => {
-    if (currentStep < 5) {
+    if (currentStep < 14) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -229,6 +392,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         selectedEquipment: {
           cameraQuantity: 1,
           cameras: [],
+          lenses: [],
+          cameraAccessories: [],
+          tripods: [],
+          lights: [],
+          lightModifiers: [],
+          machinery: [],
+          electrical: [],
+          storage: [],
+          computers: [],
         },
       });
       
@@ -735,6 +907,1383 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           </div>
         );
 
+      case 6:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Seleção de Lentes</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Lenses */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Camera className="h-5 w-5" />
+                  <h4 className="font-medium">Lentes Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableLenses().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableLenses().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhuma lente disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableLenses().map((lens) => (
+                      <Card 
+                        key={lens.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(lens, 'lenses')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {lens.image ? (
+                                <img 
+                                  src={lens.image} 
+                                  alt={lens.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Camera className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {lens.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{lens.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lens.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(lens, 'lenses');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Lenses */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Lentes Selecionadas</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.lenses.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.lenses.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma lente selecionada
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.lenses.map((lens) => (
+                      <Card key={lens.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {lens.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lens.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(lens.id, 'lenses');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Acessórios de Câmera</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Camera Accessories */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Package className="h-5 w-5" />
+                  <h4 className="font-medium">Acessórios Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableCameraAccessories().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableCameraAccessories().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum acessório disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableCameraAccessories().map((accessory) => (
+                      <Card 
+                        key={accessory.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(accessory, 'cameraAccessories')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {accessory.image ? (
+                                <img 
+                                  src={accessory.image} 
+                                  alt={accessory.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Package className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {accessory.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{accessory.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {accessory.brand} • {accessory.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(accessory, 'cameraAccessories');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Camera Accessories */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Acessórios Selecionados</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.cameraAccessories.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.cameraAccessories.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum acessório selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.cameraAccessories.map((accessory) => (
+                      <Card key={accessory.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {accessory.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {accessory.brand} • {accessory.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(accessory.id, 'cameraAccessories');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Tripé e Movimento</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Tripods */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Settings className="h-5 w-5" />
+                  <h4 className="font-medium">Equipamentos Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableTripods().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableTripods().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum equipamento disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableTripods().map((tripod) => (
+                      <Card 
+                        key={tripod.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(tripod, 'tripods')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {tripod.image ? (
+                                <img 
+                                  src={tripod.image} 
+                                  alt={tripod.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Settings className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {tripod.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{tripod.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {tripod.brand} • {tripod.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(tripod, 'tripods');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Tripods */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Equipamentos Selecionados</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.tripods.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.tripods.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum equipamento selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.tripods.map((tripod) => (
+                      <Card key={tripod.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {tripod.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {tripod.brand} • {tripod.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(tripod.id, 'tripods');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 9:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Luz</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Lights */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Lightbulb className="h-5 w-5" />
+                  <h4 className="font-medium">Luzes Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableLights().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableLights().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhuma luz disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableLights().map((light) => (
+                      <Card 
+                        key={light.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(light, 'lights')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {light.image ? (
+                                <img 
+                                  src={light.image} 
+                                  alt={light.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Lightbulb className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {light.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{light.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {light.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(light, 'lights');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Lights */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Luzes Selecionadas</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.lights.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.lights.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma luz selecionada
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.lights.map((light) => (
+                      <Card key={light.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {light.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {light.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(light.id, 'lights');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 10:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Modificadores de Luz</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Light Modifiers */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Settings className="h-5 w-5" />
+                  <h4 className="font-medium">Modificadores Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableLightModifiers().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableLightModifiers().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum modificador disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableLightModifiers().map((modifier) => (
+                      <Card 
+                        key={modifier.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(modifier, 'lightModifiers')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {modifier.image ? (
+                                <img 
+                                  src={modifier.image} 
+                                  alt={modifier.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Settings className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {modifier.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{modifier.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {modifier.brand} • {modifier.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(modifier, 'lightModifiers');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Light Modifiers */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Modificadores Selecionados</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.lightModifiers.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.lightModifiers.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum modificador selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.lightModifiers.map((modifier) => (
+                      <Card key={modifier.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {modifier.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {modifier.brand} • {modifier.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(modifier.id, 'lightModifiers');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 11:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Maquinária</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Machinery */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Cog className="h-5 w-5" />
+                  <h4 className="font-medium">Maquinário Disponível</h4>
+                  <Badge variant="secondary">
+                    {getAvailableMachinery().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableMachinery().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Cog className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum maquinário disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableMachinery().map((machine) => (
+                      <Card 
+                        key={machine.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(machine, 'machinery')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {machine.image ? (
+                                <img 
+                                  src={machine.image} 
+                                  alt={machine.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Cog className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {machine.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{machine.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {machine.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(machine, 'machinery');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Machinery */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Maquinário Selecionado</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.machinery.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.machinery.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum maquinário selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.machinery.map((machine) => (
+                      <Card key={machine.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {machine.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {machine.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(machine.id, 'machinery');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 12:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Elétrica</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Electrical */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Zap className="h-5 w-5" />
+                  <h4 className="font-medium">Equipamentos Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableElectrical().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableElectrical().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum equipamento disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableElectrical().map((electrical) => (
+                      <Card 
+                        key={electrical.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(electrical, 'electrical')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {electrical.image ? (
+                                <img 
+                                  src={electrical.image} 
+                                  alt={electrical.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Zap className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {electrical.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{electrical.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {electrical.brand} • {electrical.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(electrical, 'electrical');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Electrical */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Equipamentos Selecionados</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.electrical.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.electrical.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum equipamento selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.electrical.map((electrical) => (
+                      <Card key={electrical.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {electrical.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {electrical.brand} • {electrical.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(electrical.id, 'electrical');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 13:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Armazenamento/Log</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Storage */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <HardDrive className="h-5 w-5" />
+                  <h4 className="font-medium">Armazenamento Disponível</h4>
+                  <Badge variant="secondary">
+                    {getAvailableStorage().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableStorage().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <HardDrive className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum armazenamento disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableStorage().map((storage) => (
+                      <Card 
+                        key={storage.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(storage, 'storage')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {storage.image ? (
+                                <img 
+                                  src={storage.image} 
+                                  alt={storage.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <HardDrive className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {storage.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{storage.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {storage.brand} • {storage.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(storage, 'storage');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Storage */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Armazenamento Selecionado</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.storage.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.storage.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum armazenamento selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.storage.map((storage) => (
+                      <Card key={storage.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {storage.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {storage.brand} • {storage.subcategory}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(storage.id, 'storage');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 14:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Computador</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Available Computers */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Monitor className="h-5 w-5" />
+                  <h4 className="font-medium">Computadores Disponíveis</h4>
+                  <Badge variant="secondary">
+                    {getAvailableComputers().length} disponíveis
+                  </Badge>
+                </div>
+
+                {equipmentLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : getAvailableComputers().length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        Nenhum computador disponível
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {getAvailableComputers().map((computer) => (
+                      <Card 
+                        key={computer.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        onClick={() => handleEquipmentSelect(computer, 'computers')}
+                      >
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {computer.image ? (
+                                <img 
+                                  src={computer.image} 
+                                  alt={computer.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <Monitor className="h-6 w-6 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="font-medium text-sm truncate">
+                                        {computer.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{computer.name}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <p className="text-xs text-muted-foreground">
+                                    {computer.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentSelect(computer, 'computers');
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Computers */}
+              <div className="h-[600px] flex flex-col">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Computadores Selecionados</h4>
+                  <Badge variant="default">
+                    {data.selectedEquipment.computers.length}
+                  </Badge>
+                </div>
+
+                {data.selectedEquipment.computers.length === 0 ? (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum computador selecionado
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    {data.selectedEquipment.computers.map((computer) => (
+                      <Card key={computer.id} className="border-primary/20 h-24">
+                        <CardContent className="p-4 h-full">
+                          <div className="flex items-center gap-3 h-full">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Check className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0 h-full">
+                              <div className="flex items-center justify-between h-full">
+                                <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
+                                  <p className="font-medium text-sm truncate">
+                                    {computer.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {computer.brand}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEquipmentDeselect(computer.id, 'computers');
+                                  }}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -745,7 +2294,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Nova Retirada - Passo {currentStep} de 5</DialogTitle>
+            <DialogTitle>Nova Retirada - Passo {currentStep} de 14</DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
@@ -753,7 +2302,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             <div className="w-full bg-muted rounded-full h-2 mb-6">
               <div 
                 className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(currentStep / 5) * 100}%` }}
+                style={{ width: `${(currentStep / 14) * 100}%` }}
               />
             </div>
 
@@ -775,7 +2324,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 Cancelar
               </Button>
               
-              {currentStep === 5 ? (
+              {currentStep === 14 ? (
                 <Button onClick={handleSubmit} disabled={!isStepValid()}>
                   <Check className="h-4 w-4 mr-2" />
                   Criar Retirada
