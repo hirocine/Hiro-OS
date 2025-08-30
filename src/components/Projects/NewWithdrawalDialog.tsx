@@ -719,7 +719,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Available Cameras */}
-                <div className="h-[600px] flex flex-col">
+                <div className="flex-1 flex flex-col min-h-0">
                   <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                     <Camera className="h-5 w-5" />
                     <h4 className="font-medium">Câmeras Disponíveis</h4>
@@ -814,7 +814,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 </div>
 
                 {/* Selected Cameras Preview */}
-                <div className="h-[600px] flex flex-col">
+                <div className="flex-1 flex flex-col min-h-0">
                   <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                     <Check className="h-5 w-5 text-green-600" />
                     <h4 className="font-medium">Câmeras Selecionadas</h4>
@@ -914,7 +914,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Lenses */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Camera className="h-5 w-5" />
                   <h4 className="font-medium">Lentes Disponíveis</h4>
@@ -997,7 +997,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Lenses */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Lentes Selecionadas</h4>
@@ -1067,7 +1067,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Camera Accessories */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Package className="h-5 w-5" />
                   <h4 className="font-medium">Acessórios Disponíveis</h4>
@@ -1150,7 +1150,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Camera Accessories */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Acessórios Selecionados</h4>
@@ -1220,7 +1220,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Tripods */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Settings className="h-5 w-5" />
                   <h4 className="font-medium">Equipamentos Disponíveis</h4>
@@ -1303,7 +1303,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Tripods */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Equipamentos Selecionados</h4>
@@ -1373,7 +1373,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Lights */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Lightbulb className="h-5 w-5" />
                   <h4 className="font-medium">Luzes Disponíveis</h4>
@@ -1456,7 +1456,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Lights */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Luzes Selecionadas</h4>
@@ -1526,7 +1526,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Light Modifiers */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Settings className="h-5 w-5" />
                   <h4 className="font-medium">Modificadores Disponíveis</h4>
@@ -1609,7 +1609,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Light Modifiers */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Modificadores Selecionados</h4>
@@ -1679,7 +1679,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Machinery */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Cog className="h-5 w-5" />
                   <h4 className="font-medium">Maquinário Disponível</h4>
@@ -1762,7 +1762,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Machinery */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Maquinário Selecionado</h4>
@@ -1832,7 +1832,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Electrical */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Zap className="h-5 w-5" />
                   <h4 className="font-medium">Equipamentos Disponíveis</h4>
@@ -1915,7 +1915,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Electrical */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Equipamentos Selecionados</h4>
@@ -1985,7 +1985,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Storage */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <HardDrive className="h-5 w-5" />
                   <h4 className="font-medium">Armazenamento Disponível</h4>
@@ -2068,7 +2068,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Storage */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Armazenamento Selecionado</h4>
@@ -2138,7 +2138,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Computers */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Monitor className="h-5 w-5" />
                   <h4 className="font-medium">Computadores Disponíveis</h4>
@@ -2221,7 +2221,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
 
               {/* Selected Computers */}
-              <div className="h-[600px] flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                   <Check className="h-5 w-5 text-green-600" />
                   <h4 className="font-medium">Computadores Selecionados</h4>
@@ -2292,12 +2292,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Nova Retirada - Passo {currentStep} de 14</DialogTitle>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="flex-1 overflow-hidden py-4 flex flex-col">
             {/* Progress bar */}
             <div className="w-full bg-muted rounded-full h-2 mb-6">
               <div 
@@ -2309,7 +2309,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             {renderStep()}
           </div>
 
-          <div className="flex justify-between pt-4 border-t">
+          <div className="flex justify-between pt-4 border-t flex-shrink-0">
             <Button
               variant="outline"
               onClick={prevStep}
