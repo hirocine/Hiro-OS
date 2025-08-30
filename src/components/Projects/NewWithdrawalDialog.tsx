@@ -6,17 +6,26 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
+import { useEquipment } from '@/hooks/useEquipment';
+import { Equipment } from '@/types/equipment';
 
 interface NewWithdrawalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
+}
+
+interface SelectedCamera {
+  camera: Equipment;
+  accessories: Equipment[];
 }
 
 interface WithdrawalData {
@@ -28,6 +37,10 @@ interface WithdrawalData {
   returnDate: Date | undefined;
   separationDate: Date | undefined;
   recordingType: string;
+  selectedEquipment: {
+    cameraQuantity: number;
+    cameras: SelectedCamera[];
+  };
 }
 
 const RECORDING_TYPES = [
@@ -56,13 +69,72 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     returnDate: undefined,
     separationDate: undefined,
     recordingType: '',
+    selectedEquipment: {
+      cameraQuantity: 1,
+      cameras: [],
+    },
   });
 
   const { users, loading: usersLoading } = useUsers();
   const { toast } = useToast();
+  const { equipmentHierarchy, loading: equipmentLoading } = useEquipment();
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
     setData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Get available cameras (main items, camera category, available status)
+  const getAvailableCameras = () => {
+    return equipmentHierarchy
+      .filter(item => 
+        item.item.category === 'camera' && 
+        item.item.itemType === 'main' && 
+        item.item.status === 'available' &&
+        !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
+      );
+  };
+
+  const handleCameraQuantityChange = (quantity: number) => {
+    const currentQuantity = data.selectedEquipment.cameraQuantity;
+    const selectedCameras = data.selectedEquipment.cameras;
+    
+    if (quantity < selectedCameras.length) {
+      // Remove excess cameras
+      const newCameras = selectedCameras.slice(0, quantity);
+      updateField('selectedEquipment', {
+        ...data.selectedEquipment,
+        cameraQuantity: quantity,
+        cameras: newCameras,
+      });
+    } else {
+      updateField('selectedEquipment', {
+        ...data.selectedEquipment,
+        cameraQuantity: quantity,
+      });
+    }
+  };
+
+  const handleCameraSelect = (cameraHierarchy: { item: Equipment; accessories: Equipment[] }) => {
+    const newSelectedCamera: SelectedCamera = {
+      camera: cameraHierarchy.item,
+      accessories: cameraHierarchy.accessories,
+    };
+
+    updateField('selectedEquipment', {
+      ...data.selectedEquipment,
+      cameras: [...data.selectedEquipment.cameras, newSelectedCamera],
+    });
+  };
+
+  const handleCameraDeselect = (cameraId: string) => {
+    const updatedCameras = data.selectedEquipment.cameras.filter(
+      selected => selected.camera.id !== cameraId
+    );
+    
+    updateField('selectedEquipment', {
+      ...data.selectedEquipment,
+      cameras: updatedCameras,
+    });
   };
 
   const isStepValid = () => {
@@ -78,13 +150,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         return data.withdrawalDate && data.returnDate && data.separationDate;
       case 4:
         return data.recordingType !== '';
+      case 5:
+        return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
       default:
         return true;
     }
   };
 
   const nextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -139,6 +213,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         returnDate: undefined,
         separationDate: undefined,
         recordingType: '',
+        selectedEquipment: {
+          cameraQuantity: 1,
+          cameras: [],
+        },
       });
       
       onOpenChange(false);
@@ -417,6 +495,228 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           </div>
         );
 
+      case 5:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Seleção de Câmeras</h3>
+            
+            <div className="space-y-6">
+              {/* Camera Quantity Selection */}
+              <div className="space-y-3">
+                <Label>Quantidade de Câmeras *</Label>
+                <div className="flex items-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCameraQuantityChange(Math.max(1, data.selectedEquipment.cameraQuantity - 1))}
+                    disabled={data.selectedEquipment.cameraQuantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="font-mono text-lg font-semibold w-8 text-center">
+                    {data.selectedEquipment.cameraQuantity}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCameraQuantityChange(Math.min(10, data.selectedEquipment.cameraQuantity + 1))}
+                    disabled={data.selectedEquipment.cameraQuantity >= 10}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    (máximo 10 câmeras)
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Available Cameras */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Camera className="h-5 w-5" />
+                    <h4 className="font-medium">Câmeras Disponíveis</h4>
+                    <Badge variant="secondary">
+                      {getAvailableCameras().length} disponíveis
+                    </Badge>
+                  </div>
+
+                  {equipmentLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                      ))}
+                    </div>
+                  ) : getAvailableCameras().length === 0 ? (
+                    <Card className="border-dashed">
+                      <CardContent className="pt-6">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma câmera disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                      {getAvailableCameras().map((cameraHierarchy) => (
+                        <Card 
+                          key={cameraHierarchy.item.id}
+                          className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20"
+                          onClick={() => 
+                            data.selectedEquipment.cameras.length < data.selectedEquipment.cameraQuantity && 
+                            handleCameraSelect(cameraHierarchy)
+                          }
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                {cameraHierarchy.item.image ? (
+                                  <img 
+                                    src={cameraHierarchy.item.image} 
+                                    alt={cameraHierarchy.item.name}
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
+                                ) : (
+                                  <Camera className="h-6 w-6 text-primary" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">
+                                  {cameraHierarchy.item.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {cameraHierarchy.item.brand}
+                                </p>
+                                {cameraHierarchy.item.patrimonyNumber && (
+                                  <p className="text-xs text-muted-foreground font-mono">
+                                    #{cameraHierarchy.item.patrimonyNumber}
+                                  </p>
+                                )}
+                                {cameraHierarchy.accessories.length > 0 && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Package className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">
+                                      {cameraHierarchy.accessories.length} acessórios
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                disabled={data.selectedEquipment.cameras.length >= data.selectedEquipment.cameraQuantity}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCameraSelect(cameraHierarchy);
+                                }}
+                              >
+                                Selecionar
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Cameras Preview */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <h4 className="font-medium">Câmeras Selecionadas</h4>
+                    <Badge variant="default">
+                      {data.selectedEquipment.cameras.length} / {data.selectedEquipment.cameraQuantity}
+                    </Badge>
+                  </div>
+
+                  {data.selectedEquipment.cameras.length === 0 ? (
+                    <Card className="border-dashed">
+                      <CardContent className="pt-6">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma câmera selecionada
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                      {data.selectedEquipment.cameras.map((selectedCamera) => (
+                        <Card key={selectedCamera.camera.id} className="border-primary/20">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <Check className="h-4 w-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-sm">{selectedCamera.camera.name}</CardTitle>
+                                  <p className="text-xs text-muted-foreground">
+                                    {selectedCamera.camera.brand}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCameraDeselect(selectedCamera.camera.id)}
+                              >
+                                Remover
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          {selectedCamera.accessories.length > 0 && (
+                            <CardContent className="pt-0">
+                              <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  Acessórios incluídos:
+                                </p>
+                                <div className="space-y-1">
+                                  {selectedCamera.accessories.map((accessory) => (
+                                    <div key={accessory.id} className="flex items-center gap-2 text-xs">
+                                      <div className="w-1 h-1 bg-primary rounded-full" />
+                                      <span>{accessory.name}</span>
+                                      <span className="text-muted-foreground">({accessory.brand})</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Selection Summary */}
+              {data.selectedEquipment.cameras.length > 0 && (
+                <div className="p-4 bg-muted rounded-lg">
+                  <h5 className="font-medium text-sm mb-2">Resumo da Seleção:</h5>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Câmeras:</span>
+                      <span className="ml-2 font-medium">
+                        {data.selectedEquipment.cameras.length} / {data.selectedEquipment.cameraQuantity}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Total acessórios:</span>
+                      <span className="ml-2 font-medium">
+                        {data.selectedEquipment.cameras.reduce((acc, cam) => acc + cam.accessories.length, 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -426,7 +726,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova Retirada - Passo {currentStep} de 4</DialogTitle>
+          <DialogTitle>Nova Retirada - Passo {currentStep} de 5</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
@@ -434,7 +734,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="w-full bg-muted rounded-full h-2 mb-6">
             <div 
               className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / 4) * 100}%` }}
+              style={{ width: `${(currentStep / 5) * 100}%` }}
             />
           </div>
 
@@ -456,7 +756,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               Cancelar
             </Button>
             
-            {currentStep === 4 ? (
+            {currentStep === 5 ? (
               <Button onClick={handleSubmit} disabled={!isStepValid()}>
                 <Check className="h-4 w-4 mr-2" />
                 Criar Retirada
