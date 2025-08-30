@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -583,9 +584,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">
-                                  {cameraHierarchy.item.name}
-                                </p>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <p className="font-medium text-sm break-words leading-tight">
+                                      {cameraHierarchy.item.name}
+                                    </p>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{cameraHierarchy.item.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
                                 <p className="text-xs text-muted-foreground">
                                   {cameraHierarchy.item.brand}
                                 </p>
@@ -723,56 +731,58 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Retirada - Passo {currentStep} de 5</DialogTitle>
-        </DialogHeader>
+    <TooltipProvider>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Retirada - Passo {currentStep} de 5</DialogTitle>
+          </DialogHeader>
 
-        <div className="py-4">
-          {/* Progress bar */}
-          <div className="w-full bg-muted rounded-full h-2 mb-6">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / 5) * 100}%` }}
-            />
+          <div className="py-4">
+            {/* Progress bar */}
+            <div className="w-full bg-muted rounded-full h-2 mb-6">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all"
+                style={{ width: `${(currentStep / 5) * 100}%` }}
+              />
+            </div>
+
+            {renderStep()}
           </div>
 
-          {renderStep()}
-        </div>
-
-        <div className="flex justify-between pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Anterior
-          </Button>
-
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+          <div className="flex justify-between pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Anterior
             </Button>
-            
-            {currentStep === 5 ? (
-              <Button onClick={handleSubmit} disabled={!isStepValid()}>
-                <Check className="h-4 w-4 mr-2" />
-                Criar Retirada
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
               </Button>
-            ) : (
-              <Button
-                onClick={nextStep}
-                disabled={!isStepValid()}
-              >
-                Próximo
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            )}
+              
+              {currentStep === 5 ? (
+                <Button onClick={handleSubmit} disabled={!isStepValid()}>
+                  <Check className="h-4 w-4 mr-2" />
+                  Criar Retirada
+                </Button>
+              ) : (
+                <Button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                >
+                  Próximo
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </TooltipProvider>
   );
 }
