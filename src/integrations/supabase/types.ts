@@ -333,6 +333,7 @@ export type Database = {
           notes: string | null
           project_name: string | null
           project_number: string | null
+          recording_type: string | null
           responsible_email: string | null
           responsible_name: string
           responsible_user_id: string | null
@@ -358,6 +359,7 @@ export type Database = {
           notes?: string | null
           project_name?: string | null
           project_number?: string | null
+          recording_type?: string | null
           responsible_email?: string | null
           responsible_name: string
           responsible_user_id?: string | null
@@ -383,6 +385,7 @@ export type Database = {
           notes?: string | null
           project_name?: string | null
           project_number?: string | null
+          recording_type?: string | null
           responsible_email?: string | null
           responsible_name?: string
           responsible_user_id?: string | null

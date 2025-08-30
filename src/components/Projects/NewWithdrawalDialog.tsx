@@ -27,7 +27,23 @@ interface WithdrawalData {
   withdrawalDate: Date | undefined;
   returnDate: Date | undefined;
   separationDate: Date | undefined;
+  recordingType: string;
 }
+
+const RECORDING_TYPES = [
+  'Criativos/VSLs',
+  'Entrevistas/Depoimentos',
+  'Documentários',
+  'Aulas',
+  'Workshop/PGM',
+  'Institucionais',
+  'Eventos',
+  'Fotografia',
+  'Live',
+  'Publicidade',
+  'Appetite Appeal',
+  'Making Of'
+];
 
 export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdrawalDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -39,6 +55,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     withdrawalDate: undefined,
     returnDate: undefined,
     separationDate: undefined,
+    recordingType: '',
   });
 
   const { users, loading: usersLoading } = useUsers();
@@ -59,13 +76,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         return data.responsibleUserId !== '';
       case 3:
         return data.withdrawalDate && data.returnDate && data.separationDate;
+      case 4:
+        return data.recordingType !== '';
       default:
         return true;
     }
   };
 
   const nextStep = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -100,6 +119,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       expectedEndDate: data.returnDate?.toISOString().split('T')[0] || '',
       withdrawalDate: data.withdrawalDate?.toISOString().split('T')[0] || '',
       separationDate: data.separationDate?.toISOString().split('T')[0] || '',
+      recordingType: data.recordingType,
       status: 'active' as const,
       equipmentCount: 0,
       loanIds: []
@@ -118,6 +138,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         withdrawalDate: undefined,
         returnDate: undefined,
         separationDate: undefined,
+        recordingType: '',
       });
       
       onOpenChange(false);
@@ -359,6 +380,43 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           </div>
         );
 
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Tipo de Gravação</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="recordingType">Tipo de Gravação *</Label>
+                <Select 
+                  value={data.recordingType} 
+                  onValueChange={(value) => updateField('recordingType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de gravação" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RECORDING_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {data.recordingType && (
+                <div className="p-3 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">Tipo selecionado:</p>
+                  <p className="text-sm text-muted-foreground">
+                    {data.recordingType}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -368,7 +426,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova Retirada - Passo {currentStep} de 3</DialogTitle>
+          <DialogTitle>Nova Retirada - Passo {currentStep} de 4</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
@@ -376,7 +434,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="w-full bg-muted rounded-full h-2 mb-6">
             <div 
               className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / 3) * 100}%` }}
+              style={{ width: `${(currentStep / 4) * 100}%` }}
             />
           </div>
 
@@ -398,7 +456,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               Cancelar
             </Button>
             
-            {currentStep === 3 ? (
+            {currentStep === 4 ? (
               <Button onClick={handleSubmit} disabled={!isStepValid()}>
                 <Check className="h-4 w-4 mr-2" />
                 Criar Retirada

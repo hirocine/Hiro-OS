@@ -36,6 +36,7 @@ export interface Project {
   responsibleUserId?: string;
   withdrawalDate?: string;
   separationDate?: string;
+  recordingType?: string;
 }
 
 export interface ProjectFilters {
