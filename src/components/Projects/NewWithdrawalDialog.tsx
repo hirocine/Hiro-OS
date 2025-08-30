@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -61,6 +61,7 @@ const RECORDING_TYPES = [
 
 export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdrawalDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [expandedCameras, setExpandedCameras] = useState<Set<string>>(new Set());
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
     company: '',
@@ -169,6 +170,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const toggleAccessoriesExpansion = (cameraId: string) => {
+    const newExpanded = new Set(expandedCameras);
+    if (newExpanded.has(cameraId)) {
+      newExpanded.delete(cameraId);
+    } else {
+      newExpanded.add(cameraId);
+    }
+    setExpandedCameras(newExpanded);
   };
 
   const handleSubmit = async () => {
@@ -678,20 +689,31 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                           </CardHeader>
                           {selectedCamera.accessories.length > 0 && (
                             <CardContent className="pt-0">
-                              <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground">
-                                  Acessórios incluídos:
-                                </p>
-                                <div className="space-y-1">
+                              <div 
+                                className="flex items-center gap-2 cursor-pointer hover:bg-muted/30 p-2 -m-2 rounded transition-colors"
+                                onClick={() => toggleAccessoriesExpansion(selectedCamera.camera.id)}
+                              >
+                                <Package className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {selectedCamera.accessories.length} acessórios
+                                </span>
+                                {expandedCameras.has(selectedCamera.camera.id) ? (
+                                  <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                                )}
+                              </div>
+                              {expandedCameras.has(selectedCamera.camera.id) && (
+                                <div className="mt-2 space-y-1">
                                   {selectedCamera.accessories.map((accessory) => (
-                                    <div key={accessory.id} className="flex items-center gap-2 text-xs">
+                                    <div key={accessory.id} className="flex items-center gap-2 text-xs ml-4">
                                       <div className="w-1 h-1 bg-primary rounded-full" />
                                       <span>{accessory.name}</span>
                                       <span className="text-muted-foreground">({accessory.brand})</span>
                                     </div>
                                   ))}
                                 </div>
-                              </div>
+                              )}
                             </CardContent>
                           )}
                         </Card>
