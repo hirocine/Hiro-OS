@@ -88,7 +88,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableCameras = () => {
     return equipmentHierarchy
       .filter(item => 
-        (item.item.category as string) === 'Câmeras' && 
+        item.item.category === 'camera' && 
         item.item.subcategory === 'Câmera' &&
         item.item.itemType === 'main' && 
         item.item.status === 'available' &&
