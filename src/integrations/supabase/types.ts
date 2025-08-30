@@ -321,6 +321,7 @@ export type Database = {
       projects: {
         Row: {
           actual_end_date: string | null
+          company: string | null
           created_at: string
           department: string | null
           description: string | null
@@ -330,16 +331,22 @@ export type Database = {
           loan_ids: string[] | null
           name: string
           notes: string | null
+          project_name: string | null
+          project_number: string | null
           responsible_email: string | null
           responsible_name: string
+          responsible_user_id: string | null
+          separation_date: string | null
           start_date: string
           status: string
           step: string
           step_history: Json | null
           updated_at: string
+          withdrawal_date: string | null
         }
         Insert: {
           actual_end_date?: string | null
+          company?: string | null
           created_at?: string
           department?: string | null
           description?: string | null
@@ -349,16 +356,22 @@ export type Database = {
           loan_ids?: string[] | null
           name: string
           notes?: string | null
+          project_name?: string | null
+          project_number?: string | null
           responsible_email?: string | null
           responsible_name: string
+          responsible_user_id?: string | null
+          separation_date?: string | null
           start_date: string
           status?: string
           step?: string
           step_history?: Json | null
           updated_at?: string
+          withdrawal_date?: string | null
         }
         Update: {
           actual_end_date?: string | null
+          company?: string | null
           created_at?: string
           department?: string | null
           description?: string | null
@@ -368,13 +381,18 @@ export type Database = {
           loan_ids?: string[] | null
           name?: string
           notes?: string | null
+          project_name?: string | null
+          project_number?: string | null
           responsible_email?: string | null
           responsible_name?: string
+          responsible_user_id?: string | null
+          separation_date?: string | null
           start_date?: string
           status?: string
           step?: string
           step_history?: Json | null
           updated_at?: string
+          withdrawal_date?: string | null
         }
         Relationships: []
       }
