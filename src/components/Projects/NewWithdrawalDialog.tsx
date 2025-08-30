@@ -317,6 +317,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 12:
       case 13:
       case 14:
+      case 15:
         return true;
       default:
         return true;
@@ -324,7 +325,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   };
 
   const nextStep = () => {
-    if (currentStep < 14) {
+    if (currentStep < 15) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -418,6 +419,101 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         variant: "destructive"
       });
     }
+  };
+
+  // Helper functions for the summary step
+  const getTotalEquipmentCount = () => {
+    const {
+      cameras,
+      lenses,
+      cameraAccessories,
+      tripods,
+      lights,
+      lightModifiers,
+      machinery,
+      electrical,
+      storage,
+      computers
+    } = data.selectedEquipment;
+    
+    return cameras.length + lenses.length + cameraAccessories.length + 
+           tripods.length + lights.length + lightModifiers.length + 
+           machinery.length + electrical.length + storage.length + computers.length;
+  };
+
+  const getResponsibleUserName = () => {
+    const user = users.find(u => u.id === data.responsibleUserId);
+    return user ? user.display_name || user.email : 'Não selecionado';
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    return date ? format(date, 'dd/MM/yyyy', { locale: ptBR }) : 'Não selecionada';
+  };
+
+  const renderEquipmentCategoryCard = (
+    title: string,
+    icon: any,
+    items: Equipment[] | SelectedCamera[],
+    isEmpty: boolean
+  ) => {
+    const IconComponent = icon;
+    const count = Array.isArray(items) ? items.length : 0;
+    
+    if (isEmpty) {
+      return (
+        <Card key={title} className="opacity-50">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <IconComponent className="h-6 w-6 text-muted-foreground" />
+              <div>
+                <CardTitle className="text-sm">{title}</CardTitle>
+                <Badge variant="secondary" className="text-xs">0 itens</Badge>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      );
+    }
+
+    return (
+      <Card key={title}>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <IconComponent className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle className="text-sm">{title}</CardTitle>
+              <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {title === 'Câmeras' ? (
+              (items as SelectedCamera[]).map((selectedCamera, index) => (
+                <div key={selectedCamera.camera.id} className="text-sm">
+                  <div className="flex justify-between">
+                    <span className="truncate font-medium">{selectedCamera.camera.name}</span>
+                    <span className="text-muted-foreground text-xs">{selectedCamera.camera.brand}</span>
+                  </div>
+                  {selectedCamera.accessories.length > 0 && (
+                    <div className="text-xs text-muted-foreground ml-2">
+                      + {selectedCamera.accessories.length} acessório{selectedCamera.accessories.length > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              (items as Equipment[]).map((item) => (
+                <div key={item.id} className="flex justify-between text-sm">
+                  <span className="truncate">{item.name}</span>
+                  <span className="text-muted-foreground text-xs">{item.brand}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   const renderStep = () => {
@@ -2304,6 +2400,129 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           </div>
         );
 
+      case 15:
+        return (
+          <div className="space-y-6 flex-1 overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Resumo da Retirada</h3>
+              <Badge variant="outline" className="text-lg px-3 py-1">
+                {getTotalEquipmentCount()} {getTotalEquipmentCount() === 1 ? 'item selecionado' : 'itens selecionados'}
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Equipment Categories */}
+              {renderEquipmentCategoryCard(
+                'Câmeras',
+                Camera,
+                data.selectedEquipment.cameras,
+                data.selectedEquipment.cameras.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Lentes',
+                Zap,
+                data.selectedEquipment.lenses,
+                data.selectedEquipment.lenses.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Acessórios de Câmera',
+                Settings,
+                data.selectedEquipment.cameraAccessories,
+                data.selectedEquipment.cameraAccessories.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Tripés',
+                Cog,
+                data.selectedEquipment.tripods,
+                data.selectedEquipment.tripods.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Iluminação',
+                Lightbulb,
+                data.selectedEquipment.lights,
+                data.selectedEquipment.lights.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Modificadores de Luz',
+                Wrench,
+                data.selectedEquipment.lightModifiers,
+                data.selectedEquipment.lightModifiers.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Máquinas',
+                Cog,
+                data.selectedEquipment.machinery,
+                data.selectedEquipment.machinery.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Elétricos',
+                Zap,
+                data.selectedEquipment.electrical,
+                data.selectedEquipment.electrical.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Armazenamento',
+                HardDrive,
+                data.selectedEquipment.storage,
+                data.selectedEquipment.storage.length === 0
+              )}
+              
+              {renderEquipmentCategoryCard(
+                'Computadores',
+                Monitor,
+                data.selectedEquipment.computers,
+                data.selectedEquipment.computers.length === 0
+              )}
+            </div>
+            
+            {/* Project Information Summary */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Informações do Projeto
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Projeto:</span>
+                    <div className="font-medium">{data.projectName}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Empresa:</span>
+                    <div className="font-medium">{data.company}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Responsável:</span>
+                    <div className="font-medium">{getResponsibleUserName()}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Data de Retirada:</span>
+                    <div className="font-medium">{formatDate(data.withdrawalDate)}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Data de Retorno:</span>
+                    <div className="font-medium">{formatDate(data.returnDate)}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Tipo de Gravação:</span>
+                    <div className="font-medium">{data.recordingType}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -2314,7 +2533,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Nova Retirada - Passo {currentStep} de 14</DialogTitle>
+            <DialogTitle>Nova Retirada - Passo {currentStep} de 15</DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden py-4 flex flex-col">
@@ -2322,7 +2541,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             <div className="w-full bg-muted rounded-full h-2 mb-6">
               <div 
                 className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(currentStep / 14) * 100}%` }}
+                style={{ width: `${(currentStep / 15) * 100}%` }}
               />
             </div>
 
@@ -2344,7 +2563,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 Cancelar
               </Button>
               
-              {currentStep === 14 ? (
+              {currentStep === 15 ? (
                 <Button onClick={handleSubmit} disabled={!isStepValid()}>
                   <Check className="h-4 w-4 mr-2" />
                   Criar Retirada
