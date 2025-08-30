@@ -565,14 +565,14 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       {getAvailableCameras().map((cameraHierarchy) => (
                         <Card 
                           key={cameraHierarchy.item.id}
-                          className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20"
+                          className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
                           onClick={() => 
                             data.selectedEquipment.cameras.length < data.selectedEquipment.cameraQuantity && 
                             handleCameraSelect(cameraHierarchy)
                           }
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
+                          <CardContent className="p-4 h-full">
+                            <div className="flex items-center gap-3 h-full">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                 {cameraHierarchy.item.image ? (
                                   <img 
@@ -584,9 +584,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                   <Camera className="h-6 w-6 text-primary" />
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <div className="space-y-1 flex-1 min-w-0 mr-3">
+                              <div className="flex-1 min-w-0 h-full">
+                                <div className="flex items-center justify-between h-full">
+                                  <div className="flex-1 min-w-0 mr-3 flex flex-col justify-center">
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <p className="font-medium text-sm truncate">
