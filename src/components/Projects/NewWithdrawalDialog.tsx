@@ -493,11 +493,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="space-y-2 h-24 overflow-y-auto">
             {title === 'Câmeras' ? (
               (items as SelectedCamera[]).map((selectedCamera, index) => (
-                <div key={selectedCamera.camera.id} className="text-sm">
-                  <div className="flex justify-between">
-                    <span className="truncate font-medium">{selectedCamera.camera.name}</span>
-                    <span className="text-muted-foreground text-xs">{selectedCamera.camera.brand}</span>
-                  </div>
+                <div key={selectedCamera.camera.id} className="text-sm space-y-1">
+                  <div className="truncate font-medium">{selectedCamera.camera.name}</div>
+                  <div className="text-muted-foreground text-xs">{selectedCamera.camera.brand}</div>
                   {selectedCamera.accessories.length > 0 && (
                     <div className="text-xs text-muted-foreground ml-2">
                       + {selectedCamera.accessories.length} acessório{selectedCamera.accessories.length > 1 ? 's' : ''}
@@ -507,9 +505,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               ))
             ) : (
               (items as Equipment[]).map((item) => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span className="truncate">{item.name}</span>
-                  <span className="text-muted-foreground text-xs">{item.brand}</span>
+                <div key={item.id} className="text-sm space-y-1">
+                  <div className="truncate font-medium">{item.name}</div>
+                  <div className="text-muted-foreground text-xs">{item.brand}</div>
                 </div>
               ))
             )}
