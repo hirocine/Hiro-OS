@@ -930,14 +930,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableLenses().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhuma lente disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma lente disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableLenses().map((lens) => (
@@ -1083,14 +1085,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableCameraAccessories().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum acessório disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum acessório disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableCameraAccessories().map((accessory) => (
@@ -1236,14 +1240,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableTripods().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum equipamento disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum equipamento disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableTripods().map((tripod) => (
@@ -1389,14 +1395,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableLights().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhuma luz disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhuma luz disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableLights().map((light) => (
@@ -1542,14 +1550,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableLightModifiers().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum modificador disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum modificador disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableLightModifiers().map((modifier) => (
@@ -1695,14 +1705,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableMachinery().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Cog className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum maquinário disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Cog className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum maquinário disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableMachinery().map((machine) => (
@@ -1848,14 +1860,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableElectrical().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum equipamento disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum equipamento disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableElectrical().map((electrical) => (
@@ -2001,14 +2015,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableStorage().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <HardDrive className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum armazenamento disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <HardDrive className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum armazenamento disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableStorage().map((storage) => (
@@ -2154,14 +2170,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     ))}
                   </div>
                 ) : getAvailableComputers().length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-sm text-muted-foreground">
-                        <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Nenhum computador disponível
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
+                    <Card className="border-dashed h-full">
+                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                        <div className="text-center text-sm text-muted-foreground">
+                          <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          Nenhum computador disponível
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {getAvailableComputers().map((computer) => (
