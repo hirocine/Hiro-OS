@@ -547,8 +547,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Available Cameras */}
-                <div className="space-y-4 h-[600px] flex flex-col">
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="h-[600px] flex flex-col">
+                  <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                     <Camera className="h-5 w-5" />
                     <h4 className="font-medium">Câmeras Disponíveis</h4>
                     <Badge variant="secondary">
@@ -572,7 +572,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {getAvailableCameras().map((cameraHierarchy) => (
                         <Card 
                           key={cameraHierarchy.item.id}
@@ -642,8 +642,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 </div>
 
                 {/* Selected Cameras Preview */}
-                <div className="space-y-4 h-[600px] flex flex-col">
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="h-[600px] flex flex-col">
+                  <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                     <Check className="h-5 w-5 text-green-600" />
                     <h4 className="font-medium">Câmeras Selecionadas</h4>
                     <Badge variant="default">
@@ -661,7 +661,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                    <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {data.selectedEquipment.cameras.map((selectedCamera) => (
                         <Card key={selectedCamera.camera.id} className="border-primary/20">
                           <CardHeader className="pb-2">
