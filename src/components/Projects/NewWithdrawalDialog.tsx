@@ -471,7 +471,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
             </div>
           </CardHeader>
-          <CardContent className="h-24 flex items-center justify-center">
+          <CardContent className="h-24 flex items-center justify-start pl-4">
             <span className="text-xs text-muted-foreground">Nenhum item selecionado</span>
           </CardContent>
         </Card>
