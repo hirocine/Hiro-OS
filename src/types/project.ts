@@ -29,6 +29,13 @@ export interface Project {
   equipmentCount: number;
   loanIds: string[]; // IDs dos empréstimos associados
   notes?: string;
+  // New fields for structured project creation
+  projectNumber?: string;
+  company?: string;
+  projectName?: string;
+  responsibleUserId?: string;
+  withdrawalDate?: string;
+  separationDate?: string;
 }
 
 export interface ProjectFilters {

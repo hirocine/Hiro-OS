@@ -8,7 +8,7 @@ import { useLoans } from '@/hooks/useLoans';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { ProjectCard } from '@/components/Projects/ProjectCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
-import { NewProjectWizard } from '@/components/Projects/NewProjectWizard';
+import { NewWithdrawalDialog } from '@/components/Projects/NewWithdrawalDialog';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -439,7 +439,7 @@ export default function Projects() {
         )}
       </div>
 
-      <NewProjectWizard
+      <NewWithdrawalDialog
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
         onSubmit={handleNewProject}
