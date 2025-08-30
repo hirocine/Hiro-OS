@@ -471,50 +471,56 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
             </div>
           </CardHeader>
-          <CardContent className="h-24 flex items-center justify-start pl-4">
-            <span className="text-xs text-muted-foreground">Nenhum item selecionado</span>
+          <CardContent className="pt-0">
+            <div className="py-4">
+              <span className="text-xs text-muted-foreground">Nenhum item selecionado</span>
+            </div>
           </CardContent>
         </Card>
       );
     }
 
-    return (
-      <Card key={title} className="h-40 flex flex-col overflow-hidden">
-        <CardHeader className="flex-shrink-0 h-16">
-          <div className="flex items-center gap-3">
-            <IconComponent className="h-6 w-6 text-primary" />
-            <div>
-              <CardTitle className="text-sm">{title}</CardTitle>
-              <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
+      return (
+        <Card key={title} className="min-h-32">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <IconComponent className="h-6 w-6 text-primary" />
+              <div>
+                <CardTitle className="text-sm">{title}</CardTitle>
+                <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex-1 overflow-hidden flex flex-col p-6 pt-0">
-          <div className="space-y-2 flex-1 overflow-y-auto">
-            {title === 'Câmeras' ? (
-              (items as SelectedCamera[]).map((selectedCamera, index) => (
-                <div key={selectedCamera.camera.id} className="text-sm space-y-1">
-                  <div className="truncate font-medium">{selectedCamera.camera.name}</div>
-                  <div className="text-muted-foreground text-xs">{selectedCamera.camera.brand}</div>
-                  {selectedCamera.accessories.length > 0 && (
-                    <div className="text-xs text-muted-foreground ml-2">
-                      + {selectedCamera.accessories.length} acessório{selectedCamera.accessories.length > 1 ? 's' : ''}
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {title === 'Câmeras' ? (
+                (items as SelectedCamera[]).map((selectedCamera, index) => (
+                  <div key={selectedCamera.camera.id} className="flex justify-between items-center text-sm py-1">
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate font-medium">{selectedCamera.camera.name}</div>
+                      <div className="text-muted-foreground text-xs truncate">{selectedCamera.camera.brand}</div>
                     </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              (items as Equipment[]).map((item) => (
-                <div key={item.id} className="text-sm space-y-1">
-                  <div className="truncate font-medium">{item.name}</div>
-                  <div className="text-muted-foreground text-xs">{item.brand}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
+                    {selectedCamera.accessories.length > 0 && (
+                      <Badge variant="secondary" className="text-xs ml-2 flex-shrink-0">
+                        +{selectedCamera.accessories.length}
+                      </Badge>
+                    )}
+                  </div>
+                ))
+              ) : (
+                (items as Equipment[]).map((item) => (
+                  <div key={item.id} className="flex justify-between items-center text-sm py-1">
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate font-medium">{item.name}</div>
+                      <div className="text-muted-foreground text-xs truncate">{item.brand}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      );
   };
 
   const renderStep = () => {
@@ -2411,7 +2417,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </Badge>
             </div>
             
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {/* Equipment Categories */}
               {renderEquipmentCategoryCard(
                 'Câmeras',
