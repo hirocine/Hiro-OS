@@ -280,7 +280,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.separationDate ? format(data.separationDate, "PPP", { locale: ptBR }) : "Selecionar data"}
+                      {data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -307,7 +307,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.withdrawalDate ? format(data.withdrawalDate, "PPP", { locale: ptBR }) : "Selecionar data"}
+                      {data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -335,7 +335,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {data.returnDate ? format(data.returnDate, "PPP", { locale: ptBR }) : "Selecionar data"}
+                      {data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
