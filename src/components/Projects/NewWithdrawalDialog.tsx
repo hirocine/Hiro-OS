@@ -547,8 +547,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Available Cameras */}
-                <div className="space-y-4 min-h-[600px]">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-4 h-[600px] flex flex-col">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Camera className="h-5 w-5" />
                     <h4 className="font-medium">Câmeras Disponíveis</h4>
                     <Badge variant="secondary">
@@ -642,8 +642,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 </div>
 
                 {/* Selected Cameras Preview */}
-                <div className="space-y-4 min-h-[600px]">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-4 h-[600px] flex flex-col">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Check className="h-5 w-5 text-green-600" />
                     <h4 className="font-medium">Câmeras Selecionadas</h4>
                     <Badge variant="default">
