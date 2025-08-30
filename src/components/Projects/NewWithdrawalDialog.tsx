@@ -461,7 +461,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     
     if (isEmpty) {
       return (
-        <Card key={title} className="opacity-50">
+        <Card key={title} className="opacity-50 h-40">
           <CardHeader>
             <div className="flex items-center gap-3">
               <IconComponent className="h-6 w-6 text-muted-foreground" />
@@ -471,12 +471,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </div>
             </div>
           </CardHeader>
+          <CardContent className="h-24 flex items-center justify-center">
+            <span className="text-xs text-muted-foreground">Nenhum item selecionado</span>
+          </CardContent>
         </Card>
       );
     }
 
     return (
-      <Card key={title}>
+      <Card key={title} className="h-40">
         <CardHeader>
           <div className="flex items-center gap-3">
             <IconComponent className="h-6 w-6 text-primary" />
@@ -487,7 +490,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
+          <div className="space-y-2 h-24 overflow-y-auto">
             {title === 'Câmeras' ? (
               (items as SelectedCamera[]).map((selectedCamera, index) => (
                 <div key={selectedCamera.camera.id} className="text-sm">
@@ -2410,7 +2413,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               </Badge>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {/* Equipment Categories */}
               {renderEquipmentCategoryCard(
                 'Câmeras',
