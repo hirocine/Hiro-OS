@@ -572,7 +572,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
                       {getAvailableCameras().map((cameraHierarchy) => (
                         <Card 
                           key={cameraHierarchy.item.id}
@@ -661,7 +661,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
                       {data.selectedEquipment.cameras.map((selectedCamera) => (
                         <Card key={selectedCamera.camera.id} className="border-primary/20">
                           <CardHeader className="pb-2">
