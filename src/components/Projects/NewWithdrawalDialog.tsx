@@ -349,124 +349,149 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   };
 
   const generatePDF = () => {
-    const doc = new jsPDF();
-    
-    // Configurações iniciais
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 20;
-    let yPosition = margin;
-    
-    // Cabeçalho
-    doc.setFontSize(20);
-    doc.text('Lista de Equipamentos - Retirada', margin, yPosition);
-    yPosition += 15;
-    
-    // Informações do projeto
-    doc.setFontSize(12);
-    doc.text(`Projeto: ${data.projectNumber} - ${data.projectName}`, margin, yPosition);
-    yPosition += 8;
-    doc.text(`Empresa: ${data.company}`, margin, yPosition);
-    yPosition += 8;
-    
-    const responsibleUser = users.find(user => user.id === data.responsibleUserId);
-    doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, margin, yPosition);
-    yPosition += 8;
-    
-    if (data.withdrawalDate) {
-      doc.text(`Data de Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
-      yPosition += 8;
-    }
-    
-    if (data.returnDate) {
-      doc.text(`Data de Devolução: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
-      yPosition += 8;
-    }
-    
-    doc.text(`Tipo de Gravação: ${data.recordingType}`, margin, yPosition);
-    yPosition += 15;
-    
-    // Preparar dados para a tabela
-    const tableData: string[][] = [];
-    
-    // Processar câmeras e seus acessórios
-    data.selectedEquipment.cameras.forEach(selectedCamera => {
-      tableData.push([
-        'Câmeras',
-        selectedCamera.camera.name || 'N/A',
-        selectedCamera.camera.brand || 'N/A',
-        'Principal',
-        ''
-      ]);
+    try {
+      console.log('Iniciando geração do PDF...', data);
       
-      selectedCamera.accessories.forEach(accessory => {
+      // Verificar se há dados válidos
+      if (!data.projectNumber || !data.projectName) {
+        toast({
+          title: "Erro",
+          description: "Dados do projeto incompletos para gerar PDF.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const doc = new jsPDF();
+      
+      // Configurações iniciais
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      let yPosition = margin;
+      
+      // Cabeçalho
+      doc.setFontSize(20);
+      doc.text('Lista de Equipamentos - Retirada', margin, yPosition);
+      yPosition += 15;
+      
+      // Informações do projeto
+      doc.setFontSize(12);
+      doc.text(`Projeto: ${data.projectNumber} - ${data.projectName}`, margin, yPosition);
+      yPosition += 8;
+      doc.text(`Empresa: ${data.company}`, margin, yPosition);
+      yPosition += 8;
+      
+      const responsibleUser = users.find(user => user.id === data.responsibleUserId);
+      doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, margin, yPosition);
+      yPosition += 8;
+      
+      if (data.withdrawalDate) {
+        doc.text(`Data de Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
+        yPosition += 8;
+      }
+      
+      if (data.returnDate) {
+        doc.text(`Data de Devolução: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
+        yPosition += 8;
+      }
+      
+      doc.text(`Tipo de Gravação: ${data.recordingType}`, margin, yPosition);
+      yPosition += 15;
+      
+      // Preparar dados para a tabela
+      const tableData: string[][] = [];
+      
+      // Processar câmeras e seus acessórios
+      data.selectedEquipment.cameras.forEach(selectedCamera => {
         tableData.push([
           'Câmeras',
-          accessory.name || 'N/A',
-          accessory.brand || 'N/A',
-          'Acessório',
-          selectedCamera.camera.name || 'N/A'
-        ]);
-      });
-    });
-    
-    // Processar outras categorias
-    const categories = [
-      { items: data.selectedEquipment.lenses, category: 'Lentes' },
-      { items: data.selectedEquipment.cameraAccessories, category: 'Acessórios de Câmera' },
-      { items: data.selectedEquipment.tripods, category: 'Tripés' },
-      { items: data.selectedEquipment.lights, category: 'Iluminação' },
-      { items: data.selectedEquipment.lightModifiers, category: 'Modificadores de Luz' },
-      { items: data.selectedEquipment.machinery, category: 'Maquinário' },
-      { items: data.selectedEquipment.electrical, category: 'Elétrica' },
-      { items: data.selectedEquipment.storage, category: 'Armazenamento' },
-      { items: data.selectedEquipment.computers, category: 'Computadores' }
-    ];
-    
-    categories.forEach(({ items, category }) => {
-      items.forEach(item => {
-        tableData.push([
-          category,
-          item.name || 'N/A',
-          item.brand || 'N/A',
+          selectedCamera.camera.name || 'N/A',
+          selectedCamera.camera.brand || 'N/A',
           'Principal',
           ''
         ]);
+        
+        selectedCamera.accessories.forEach(accessory => {
+          tableData.push([
+            'Câmeras',
+            accessory.name || 'N/A',
+            accessory.brand || 'N/A',
+            'Acessório',
+            selectedCamera.camera.name || 'N/A'
+          ]);
+        });
       });
-    });
-    
-    // Gerar tabela
-    (doc as any).autoTable({
-      head: [['Categoria', 'Nome', 'Marca', 'Tipo', 'Relacionado a']],
-      body: tableData,
-      startY: yPosition,
-      margin: { left: margin, right: margin },
-      styles: {
-        fontSize: 10,
-        cellPadding: 3
-      },
-      headStyles: {
-        fillColor: [66, 139, 202],
-        textColor: 255,
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245]
-      }
-    });
-    
-    // Adicionar total de itens
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(12);
-    doc.text(`Total de itens: ${tableData.length}`, margin, finalY);
-    
-    // Download do arquivo
-    const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
-    doc.save(fileName);
-    
-    toast({
-      title: "PDF Gerado",
-      description: "Lista de equipamentos baixada com sucesso!",
-    });
+      
+      // Processar outras categorias
+      const categories = [
+        { items: data.selectedEquipment.lenses, category: 'Lentes' },
+        { items: data.selectedEquipment.cameraAccessories, category: 'Acessórios de Câmera' },
+        { items: data.selectedEquipment.tripods, category: 'Tripés' },
+        { items: data.selectedEquipment.lights, category: 'Iluminação' },
+        { items: data.selectedEquipment.lightModifiers, category: 'Modificadores de Luz' },
+        { items: data.selectedEquipment.machinery, category: 'Maquinário' },
+        { items: data.selectedEquipment.electrical, category: 'Elétrica' },
+        { items: data.selectedEquipment.storage, category: 'Armazenamento' },
+        { items: data.selectedEquipment.computers, category: 'Computadores' }
+      ];
+      
+      categories.forEach(({ items, category }) => {
+        items.forEach(item => {
+          tableData.push([
+            category,
+            item.name || 'N/A',
+            item.brand || 'N/A',
+            'Principal',
+            ''
+          ]);
+        });
+      });
+      
+      console.log('Dados da tabela preparados:', tableData);
+      
+      // Gerar tabela
+      (doc as any).autoTable({
+        head: [['Categoria', 'Nome', 'Marca', 'Tipo', 'Relacionado a']],
+        body: tableData,
+        startY: yPosition,
+        margin: { left: margin, right: margin },
+        styles: {
+          fontSize: 10,
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        }
+      });
+      
+      // Adicionar total de itens
+      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.text(`Total de itens: ${tableData.length}`, margin, finalY);
+      
+      // Download do arquivo
+      const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
+      console.log('Salvando arquivo:', fileName);
+      doc.save(fileName);
+      
+      toast({
+        title: "PDF Gerado",
+        description: "Lista de equipamentos baixada com sucesso!",
+      });
+      
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao gerar o PDF. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -962,8 +987,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     </div>
                   ) : getAvailableCameras().length === 0 ? (
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                      <Card className="border-dashed h-full">
-                        <CardContent className="pt-6 h-full flex items-center justify-center">
+                    <Card className="border-dashed">
+                      <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                           <div className="text-center text-sm text-muted-foreground">
                             <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
                             Nenhuma câmera disponível
@@ -1053,8 +1078,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                   {data.selectedEquipment.cameras.length === 0 ? (
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                      <Card className="border-dashed h-full">
-                        <CardContent className="pt-6 h-full flex items-center justify-center">
+                    <Card className="border-dashed">
+                      <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                           <div className="text-center text-sm text-muted-foreground">
                             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                             Nenhuma câmera selecionada
@@ -1159,8 +1184,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableLenses().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhuma lente disponível
@@ -1238,8 +1263,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.lenses.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhuma lente selecionada
@@ -1314,8 +1339,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableCameraAccessories().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum acessório disponível
@@ -1393,8 +1418,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.cameraAccessories.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum acessório selecionado
@@ -1469,8 +1494,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableTripods().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                    <Card className="border-dashed">
+                      <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum equipamento disponível
@@ -1548,8 +1573,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.tripods.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum equipamento selecionado
@@ -1624,8 +1649,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableLights().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhuma luz disponível
@@ -1703,8 +1728,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.lights.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhuma luz selecionada
@@ -1779,8 +1804,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableLightModifiers().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum modificador disponível
@@ -1858,8 +1883,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.lightModifiers.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum modificador selecionado
@@ -1934,8 +1959,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableMachinery().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Cog className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum maquinário disponível
@@ -2013,8 +2038,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.machinery.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum maquinário selecionado
@@ -2089,8 +2114,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableElectrical().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum equipamento disponível
@@ -2168,8 +2193,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.electrical.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum equipamento selecionado
@@ -2244,8 +2269,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableStorage().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <HardDrive className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum armazenamento disponível
@@ -2323,8 +2348,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.storage.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum armazenamento selecionado
@@ -2399,8 +2424,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : getAvailableComputers().length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum computador disponível
@@ -2478,8 +2503,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {data.selectedEquipment.computers.length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    <Card className="border-dashed h-full">
-                      <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
                         <div className="text-center text-sm text-muted-foreground">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           Nenhum computador selecionado
