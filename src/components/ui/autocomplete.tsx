@@ -130,11 +130,11 @@ export function Autocomplete({
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           role="combobox"
           aria-expanded={isOpen}
           className={cn(
-            "justify-between h-9 px-3 py-2 text-left font-normal",
+            "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
             !value && "text-muted-foreground",
             className
           )}
