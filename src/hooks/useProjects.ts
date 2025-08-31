@@ -145,12 +145,12 @@ export function useProjects() {
         equipment_count: newProject.equipmentCount || 0,
         notes: newProject.notes,
         step: 'pending_separation' as const,
-        step_history: [
+        step_history: JSON.stringify([
           {
             step: 'pending_separation' as const,
             timestamp: new Date().toISOString()
           }
-        ],
+        ]),
         // Add new fields for structured project creation
         project_number: (newProject as any).projectNumber,
         company: (newProject as any).company,

@@ -6,7 +6,7 @@ import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, Ch
 import { useProjects } from '@/hooks/useProjects';
 import { useLoans } from '@/hooks/useLoans';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
-import { ProjectCard } from '@/components/Projects/ProjectCard';
+import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
 import { NewWithdrawalDialog } from '@/components/Projects/NewWithdrawalDialog';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
@@ -303,18 +303,17 @@ export default function Projects() {
                   <Clock className="h-5 w-5 text-primary" />
                   <h2 className="text-xl font-semibold">Próximos Projetos ({upcomingProjects.length})</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {upcomingProjects.map((project) => (
-                     <ProjectCard
-                       key={project.id}
-                       project={project}
-                       onEdit={handleEditProject}
-                       onComplete={handleCompleteProject}
-                       onArchive={handleArchiveProject}
-                       onStepUpdate={handleQuickStepUpdate}
-                     />
-                  ))}
-                </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                   {upcomingProjects.map((project) => (
+                      <ProjectSummaryCard
+                        key={project.id}
+                        project={project}
+                        onEdit={handleEditProject}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                   ))}
+                 </div>
               </div>
             )}
 
@@ -330,18 +329,17 @@ export default function Projects() {
                   <Archive className="h-5 w-5 text-destructive" />
                   <h2 className="text-xl font-semibold text-destructive">Pendente Devolução ({overdueProjects.length})</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
-                   {overdueProjects.map((project) => (
-                     <ProjectCard
-                       key={project.id}
-                       project={project}
-                       onEdit={handleEditProject}
-                       onComplete={handleCompleteProject}
-                       onArchive={handleArchiveProject}
-                       onStepUpdate={handleQuickStepUpdate}
-                     />
-                   ))}
-                </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {overdueProjects.map((project) => (
+                      <ProjectSummaryCard
+                        key={project.id}
+                        project={project}
+                        onEdit={handleEditProject}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                 </div>
               </div>
             )}
 
@@ -377,18 +375,17 @@ export default function Projects() {
                   </Button>
                 </div>
                 {showCompleted && (
-                  <div className="grid grid-cols-1 gap-4">
-                     {completedProjects.map((project) => (
-                       <ProjectCard
-                         key={project.id}
-                         project={project}
-                         onEdit={handleEditProject}
-                         onComplete={handleCompleteProject}
-                         onArchive={handleArchiveProject}
-                         onStepUpdate={handleQuickStepUpdate}
-                       />
-                     ))}
-                  </div>
+                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {completedProjects.map((project) => (
+                        <ProjectSummaryCard
+                          key={project.id}
+                          project={project}
+                          onEdit={handleEditProject}
+                          onComplete={handleCompleteProject}
+                          onArchive={handleArchiveProject}
+                        />
+                      ))}
+                   </div>
                 )}
               </div>
             )}
@@ -420,18 +417,17 @@ export default function Projects() {
                   </Button>
                 </div>
                 {showArchived && (
-                  <div className="grid grid-cols-1 gap-4">
-                    {archivedProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onEdit={handleEditProject}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                        onStepUpdate={handleQuickStepUpdate}
-                      />
-                    ))}
-                  </div>
+                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                     {archivedProjects.map((project) => (
+                       <ProjectSummaryCard
+                         key={project.id}
+                         project={project}
+                         onEdit={handleEditProject}
+                         onComplete={handleCompleteProject}
+                         onArchive={handleArchiveProject}
+                       />
+                     ))}
+                   </div>
                 )}
               </div>
             )}

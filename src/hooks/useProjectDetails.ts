@@ -1,0 +1,244 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Project, ProjectStep, ProjectStatus, StepChange } from '@/types/project';
+
+export function useProjectDetails(projectId: string) {
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (projectId) {
+      fetchProject();
+    }
+  }, [projectId]);
+
+  const fetchProject = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching project:', fetchError);
+        setError('Erro ao carregar o projeto');
+        return;
+      }
+
+      if (data) {
+        const projectData: Project = {
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          startDate: data.start_date,
+          expectedEndDate: data.expected_end_date,
+          actualEndDate: data.actual_end_date,
+          status: data.status as ProjectStatus,
+          step: data.step as ProjectStep,
+          stepHistory: (data.step_history as any) || [],
+          responsibleName: data.responsible_name,
+          responsibleEmail: data.responsible_email,
+          department: data.department,
+          equipmentCount: data.equipment_count || 0,
+          loanIds: data.loan_ids || [],
+          notes: data.notes,
+          // New structured fields
+          projectNumber: data.project_number,
+          company: data.company,
+          projectName: data.project_name,
+          responsibleUserId: data.responsible_user_id,
+          withdrawalDate: data.withdrawal_date,
+          separationDate: data.separation_date,
+          recordingType: data.recording_type
+        };
+
+        setProject(projectData);
+      }
+    } catch (err) {
+      console.error('Error fetching project:', err);
+      setError('Erro ao carregar o projeto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProject = async (updates: Partial<Project>) => {
+    if (!project) return;
+
+    try {
+      // Transform to database format
+      const dbUpdates: any = {};
+      
+      if (updates.name) dbUpdates.name = updates.name;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.startDate) dbUpdates.start_date = updates.startDate;
+      if (updates.expectedEndDate) dbUpdates.expected_end_date = updates.expectedEndDate;
+      if (updates.actualEndDate !== undefined) dbUpdates.actual_end_date = updates.actualEndDate;
+      if (updates.responsibleName) dbUpdates.responsible_name = updates.responsibleName;
+      if (updates.responsibleEmail !== undefined) dbUpdates.responsible_email = updates.responsibleEmail;
+      if (updates.department !== undefined) dbUpdates.department = updates.department;
+      if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+      if (updates.status) dbUpdates.status = updates.status;
+      
+      // Add timestamp
+      dbUpdates.updated_at = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('projects')
+        .update(dbUpdates)
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Error updating project:', error);
+        throw error;
+      }
+
+      // Update local state
+      setProject(prev => prev ? { ...prev, ...updates } : null);
+    } catch (error) {
+      console.error('Error updating project:', error);
+      throw error;
+    }
+  };
+
+  const updateProjectStep = async (newStep: ProjectStep, notes?: string) => {
+    if (!project) return;
+
+    try {
+      const stepChange = {
+        step: newStep,
+        timestamp: new Date().toISOString(),
+        notes
+      };
+
+      const updatedStepHistory = [...project.stepHistory, stepChange];
+      
+      // Check if project should be completed automatically
+      const shouldComplete = newStep === 'verified' && project.status === 'active';
+      
+      const updates: any = {
+        step: newStep,
+        step_history: JSON.stringify(updatedStepHistory),
+        updated_at: new Date().toISOString()
+      };
+
+      if (shouldComplete) {
+        updates.status = 'completed';
+        updates.actual_end_date = new Date().toISOString().split('T')[0];
+      }
+
+      const { error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Error updating project step:', error);
+        throw error;
+      }
+
+      // Update local state
+      setProject(prev => {
+        if (!prev) return null;
+        const updated = {
+          ...prev,
+          step: newStep,
+          stepHistory: updatedStepHistory
+        };
+        
+        if (shouldComplete) {
+          updated.status = 'completed';
+          updated.actualEndDate = new Date().toISOString().split('T')[0];
+        }
+        
+        return updated;
+      });
+    } catch (error) {
+      console.error('Error updating project step:', error);
+      throw error;
+    }
+  };
+
+  const completeProject = async (notes?: string) => {
+    if (!project) return;
+
+    try {
+      const stepChange = {
+        step: 'verified' as ProjectStep,
+        timestamp: new Date().toISOString(),
+        notes: notes || 'Projeto finalizado'
+      };
+
+      const updatedStepHistory = [...project.stepHistory, stepChange];
+      
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          status: 'completed',
+          step: 'verified',
+          step_history: JSON.stringify(updatedStepHistory),
+          actual_end_date: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Error completing project:', error);
+        throw error;
+      }
+
+      // Update local state
+      setProject(prev => prev ? {
+        ...prev,
+        status: 'completed',
+        step: 'verified' as ProjectStep,
+        stepHistory: updatedStepHistory,
+        actualEndDate: new Date().toISOString().split('T')[0]
+      } : null);
+    } catch (error) {
+      console.error('Error completing project:', error);
+      throw error;
+    }
+  };
+
+  const archiveProject = async () => {
+    if (!project) return;
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          status: 'archived',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Error archiving project:', error);
+        throw error;
+      }
+
+      // Update local state
+      setProject(prev => prev ? { ...prev, status: 'archived' } : null);
+    } catch (error) {
+      console.error('Error archiving project:', error);
+      throw error;
+    }
+  };
+
+  return {
+    project,
+    loading,
+    error,
+    updateProject,
+    updateProjectStep,
+    completeProject,
+    archiveProject,
+    refetch: fetchProject
+  };
+}
