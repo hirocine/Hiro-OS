@@ -32,8 +32,10 @@ export function Autocomplete({
   onInputChange
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = React.useState(value);
+  const [isOpen, setIsOpen] = React.useState(false);
   const debouncedInput = useDebounce(inputValue, 150);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     setInputValue(value);
@@ -43,15 +45,32 @@ export function Autocomplete({
     setInputValue(newValue);
     onInputChange?.(newValue);
     
+    // Open popover when user starts typing
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+    
     if (allowCustomValue) {
       onValueChange(newValue);
     }
-  }, [allowCustomValue, onValueChange, onInputChange]);
+  }, [allowCustomValue, onValueChange, onInputChange, isOpen]);
 
   const handleSelect = React.useCallback((selectedValue: string) => {
     setInputValue(selectedValue);
     onValueChange(selectedValue);
+    setIsOpen(false);
   }, [onValueChange]);
+
+  const handleInputFocus = React.useCallback(() => {
+    setIsOpen(true);
+  }, []);
+
+  const handleInputBlur = React.useCallback((e: React.FocusEvent) => {
+    // Only close if not clicking on an option
+    if (!e.relatedTarget?.closest('[data-autocomplete-option]')) {
+      setIsOpen(false);
+    }
+  }, []);
 
   const handleOptionMouseDown = React.useCallback((e: React.MouseEvent) => {
     // Prevent blur event when clicking on option
@@ -111,24 +130,29 @@ export function Autocomplete({
   const hasResults = filteredOptions.length > 0;
 
   return (
-    <Popover onOpenChange={(open) => {
-      // When popover opens, focus the input
-      if (open && inputRef.current) {
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 0);
-      }
-    }}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <div className="relative">
+        {/* Invisible trigger button for positioning */}
         <PopoverTrigger asChild>
-          <Input
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={placeholder}
-            className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
+          <button
+            ref={triggerRef}
+            className="absolute inset-0 opacity-0 pointer-events-none"
+            aria-hidden="true"
+            tabIndex={-1}
           />
         </PopoverTrigger>
+        
+        {/* Input that's completely free from Popover events */}
+        <Input
+          ref={inputRef}
+          value={inputValue}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          placeholder={placeholder}
+          className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
+        />
+        
         <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
           {inputValue && hasResults ? (
             <Search className="h-4 w-4 text-accent animate-pulse" />
@@ -177,6 +201,7 @@ export function Autocomplete({
               {filteredOptions.map((option) => (
                 <div
                   key={option.value}
+                  data-autocomplete-option
                   className="flex items-center p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-150 bg-popover"
                   onClick={() => handleSelect(option.value)}
                   onMouseDown={handleOptionMouseDown}
