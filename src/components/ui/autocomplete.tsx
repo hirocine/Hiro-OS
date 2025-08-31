@@ -149,35 +149,39 @@ export function Autocomplete({
   const hasResults = filteredOptions.length > 0;
 
   return (
-    <div className="relative">
-      <Input
-        ref={inputRef}
-        value={inputValue}
-        onChange={(e) => handleInputChange(e.target.value)}
-        placeholder={placeholder}
-        className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-      />
-      <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
-        {inputValue && hasResults ? (
-          <Search className="h-4 w-4 text-accent animate-pulse" />
-        ) : (
-          <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
-        )}
-      </div>
-      
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverContent 
-          className="w-full p-0 z-[100]" 
-          align="start"
-          side="bottom"
-          style={{ 
-            backgroundColor: 'hsl(var(--popover))',
-            border: '1px solid hsl(var(--border))',
-            boxShadow: 'var(--shadow-elegant)'
-          }}
-        >
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => handleInputChange(e.target.value)}
+            placeholder={placeholder}
+            className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+          />
+          <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
+            {inputValue && hasResults ? (
+              <Search className="h-4 w-4 text-accent animate-pulse" />
+            ) : (
+              <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="p-0 z-[100]" 
+        align="start"
+        side="bottom"
+        sideOffset={4}
+        style={{ 
+          width: 'var(--radix-popover-trigger-width)',
+          backgroundColor: 'hsl(var(--popover))',
+          border: '1px solid hsl(var(--border))',
+          boxShadow: 'var(--shadow-elegant)'
+        }}
+      >
         <div className="max-h-64 overflow-auto bg-popover">
           {!hasResults ? (
             <div className="p-4 text-sm text-muted-foreground bg-popover">
@@ -231,8 +235,7 @@ export function Autocomplete({
             </div>
           )}
         </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }
