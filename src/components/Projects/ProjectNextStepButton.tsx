@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProjectStep, Project } from '@/types/project';
 import { stepLabels, stepOrder, stepIcons } from '@/lib/projectSteps';
@@ -13,6 +14,8 @@ interface ProjectNextStepButtonProps {
 }
 
 export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick, className }: ProjectNextStepButtonProps) {
+  const navigate = useNavigate();
+  
   if (project.status !== 'active') {
     return null;
   }
@@ -30,8 +33,8 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
 
   const handleClick = () => {
-    if (isSeparating && onSeparationClick) {
-      onSeparationClick();
+    if (isSeparating) {
+      navigate(`/projects/${project.id}/separation`);
     } else {
       onStepUpdate(nextStep);
     }

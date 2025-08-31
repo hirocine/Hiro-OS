@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
 import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
 import { AddEquipmentToProjectDialog } from '@/components/Projects/AddEquipmentToProjectDialog';
-import { SeparationConfirmationDialog } from '@/components/Projects/SeparationConfirmationDialog';
+
 import { AdminOnly } from '@/components/RoleGuard';
 
 export default function ProjectDetails() {
@@ -29,7 +29,7 @@ export default function ProjectDetails() {
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
-  const [showSeparationDialog, setShowSeparationDialog] = useState(false);
+  
   const [isDeleting, setIsDeleting] = useState(false);
   
   const {
@@ -118,18 +118,6 @@ export default function ProjectDetails() {
     });
   };
 
-  const handleSeparationClick = () => {
-    setShowSeparationDialog(true);
-  };
-
-  const handleSeparationConfirm = (projectId: string, newStep: any, notes?: string) => {
-    updateProjectStep(newStep, notes);
-    setShowSeparationDialog(false);
-    toast({
-      title: "Equipamentos separados",
-      description: "A separação dos equipamentos foi confirmada com sucesso.",
-    });
-  };
 
   const handleDeleteProject = async () => {
     try {
@@ -252,7 +240,6 @@ export default function ProjectDetails() {
               <ProjectNextStepButton 
                 project={project}
                 onStepUpdate={handleUpdateStep}
-                onSeparationClick={handleSeparationClick}
                 className="flex-shrink-0"
               />
             )}
@@ -491,13 +478,6 @@ export default function ProjectDetails() {
           // Trigger a refresh of project data
           refetch();
         }}
-      />
-
-      <SeparationConfirmationDialog
-        project={project}
-        open={showSeparationDialog}
-        onOpenChange={setShowSeparationDialog}
-        onConfirm={handleSeparationConfirm}
       />
     </div>
   );

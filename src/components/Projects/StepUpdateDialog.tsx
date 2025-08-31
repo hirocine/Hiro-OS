@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Project, ProjectStep } from '@/types/project';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { stepLabels, stepIcons, canTransitionTo } from '@/lib/projectSteps';
 import { AlertTriangle } from 'lucide-react';
-import { SeparationConfirmationDialog } from './SeparationConfirmationDialog';
 
 interface StepUpdateDialogProps {
   project: Project | null;
@@ -20,7 +20,7 @@ interface StepUpdateDialogProps {
 export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: StepUpdateDialogProps) {
   const [selectedStep, setSelectedStep] = useState<ProjectStep | ''>('');
   const [notes, setNotes] = useState('');
-  const [showSeparationDialog, setShowSeparationDialog] = useState(false);
+  const navigate = useNavigate();
 
   if (!project) return null;
 
@@ -31,9 +31,12 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
   const handleSubmit = () => {
     if (!selectedStep) return;
     
-    // Special handling for separation confirmation
+    // Special handling for separation - navigate to separation page
     if (currentStep === 'pending_separation' && selectedStep === 'separated') {
-      setShowSeparationDialog(true);
+      onOpenChange(false);
+      setSelectedStep('');
+      setNotes('');
+      navigate(`/projects/${project.id}/separation`);
       return;
     }
     
@@ -43,110 +46,93 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
     setNotes('');
   };
 
-  const handleSeparationConfirm = (projectId: string, newStep: ProjectStep, separationNotes?: string) => {
-    onUpdate(projectId, newStep, separationNotes);
-    setShowSeparationDialog(false);
-    onOpenChange(false);
-    setSelectedStep('');
-    setNotes('');
-  };
-
   const willCompleteProject = selectedStep === 'verified';
 
   return (
-    <>
-      <Dialog open={open && !showSeparationDialog} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Atualizar Status do Projeto</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">
-                Projeto: <span className="font-medium">{project.name}</span>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Status atual: <span className="font-medium">{stepLabels[currentStep]}</span>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="step">Novo Status</Label>
-              <Select value={selectedStep} onValueChange={(value) => setSelectedStep(value as ProjectStep)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o novo status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSteps.map((step) => {
-                    const Icon = stepIcons[step];
-                    return (
-                      <SelectItem key={step} value={step}>
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
-                          {stepLabels[step]}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {currentStep === 'pending_separation' && selectedStep === 'separated' && (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Será solicitada a confirmação individual de cada equipamento e acessório.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {willCompleteProject && (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Ao marcar como "Verificado", o projeto será automaticamente finalizado.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Observações (opcional)</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Adicione observações sobre esta mudança..."
-                rows={3}
-              />
-            </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Atualizar Status do Projeto</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              Projeto: <span className="font-medium">{project.name}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Status atual: <span className="font-medium">{stepLabels[currentStep]}</span>
+            </p>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              type="button" 
-              onClick={handleSubmit}
-              disabled={!selectedStep}
-            >
-              {currentStep === 'pending_separation' && selectedStep === 'separated' 
-                ? 'Iniciar Separação' 
-                : 'Atualizar Status'
-              }
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label htmlFor="step">Novo Status</Label>
+            <Select value={selectedStep} onValueChange={(value) => setSelectedStep(value as ProjectStep)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o novo status..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableSteps.map((step) => {
+                  const Icon = stepIcons[step];
+                  return (
+                    <SelectItem key={step} value={step}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {stepLabels[step]}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <SeparationConfirmationDialog
-        project={project}
-        open={showSeparationDialog}
-        onOpenChange={setShowSeparationDialog}
-        onConfirm={handleSeparationConfirm}
-      />
-    </>
+          {currentStep === 'pending_separation' && selectedStep === 'separated' && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Você será redirecionado para confirmar a separação individual de cada equipamento.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {willCompleteProject && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Ao marcar como "Verificado", o projeto será automaticamente finalizado.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Observações (opcional)</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Adicione observações sobre esta mudança..."
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button 
+            type="button" 
+            onClick={handleSubmit}
+            disabled={!selectedStep}
+          >
+            {currentStep === 'pending_separation' && selectedStep === 'separated' 
+              ? 'Iniciar Separação' 
+              : 'Atualizar Status'
+            }
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
