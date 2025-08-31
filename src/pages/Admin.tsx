@@ -303,7 +303,7 @@ export default function Admin() {
 
 
   return (
-    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+    <div className="p-6 space-y-6 animate-fade-in">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Administração</h1>
         <p className="text-muted-foreground">
