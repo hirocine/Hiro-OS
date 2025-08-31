@@ -2,7 +2,6 @@ import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
@@ -23,7 +22,7 @@ interface AutocompleteProps {
 }
 
 export function Autocomplete({
-  options,
+  options = [],
   value,
   onValueChange,
   placeholder = "Digite ou selecione...",
@@ -33,14 +32,6 @@ export function Autocomplete({
 }: AutocompleteProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
-
-  // Debug logs
-  console.log('Autocomplete render:', { 
-    options: options, 
-    optionsLength: options?.length,
-    optionsType: typeof options,
-    isArray: Array.isArray(options)
-  });
 
   React.useEffect(() => {
     setInputValue(value);
@@ -56,37 +47,18 @@ export function Autocomplete({
   };
 
   const handleSelect = (selectedValue: string) => {
-    if (!selectedValue) return;
-    
-    const option = options?.find(opt => opt?.value === selectedValue);
-    const finalValue = option ? option.value : selectedValue;
-    
-    setInputValue(finalValue);
-    onValueChange(finalValue);
+    setInputValue(selectedValue);
+    onValueChange(selectedValue);
     setOpen(false);
   };
 
   const filteredOptions = React.useMemo(() => {
-    console.log('Computing filteredOptions:', { options, inputValue });
-    
-    if (!options || !Array.isArray(options)) {
-      console.log('Options invalid, returning empty array');
-      return [];
-    }
-    
-    const filtered = options.filter(option => {
-      if (!option || !option.label || !option.value) {
-        console.log('Invalid option filtered out:', option);
-        return false;
-      }
-      return (
-        option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-        option.value.toLowerCase().includes(inputValue.toLowerCase())
-      );
-    });
-    
-    console.log('Filtered options result:', filtered);
-    return filtered;
+    if (!Array.isArray(options)) return [];
+    return options.filter(option =>
+      option && option.label && option.value &&
+      (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+       option.value.toLowerCase().includes(inputValue.toLowerCase()))
+    );
   }, [options, inputValue]);
 
   return (
@@ -111,35 +83,34 @@ export function Autocomplete({
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandEmpty>
-            {allowCustomValue ? "Nenhuma sugestão encontrada." : "Nenhuma opção encontrada."}
-          </CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto">
-            {filteredOptions && filteredOptions.length > 0 && filteredOptions.map((option) => (
-              option && option.value && option.label && (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <div className="flex-1">
-                    <div>{option.label}</div>
-                    {option.description && (
-                      <div className="text-xs text-muted-foreground">{option.description}</div>
-                    )}
-                  </div>
-                </CommandItem>
-              )
-            ))}
-          </CommandGroup>
-        </Command>
+        <div className="max-h-64 overflow-auto">
+          {filteredOptions.length === 0 ? (
+            <div className="p-4 text-sm text-muted-foreground">
+              {allowCustomValue ? "Nenhuma sugestão encontrada." : "Nenhuma opção encontrada."}
+            </div>
+          ) : (
+            filteredOptions.map((option) => (
+              <div
+                key={option.value}
+                className="flex items-center p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                onClick={() => handleSelect(option.value)}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === option.value ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                <div className="flex-1">
+                  <div>{option.label}</div>
+                  {option.description && (
+                    <div className="text-xs text-muted-foreground">{option.description}</div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
