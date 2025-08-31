@@ -83,6 +83,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
+                        className="flex items-center justify-center w-full"
                       >
                         <item.icon className={cn(
                           "h-4 w-4 flex-shrink-0",
@@ -100,6 +101,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild className="!px-6 py-2 justify-center">
                     <NavLink
                       to="/admin"
+                      className="flex items-center justify-center w-full"
                     >
                       <Shield className={cn(
                         "h-4 w-4 flex-shrink-0",
