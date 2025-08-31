@@ -557,6 +557,18 @@ export type Database = {
           loan_status: string
         }[]
       }
+      get_project_loans_with_fallback: {
+        Args: { _project_id: string }
+        Returns: {
+          borrower_name: string
+          equipment_id: string
+          equipment_name: string
+          expected_return_date: string
+          loan_date: string
+          loan_id: string
+          status: string
+        }[]
+      }
       get_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
