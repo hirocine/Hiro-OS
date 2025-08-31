@@ -79,10 +79,13 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 onClick={() => handleStepClick(step, index)}
                 title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
               >
-                <Icon className={cn(
-                  "transition-all duration-300 z-10",
-                  status === 'current' ? "w-7 h-7" : "w-6 h-6"
-                )} />
+                <Icon 
+                  className={cn(
+                    "transition-all duration-300 z-10",
+                    status === 'current' ? "w-7 h-7" : "w-6 h-6"
+                  )} 
+                  strokeWidth={1.5}
+                />
                 
                 {/* Glow effect for current step */}
                 {status === 'current' && (
@@ -148,10 +151,13 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   onClick={() => handleStepClick(step, index)}
                   title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
-                  <Icon className={cn(
-                    "transition-all duration-300 z-10",
-                    status === 'current' ? "w-6 h-6" : "w-5 h-5"
-                  )} />
+                  <Icon 
+                    className={cn(
+                      "transition-all duration-300 z-10",
+                      status === 'current' ? "w-6 h-6" : "w-5 h-5"
+                    )} 
+                    strokeWidth={1.5}
+                  />
                   
                   {/* Glow effect for current step */}
                   {status === 'current' && (
