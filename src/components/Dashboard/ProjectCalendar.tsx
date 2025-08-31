@@ -3,19 +3,22 @@ import { useProjects } from '@/hooks/useProjects';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, getDay, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isSameMonth, isToday, startOfWeek, endOfWeek, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-interface DayProject {
+interface ProjectBar {
   id: string;
   name: string;
   status: string;
   step: string;
-  isStart: boolean;
-  isEnd: boolean;
-  isActive: boolean;
+  startDate: Date;
+  endDate: Date;
+  gridColumnStart: number;
+  gridColumnSpan: number;
   color: string;
+  track: number; // For stacking overlapping projects
+  weekRow: number; // Which week row this bar is in
 }
 
 export function ProjectCalendar() {
@@ -35,57 +38,138 @@ export function ProjectCalendar() {
     });
   }, [currentMonth]);
 
-  // Process projects for each day
-  const dayProjects = useMemo(() => {
-    const dayProjectsMap = new Map<string, DayProject[]>();
+  // Process projects into continuous bars
+  const projectBars = useMemo(() => {
+    const monthStart = startOfWeek(startOfMonth(currentMonth));
+    
+    // Get project color based on status
+    const getProjectColor = (project: any) => {
+      switch (project.status) {
+        case 'completed':
+          return 'hsl(var(--success))';
+        case 'active':
+          return project.actualEndDate ? 'hsl(var(--success))' : 'hsl(var(--primary))';
+        case 'archived':
+          return 'hsl(var(--muted))';
+        default:
+          return 'hsl(var(--primary))';
+      }
+    };
 
+    const bars: ProjectBar[] = [];
+    
     projects.forEach(project => {
-      const startDate = project.separationDate || project.startDate;
-      const endDate = project.actualEndDate || project.expectedEndDate;
+      const startDateStr = project.separationDate || project.startDate;
+      const endDateStr = project.actualEndDate || project.expectedEndDate;
       
-      if (!startDate || !endDate) return;
+      if (!startDateStr || !endDateStr) return;
 
-      const projectStart = new Date(startDate);
-      const projectEnd = new Date(endDate);
+      const projectStart = new Date(startDateStr);
+      const projectEnd = new Date(endDateStr);
+      
+      // Only show projects that intersect with current month view
+      const monthEnd = endOfMonth(currentMonth);
+      if (projectEnd < startOfMonth(currentMonth) || projectStart > monthEnd) return;
 
-      // Get project color based on status
-      const getProjectColor = () => {
-        switch (project.status) {
-          case 'completed':
-            return 'hsl(var(--success))';
-          case 'active':
-            return project.actualEndDate ? 'hsl(var(--success))' : 'hsl(var(--primary))';
-          case 'archived':
-            return 'hsl(var(--muted))';
-          default:
-            return 'hsl(var(--primary))';
-        }
-      };
+      // Clamp dates to calendar view
+      const viewStart = Math.max(projectStart.getTime(), monthStart.getTime());
+      const viewEnd = Math.min(projectEnd.getTime(), calendarDays[calendarDays.length - 1].getTime());
+      
+      const clampedStart = new Date(viewStart);
+      const clampedEnd = new Date(viewEnd);
+      
+      // Calculate which calendar day this starts and ends
+      const startIndex = calendarDays.findIndex(day => 
+        day.getTime() >= clampedStart.getTime() && day.toDateString() === clampedStart.toDateString()
+      );
+      const endIndex = calendarDays.findIndex(day => 
+        day.toDateString() === clampedEnd.toDateString()
+      );
+      
+      if (startIndex === -1 || endIndex === -1) return;
 
-      // Add project to each day it spans
-      calendarDays.forEach(day => {
-        if (day >= projectStart && day <= projectEnd && isSameMonth(day, currentMonth)) {
-          const dayKey = format(day, 'yyyy-MM-dd');
+      // Create bars for each week row the project spans
+      let currentIndex = startIndex;
+      let barId = 0;
+      
+      while (currentIndex <= endIndex) {
+        const weekStart = Math.floor(currentIndex / 7) * 7;
+        const weekEnd = Math.min(weekStart + 6, calendarDays.length - 1);
+        const barEndIndex = Math.min(endIndex, weekEnd);
+        
+        if (currentIndex <= barEndIndex) {
+          const gridColumnStart = (currentIndex % 7) + 1;
+          const gridColumnSpan = (barEndIndex % 7) - (currentIndex % 7) + 1;
           
-          if (!dayProjectsMap.has(dayKey)) {
-            dayProjectsMap.set(dayKey, []);
-          }
-
-          dayProjectsMap.get(dayKey)!.push({
-            id: project.id,
+          bars.push({
+            id: `${project.id}-${barId}`,
             name: project.name,
             status: project.status,
             step: project.step,
-            isStart: isSameDay(day, projectStart),
-            isEnd: isSameDay(day, projectEnd),
-            isActive: day >= projectStart && day <= projectEnd,
-            color: getProjectColor()
+            startDate: projectStart,
+            endDate: projectEnd,
+            gridColumnStart,
+            gridColumnSpan,
+            color: getProjectColor(project),
+            track: 0, // Will be calculated for stacking
+            weekRow: Math.floor(currentIndex / 7)
           });
+          
+          barId++;
         }
-      });
+        
+        currentIndex = weekEnd + 1;
+      }
     });
 
-    return dayProjectsMap;
+    // Calculate tracks to avoid overlapping within each week
+    const weekTracks: { [weekRow: number]: ProjectBar[][] } = {};
+    
+    bars.forEach(bar => {
+      if (!weekTracks[bar.weekRow]) {
+        weekTracks[bar.weekRow] = [];
+      }
+    });
+
+    // Sort bars by start position within each week
+    bars.sort((a, b) => {
+      if (a.weekRow !== b.weekRow) return a.weekRow - b.weekRow;
+      return a.gridColumnStart - b.gridColumnStart;
+    });
+    
+    bars.forEach(bar => {
+      let assignedTrack = -1;
+      const weekTrackArray = weekTracks[bar.weekRow];
+      
+      // Find a track where this bar doesn't overlap
+      for (let i = 0; i < weekTrackArray.length; i++) {
+        const trackBars = weekTrackArray[i];
+        const hasOverlap = trackBars.some(existingBar => {
+          const barEnd = bar.gridColumnStart + bar.gridColumnSpan - 1;
+          const existingEnd = existingBar.gridColumnStart + existingBar.gridColumnSpan - 1;
+          
+          return !(barEnd < existingBar.gridColumnStart || bar.gridColumnStart > existingEnd);
+        });
+        
+        if (!hasOverlap) {
+          assignedTrack = i;
+          break;
+        }
+      }
+      
+      // If no track found, create a new one
+      if (assignedTrack === -1) {
+        assignedTrack = weekTrackArray.length;
+        weekTrackArray.push([]);
+      }
+      
+      bar.track = assignedTrack;
+      weekTrackArray[assignedTrack].push(bar);
+    });
+
+    const maxTracks = Math.max(...Object.values(weekTracks).map(tracks => tracks.length), 0);
+    
+    return { bars, maxTracks };
   }, [projects, currentMonth, calendarDays]);
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -133,77 +217,106 @@ export function ProjectCalendar() {
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1">
-        {/* Week day headers */}
-        {weekDays.map(day => (
-          <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
-            {day}
-          </div>
-        ))}
+      <div className="relative">
+        {/* Grid container */}
+        <div 
+          className="grid grid-cols-7 gap-1"
+          style={{ 
+            minHeight: `${Math.max(400, 60 + (projectBars.maxTracks * 35))}px` 
+          }}
+        >
+          {/* Week day headers */}
+          {weekDays.map(day => (
+            <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground border-b border-border">
+              {day}
+            </div>
+          ))}
 
-        {/* Calendar days */}
-        {calendarDays.map((day) => {
-          const dayKey = format(day, 'yyyy-MM-dd');
-          const dayProjs = dayProjects.get(dayKey) || [];
-          const isCurrentMonth = isSameMonth(day, currentMonth);
-          const isCurrentDay = isToday(day);
+          {/* Calendar days */}
+          {calendarDays.map((day) => {
+            const dayKey = format(day, 'yyyy-MM-dd');
+            const isCurrentMonth = isSameMonth(day, currentMonth);
+            const isCurrentDay = isToday(day);
 
-          return (
-            <div 
-              key={dayKey}
-              className={`min-h-[80px] p-2 border border-border rounded-md ${
-                isCurrentMonth ? 'bg-card' : 'bg-muted/20'
-              } ${isCurrentDay ? 'ring-2 ring-primary' : ''}`}
-            >
-              {/* Day number */}
-              <div className={`text-sm mb-1 ${
-                isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
-              } ${isCurrentDay ? 'font-bold text-primary' : ''}`}>
-                {format(day, 'd')}
+            return (
+              <div 
+                key={dayKey}
+                className={`min-h-[60px] p-2 border border-border ${
+                  isCurrentMonth ? 'bg-card' : 'bg-muted/20'
+                } ${isCurrentDay ? 'ring-2 ring-primary' : ''}`}
+              >
+                {/* Day number */}
+                <div className={`text-sm mb-1 ${
+                  isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+                } ${isCurrentDay ? 'font-bold text-primary' : ''}`}>
+                  {format(day, 'd')}
+                </div>
               </div>
+            );
+          })}
+        </div>
 
-              {/* Project bars */}
-              <div className="space-y-1">
-                {dayProjs.slice(0, 3).map((project) => (
-                  <TooltipProvider key={project.id}>
+        {/* Project bars overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{ top: '52px' }}>
+          {/* Create week rows */}
+          {Array.from({ length: Math.ceil(calendarDays.length / 7) }).map((_, weekIndex) => (
+            <div 
+              key={weekIndex} 
+              className="relative" 
+              style={{ 
+                height: `${60 + (projectBars.maxTracks * 32)}px`,
+                top: `${weekIndex * 61}px` // 60px + 1px border
+              }}
+            >
+              {/* Week bars */}
+              {projectBars.bars
+                .filter(bar => bar.weekRow === weekIndex)
+                .map((bar) => (
+                  <TooltipProvider key={bar.id}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
-                          className="h-2 rounded-full cursor-pointer transition-opacity hover:opacity-80"
-                          style={{ backgroundColor: project.color }}
-                        />
+                          className="absolute pointer-events-auto cursor-pointer rounded-md px-2 py-1 transition-all hover:scale-105 hover:shadow-md flex items-center justify-center text-white font-medium text-xs truncate border border-white/20"
+                          style={{
+                            backgroundColor: bar.color,
+                            left: `${((bar.gridColumnStart - 1) / 7) * 100}%`,
+                            width: `${(bar.gridColumnSpan / 7) * 100}%`,
+                            top: `${bar.track * 32 + 25}px`,
+                            height: '28px',
+                            zIndex: 10 + bar.track
+                          }}
+                        >
+                          <span className="truncate w-full text-center font-medium">
+                            {bar.name}
+                          </span>
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="space-y-1">
-                          <p className="font-medium text-xs">{project.name}</p>
+                          <p className="font-medium">{bar.name}</p>
                           <div className="flex gap-1">
-                            {project.isStart && (
-                              <Badge variant="secondary" className="text-xs">Início</Badge>
-                            )}
-                            {project.isEnd && (
-                              <Badge variant="outline" className="text-xs">Fim</Badge>
-                            )}
+                            <Badge variant="secondary" className="text-xs">
+                              {format(bar.startDate, 'dd/MM')}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {format(bar.endDate, 'dd/MM')}
+                            </Badge>
                           </div>
                           <p className="text-xs">
-                            Status: {project.status === 'active' ? 'Ativo' : 
-                                    project.status === 'completed' ? 'Finalizado' : 'Arquivado'}
+                            Status: {bar.status === 'active' ? 'Ativo' : 
+                                    bar.status === 'completed' ? 'Finalizado' : 'Arquivado'}
+                          </p>
+                          <p className="text-xs">
+                            Etapa: {bar.step}
                           </p>
                         </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 ))}
-                
-                {/* Show count if more than 3 projects */}
-                {dayProjs.length > 3 && (
-                  <div className="text-xs text-muted-foreground">
-                    +{dayProjs.length - 3} mais
-                  </div>
-                )}
-              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       {/* Legend */}
