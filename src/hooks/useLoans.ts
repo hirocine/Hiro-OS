@@ -102,10 +102,6 @@ export function useLoans() {
   }, [updatedLoans]);
 
   const addLoan = async (newLoan: Omit<Loan, 'id'>) => {
-    if (!isAdmin) {
-      console.error('Only admins can add loans');
-      return;
-    }
     
     try {
       // Transform to database format
@@ -134,7 +130,7 @@ export function useLoans() {
 
       if (error) {
         console.error('Error adding loan:', error);
-        return;
+        throw new Error(`Failed to create loan: ${error.message}`);
       }
 
       if (data) {
@@ -155,6 +151,7 @@ export function useLoans() {
       }
     } catch (error) {
       console.error('Error adding loan:', error);
+      throw error;
     }
   };
 
