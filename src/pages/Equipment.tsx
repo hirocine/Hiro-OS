@@ -28,6 +28,7 @@ type ViewMode = 'table' | 'grid' | 'cards';
 export default function EquipmentPage() {
   const {
     equipment: filteredEquipment,
+    allEquipment,
     equipmentHierarchy,
     stats,
     loading,
@@ -521,7 +522,7 @@ export default function EquipmentPage() {
       <UnifiedEquipmentFilters
         filters={filters}
         onFiltersChange={setFilters}
-        allEquipment={filteredEquipment}
+        allEquipment={allEquipment}
         stats={stats}
       />
 
