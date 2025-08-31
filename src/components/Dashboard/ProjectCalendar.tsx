@@ -179,7 +179,7 @@ export function ProjectCalendar() {
   };
 
   return (
-    <div className="bg-gradient-card rounded-lg p-6 shadow-elegant">
+    <div className="bg-gradient-card rounded-xl p-6 shadow-elegant">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -220,30 +220,42 @@ export function ProjectCalendar() {
       <div className="relative">
         {/* Grid container */}
         <div 
-          className="grid grid-cols-7 gap-1"
+          className="grid grid-cols-7 gap-1 rounded-lg overflow-hidden border border-border"
           style={{ 
             minHeight: `${Math.max(400, 60 + (projectBars.maxTracks * 35))}px` 
           }}
         >
           {/* Week day headers */}
-          {weekDays.map(day => (
-            <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground border-b border-border">
+          {weekDays.map((day, index) => (
+            <div 
+              key={day} 
+              className={`p-3 text-center text-sm font-medium text-muted-foreground border-b border-border bg-muted/50 ${
+                index === 0 ? 'rounded-tl-lg' : ''
+              } ${
+                index === 6 ? 'rounded-tr-lg' : ''
+              }`}
+            >
               {day}
             </div>
           ))}
 
           {/* Calendar days */}
-          {calendarDays.map((day) => {
+          {calendarDays.map((day, dayIndex) => {
             const dayKey = format(day, 'yyyy-MM-dd');
             const isCurrentMonth = isSameMonth(day, currentMonth);
             const isCurrentDay = isToday(day);
+            const isLastWeek = dayIndex >= calendarDays.length - 7;
 
             return (
               <div 
                 key={dayKey}
-                className={`min-h-[60px] p-2 border border-border ${
+                className={`min-h-[60px] p-2 border-r border-b border-border rounded-md ${
                   isCurrentMonth ? 'bg-card' : 'bg-muted/20'
-                } ${isCurrentDay ? 'ring-2 ring-primary' : ''}`}
+                } ${isCurrentDay ? 'ring-2 ring-primary' : ''} ${
+                  isLastWeek && dayIndex === calendarDays.length - 7 ? 'rounded-bl-lg' : ''
+                } ${
+                  isLastWeek && dayIndex === calendarDays.length - 1 ? 'rounded-br-lg' : ''
+                }`}
               >
                 {/* Day number */}
                 <div className={`text-sm mb-1 ${
