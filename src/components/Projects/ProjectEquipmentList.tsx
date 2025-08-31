@@ -37,7 +37,15 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
     return (
       <div className="text-center py-8">
         <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">Nenhum equipamento encontrado para este projeto</p>
+        <p className="text-muted-foreground mb-4">Nenhum equipamento encontrado para este projeto</p>
+        <Button 
+          onClick={() => {
+            // Emit event to parent to open add equipment dialog
+            window.dispatchEvent(new CustomEvent('openAddEquipmentDialog'));
+          }}
+        >
+          Adicionar Equipamentos
+        </Button>
       </div>
     );
   }

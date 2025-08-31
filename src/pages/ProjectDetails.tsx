@@ -16,6 +16,7 @@ import { stepLabels } from '@/lib/projectSteps';
 import { useState } from 'react';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
 import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
+import { AddEquipmentToProjectDialog } from '@/components/Projects/AddEquipmentToProjectDialog';
 import { AdminOnly } from '@/components/RoleGuard';
 
 export default function ProjectDetails() {
@@ -25,6 +26,7 @@ export default function ProjectDetails() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
   const {
@@ -37,6 +39,18 @@ export default function ProjectDetails() {
     deleteProject,
     updateProjectStep
   } = useProjectDetails(id!);
+
+  // Listen for add equipment dialog events
+  React.useEffect(() => {
+    const handleOpenAddEquipmentDialog = () => {
+      setShowAddEquipmentDialog(true);
+    };
+
+    window.addEventListener('openAddEquipmentDialog', handleOpenAddEquipmentDialog);
+    return () => {
+      window.removeEventListener('openAddEquipmentDialog', handleOpenAddEquipmentDialog);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -337,19 +351,19 @@ export default function ProjectDetails() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {project.equipmentCount === 0 ? (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Nenhum equipamento vinculado</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    {project.equipmentCount} equipamentos vinculados a este projeto
-                  </p>
-                  <ProjectEquipmentList projectId={project.id} />
-                </div>
-              )}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground">
+                  {project.equipmentCount} equipamentos vinculados a este projeto
+                </span>
+                <Button 
+                  onClick={() => setShowAddEquipmentDialog(true)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Adicionar Equipamentos
+                </Button>
+              </div>
+              <ProjectEquipmentList projectId={project.id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -437,6 +451,16 @@ export default function ProjectDetails() {
         projectName={project.name}
         onConfirm={handleDeleteProject}
         loading={isDeleting}
+      />
+
+      <AddEquipmentToProjectDialog
+        open={showAddEquipmentDialog}
+        onOpenChange={setShowAddEquipmentDialog}
+        project={project}
+        onSuccess={() => {
+          // Trigger a refresh of project data
+          window.location.reload();
+        }}
       />
     </div>
   );
