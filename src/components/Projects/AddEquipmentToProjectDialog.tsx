@@ -100,50 +100,90 @@ export function AddEquipmentToProjectDialog({
       return;
     }
 
+    console.log('Starting loan creation process...', {
+      selectedEquipmentCount: selectedEquipment.size,
+      project: project.name,
+      borrower: borrowerName,
+      selectedEquipmentIds: Array.from(selectedEquipment)
+    });
+
     try {
       setLoading(true);
+
+      let successCount = 0;
+      let errors: string[] = [];
 
       // Create loans for all selected equipment
       const loanPromises = Array.from(selectedEquipment).map(async (equipmentId) => {
         const equipment = allEquipment.find(eq => eq.id === equipmentId);
-        if (!equipment) return;
+        if (!equipment) {
+          console.error('Equipment not found:', equipmentId);
+          errors.push(`Equipamento não encontrado: ${equipmentId}`);
+          return;
+        }
 
-        await addLoan({
-          equipmentId: equipment.id,
-          equipmentName: equipment.name,
-          borrowerName: borrowerName.trim(),
-          borrowerEmail: borrowerEmail.trim() || undefined,
-          borrowerPhone: borrowerPhone.trim() || undefined,
-          department: project.department || undefined,
-          project: project.name, // Use project name for linking
-          loanDate: format(new Date(), 'yyyy-MM-dd'),
-          expectedReturnDate: format(expectedReturnDate, 'yyyy-MM-dd'),
-          status: 'active',
-          notes: notes.trim() || undefined
-        });
+        try {
+          console.log('Creating loan for equipment:', equipment.name, equipmentId);
+          
+          await addLoan({
+            equipmentId: equipment.id,
+            equipmentName: equipment.name,
+            borrowerName: borrowerName.trim(),
+            borrowerEmail: borrowerEmail.trim() || undefined,
+            borrowerPhone: borrowerPhone.trim() || undefined,
+            department: project.department || undefined,
+            project: project.name, // Use project name for linking
+            loanDate: format(new Date(), 'yyyy-MM-dd'),
+            expectedReturnDate: format(expectedReturnDate, 'yyyy-MM-dd'),
+            status: 'active',
+            notes: notes.trim() || undefined
+          });
+          
+          successCount++;
+          console.log('Loan created successfully for:', equipment.name);
+          
+        } catch (loanError) {
+          console.error('Error creating loan for equipment:', equipment.name, loanError);
+          const errorMessage = loanError instanceof Error ? loanError.message : 'Erro desconhecido';
+          errors.push(`${equipment.name}: ${errorMessage}`);
+        }
       });
 
       await Promise.all(loanPromises);
 
-      toast({
-        title: "Sucesso",
-        description: `${selectedEquipment.size} equipamentos adicionados ao projeto`,
-      });
-
-      // Reset form and close dialog
-      setSelectedEquipment(new Set());
-      setSearchTerm('');
-      setBorrowerName(project.responsibleName || '');
-      setBorrowerEmail(project.responsibleEmail || '');
-      setBorrowerPhone('');
-      setNotes('');
-      onOpenChange(false);
-      onSuccess?.();
+      if (successCount > 0) {
+        toast({
+          title: "Sucesso",
+          description: `${successCount} equipamento(s) adicionado(s) ao projeto`,
+        });
+        console.log('Successfully created', successCount, 'loans');
+        
+        // Reset form and close dialog
+        setSelectedEquipment(new Set());
+        setSearchTerm('');
+        setBorrowerName(project.responsibleName || '');
+        setBorrowerEmail(project.responsibleEmail || '');
+        setBorrowerPhone('');
+        setNotes('');
+        onOpenChange(false);
+        onSuccess?.();
+      }
+      
+      if (errors.length > 0) {
+        console.error('Loan creation errors:', errors);
+        toast({
+          title: "Erros detectados",
+          description: errors.slice(0, 3).join('\n') + (errors.length > 3 ? '\n...' : ''),
+          variant: "destructive"
+        });
+      }
+      
     } catch (error) {
-      console.error('Error adding equipment to project:', error);
+      console.error('Error in loan creation process:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro",
-        description: "Erro ao adicionar equipamentos ao projeto",
+        description: `Erro ao adicionar equipamentos ao projeto: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
