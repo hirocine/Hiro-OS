@@ -5,13 +5,22 @@ import { Header } from './Header';
 
 export function Layout() {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+    <SidebarProvider 
+      defaultOpen={true}
+      style={{
+        '--sidebar-width': '280px',
+        '--sidebar-width-mobile': '280px',
+        '--sidebar-width-icon': '60px',
+      } as React.CSSProperties}
+    >
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 flex flex-col min-w-0">
           <Header />
-          <main className="flex-1 overflow-auto">
-            <Outlet />
+          <main className="flex-1 overflow-auto p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
+              <Outlet />
+            </div>
           </main>
         </SidebarInset>
       </div>

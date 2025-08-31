@@ -47,30 +47,41 @@ const navigation: NavigationItem[] = [
 
 export function AppSidebar() {
   const { isAdmin } = useUserRole();
-  const { state } = useSidebar();
+  const { state, isMobile, openMobile, setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
+    <Sidebar 
+      collapsible="icon" 
+      className="transition-all duration-300 ease-in-out border-r border-sidebar-border"
+      variant="sidebar"
+    >
+      <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
+        <div className="flex items-center gap-3 px-4 py-4">
           <img 
             src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
             alt="HIRO Logo" 
-            className="h-8 w-auto flex-shrink-0"
+            className={cn(
+              "transition-all duration-300 ease-in-out flex-shrink-0",
+              state === 'collapsed' ? "h-6 w-auto" : "h-8 w-auto"
+            )}
           />
           {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-foreground">
+            <span className="text-lg font-semibold text-sidebar-foreground animate-fade-in">
               Inventário
             </span>
           )}
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="bg-sidebar">
         <SidebarGroup>
-          <SidebarGroupLabel>Navegação</SidebarGroupLabel>
+          {state !== 'collapsed' && (
+            <SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-medium uppercase tracking-wide">
+              Navegação
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigation.map((item) => {
                 // Hide admin-only items for non-admin users
                 if (item.adminOnly && !isAdmin) {
@@ -79,13 +90,32 @@ export function AppSidebar() {
                 
                 return (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton 
+                      asChild 
+                      className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group"
+                      tooltip={state === 'collapsed' ? item.name : undefined}
+                    >
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                            isActive
+                              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          )
+                        }
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
+                        }}
                       >
-                        <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
-                        <span>{item.name}</span>
+                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                        {state !== 'collapsed' && (
+                          <span className="animate-fade-in">{item.name}</span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -94,12 +124,31 @@ export function AppSidebar() {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild 
+                    className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    tooltip={state === 'collapsed' ? 'Administração' : undefined}
+                  >
                     <NavLink
                       to="/admin"
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                          isActive
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )
+                      }
+                      onClick={() => {
+                        if (isMobile) {
+                          setOpenMobile(false);
+                        }
+                      }}
                     >
-                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
-                      <span>Administração</span>
+                      <Shield className="h-4 w-4 flex-shrink-0" />
+                      {state !== 'collapsed' && (
+                        <span className="animate-fade-in">Administração</span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
