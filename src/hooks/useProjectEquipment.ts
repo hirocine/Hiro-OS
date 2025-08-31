@@ -23,13 +23,25 @@ export function useProjectEquipment(projectId: string) {
       setLoading(true);
       setError(null);
       
+      console.log('🔍 Fetching equipment for project:', projectId);
+      
       // Usar a função segura do banco para buscar equipamentos do projeto
       const { data: projectEquipmentData, error } = await supabase
         .rpc('get_project_equipment', { _project_id: projectId });
 
-      if (error) throw error;
+      console.log('📊 RPC get_project_equipment result:', {
+        data: projectEquipmentData,
+        error: error,
+        projectId
+      });
+
+      if (error) {
+        console.error('❌ Error in get_project_equipment RPC:', error);
+        throw error;
+      }
 
       if (!projectEquipmentData || projectEquipmentData.length === 0) {
+        console.log('📭 No equipment found for project:', projectId);
         setEquipment([]);
         return;
       }
