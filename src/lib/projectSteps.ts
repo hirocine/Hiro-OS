@@ -24,17 +24,47 @@ export const statusColors: Record<ProjectStatus, string> = {
 };
 
 export const getProjectColor = (status: ProjectStatus, step: ProjectStep): string => {
-  // Use status color as primary, with step as fallback for more granular control
-  const statusColorClass = statusColors[status];
-  const stepColorClass = stepColors[step];
-  
   // For active projects, use step color for better differentiation
   if (status === 'active') {
-    return `bg-${stepColorClass} text-${stepColorClass}-foreground border-${stepColorClass}/20`;
+    return stepColors[step];
   }
   
   // For completed and archived, use status color
-  return `bg-${statusColorClass} text-${statusColorClass}-foreground border-${statusColorClass}/20`;
+  return statusColors[status];
+};
+
+export const getProjectClasses = (status: ProjectStatus, step: ProjectStep): string => {
+  const colorKey = getProjectColor(status, step);
+  
+  const classMap: Record<string, string> = {
+    'step-pending': 'bg-step-pending text-step-pending-foreground border-step-pending/30',
+    'step-separated': 'bg-step-separated text-step-separated-foreground border-step-separated/30',
+    'step-in-use': 'bg-step-in-use text-step-in-use-foreground border-step-in-use/30',
+    'step-verification': 'bg-step-verification text-step-verification-foreground border-step-verification/30',
+    'step-verified': 'bg-step-verified text-step-verified-foreground border-step-verified/30',
+    'status-active': 'bg-status-active text-status-active-foreground border-status-active/30',
+    'status-completed': 'bg-status-completed text-status-completed-foreground border-status-completed/30',
+    'status-archived': 'bg-status-archived text-status-archived-foreground border-status-archived/30',
+  };
+  
+  return classMap[colorKey] || classMap['step-pending'];
+};
+
+export const getAccentClasses = (status: ProjectStatus, step: ProjectStep): string => {
+  const colorKey = getProjectColor(status, step);
+  
+  const accentMap: Record<string, string> = {
+    'step-pending': 'bg-step-pending-foreground/30',
+    'step-separated': 'bg-step-separated-foreground/30',
+    'step-in-use': 'bg-step-in-use-foreground/30',
+    'step-verification': 'bg-step-verification-foreground/30',
+    'step-verified': 'bg-step-verified-foreground/30',
+    'status-active': 'bg-status-active-foreground/30',
+    'status-completed': 'bg-status-completed-foreground/30',
+    'status-archived': 'bg-status-archived-foreground/30',
+  };
+  
+  return accentMap[colorKey] || accentMap['step-pending'];
 };
 
 export const stepIcons: Record<ProjectStep, any> = {

@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Progress } from '@/components/ui/progress';
 import { useProjects } from '@/hooks/useProjects';
 import { Project, ProjectStep } from '@/types/project';
-import { stepColors, stepLabels, stepIcons, getProjectColor } from '@/lib/projectSteps';
+import { stepColors, stepLabels, stepIcons, getProjectColor, getProjectClasses, getAccentClasses } from '@/lib/projectSteps';
 
 interface ProjectBar {
   id: string;
@@ -156,7 +156,7 @@ export const ProjectCalendar: React.FC = () => {
             startDate: weekProjectStart,
             endDate: weekProjectEnd,
             step: project.step,
-            color: getProjectColor(project.status, project.step),
+            color: getProjectClasses(project.status, project.step),
             week: weekIndex,
             startDay,
             span,
@@ -316,13 +316,13 @@ export const ProjectCalendar: React.FC = () => {
                     <TooltipTrigger asChild>
                       <div
                         className={`
-                          absolute pointer-events-auto cursor-pointer rounded-lg px-3 py-1.5
-                          text-xs font-medium transition-all duration-200 
-                          hover:shadow-md hover:z-30 hover:brightness-110 hover:saturate-110
-                          flex items-center gap-2 border-l-4
-                          ${bar.color} ${bar.isOverdue ? 'ring-1 ring-destructive/50' : ''}
-                          ${bar.extendsBeforeMonth || bar.extendsAfterMonth ? 'bg-gradient-to-r' : ''}
-                          animate-slide-up shadow-sm
+                          absolute pointer-events-auto cursor-pointer rounded-md
+                          text-xs font-medium transition-all duration-300 
+                          hover:shadow-lg hover:z-30 hover:brightness-105
+                          flex items-center gap-2 overflow-hidden
+                          ${bar.color} shadow-sm
+                          ${bar.isOverdue ? 'ring-2 ring-destructive/40' : ''}
+                          animate-slide-up
                         `}
                         style={{
                           top: `${(bar.week * 96) + 40 + (bar.track * 34)}px`,
@@ -331,20 +331,30 @@ export const ProjectCalendar: React.FC = () => {
                           height: '28px',
                           zIndex: 10 + bar.track,
                           animationDelay: `${bar.track * 100}ms`,
+                          padding: '6px 12px',
                         }}
                         aria-label={`Projeto ${bar.name} - ${stepLabels[bar.step]}`}
                         role="button"
                         tabIndex={0}
                       >
-                        <StepIcon className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate font-medium">{bar.name}</span>
-                        {bar.isOverdue && <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />}
-                        {bar.hasEquipment && <Package className="h-3 w-3 flex-shrink-0 opacity-70" />}
+                        {/* Left accent bar for visual hierarchy */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccentClasses(bar.project.status, bar.project.step)}`} />
+                        
+                        <StepIcon className="h-3.5 w-3.5 flex-shrink-0 opacity-90" />
+                        <span className="truncate font-medium text-xs leading-none">{bar.name}</span>
+                        
+                        {/* Status indicators */}
+                        <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                          {bar.hasEquipment && <Package className="h-3 w-3 opacity-70" />}
+                          {bar.isOverdue && <AlertTriangle className="h-3 w-3 text-destructive" />}
+                        </div>
+                        
+                        {/* Extension indicators */}
                         {bar.extendsBeforeMonth && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-current to-transparent opacity-60" />
+                          <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-gradient-to-b from-transparent via-current to-transparent rounded-full" />
                         )}
                         {bar.extendsAfterMonth && (
-                          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-current to-transparent opacity-60" />
+                          <div className="absolute right-0 top-1 bottom-1 w-0.5 bg-gradient-to-b from-transparent via-current to-transparent rounded-full" />
                         )}
                       </div>
                     </TooltipTrigger>
