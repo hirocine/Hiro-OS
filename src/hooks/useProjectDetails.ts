@@ -42,7 +42,17 @@ export function useProjectDetails(projectId: string) {
           actualEndDate: data.actual_end_date,
           status: data.status as ProjectStatus,
           step: data.step as ProjectStep,
-          stepHistory: (data.step_history as any) || [],
+          stepHistory: (() => {
+            try {
+              if (typeof data.step_history === 'string') {
+                return JSON.parse(data.step_history) || [];
+              }
+              return data.step_history || [];
+            } catch (error) {
+              console.error('Error parsing step_history:', error);
+              return [];
+            }
+          })(),
           responsibleName: data.responsible_name,
           responsibleEmail: data.responsible_email,
           department: data.department,
