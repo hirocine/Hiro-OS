@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Progress } from '@/components/ui/progress';
 import { useProjects } from '@/hooks/useProjects';
 import { Project, ProjectStep } from '@/types/project';
-import { stepColors, stepLabels, stepIcons, getProjectColor, getProjectClasses, getAccentClasses } from '@/lib/projectSteps';
+import { stepColors, stepLabels, stepIcons, getProjectClasses } from '@/lib/projectSteps';
 
 interface ProjectBar {
   id: string;
@@ -318,10 +318,10 @@ export const ProjectCalendar: React.FC = () => {
                         className={`
                           absolute pointer-events-auto cursor-pointer rounded-md
                           text-xs font-medium transition-all duration-300 
-                          hover:shadow-lg hover:z-30 hover:brightness-105
+                          hover:shadow-lg hover:z-30 hover:brightness-110 hover:saturate-105
                           flex items-center gap-2 overflow-hidden
-                          ${bar.color} shadow-sm
-                          ${bar.isOverdue ? 'ring-2 ring-destructive/40' : ''}
+                          ${bar.color}
+                          ${bar.isOverdue ? 'ring-2 ring-destructive/50' : ''}
                           animate-slide-up
                         `}
                         style={{
@@ -331,30 +331,27 @@ export const ProjectCalendar: React.FC = () => {
                           height: '28px',
                           zIndex: 10 + bar.track,
                           animationDelay: `${bar.track * 100}ms`,
-                          padding: '6px 12px',
+                          padding: '8px 12px',
                         }}
                         aria-label={`Projeto ${bar.name} - ${stepLabels[bar.step]}`}
                         role="button"
                         tabIndex={0}
                       >
-                        {/* Left accent bar for visual hierarchy */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccentClasses(bar.project.status, bar.project.step)}`} />
-                        
-                        <StepIcon className="h-3.5 w-3.5 flex-shrink-0 opacity-90" />
-                        <span className="truncate font-medium text-xs leading-none">{bar.name}</span>
+                        <StepIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span className="truncate font-medium text-xs leading-none flex-1">{bar.name}</span>
                         
                         {/* Status indicators */}
-                        <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-                          {bar.hasEquipment && <Package className="h-3 w-3 opacity-70" />}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {bar.hasEquipment && <Package className="h-3 w-3 opacity-80" />}
                           {bar.isOverdue && <AlertTriangle className="h-3 w-3 text-destructive" />}
                         </div>
                         
                         {/* Extension indicators */}
                         {bar.extendsBeforeMonth && (
-                          <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-gradient-to-b from-transparent via-current to-transparent rounded-full" />
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20 rounded-l-md" />
                         )}
                         {bar.extendsAfterMonth && (
-                          <div className="absolute right-0 top-1 bottom-1 w-0.5 bg-gradient-to-b from-transparent via-current to-transparent rounded-full" />
+                          <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/20 rounded-r-md" />
                         )}
                       </div>
                     </TooltipTrigger>
