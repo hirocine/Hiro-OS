@@ -50,8 +50,8 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       icon: Wrench,
       description: stats.maintenance > 0 ? 'Requer atenção' : 'Tudo em ordem',
       trend: stats.maintenance === 0 ? 'Excelente' : 'Atenção',
-      color: stats.maintenance > 0 ? 'text-destructive' : 'text-success',
-      bgColor: stats.maintenance > 0 ? 'bg-destructive/10' : 'bg-success/10',
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
     },
   ];
 
