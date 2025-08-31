@@ -154,12 +154,6 @@ export default function Projects() {
 
   const statsCards = [
     {
-      title: 'Total de Projetos',
-      value: stats.total,
-      icon: FolderOpen,
-      description: 'Todos os projetos'
-    },
-    {
       title: 'Projetos Ativos',
       value: stats.active,
       icon: Clock,
@@ -176,18 +170,6 @@ export default function Projects() {
       value: stats.byStep.in_use,
       icon: Play,
       description: 'Equipamentos em campo'
-    },
-    {
-      title: 'Projetos Finalizados',
-      value: stats.completed,
-      icon: CheckCircle,
-      description: 'Concluídos'
-    },
-    {
-      title: 'Equipamentos em Uso',
-      value: stats.totalEquipmentOut,
-      icon: Package,
-      description: 'Itens atualmente retirados'
     }
   ];
 
@@ -199,7 +181,7 @@ export default function Projects() {
           <div className="h-4 w-96 bg-muted rounded animate-pulse" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
