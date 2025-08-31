@@ -1,345 +1,340 @@
 import React, { useState, useMemo } from 'react';
-import { useProjects } from '@/hooks/useProjects';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isSameMonth, isToday, startOfWeek, endOfWeek, differenceInDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isToday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useProjects } from '@/hooks/useProjects';
+import { Project, ProjectStep } from '@/types/project';
+import { stepColors, stepLabels, stepIcons } from '@/lib/projectSteps';
 
 interface ProjectBar {
   id: string;
   name: string;
-  status: string;
-  step: string;
   startDate: Date;
   endDate: Date;
-  gridColumnStart: number;
-  gridColumnSpan: number;
+  step: ProjectStep;
   color: string;
-  track: number; // For stacking overlapping projects
-  weekRow: number; // Which week row this bar is in
+  week: number;
+  startDay: number;
+  span: number;
+  track: number;
+  project: Project;
 }
 
-export function ProjectCalendar() {
-  const { projects } = useProjects();
+export const ProjectCalendar: React.FC = () => {
+  const { projects, loading } = useProjects();
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Get calendar days for current month
-  const calendarDays = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
-    const calendarStart = startOfWeek(monthStart);
-    const calendarEnd = endOfWeek(monthEnd);
-    
-    return eachDayOfInterval({
-      start: calendarStart,
-      end: calendarEnd
-    });
-  }, [currentMonth]);
-
-  // Process projects into continuous bars
-  const projectBars = useMemo(() => {
-    const monthStart = startOfWeek(startOfMonth(currentMonth));
-    
-    // Get project color based on status
-    const getProjectColor = (project: any) => {
-      switch (project.status) {
-        case 'completed':
-          return 'hsl(var(--success))';
-        case 'active':
-          return project.actualEndDate ? 'hsl(var(--success))' : 'hsl(var(--primary))';
-        case 'archived':
-          return 'hsl(var(--muted))';
-        default:
-          return 'hsl(var(--primary))';
-      }
-    };
-
-    const bars: ProjectBar[] = [];
-    
-    projects.forEach(project => {
-      const startDateStr = project.separationDate || project.startDate;
-      const endDateStr = project.actualEndDate || project.expectedEndDate;
-      
-      if (!startDateStr || !endDateStr) return;
-
-      const projectStart = new Date(startDateStr);
-      const projectEnd = new Date(endDateStr);
-      
-      // Only show projects that intersect with current month view
-      const monthEnd = endOfMonth(currentMonth);
-      if (projectEnd < startOfMonth(currentMonth) || projectStart > monthEnd) return;
-
-      // Clamp dates to calendar view
-      const viewStart = Math.max(projectStart.getTime(), monthStart.getTime());
-      const viewEnd = Math.min(projectEnd.getTime(), calendarDays[calendarDays.length - 1].getTime());
-      
-      const clampedStart = new Date(viewStart);
-      const clampedEnd = new Date(viewEnd);
-      
-      // Calculate which calendar day this starts and ends
-      const startIndex = calendarDays.findIndex(day => 
-        day.getTime() >= clampedStart.getTime() && day.toDateString() === clampedStart.toDateString()
-      );
-      const endIndex = calendarDays.findIndex(day => 
-        day.toDateString() === clampedEnd.toDateString()
-      );
-      
-      if (startIndex === -1 || endIndex === -1) return;
-
-      // Create bars for each week row the project spans
-      let currentIndex = startIndex;
-      let barId = 0;
-      
-      while (currentIndex <= endIndex) {
-        const weekStart = Math.floor(currentIndex / 7) * 7;
-        const weekEnd = Math.min(weekStart + 6, calendarDays.length - 1);
-        const barEndIndex = Math.min(endIndex, weekEnd);
-        
-        if (currentIndex <= barEndIndex) {
-          const gridColumnStart = (currentIndex % 7) + 1;
-          const gridColumnSpan = (barEndIndex % 7) - (currentIndex % 7) + 1;
-          
-          bars.push({
-            id: `${project.id}-${barId}`,
-            name: project.name,
-            status: project.status,
-            step: project.step,
-            startDate: projectStart,
-            endDate: projectEnd,
-            gridColumnStart,
-            gridColumnSpan,
-            color: getProjectColor(project),
-            track: 0, // Will be calculated for stacking
-            weekRow: Math.floor(currentIndex / 7)
-          });
-          
-          barId++;
-        }
-        
-        currentIndex = weekEnd + 1;
-      }
-    });
-
-    // Calculate tracks to avoid overlapping within each week
-    const weekTracks: { [weekRow: number]: ProjectBar[][] } = {};
-    
-    bars.forEach(bar => {
-      if (!weekTracks[bar.weekRow]) {
-        weekTracks[bar.weekRow] = [];
-      }
-    });
-
-    // Sort bars by start position within each week
-    bars.sort((a, b) => {
-      if (a.weekRow !== b.weekRow) return a.weekRow - b.weekRow;
-      return a.gridColumnStart - b.gridColumnStart;
-    });
-    
-    bars.forEach(bar => {
-      let assignedTrack = -1;
-      const weekTrackArray = weekTracks[bar.weekRow];
-      
-      // Find a track where this bar doesn't overlap
-      for (let i = 0; i < weekTrackArray.length; i++) {
-        const trackBars = weekTrackArray[i];
-        const hasOverlap = trackBars.some(existingBar => {
-          const barEnd = bar.gridColumnStart + bar.gridColumnSpan - 1;
-          const existingEnd = existingBar.gridColumnStart + existingBar.gridColumnSpan - 1;
-          
-          return !(barEnd < existingBar.gridColumnStart || bar.gridColumnStart > existingEnd);
-        });
-        
-        if (!hasOverlap) {
-          assignedTrack = i;
-          break;
-        }
-      }
-      
-      // If no track found, create a new one
-      if (assignedTrack === -1) {
-        assignedTrack = weekTrackArray.length;
-        weekTrackArray.push([]);
-      }
-      
-      bar.track = assignedTrack;
-      weekTrackArray[assignedTrack].push(bar);
-    });
-
-    const maxTracks = Math.max(...Object.values(weekTracks).map(tracks => tracks.length), 0);
-    
-    return { bars, maxTracks };
-  }, [projects, currentMonth, calendarDays]);
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentMonth(prev => 
+      direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
+    );
+  };
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
-  };
+  // Calculate calendar structure
+  const calendarStructure = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+
+    const days = eachDayOfInterval({
+      start: calendarStart,
+      end: calendarEnd
+    });
+
+    // Group days into weeks
+    const weeks = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+
+    return { days, weeks };
+  }, [currentMonth]);
+
+  // Process projects into bars with improved logic
+  const projectBars = useMemo(() => {
+    if (!projects.length) return { bars: [], maxTracks: 0 };
+
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    
+    // Filter projects that intersect with current month
+    const relevantProjects = projects.filter(project => {
+      const startDate = parseISO(project.startDate);
+      const endDate = project.actualEndDate 
+        ? parseISO(project.actualEndDate) 
+        : parseISO(project.expectedEndDate);
+      
+      return startDate <= monthEnd && endDate >= monthStart;
+    });
+
+    const bars: ProjectBar[] = [];
+    const weekTracks: { [weekIndex: number]: ProjectBar[] } = {};
+    let maxTracks = 0;
+
+    relevantProjects.forEach(project => {
+      const startDate = parseISO(project.startDate);
+      const endDate = project.actualEndDate 
+        ? parseISO(project.actualEndDate) 
+        : parseISO(project.expectedEndDate);
+
+      // Process each week the project spans
+      calendarStructure.weeks.forEach((week, weekIndex) => {
+        const weekStart = week[0];
+        const weekEnd = week[6];
+
+        // Check if project intersects with this week
+        if (startDate <= weekEnd && endDate >= weekStart) {
+          const weekProjectStart = new Date(Math.max(startDate.getTime(), weekStart.getTime()));
+          const weekProjectEnd = new Date(Math.min(endDate.getTime(), weekEnd.getTime()));
+
+          const startDay = weekProjectStart.getDay();
+          const endDay = weekProjectEnd.getDay();
+          const span = endDay - startDay + 1;
+
+          // Find available track for this week
+          if (!weekTracks[weekIndex]) {
+            weekTracks[weekIndex] = [];
+          }
+
+          // Find track that doesn't conflict
+          let track = 0;
+          let trackFound = false;
+
+          while (!trackFound) {
+            const conflict = weekTracks[weekIndex].some(existingBar => 
+              existingBar.track === track &&
+              ((existingBar.startDay <= startDay && existingBar.startDay + existingBar.span > startDay) ||
+               (startDay <= existingBar.startDay && startDay + span > existingBar.startDay))
+            );
+
+            if (!conflict) {
+              trackFound = true;
+            } else {
+              track++;
+            }
+          }
+
+          const projectBar: ProjectBar = {
+            id: `${project.id}-${weekIndex}`,
+            name: project.name,
+            startDate: weekProjectStart,
+            endDate: weekProjectEnd,
+            step: project.step,
+            color: stepColors[project.step],
+            week: weekIndex,
+            startDay,
+            span,
+            track,
+            project
+          };
+
+          bars.push(projectBar);
+          weekTracks[weekIndex].push(projectBar);
+          maxTracks = Math.max(maxTracks, track + 1);
+        }
+      });
+    });
+
+    return { bars, maxTracks };
+  }, [projects, currentMonth, calendarStructure.weeks]);
+
+  if (loading) {
+    return (
+      <Card className="bg-gradient-card shadow-elegant">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Calendário de Projetos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-12 bg-muted rounded-lg" />
+            <div className="grid grid-cols-7 gap-3">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="h-20 bg-muted/50 rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="bg-gradient-card rounded-xl p-6 shadow-elegant">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Calendar className="h-6 w-6 text-primary" />
-          <div>
-            <h2 className="text-xl font-semibold">Calendário de Projetos</h2>
-            <p className="text-sm text-muted-foreground">
-              Cronograma mensal dos projetos
-            </p>
-          </div>
-        </div>
-        
-        {/* Month Navigation */}
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigateMonth('prev')}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-[160px] text-center">
-            <span className="font-medium">
-              {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-            </span>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigateMonth('next')}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="relative">
-        {/* Grid container */}
-        <div 
-          className="grid grid-cols-7 gap-2 rounded-lg overflow-hidden bg-card shadow-sm"
-          style={{ 
-            minHeight: `${Math.max(400, 60 + (projectBars.maxTracks * 35))}px` 
-          }}
-        >
-          {/* Week day headers */}
-          {weekDays.map((day, index) => (
-            <div 
-              key={day} 
-              className="p-3 text-center text-sm font-medium text-muted-foreground bg-muted/50 border-b border-border"
+    <Card className="bg-gradient-card shadow-elegant transition-all duration-300">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Calendar className="h-5 w-5 text-primary" />
+            Calendário de Projetos
+          </CardTitle>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigateMonth('prev')}
+              className="hover:bg-muted/50 transition-colors"
             >
-              {day}
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="min-w-[180px] text-center">
+              <h3 className="text-lg font-semibold capitalize">
+                {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+              </h3>
             </div>
-          ))}
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigateMonth('next')}
+              className="hover:bg-muted/50 transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-          {/* Calendar days */}
-          {calendarDays.map((day, dayIndex) => {
-            const dayKey = format(day, 'yyyy-MM-dd');
-            const isCurrentMonth = isSameMonth(day, currentMonth);
-            const isCurrentDay = isToday(day);
-
-            return (
+      <CardContent className="space-y-4">
+        {/* Calendar Grid */}
+        <div className="relative bg-card rounded-lg shadow-card overflow-hidden">
+          {/* Week Headers */}
+          <div className="grid grid-cols-7 bg-muted/30">
+            {weekDays.map((day) => (
               <div 
-                key={dayKey}
-                className={`min-h-[60px] p-3 rounded-lg transition-colors ${
-                  isCurrentMonth ? 'bg-background hover:bg-muted/20' : 'bg-muted/10'
-                } ${isCurrentDay ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+                key={day} 
+                className="p-3 text-center text-sm font-semibold text-muted-foreground border-r border-border/50 last:border-r-0"
               >
-                {/* Day number */}
-                <div className={`text-sm font-medium ${
-                  isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
-                } ${isCurrentDay ? 'text-primary font-bold' : ''}`}>
-                  {format(day, 'd')}
-                </div>
+                {day}
               </div>
+            ))}
+          </div>
+
+          {/* Calendar Weeks */}
+          <div 
+            className="relative"
+            style={{ minHeight: `${320 + (projectBars.maxTracks * 28)}px` }}
+          >
+            {calendarStructure.weeks.map((week, weekIndex) => (
+              <div key={weekIndex} className="grid grid-cols-7 border-b border-border/30 last:border-b-0">
+                {week.map((day) => {
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+                  const isCurrentDay = isToday(day);
+
+                  return (
+                    <div
+                      key={format(day, 'yyyy-MM-dd')}
+                      className={`
+                        relative h-20 p-2 border-r border-border/30 last:border-r-0
+                        transition-all duration-200 hover:bg-muted/20
+                        ${isCurrentMonth 
+                          ? isCurrentDay 
+                            ? 'bg-primary/10 ring-1 ring-primary/50' 
+                            : 'bg-background' 
+                          : 'bg-muted/10'
+                        }
+                      `}
+                    >
+                      <div className={`
+                        text-sm font-medium
+                        ${isCurrentMonth 
+                          ? isCurrentDay 
+                            ? 'text-primary font-bold' 
+                            : 'text-foreground' 
+                          : 'text-muted-foreground'
+                        }
+                      `}>
+                        {format(day, 'd')}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+
+            {/* Project Bars Overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+              {projectBars.bars.map((bar) => {
+                const StepIcon = stepIcons[bar.step];
+                
+                return (
+                  <Tooltip key={bar.id}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`
+                          absolute pointer-events-auto cursor-pointer rounded-md px-2 py-1
+                          text-xs font-medium transition-all duration-200 
+                          hover:scale-105 hover:shadow-md hover:z-30
+                          flex items-center gap-1 ${bar.color}
+                        `}
+                        style={{
+                          top: `${(bar.week * 80) + 24 + (bar.track * 24)}px`,
+                          left: `${(bar.startDay / 7) * 100}%`,
+                          width: `${(bar.span / 7) * 100}%`,
+                          height: '20px',
+                          zIndex: 10 + bar.track,
+                        }}
+                      >
+                        <StepIcon className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{bar.name}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2">
+                        <div className="font-semibold">{bar.project.name}</div>
+                        <div className="flex items-center gap-2">
+                          <StepIcon className="h-3 w-3" />
+                          <span className="text-xs">{stepLabels[bar.step]}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {format(bar.startDate, 'dd/MM')} - {format(bar.endDate, 'dd/MM')}
+                        </div>
+                        {bar.project.responsibleName && (
+                          <div className="text-xs">
+                            <strong>Responsável:</strong> {bar.project.responsibleName}
+                          </div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Legend */}
+        <div className="flex flex-wrap gap-3 pt-2 border-t border-border/50">
+          {Object.entries(stepLabels).map(([step, label]) => {
+            const StepIcon = stepIcons[step as ProjectStep];
+            const count = projectBars.bars.filter(bar => bar.step === step).length;
+            
+            return (
+              <Badge key={step} variant="secondary" className="flex items-center gap-2 py-1">
+                <div className={`w-3 h-3 rounded-sm ${stepColors[step as ProjectStep]}`} />
+                <StepIcon className="h-3 w-3" />
+                <span className="text-xs font-medium">{label}</span>
+                {count > 0 && (
+                  <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                    {count}
+                  </span>
+                )}
+              </Badge>
             );
           })}
         </div>
-
-        {/* Project bars overlay */}
-        <div className="absolute inset-0 pointer-events-none" style={{ top: '52px' }}>
-          {/* Create week rows */}
-          {Array.from({ length: Math.ceil(calendarDays.length / 7) }).map((_, weekIndex) => (
-            <div 
-              key={weekIndex} 
-              className="relative" 
-              style={{ 
-                height: `${60 + (projectBars.maxTracks * 32)}px`,
-                top: `${weekIndex * 68}px` // Adjusted for gap-2 spacing
-              }}
-            >
-              {/* Week bars */}
-              {projectBars.bars
-                .filter(bar => bar.weekRow === weekIndex)
-                .map((bar) => (
-                  <TooltipProvider key={bar.id}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="absolute pointer-events-auto cursor-pointer rounded-lg px-2 py-1 transition-all hover:scale-105 hover:shadow-md flex items-center justify-center text-white font-medium text-xs truncate border border-white/20"
-                          style={{
-                            backgroundColor: bar.color,
-                            left: `${((bar.gridColumnStart - 1) / 7) * 100}%`,
-                            width: `${(bar.gridColumnSpan / 7) * 100}%`,
-                            top: `${bar.track * 32 + 25}px`,
-                            height: '28px',
-                            zIndex: 10 + bar.track
-                          }}
-                        >
-                          <span className="truncate w-full text-center font-medium">
-                            {bar.name}
-                          </span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="space-y-1">
-                          <p className="font-medium">{bar.name}</p>
-                          <div className="flex gap-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {format(bar.startDate, 'dd/MM')}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {format(bar.endDate, 'dd/MM')}
-                            </Badge>
-                          </div>
-                          <p className="text-xs">
-                            Status: {bar.status === 'active' ? 'Ativo' : 
-                                    bar.status === 'completed' ? 'Finalizado' : 'Arquivado'}
-                          </p>
-                          <p className="text-xs">
-                            Etapa: {bar.step}
-                          </p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-border">
-        <h4 className="font-medium text-sm mb-3">Legenda</h4>
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }} />
-            <span>Projeto Ativo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--success))' }} />
-            <span>Projeto Finalizado</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--muted))' }} />
-            <span>Projeto Arquivado</span>
-          </div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
-}
+};
