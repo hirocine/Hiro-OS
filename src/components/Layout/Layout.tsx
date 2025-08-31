@@ -5,18 +5,13 @@ import { Header } from './Header';
 
 export function Layout() {
   return (
-    <SidebarProvider 
-      defaultOpen={true}
-      className="w-full"
-    >
-      <div className="min-h-screen flex w-full bg-background">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col min-w-0">
+        <SidebarInset className="flex-1">
           <Header />
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
-              <Outlet />
-            </div>
+          <main className="flex-1 overflow-auto">
+            <Outlet />
           </main>
         </SidebarInset>
       </div>
