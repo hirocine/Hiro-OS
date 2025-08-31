@@ -111,9 +111,16 @@ export function Autocomplete({
   const hasResults = filteredOptions.length > 0;
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <div className="relative">
+    <Popover onOpenChange={(open) => {
+      // When popover opens, focus the input
+      if (open && inputRef.current) {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
+      }
+    }}>
+      <div className="relative">
+        <PopoverTrigger asChild>
           <Input
             ref={inputRef}
             value={inputValue}
@@ -121,15 +128,15 @@ export function Autocomplete({
             placeholder={placeholder}
             className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
           />
-          <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
-            {inputValue && hasResults ? (
-              <Search className="h-4 w-4 text-accent animate-pulse" />
-            ) : (
-              <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </div>
+        </PopoverTrigger>
+        <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
+          {inputValue && hasResults ? (
+            <Search className="h-4 w-4 text-accent animate-pulse" />
+          ) : (
+            <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+          )}
         </div>
-      </PopoverTrigger>
+      </div>
       <PopoverContent 
         className="p-0 z-[100]" 
         align="start"
