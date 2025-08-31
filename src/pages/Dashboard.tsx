@@ -1,4 +1,5 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
+import { ProjectCalendar } from '@/components/Dashboard/ProjectCalendar';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
@@ -124,6 +125,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Project Calendar */}
+      <ProjectCalendar />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {mainStats.map((stat, index) => (
