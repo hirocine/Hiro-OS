@@ -48,12 +48,9 @@ export function AddEquipmentToProjectDialog({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Filter available equipment (not currently on loan)
+  // Filter equipment (allow all equipment, regardless of current loan status)
   const availableEquipment = useMemo(() => {
     return allEquipment.filter(equipment => {
-      // Only show available equipment
-      if (equipment.status !== 'available') return false;
-      
       // Apply search filter
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
@@ -180,7 +177,7 @@ export function AddEquipmentToProjectDialog({
 
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                  Equipamentos Disponíveis ({availableEquipment.length})
+                  Todos os Equipamentos ({availableEquipment.length})
                 </Label>
                 <Button
                   type="button"
@@ -216,7 +213,11 @@ export function AddEquipmentToProjectDialog({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium truncate">{equipment.name}</h4>
-                            <Badge variant="outline">{equipment.status}</Badge>
+                            <Badge 
+                              variant={equipment.currentBorrower ? "secondary" : "outline"}
+                            >
+                              {equipment.currentBorrower ? "Em uso" : "Disponível"}
+                            </Badge>
                           </div>
                           
                           <div className="text-sm text-muted-foreground space-y-1">
@@ -232,6 +233,12 @@ export function AddEquipmentToProjectDialog({
                             {equipment.serialNumber && (
                               <div>Série: {equipment.serialNumber}</div>
                             )}
+                            
+                            {equipment.currentBorrower && (
+                              <div className="text-warning">
+                                Em uso por: {equipment.currentBorrower}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -243,7 +250,7 @@ export function AddEquipmentToProjectDialog({
                   <div className="text-center py-8">
                     <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">
-                      Nenhum equipamento disponível encontrado
+                      Nenhum equipamento encontrado
                     </p>
                   </div>
                 )}
