@@ -8,6 +8,7 @@ import { Calendar, User, Building, Package, Eye, MoreHorizontal, Edit, CheckCirc
 import { Project } from '@/types/project';
 import { stepLabels, stepColors } from '@/lib/projectSteps';
 import { cn } from '@/lib/utils';
+import { getStatusLabel } from '@/lib/projectLabels';
 
 interface ProjectSummaryCardProps {
   project: Project;
@@ -46,8 +47,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
                 {project.name}
               </h3>
               <Badge variant={getStatusVariant(project.status)}>
-                {project.status === 'active' ? 'Ativo' : 
-                 project.status === 'completed' ? 'Finalizado' : 'Arquivado'}
+                {getStatusLabel(project.status)}
               </Badge>
               {isOverdue && <Badge variant="destructive">Atrasado</Badge>}
             </div>

@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectFilters, ProjectStats, ProjectStep } from '@/types/project';
 import { supabase } from '@/integrations/supabase/client';
-import { shouldAutoUpdateToInUse } from '@/lib/projectSteps';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -50,29 +49,9 @@ export function useProjects() {
     }
   };
 
-  // Update project status and steps based on current date and automation rules
+  // Projects without client-side auto-updates to prevent inconsistencies
   const updatedProjects = useMemo(() => {
-    return projects.map(project => {
-      let updatedProject = { ...project };
-      
-      // Auto-update step from "separated" to "in_use" if project start date has passed
-      if (shouldAutoUpdateToInUse(project.startDate, project.step)) {
-        updatedProject = {
-          ...updatedProject,
-          step: 'in_use',
-          stepHistory: [
-            ...project.stepHistory,
-            {
-              step: 'in_use',
-              timestamp: new Date().toISOString(),
-              notes: 'Auto-atualizado: projeto iniciado'
-            }
-          ]
-        };
-      }
-      
-      return updatedProject;
-    });
+    return projects;
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
@@ -332,6 +311,7 @@ export function useProjects() {
     updateProject,
     updateProjectStep,
     completeProject,
-    archiveProject
+    archiveProject,
+    fetchProjects
   };
 }

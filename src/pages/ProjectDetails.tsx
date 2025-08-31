@@ -12,7 +12,7 @@ import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { stepLabels } from '@/lib/projectSteps';
+import { stepLabels, getStatusLabel } from '@/lib/projectLabels';
 import { useState } from 'react';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
 import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
@@ -37,7 +37,8 @@ export default function ProjectDetails() {
     completeProject,
     archiveProject,
     deleteProject,
-    updateProjectStep
+    updateProjectStep,
+    refetch
   } = useProjectDetails(id!);
 
   // Listen for add equipment dialog events
@@ -166,8 +167,7 @@ export default function ProjectDetails() {
             <div className="flex items-center space-x-3">
               <h1 className="text-2xl font-bold">{project.name}</h1>
               <Badge variant={getStatusVariant(project.status)}>
-                {project.status === 'active' ? 'Ativo' : 
-                 project.status === 'completed' ? 'Finalizado' : 'Arquivado'}
+                {getStatusLabel(project.status)}
               </Badge>
               {isOverdue && (
                 <Badge variant="destructive">Atrasado</Badge>
@@ -459,7 +459,7 @@ export default function ProjectDetails() {
         project={project}
         onSuccess={() => {
           // Trigger a refresh of project data
-          window.location.reload();
+          refetch();
         }}
       />
     </div>

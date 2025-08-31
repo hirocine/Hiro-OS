@@ -12,6 +12,7 @@ import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
+import { getStepLabel } from '@/lib/projectLabels';
 import { Equipment } from '@/types/equipment';
 import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
 
@@ -27,7 +28,8 @@ export default function Projects() {
     updateProject, 
     updateProjectStep,
     completeProject, 
-    archiveProject 
+    archiveProject,
+    fetchProjects
   } = useProjects();
   
   // Sincronização automática entre equipamentos e projetos
@@ -86,11 +88,9 @@ export default function Projects() {
     }
   };
 
-  const handleEditProject = async (projectData: Partial<Project>) => {
-    if (!editingProject) return;
-    
+  const handleEditProject = async (projectId: string, updates: Partial<Project>) => {
     try {
-      await updateProject(editingProject.id, projectData);
+      await updateProject(projectId, updates);
       toast({
         title: "Projeto atualizado",
         description: "As informações foram salvas com sucesso.",
@@ -164,16 +164,6 @@ export default function Projects() {
     }
   };
 
-  const getStepLabel = (step: ProjectStep): string => {
-    switch (step) {
-      case 'pending_separation': return 'Pendente Separação';
-      case 'separated': return 'Separado';
-      case 'in_use': return 'Em uso';
-      case 'pending_verification': return 'Pendente Verificação';
-      case 'verified': return 'Verificado';
-      default: return step;
-    }
-  };
 
   // Loading state with skeletons
   if (loading) {
@@ -219,7 +209,7 @@ export default function Projects() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.location.reload()} variant="outline">
+            <Button onClick={() => fetchProjects()} variant="outline">
               Tentar novamente
             </Button>
           </CardContent>
@@ -460,24 +450,7 @@ export default function Projects() {
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
           project={editingProject}
-          onSave={async (projectId, updates) => {
-            try {
-              await updateProject(projectId, updates);
-              toast({
-                title: "Projeto atualizado",
-                description: "As informações foram salvas com sucesso.",
-              });
-              setShowEditDialog(false);
-              setEditingProject(null);
-            } catch (error) {
-              console.error('Error updating project:', error);
-              toast({
-                title: "Erro ao atualizar projeto",
-                description: "Tente novamente em alguns instantes.",
-                variant: "destructive",
-              });
-            }
-          }}
+          onSave={handleEditProject}
         />
       )}
 
@@ -486,24 +459,7 @@ export default function Projects() {
           open={showStepDialog}
           onOpenChange={setShowStepDialog}
           project={stepProject}
-          onUpdate={async (projectId, step, notes) => {
-            try {
-              await updateProjectStep(projectId, step, notes);
-              toast({
-                title: "Etapa atualizada",
-                description: `Projeto movido para: ${getStepLabel(step)}`,
-              });
-              setShowStepDialog(false);
-              setStepProject(null);
-            } catch (error) {
-              console.error('Error updating step:', error);
-              toast({
-                title: "Erro ao atualizar etapa",
-                description: "Tente novamente em alguns instantes.",
-                variant: "destructive",
-              });
-            }
-          }}
+          onUpdate={handleUpdateStep}
         />
       )}
     </div>
