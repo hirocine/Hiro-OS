@@ -348,11 +348,6 @@ export const ProjectCalendar: React.FC = () => {
                         <StepIcon className="h-3.5 w-3.5 flex-shrink-0" />
                         <span className="truncate font-medium text-xs leading-none flex-1">{bar.name}</span>
                         
-                        {/* Status indicators */}
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          {bar.hasEquipment && <Package className="h-3 w-3 opacity-80" />}
-                          {bar.isOverdue && <AlertTriangle className="h-3 w-3 text-destructive" />}
-                        </div>
                         
                         {/* Extension indicators */}
                         {bar.extendsBeforeMonth && (
