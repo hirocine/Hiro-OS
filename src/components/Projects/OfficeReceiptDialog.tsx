@@ -79,7 +79,7 @@ export function OfficeReceiptDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
-            Confirmar Recebimento no Escritório
+            Retorno
           </DialogTitle>
           <DialogDescription>
             Selecione o usuário que está confirmando o recebimento dos equipamentos no escritório.

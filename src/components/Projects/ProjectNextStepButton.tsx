@@ -119,7 +119,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         {loading ? 'Processando...' : 
          isSeparating ? 'Separar' : 
          isWithdrawing ? 'Registrar Retirada' : 
-         isOfficeReceipt ? 'Confirmar Recebimento' :
+         isOfficeReceipt ? 'Confirmar Retorno' :
          isCompleting ? 'Finalizar' : 
          `${stepLabels[nextStep]}`}
         {!isCompleting && !loading && <ArrowRight className="ml-2 h-3 w-3" />}
