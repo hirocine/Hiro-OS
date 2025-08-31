@@ -21,6 +21,8 @@ import { AddEquipmentToProjectDialog } from '@/components/Projects/AddEquipmentT
 
 import { AdminOnly } from '@/components/RoleGuard';
 
+// Force rebuild to clear SeparationConfirmationDialog cache
+
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
