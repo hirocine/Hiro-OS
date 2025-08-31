@@ -29,6 +29,12 @@ const badgeVariants = cva(
           "border-transparent bg-step-verification text-step-verification-foreground hover:bg-step-verification/80",
         "step-verified":
           "border-transparent bg-step-verified text-step-verified-foreground hover:bg-step-verified/80",
+        "status-active":
+          "border-transparent bg-status-active text-status-active-foreground hover:bg-status-active/80",
+        "status-completed":
+          "border-transparent bg-status-completed text-status-completed-foreground hover:bg-status-completed/80",
+        "status-archived":
+          "border-transparent bg-status-archived text-status-archived-foreground hover:bg-status-archived/80",
       },
     },
     defaultVariants: {

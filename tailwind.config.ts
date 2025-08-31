@@ -81,6 +81,18 @@ export default {
 					DEFAULT: 'hsl(var(--step-verified))',
 					foreground: 'hsl(var(--step-verified-foreground))'
 				},
+				'status-active': {
+					DEFAULT: 'hsl(var(--status-active))',
+					foreground: 'hsl(var(--status-active-foreground))'
+				},
+				'status-completed': {
+					DEFAULT: 'hsl(var(--status-completed))',
+					foreground: 'hsl(var(--status-completed-foreground))'
+				},
+				'status-archived': {
+					DEFAULT: 'hsl(var(--status-archived))',
+					foreground: 'hsl(var(--status-archived-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

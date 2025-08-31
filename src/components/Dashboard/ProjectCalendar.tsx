@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Progress } from '@/components/ui/progress';
 import { useProjects } from '@/hooks/useProjects';
 import { Project, ProjectStep } from '@/types/project';
-import { stepColors, stepLabels, stepIcons } from '@/lib/projectSteps';
+import { stepColors, stepLabels, stepIcons, getProjectColor } from '@/lib/projectSteps';
 
 interface ProjectBar {
   id: string;
@@ -156,7 +156,7 @@ export const ProjectCalendar: React.FC = () => {
             startDate: weekProjectStart,
             endDate: weekProjectEnd,
             step: project.step,
-            color: stepColors[project.step],
+            color: getProjectColor(project.status, project.step),
             week: weekIndex,
             startDay,
             span,
@@ -319,10 +319,10 @@ export const ProjectCalendar: React.FC = () => {
                           absolute pointer-events-auto cursor-pointer rounded-lg px-3 py-1.5
                           text-xs font-medium transition-all duration-200 
                           hover:shadow-md hover:z-30 hover:brightness-110 hover:saturate-110
-                          flex items-center gap-2 border-l-3 border-l-primary/40
+                          flex items-center gap-2 border-l-4
                           ${bar.color} ${bar.isOverdue ? 'ring-1 ring-destructive/50' : ''}
                           ${bar.extendsBeforeMonth || bar.extendsAfterMonth ? 'bg-gradient-to-r' : ''}
-                          animate-slide-up
+                          animate-slide-up shadow-sm
                         `}
                         style={{
                           top: `${(bar.week * 96) + 40 + (bar.track * 34)}px`,
