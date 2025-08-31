@@ -91,10 +91,10 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
               <SelectContent>
                 {users.filter(user => user.is_active).map((user) => (
                   <SelectItem key={user.id} value={user.id}>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-start text-left">
                       <span>{user.display_name || user.email}</span>
                       {user.position && user.department && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground text-left">
                           {user.position} • {user.department}
                         </span>
                       )}
