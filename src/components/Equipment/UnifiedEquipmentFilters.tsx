@@ -329,7 +329,7 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
           <div className="space-y-2">
             <Label className="text-sm">Marca</Label>
             <Autocomplete
-              options={suggestions.brands.map(brand => ({ value: brand, label: brand }))}
+              options={(suggestions.brands || []).map(brand => ({ value: brand, label: brand }))}
               value={filters.brand || ''}
               onValueChange={(value) => updateFilter('brand', value || undefined)}
               placeholder="Digite para buscar marca..."
