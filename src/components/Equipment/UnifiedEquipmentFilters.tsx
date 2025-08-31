@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Autocomplete } from '@/components/ui/autocomplete';
 
 interface UnifiedEquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -37,7 +38,6 @@ interface UnifiedEquipmentFiltersProps {
 export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment = [], stats }: UnifiedEquipmentFiltersProps) {
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search || '');
-  const [brandSearch, setBrandSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -328,35 +328,14 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
 
           <div className="space-y-2">
             <Label className="text-sm">Marca</Label>
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar marca..."
-                  value={brandSearch}
-                  onChange={(e) => setBrandSearch(e.target.value)}
-                  className="pl-9 h-9"
-                />
-              </div>
-              <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as marcas</SelectItem>
-                  {suggestions.brands
-                    .filter((brand) => 
-                      brandSearch === '' || 
-                      brand.toLowerCase().includes(brandSearch.toLowerCase())
-                    )
-                    .map((brand) => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Autocomplete
+              options={suggestions.brands.map(brand => ({ value: brand, label: brand }))}
+              value={filters.brand || ''}
+              onValueChange={(value) => updateFilter('brand', value || undefined)}
+              placeholder="Digite para buscar marca..."
+              allowCustomValue
+              className="h-9"
+            />
           </div>
         </div>
 
