@@ -32,22 +32,21 @@ export function ProjectNextStepButton({ project, onStepUpdate, className }: Proj
   };
 
   return (
-    <div className={cn("flex justify-center pt-6 border-t border-border", className)}>
-      <Button
-        onClick={handleClick}
-        size="lg"
-        className={cn(
-          "h-12 px-8 text-base font-medium transition-all duration-300 hover:scale-105",
-          isCompleting 
-            ? "bg-gradient-to-r from-step-verified to-step-verified-foreground text-background shadow-lg hover:shadow-xl" 
-            : "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-elegant hover:shadow-xl"
-        )}
-      >
-        <NextStepIcon className="mr-3 h-5 w-5" />
-        {isCompleting ? 'Finalizar Projeto' : `Avançar para ${stepLabels[nextStep]}`}
-        {!isCompleting && <ArrowRight className="ml-3 h-4 w-4" />}
-        {isCompleting && <CheckCircle className="ml-3 h-4 w-4" />}
-      </Button>
-    </div>
+    <Button
+      onClick={handleClick}
+      size="sm"
+      className={cn(
+        "h-9 px-4 text-sm font-medium transition-all duration-300 hover:scale-105",
+        isCompleting 
+          ? "bg-gradient-to-r from-step-verified to-step-verified-foreground text-background shadow-lg hover:shadow-xl" 
+          : "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-elegant hover:shadow-xl",
+        className
+      )}
+    >
+      <NextStepIcon className="mr-2 h-4 w-4" />
+      {isCompleting ? 'Finalizar' : `${stepLabels[nextStep]}`}
+      {!isCompleting && <ArrowRight className="ml-2 h-3 w-3" />}
+      {isCompleting && <CheckCircle className="ml-2 h-3 w-3" />}
+    </Button>
   );
 }

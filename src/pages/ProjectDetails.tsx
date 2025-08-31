@@ -226,10 +226,21 @@ export default function ProjectDetails() {
       {/* Timeline */}
       <Card className="p-6">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Status do Projeto</CardTitle>
-          <CardDescription>
-            Progresso atual: {stepLabels[project.step]}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Status do Projeto</CardTitle>
+              <CardDescription>
+                Progresso atual: {stepLabels[project.step]}
+              </CardDescription>
+            </div>
+            {project.status === 'active' && (
+              <ProjectNextStepButton 
+                project={project}
+                onStepUpdate={handleUpdateStep}
+                className="flex-shrink-0"
+              />
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <ProjectTimeline 
@@ -238,12 +249,6 @@ export default function ProjectDetails() {
             onStepClick={handleUpdateStep}
             isProjectActive={project.status === 'active'}
           />
-          {project.status === 'active' && (
-            <ProjectNextStepButton 
-              project={project}
-              onStepUpdate={handleUpdateStep}
-            />
-          )}
         </CardContent>
       </Card>
 
