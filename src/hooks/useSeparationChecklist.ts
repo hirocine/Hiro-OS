@@ -22,17 +22,33 @@ interface ChecklistState {
 export function useSeparationChecklist(equipment: EquipmentItem[]) {
   const [checkedItems, setCheckedItems] = useState<ChecklistState>({});
 
+  console.log('🧾 useSeparationChecklist received equipment:', {
+    totalCount: equipment.length,
+    mainItems: equipment.filter(eq => eq.itemType === 'main').length,
+    accessories: equipment.filter(eq => eq.itemType === 'accessory').length,
+    items: equipment.map(eq => ({
+      id: eq.id,
+      name: eq.name,
+      itemType: eq.itemType,
+      parentId: eq.parentId,
+      category: eq.category
+    }))
+  });
+
   // Reset checklist when equipment changes
   useEffect(() => {
+    console.log('🔄 Resetting checklist state for', equipment.length, 'items');
     const initialState: ChecklistState = {};
     equipment.forEach(item => {
       initialState[item.id] = false;
     });
+    console.log('📋 Initial checklist state:', initialState);
     setCheckedItems(initialState);
   }, [equipment]);
 
   // Group equipment by category with hierarchy
   const categorizedEquipment = useMemo(() => {
+    console.log('🏗️ Building categorized equipment from:', equipment.length, 'items');
     const categories: { [key: string]: CategoryGroup } = {};
     
     // First pass: add all main items
@@ -45,6 +61,7 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
           };
         }
         categories[item.category].items.push(item);
+        console.log('➕ Added main item to category', item.category, ':', item.name);
       }
     });
 
@@ -55,6 +72,9 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
         const parent = equipment.find(eq => eq.id === item.parentId);
         if (parent && categories[parent.category]) {
           categories[parent.category].items.push(item);
+          console.log('🔧 Added accessory to category', parent.category, ':', item.name, '(parent:', parent.name, ')');
+        } else {
+          console.warn('⚠️ Orphaned accessory found:', item.name, 'parentId:', item.parentId);
         }
       }
     });
@@ -68,7 +88,18 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       });
     });
 
-    return Object.values(categories);
+    const result = Object.values(categories);
+    console.log('📦 Categorized equipment result:', {
+      totalCategories: result.length,
+      categories: result.map(cat => ({
+        category: cat.category,
+        itemCount: cat.items.length,
+        mainItems: cat.items.filter(item => item.itemType === 'main').length,
+        accessories: cat.items.filter(item => item.itemType === 'accessory').length
+      }))
+    });
+
+    return result;
   }, [equipment]);
 
   // Check if all items are checked
@@ -91,16 +122,29 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
 
   // Toggle item check
   const toggleItem = (itemId: string) => {
-    setCheckedItems(prev => ({
-      ...prev,
-      [itemId]: !prev[itemId]
-    }));
+    console.log('🔄 Toggling item:', itemId, 'current state:', checkedItems[itemId]);
+    setCheckedItems(prev => {
+      const newState = {
+        ...prev,
+        [itemId]: !prev[itemId]
+      };
+      console.log('✅ New checked state for', itemId, ':', newState[itemId]);
+      return newState;
+    });
   };
 
   // Toggle main item and all its accessories
   const toggleMainItemWithAccessories = (itemId: string) => {
     const accessories = getAccessoriesForItem(itemId);
     const newCheckedState = !checkedItems[itemId];
+    
+    console.log('🔄 Toggling main item with accessories:', {
+      itemId,
+      currentState: checkedItems[itemId],
+      newState: newCheckedState,
+      accessoriesCount: accessories.length,
+      accessories: accessories.map(acc => acc.id)
+    });
     
     setCheckedItems(prev => {
       const updated = { ...prev };
@@ -109,8 +153,10 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       // Update all accessories
       accessories.forEach(acc => {
         updated[acc.id] = newCheckedState;
+        console.log('🔧 Setting accessory', acc.id, 'to:', newCheckedState);
       });
       
+      console.log('✅ Updated checklist state:', Object.keys(updated).filter(key => updated[key]));
       return updated;
     });
   };

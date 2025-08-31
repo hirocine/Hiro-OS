@@ -47,6 +47,8 @@ export function SeparationConfirmationDialog({
   const { equipment, loading, error } = useProjectEquipment(project?.id || '');
   
   // Transform equipment data for the checklist
+  console.log('📋 SeparationConfirmationDialog - Original equipment data:', equipment);
+  
   const equipmentData = equipment.map(eq => ({
     id: eq.id,
     name: eq.name,
@@ -56,6 +58,8 @@ export function SeparationConfirmationDialog({
     patrimonyNumber: eq.patrimonyNumber,
     brand: eq.brand
   }));
+  
+  console.log('📋 SeparationConfirmationDialog - Transformed equipment data:', equipmentData);
 
   const {
     categorizedEquipment,
