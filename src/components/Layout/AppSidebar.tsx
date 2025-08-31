@@ -52,14 +52,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-border">
-        <div className="flex items-center px-3 py-3">
+        <div className="flex items-center gap-3 px-4 py-3">
           <img 
             src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
             alt="HIRO Logo" 
-            className="w-auto h-8 flex-shrink-0"
+            className="h-8 w-auto flex-shrink-0"
           />
           {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-foreground ml-3">
+            <span className="text-lg font-semibold text-foreground">
               Inventário
             </span>
           )}
@@ -78,22 +78,14 @@ export function AppSidebar() {
                 }
                 
                 return (
-                  <SidebarMenuItem key={item.name} className="w-full flex justify-center">
-                    <SidebarMenuButton asChild className="w-full max-w-full">
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton asChild>
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
-                        className={cn(
-                          "flex items-center w-full py-2",
-                          state === 'collapsed' 
-                            ? "justify-center px-0" 
-                            : "justify-start px-3"
-                        )}
                       >
-                        <item.icon className="h-4 w-4 flex-shrink-0" />
-                        {state !== 'collapsed' && (
-                          <span className="ml-3">{item.name}</span>
-                        )}
+                        <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                        <span>{item.name}</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -101,21 +93,13 @@ export function AppSidebar() {
               })}
               
               {isAdmin && (
-                <SidebarMenuItem className="w-full flex justify-center">
-                  <SidebarMenuButton asChild className="w-full max-w-full">
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <NavLink
                       to="/admin"
-                      className={cn(
-                        "flex items-center w-full py-2",
-                        state === 'collapsed' 
-                          ? "justify-center px-0" 
-                          : "justify-start px-3"
-                      )}
                     >
-                      <Shield className="h-4 w-4 flex-shrink-0" />
-                      {state !== 'collapsed' && (
-                        <span className="ml-3">Administração</span>
-                      )}
+                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span>Administração</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
