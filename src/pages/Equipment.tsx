@@ -23,6 +23,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 
+import { AdminOnly } from '@/components/RoleGuard';
+import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
+
 type ViewMode = 'table' | 'grid' | 'cards';
 
 export default function EquipmentPage() {

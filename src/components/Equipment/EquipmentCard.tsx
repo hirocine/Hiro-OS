@@ -80,13 +80,16 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
         </div>
         
         {equipment.currentBorrower && (
-          <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-2 text-sm">
-              <UserCheck className="h-4 w-4 text-warning" />
-              <span className="font-medium">Em uso por:</span> {equipment.currentBorrower}
+              <UserCheck className="h-4 w-4 text-primary" />
+              <span className="font-medium">Em projetos</span>
             </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Último empréstimo: {equipment.currentBorrower}
+            </p>
             {equipment.lastLoanDate && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 Retirado em {new Date(equipment.lastLoanDate).toLocaleDateString('pt-BR')}
               </p>
             )}
@@ -117,7 +120,7 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
           Editar
         </Button>
         
-        {equipment.status === 'available' && onLoan && (
+        {onLoan && (
           <Button 
             variant="success" 
             size="sm" 

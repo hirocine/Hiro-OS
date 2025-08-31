@@ -143,6 +143,10 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       Retorno previsto: {format(new Date(item.loanInfo.expectedReturnDate), 'dd/MM/yyyy', { locale: ptBR })}
                     </span>
                   </div>
+                  
+                  <div className="text-xs text-primary bg-primary/10 px-2 py-1 rounded mt-1">
+                    💡 Este equipamento pode estar em outros projetos simultaneamente
+                  </div>
                 </div>
               </div>
               

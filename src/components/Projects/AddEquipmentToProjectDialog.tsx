@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Equipment } from '@/types/equipment';
 import { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddEquipmentToProjectDialogProps {
   open: boolean;
@@ -48,7 +49,7 @@ export function AddEquipmentToProjectDialog({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Filter equipment (allow all equipment, regardless of current loan status)
+  // Filter equipment (show all equipment, regardless of current loan status)
   const availableEquipment = useMemo(() => {
     return allEquipment.filter(equipment => {
       // Apply search filter
@@ -62,6 +63,24 @@ export function AddEquipmentToProjectDialog({
       return true;
     });
   }, [allEquipment, searchTerm]);
+
+  // Function to get project count for equipment
+  const getEquipmentProjectCount = async (equipmentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_equipment_project_count', { equipment_id: equipmentId });
+      
+      if (error) {
+        console.error('Error getting project count:', error);
+        return 0;
+      }
+      
+      return data || 0;
+    } catch (error) {
+      console.error('Error getting project count:', error);
+      return 0;
+    }
+  };
 
   const handleEquipmentToggle = (equipmentId: string) => {
     const newSelected = new Set(selectedEquipment);
@@ -256,7 +275,7 @@ export function AddEquipmentToProjectDialog({
                             <Badge 
                               variant={equipment.currentBorrower ? "secondary" : "outline"}
                             >
-                              {equipment.currentBorrower ? "Em uso" : "Disponível"}
+                              {equipment.currentBorrower ? "Em projetos" : "Disponível"}
                             </Badge>
                           </div>
                           
@@ -275,8 +294,8 @@ export function AddEquipmentToProjectDialog({
                             )}
                             
                             {equipment.currentBorrower && (
-                              <div className="text-warning">
-                                Em uso por: {equipment.currentBorrower}
+                              <div className="text-muted-foreground">
+                                Último empréstimo: {equipment.currentBorrower}
                               </div>
                             )}
                           </div>

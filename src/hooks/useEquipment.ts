@@ -37,9 +37,7 @@ export function useEquipment() {
         category: (item.category || 'accessories') as any,
         subcategory: item.subcategory || undefined,
         customCategory: item.custom_category || undefined,
-        status: item.simplified_status === 'available' ? 'available' : 
-               item.simplified_status === 'in_project' ? 'on_loan' : 
-               item.simplified_status || 'available',
+        status: item.status === 'maintenance' ? 'maintenance' : 'available',
         itemType: (item.item_type || 'main') as any,
         parentId: item.parent_id || undefined,
         hasAccessories: false,
@@ -70,10 +68,10 @@ export function useEquipment() {
 
   const enrichedEquipment = useMemo(() => {
     return equipment.map(item => {
-      // Use the simplified_status from the database which is automatically updated by triggers
+      // All equipment is now available for multiple projects
       return {
         ...item,
-        // Keep existing loan info for display purposes
+        // Keep existing loan info for display purposes only
         currentLoanId: item.currentLoanId,
         currentBorrower: item.currentBorrower,
         lastLoanDate: item.lastLoanDate,
@@ -191,7 +189,7 @@ export function useEquipment() {
   const stats: DashboardStats = useMemo(() => {
     const total = enrichedEquipment.length;
     const available = enrichedEquipment.filter(item => item.status === 'available').length;
-    const inUse = 0; // Removed in-use status
+    const inUse = 0; // Equipment can be in multiple projects, so no "in use" exclusive status
     const maintenance = enrichedEquipment.filter(item => item.status === 'maintenance').length;
     const mainItems = enrichedEquipment.filter(item => item.itemType === 'main').length;
     const accessories = enrichedEquipment.filter(item => item.itemType === 'accessory').length;

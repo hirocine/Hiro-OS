@@ -1,0 +1,118 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface EquipmentProjectInfo {
+  equipmentId: string;
+  projectCount: number;
+  activeProjects: Array<{
+    id: string;
+    name: string;
+    status: string;
+  }>;
+}
+
+export function useEquipmentProjects(equipmentIds: string[]) {
+  const [projectInfo, setProjectInfo] = useState<Map<string, EquipmentProjectInfo>>(new Map());
+  const [loading, setLoading] = useState(false);
+
+  const fetchProjectCounts = async () => {
+    if (!equipmentIds.length) return;
+
+    try {
+      setLoading(true);
+      const projectCountPromises = equipmentIds.map(async (equipmentId) => {
+        // Get project count using the database function
+        const { data: count, error: countError } = await supabase
+          .rpc('get_equipment_project_count', { equipment_id: equipmentId });
+
+        if (countError) {
+          console.error('Error getting project count for equipment:', equipmentId, countError);
+          return { equipmentId, projectCount: 0, activeProjects: [] };
+        }
+
+        // Get active project details by matching project names/IDs
+        const { data: loans, error: loansError } = await supabase
+          .from('loans')
+          .select('id, project')
+          .eq('equipment_id', equipmentId)
+          .eq('status', 'active');
+
+        if (loansError) {
+          console.error('Error getting active loans for equipment:', equipmentId, loansError);
+          return { equipmentId, projectCount: count || 0, activeProjects: [] };
+        }
+
+        // Get project details for active loans
+        const projectPromises = (loans || []).map(async (loan) => {
+          // Try to find project by name first, then by ID
+          const { data: projectByName, error: nameError } = await supabase
+            .from('projects')
+            .select('id, name, status')
+            .eq('name', loan.project)
+            .eq('status', 'active')
+            .single();
+
+          if (!nameError && projectByName) {
+            return projectByName;
+          }
+
+          // Try by ID if name lookup fails
+          const { data: projectById, error: idError } = await supabase
+            .from('projects')
+            .select('id, name, status')
+            .eq('id', loan.project)
+            .eq('status', 'active')
+            .single();
+
+          return projectById || null;
+        });
+
+        const projectResults = await Promise.all(projectPromises);
+        const activeProjects = projectResults.filter(Boolean) as Array<{ id: string; name: string; status: string }>;
+
+        return {
+          equipmentId,
+          projectCount: count || 0,
+          activeProjects
+        };
+      });
+
+      const results = await Promise.all(projectCountPromises);
+      
+      const newProjectInfo = new Map<string, EquipmentProjectInfo>();
+      results.forEach(result => {
+        newProjectInfo.set(result.equipmentId, result);
+      });
+
+      setProjectInfo(newProjectInfo);
+    } catch (error) {
+      console.error('Error fetching project counts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjectCounts();
+  }, [equipmentIds.join(',')]);
+
+  const getProjectCount = (equipmentId: string): number => {
+    return projectInfo.get(equipmentId)?.projectCount || 0;
+  };
+
+  const getActiveProjects = (equipmentId: string) => {
+    return projectInfo.get(equipmentId)?.activeProjects || [];
+  };
+
+  const refetch = () => {
+    fetchProjectCounts();
+  };
+
+  return {
+    projectInfo,
+    loading,
+    getProjectCount,
+    getActiveProjects,
+    refetch
+  };
+}
