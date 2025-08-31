@@ -34,6 +34,14 @@ export function Autocomplete({
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
 
+  // Debug logs
+  console.log('Autocomplete render:', { 
+    options: options, 
+    optionsLength: options?.length,
+    optionsType: typeof options,
+    isArray: Array.isArray(options)
+  });
+
   React.useEffect(() => {
     setInputValue(value);
   }, [value]);
@@ -59,12 +67,26 @@ export function Autocomplete({
   };
 
   const filteredOptions = React.useMemo(() => {
-    if (!options || !Array.isArray(options)) return [];
-    return options.filter(option =>
-      option && option.label && option.value &&
-      (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-       option.value.toLowerCase().includes(inputValue.toLowerCase()))
-    );
+    console.log('Computing filteredOptions:', { options, inputValue });
+    
+    if (!options || !Array.isArray(options)) {
+      console.log('Options invalid, returning empty array');
+      return [];
+    }
+    
+    const filtered = options.filter(option => {
+      if (!option || !option.label || !option.value) {
+        console.log('Invalid option filtered out:', option);
+        return false;
+      }
+      return (
+        option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+        option.value.toLowerCase().includes(inputValue.toLowerCase())
+      );
+    });
+    
+    console.log('Filtered options result:', filtered);
+    return filtered;
   }, [options, inputValue]);
 
   return (
