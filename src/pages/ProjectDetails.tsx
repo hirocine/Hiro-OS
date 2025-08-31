@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Calendar, User, Building, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
+import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
@@ -234,7 +235,15 @@ export default function ProjectDetails() {
           <ProjectTimeline 
             currentStep={project.step}
             stepHistory={project.stepHistory}
+            onStepClick={handleUpdateStep}
+            isProjectActive={project.status === 'active'}
           />
+          {project.status === 'active' && (
+            <ProjectNextStepButton 
+              project={project}
+              onStepUpdate={handleUpdateStep}
+            />
+          )}
         </CardContent>
       </Card>
 

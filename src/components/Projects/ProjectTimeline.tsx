@@ -7,9 +7,11 @@ interface ProjectTimelineProps {
   currentStep: ProjectStep;
   stepHistory: Array<{ step: ProjectStep; timestamp: string; notes?: string }>;
   className?: string;
+  onStepClick?: (step: ProjectStep) => void;
+  isProjectActive?: boolean;
 }
 
-export function ProjectTimeline({ currentStep, stepHistory, className }: ProjectTimelineProps) {
+export function ProjectTimeline({ currentStep, stepHistory, className, onStepClick, isProjectActive = false }: ProjectTimelineProps) {
   const getCurrentStepIndex = () => stepOrder.indexOf(currentStep);
   const currentStepIndex = getCurrentStepIndex();
 
@@ -22,6 +24,18 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
   const getStepDate = (step: ProjectStep) => {
     const historyItem = stepHistory.find(h => h.step === step);
     return historyItem ? new Date(historyItem.timestamp).toLocaleDateString('pt-BR') : null;
+  };
+
+  const isStepClickable = (stepIndex: number) => {
+    if (!isProjectActive || !onStepClick) return false;
+    // Only allow clicking on the immediate next step
+    return stepIndex === currentStepIndex + 1;
+  };
+
+  const handleStepClick = (step: ProjectStep, stepIndex: number) => {
+    if (isStepClickable(stepIndex)) {
+      onStepClick(step);
+    }
   };
 
   return (
@@ -42,6 +56,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
           const status = getStepStatus(index);
           const Icon = stepIcons[step];
           const stepDate = getStepDate(step);
+          const clickable = isStepClickable(index);
 
           return (
             <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in">
@@ -52,9 +67,12 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                   {
                     "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg scale-105": status === 'completed',
                     "bg-warning border-warning text-warning-foreground shadow-elegant animate-pulse": status === 'current',
-                    "bg-muted border-border text-muted-foreground hover:bg-muted/80": status === 'pending'
+                    "bg-muted border-border text-muted-foreground hover:bg-muted/80": status === 'pending' && !clickable,
+                    "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:scale-110 ring-2 ring-primary/20": status === 'pending' && clickable
                   }
                 )}
+                onClick={() => handleStepClick(step, index)}
+                title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
               >
                 <Icon className={cn(
                   "transition-all duration-300",
@@ -69,11 +87,17 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                     "text-sm font-medium transition-colors duration-300",
                     {
                       "text-foreground": status === 'completed' || status === 'current',
-                      "text-muted-foreground": status === 'pending'
+                      "text-muted-foreground": status === 'pending' && !clickable,
+                      "text-primary font-semibold": status === 'pending' && clickable
                     }
                   )}
                 >
                   {stepLabels[step]}
+                  {clickable && (
+                    <div className="text-xs text-primary/70 mt-1 animate-pulse">
+                      Clique para avançar
+                    </div>
+                  )}
                 </div>
 
                 {/* Step Date */}
@@ -94,6 +118,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
           const status = getStepStatus(index);
           const Icon = stepIcons[step];
           const stepDate = getStepDate(step);
+          const clickable = isStepClickable(index);
 
           return (
             <div key={step} className="relative">
@@ -105,9 +130,12 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                     {
                       "bg-step-verified border-step-verified text-step-verified-foreground": status === 'completed',
                       "bg-warning border-warning text-warning-foreground": status === 'current',
-                      "bg-muted border-border text-muted-foreground": status === 'pending'
+                      "bg-muted border-border text-muted-foreground": status === 'pending' && !clickable,
+                      "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg ring-2 ring-primary/20": status === 'pending' && clickable
                     }
                   )}
+                  onClick={() => handleStepClick(step, index)}
+                  title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
                   <Icon className="w-4 h-4" />
                 </div>
@@ -119,11 +147,17 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                       "font-medium transition-colors duration-300",
                       {
                         "text-foreground": status === 'completed' || status === 'current',
-                        "text-muted-foreground": status === 'pending'
+                        "text-muted-foreground": status === 'pending' && !clickable,
+                        "text-primary font-semibold": status === 'pending' && clickable
                       }
                     )}
                   >
                     {stepLabels[step]}
+                    {clickable && (
+                      <div className="text-xs text-primary/70 mt-1">
+                        Toque para avançar
+                      </div>
+                    )}
                   </div>
                   {stepDate && (
                     <div className="text-sm text-muted-foreground">
