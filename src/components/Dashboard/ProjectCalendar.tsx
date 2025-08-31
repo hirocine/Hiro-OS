@@ -59,7 +59,7 @@ export const ProjectCalendar: React.FC = () => {
 
   // Process projects into bars with improved logic
   const projectBars = useMemo(() => {
-    if (!projects.length) return { bars: [], maxTracks: 0 };
+    if (!projects || !projects.length) return { bars: [], maxTracks: 0 };
 
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
@@ -145,7 +145,7 @@ export const ProjectCalendar: React.FC = () => {
     return { bars, maxTracks };
   }, [projects, currentMonth, calendarStructure.weeks]);
 
-  if (loading) {
+  if (loading || !projects) {
     return (
       <Card className="bg-gradient-card shadow-elegant">
         <CardHeader>
