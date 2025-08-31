@@ -113,12 +113,11 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
                 type="datetime-local"
                 value={formData.withdrawalTime}
                 onChange={(e) => setFormData(prev => ({ ...prev, withdrawalTime: e.target.value }))}
-                className="pl-20"
+                className="pl-10 text-left"
                 max={new Date().toISOString().slice(0, 16)}
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center gap-0.5">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
           </div>
