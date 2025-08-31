@@ -78,343 +78,434 @@ export default function Projects() {
       console.error('Error creating project:', error);
       toast({
         title: "Erro ao criar projeto",
-        description: "Ocorreu um erro ao criar o projeto. Tente novamente.",
-        variant: "destructive"
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowNewProjectDialog(false);
+    }
+  };
+
+  const handleEditProject = async (projectData: Partial<Project>) => {
+    if (!editingProject) return;
+    
+    try {
+      await updateProject(editingProject.id, projectData);
+      toast({
+        title: "Projeto atualizado",
+        description: "As informações foram salvas com sucesso.",
+      });
+    } catch (error) {
+      console.error('Error updating project:', error);
+      toast({
+        title: "Erro ao atualizar projeto",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowEditDialog(false);
+      setEditingProject(null);
+    }
+  };
+
+  const handleUpdateStep = async (step: ProjectStep, notes?: string) => {
+    if (!stepProject) return;
+
+    try {
+      await updateProjectStep(stepProject.id, step, notes);
+      toast({
+        title: "Etapa atualizada",
+        description: `Projeto movido para: ${getStepLabel(step)}`,
+      });
+    } catch (error) {
+      console.error('Error updating step:', error);
+      toast({
+        title: "Erro ao atualizar etapa",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowStepDialog(false);
+      setStepProject(null);
+    }
+  };
+
+  const handleCompleteProject = async (projectId: string) => {
+    try {
+      await completeProject(projectId);
+      toast({
+        title: "Projeto finalizado",
+        description: "O projeto foi marcado como finalizado.",
+      });
+    } catch (error) {
+      console.error('Error completing project:', error);
+      toast({
+        title: "Erro ao finalizar projeto",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleEditProject = (project: Project) => {
-    console.log('Editing project:', project.id); // Debug log
-    setEditingProject(project);
-    setShowEditDialog(true);
-  };
-
-  const handleUpdateProject = (projectId: string, updates: Partial<Project>) => {
-    updateProject(projectId, updates);
-    toast({
-      title: "Projeto atualizado",
-      description: "As alterações foram salvas com sucesso.",
-    });
-  };
-
-  const handleCompleteProject = (projectId: string) => {
-    completeProject(projectId);
-    toast({
-      title: "Projeto finalizado",
-      description: "O projeto foi marcado como finalizado.",
-    });
-  };
-
-  const handleArchiveProject = (projectId: string) => {
-    archiveProject(projectId);
-    toast({
-      title: "Projeto arquivado",
-      description: "O projeto foi arquivado com sucesso.",
-    });
-  };
-
-  const handleStepUpdate = (project: Project) => {
-    setStepProject(project);
-    setShowStepDialog(true);
-  };
-
-  const handleQuickStepUpdate = (projectId: string, newStep: ProjectStep, notes?: string) => {
-    updateProjectStep(projectId, newStep, notes);
-  };
-
-  const handleUpdateStep = (projectId: string, newStep: ProjectStep, notes?: string) => {
-    updateProjectStep(projectId, newStep, notes);
-    toast({
-      title: "Status atualizado",
-      description: `O projeto foi atualizado para "${newStep}".`,
-    });
-  };
-
-  const statsCards = [
-    {
-      title: 'Projetos Ativos',
-      value: stats.active,
-      icon: Clock,
-      description: 'Em andamento'
-    },
-    {
-      title: 'Pendente Separação',
-      value: stats.byStep.pending_separation,
-      icon: ClipboardList,
-      description: 'Aguardando separação'
-    },
-    {
-      title: 'Em Uso',
-      value: stats.byStep.in_use,
-      icon: Play,
-      description: 'Equipamentos em campo'
+  const handleArchiveProject = async (projectId: string) => {
+    try {
+      await archiveProject(projectId);
+      toast({
+        title: "Projeto arquivado",
+        description: "O projeto foi arquivado.",
+      });
+    } catch (error) {
+      console.error('Error archiving project:', error);
+      toast({
+        title: "Erro ao arquivar projeto",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     }
-  ];
+  };
 
+  const getStepLabel = (step: ProjectStep): string => {
+    switch (step) {
+      case 'pending_separation': return 'Pendente Separação';
+      case 'separated': return 'Separado';
+      case 'in_use': return 'Em uso';
+      case 'pending_verification': return 'Pendente Verificação';
+      case 'verified': return 'Verificado';
+      default: return step;
+    }
+  };
+
+  // Loading state with skeletons
   if (loading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="space-y-4">
-          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
-          <div className="h-4 w-96 bg-muted rounded animate-pulse" />
+      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
+          <p className="text-muted-foreground">
+            Gerencie retiradas e devoluções de equipamentos por projeto
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <StatsCardSkeleton key={i} />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+        </div>
+
+        <FiltersSkeleton />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ProjectCardSkeleton key={i} />
           ))}
-        </div>
-        <div className="space-y-4">
-          <FiltersSkeleton />
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <ProjectCardSkeleton key={i} />
-            ))}
-          </div>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Erro ao carregar projetos</h1>
-          <p className="text-muted-foreground">{error}</p>
-          <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
         </div>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="text-destructive">Erro ao carregar projetos</CardTitle>
+            <CardDescription>
+              {error}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Tentar novamente
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Projetos</h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
           <p className="text-muted-foreground">
-            Gerencie os projetos e retiradas de equipamentos
+            Gerencie retiradas e devoluções de equipamentos por projeto
           </p>
         </div>
         
         <Button 
           onClick={() => setShowNewProjectDialog(true)}
-          size="lg"
-          className="bg-gradient-primary hover:opacity-90 shadow-elegant"
+          className="shadow-elegant"
         >
-          <Plus className="mr-2 h-5 w-5" />
+          <Plus className="mr-2 h-4 w-4" />
           Nova Retirada
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {statsCards.map((stat) => (
-          <Card key={stat.title} className="hover:shadow-elegant transition-all duration-300">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-sm font-medium">
-                  {stat.title}
-                </CardDescription>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-2xl font-bold">{stat.value}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="text-sm font-medium">Projetos Ativos</span>
+              <FolderOpen className="h-4 w-4 text-muted-foreground" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+            <p className="text-xs text-muted-foreground">
+              projetos em andamento
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="text-sm font-medium">Pendente Separação</span>
+              <Clock className="h-4 w-4 text-warning" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-warning">{stats.byStep.pending_separation}</div>
+            <p className="text-xs text-muted-foreground">
+              aguardando separação
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="text-sm font-medium">Em Uso</span>
+              <Play className="h-4 w-4 text-success" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-success">{stats.byStep.in_use}</div>
+            <p className="text-xs text-muted-foreground">
+              equipamentos em campo
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
       <ProjectFilters filters={filters} onFiltersChange={setFilters} />
 
-      {/* Projects Sections */}
-      <div className="space-y-6">
-        {/* Check if any projects exist */}
-        {allFilteredProjects.length === 0 ? (
-          <Card className="p-8 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <FolderOpen className="h-12 w-12 text-muted-foreground" />
-              <div>
-                <h3 className="text-lg font-medium">Nenhum projeto encontrado</h3>
-                <p className="text-muted-foreground">
-                  {Object.values(filters).some(v => v) 
-                    ? 'Tente ajustar os filtros ou criar um novo projeto.'
-                    : 'Comece criando seu primeiro projeto de retirada de equipamentos.'
-                  }
-                </p>
+      {/* Projects Grid */}
+      <div className="space-y-8">
+        {/* Upcoming Projects */}
+        {upcomingProjects.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Próximos Projetos</h2>
+              <span className="text-sm text-muted-foreground">({upcomingProjects.length})</span>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {upcomingProjects.map((project) => (
+                <ProjectSummaryCard
+                  key={project.id}
+                  project={project}
+                  onEdit={(proj) => {
+                    setEditingProject(proj);
+                    setShowEditDialog(true);
+                  }}
+                  onComplete={handleCompleteProject}
+                  onArchive={handleArchiveProject}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Overdue Projects */}
+        {overdueProjects.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-destructive" />
+              <h2 className="text-xl font-semibold">Pendente Devolução</h2>
+              <span className="text-sm text-muted-foreground">({overdueProjects.length})</span>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {overdueProjects.map((project) => (
+                <ProjectSummaryCard
+                  key={project.id}
+                  project={project}
+                  onEdit={(proj) => {
+                    setEditingProject(proj);
+                    setShowEditDialog(true);
+                  }}
+                  onComplete={handleCompleteProject}
+                  onArchive={handleArchiveProject}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Show/Hide Completed Projects */}
+        {completedProjects.length > 0 && (
+          <div className="space-y-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="p-0 h-auto font-semibold hover:bg-transparent"
+            >
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-success" />
+                <h2 className="text-xl font-semibold">Finalizados</h2>
+                <span className="text-sm text-muted-foreground">({completedProjects.length})</span>
+                {showCompleted ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
               </div>
+            </Button>
+            
+            {showCompleted && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {completedProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Show/Hide Archived Projects */}
+        {archivedProjects.length > 0 && (
+          <div className="space-y-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowArchived(!showArchived)}
+              className="p-0 h-auto font-semibold hover:bg-transparent"
+            >
+              <div className="flex items-center gap-2">
+                <Archive className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-xl font-semibold">Arquivados</h2>
+                <span className="text-sm text-muted-foreground">({archivedProjects.length})</span>
+                {showArchived ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </div>
+            </Button>
+            
+            {showArchived && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {archivedProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* No projects found */}
+        {allFilteredProjects.length === 0 && (
+          <Card className="shadow-card">
+            <CardContent className="text-center py-12">
+              <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum projeto encontrado</h3>
+              <p className="text-muted-foreground mb-4">
+                Comece criando seu primeiro projeto de retirada de equipamentos
+              </p>
               <Button onClick={() => setShowNewProjectDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Novo Projeto
+                Criar Projeto
               </Button>
-            </div>
+            </CardContent>
           </Card>
-        ) : (
-          <>
-            {/* Próximos Projetos */}
-            {upcomingProjects.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Próximos Projetos ({upcomingProjects.length})</h2>
-                </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                   {upcomingProjects.map((project) => (
-                      <ProjectSummaryCard
-                        key={project.id}
-                        project={project}
-                        onEdit={handleEditProject}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                   ))}
-                 </div>
-              </div>
-            )}
-
-            {/* Separator */}
-            {upcomingProjects.length > 0 && overdueProjects.length > 0 && (
-              <Separator className="my-6" />
-            )}
-
-            {/* Pendente Devolução */}
-            {overdueProjects.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Archive className="h-5 w-5 text-destructive" />
-                  <h2 className="text-xl font-semibold text-destructive">Pendente Devolução ({overdueProjects.length})</h2>
-                </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {overdueProjects.map((project) => (
-                      <ProjectSummaryCard
-                        key={project.id}
-                        project={project}
-                        onEdit={handleEditProject}
-                        onComplete={handleCompleteProject}
-                        onArchive={handleArchiveProject}
-                      />
-                    ))}
-                 </div>
-              </div>
-            )}
-
-            {/* Separator */}
-            {(upcomingProjects.length > 0 || overdueProjects.length > 0) && (completedProjects.length > 0 || archivedProjects.length > 0) && (
-              <Separator className="my-6" />
-            )}
-
-            {/* Finalizados */}
-            {completedProjects.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <h2 className="text-xl font-semibold">Finalizados ({completedProjects.length})</h2>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCompleted(!showCompleted)}
-                  >
-                    {showCompleted ? (
-                      <>
-                        <ChevronUp className="mr-2 h-4 w-4" />
-                        Ocultar
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="mr-2 h-4 w-4" />
-                        Exibir
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {showCompleted && (
-                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {completedProjects.map((project) => (
-                        <ProjectSummaryCard
-                          key={project.id}
-                          project={project}
-                          onEdit={handleEditProject}
-                          onComplete={handleCompleteProject}
-                          onArchive={handleArchiveProject}
-                        />
-                      ))}
-                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Arquivados */}
-            {archivedProjects.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Archive className="h-5 w-5 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold">Arquivados ({archivedProjects.length})</h2>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowArchived(!showArchived)}
-                  >
-                    {showArchived ? (
-                      <>
-                        <ChevronUp className="mr-2 h-4 w-4" />
-                        Ocultar
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="mr-2 h-4 w-4" />
-                        Exibir
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {showArchived && (
-                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                     {archivedProjects.map((project) => (
-                       <ProjectSummaryCard
-                         key={project.id}
-                         project={project}
-                         onEdit={handleEditProject}
-                         onComplete={handleCompleteProject}
-                         onArchive={handleArchiveProject}
-                       />
-                     ))}
-                   </div>
-                )}
-              </div>
-            )}
-          </>
         )}
       </div>
 
+      {/* Dialogs */}
       <NewWithdrawalDialog
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
         onSubmit={handleNewProject}
       />
 
-      <EditProjectDialog
-        project={editingProject}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSave={handleUpdateProject}
-      />
+      {editingProject && (
+        <EditProjectDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          project={editingProject}
+          onSave={async (projectId, updates) => {
+            try {
+              await updateProject(projectId, updates);
+              toast({
+                title: "Projeto atualizado",
+                description: "As informações foram salvas com sucesso.",
+              });
+              setShowEditDialog(false);
+              setEditingProject(null);
+            } catch (error) {
+              console.error('Error updating project:', error);
+              toast({
+                title: "Erro ao atualizar projeto",
+                description: "Tente novamente em alguns instantes.",
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
 
-      <StepUpdateDialog
-        project={stepProject}
-        open={showStepDialog}
-        onOpenChange={setShowStepDialog}
-        onUpdate={handleUpdateStep}
-      />
+      {stepProject && (
+        <StepUpdateDialog
+          open={showStepDialog}
+          onOpenChange={setShowStepDialog}
+          project={stepProject}
+          onUpdate={async (projectId, step, notes) => {
+            try {
+              await updateProjectStep(projectId, step, notes);
+              toast({
+                title: "Etapa atualizada",
+                description: `Projeto movido para: ${getStepLabel(step)}`,
+              });
+              setShowStepDialog(false);
+              setStepProject(null);
+            } catch (error) {
+              console.error('Error updating step:', error);
+              toast({
+                title: "Erro ao atualizar etapa",
+                description: "Tente novamente em alguns instantes.",
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
