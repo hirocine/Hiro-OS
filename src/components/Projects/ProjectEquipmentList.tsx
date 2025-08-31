@@ -8,11 +8,11 @@ import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProjectEquipmentListProps {
-  projectName: string;
+  projectId: string;
 }
 
-export function ProjectEquipmentList({ projectName }: ProjectEquipmentListProps) {
-  const { equipment, loading, error } = useProjectEquipment(projectName);
+export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
+  const { equipment, loading, error } = useProjectEquipment(projectId);
 
   if (loading) {
     return (

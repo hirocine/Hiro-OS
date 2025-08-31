@@ -69,27 +69,8 @@ export default function Projects() {
 
   const handleNewProject = async (projectData: any, selectedEquipment: Equipment[] = []) => {
     try {
-      // Create the project first
-      await addProject(projectData);
-      
-      // Create loans for each selected equipment
-      const loanPromises = selectedEquipment.map(equipment => 
-        addLoan({
-          equipmentId: equipment.id,
-          equipmentName: equipment.name,
-          borrowerName: projectData.responsibleName,
-          borrowerEmail: projectData.responsibleEmail || '',
-          borrowerPhone: '',
-          department: projectData.department || 'Produção',
-          project: projectData.name,
-          loanDate: projectData.startDate,
-          expectedReturnDate: projectData.expectedEndDate,
-          status: 'active',
-          notes: `Empréstimo automático para projeto: ${projectData.name}`
-        })
-      );
-      
-      await Promise.all(loanPromises);
+      // Create the project with equipment directly
+      await addProject(projectData, selectedEquipment);
       
       toast({
         title: "Projeto criado com sucesso",

@@ -347,7 +347,7 @@ export default function ProjectDetails() {
                   <p className="text-sm text-muted-foreground">
                     {project.equipmentCount} equipamentos vinculados a este projeto
                   </p>
-                  <ProjectEquipmentList projectName={project.name} />
+                  <ProjectEquipmentList projectId={project.id} />
                 </div>
               )}
             </CardContent>

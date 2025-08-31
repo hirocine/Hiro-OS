@@ -117,7 +117,7 @@ export function useProjects() {
     };
   }, [updatedProjects]);
 
-  const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>) => {
+  const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>, selectedEquipment?: any[]) => {
     console.log('🚀 Adding new project:', newProject);
     
     try {
@@ -142,7 +142,7 @@ export function useProjects() {
         responsible_email: newProject.responsibleEmail,
         department: newProject.department,
         status: newProject.status,
-        equipment_count: newProject.equipmentCount || 0,
+        equipment_count: selectedEquipment?.length || newProject.equipmentCount || 0,
         notes: newProject.notes,
         step: 'pending_separation' as const,
         step_history: JSON.stringify([
@@ -176,6 +176,47 @@ export function useProjects() {
 
       if (data) {
         console.log('✅ Project created successfully:', data);
+        
+        // Se há equipamentos selecionados, criar os empréstimos
+        if (selectedEquipment && selectedEquipment.length > 0) {
+          console.log('📦 Creating loans for selected equipment:', selectedEquipment.length);
+          
+          const loanPromises = selectedEquipment.map(equipment => {
+            return supabase
+              .from('loans')
+              .insert({
+                equipment_id: equipment.id,
+                equipment_name: equipment.name,
+                borrower_name: newProject.responsibleName,
+                borrower_email: newProject.responsibleEmail,
+                department: newProject.department,
+                project: data.name, // Usar o nome do projeto
+                loan_date: newProject.startDate,
+                expected_return_date: newProject.expectedEndDate,
+                status: 'active'
+              })
+              .select()
+              .single();
+          });
+
+          await Promise.all(loanPromises);
+          console.log('✅ All loans created successfully');
+          
+          // Aguardar um pouco para que os triggers atualizem o projeto
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // Re-buscar o projeto atualizado
+          const { data: updatedData } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('id', data.id)
+            .single();
+            
+          if (updatedData) {
+            console.log('📄 Project updated with loan info:', updatedData);
+            Object.assign(data, updatedData);
+          }
+        }
         
         const projectData = {
           ...data,

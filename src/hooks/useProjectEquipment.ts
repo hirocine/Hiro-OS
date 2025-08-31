@@ -13,7 +13,7 @@ interface ProjectEquipment extends Equipment {
   };
 }
 
-export function useProjectEquipment(projectName: string) {
+export function useProjectEquipment(projectId: string) {
   const [equipment, setEquipment] = useState<ProjectEquipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +22,20 @@ export function useProjectEquipment(projectName: string) {
     try {
       setLoading(true);
       
-      // Buscar empréstimos ativos/em atraso do projeto
+      // Primeiro, buscar o projeto para obter o nome
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) throw projectError;
+      
+      // Buscar empréstimos ativos/em atraso do projeto (por nome ou ID)
       const { data: loans, error: loansError } = await supabase
         .from('loans')
         .select('*')
-        .eq('project', projectName)
+        .or(`project.eq.${project.name},project.eq.${projectId}`)
         .in('status', ['active', 'overdue']);
 
       if (loansError) throw loansError;
@@ -93,10 +102,10 @@ export function useProjectEquipment(projectName: string) {
   };
 
   useEffect(() => {
-    if (projectName) {
+    if (projectId) {
       fetchProjectEquipment();
     }
-  }, [projectName]);
+  }, [projectId]);
 
   return { equipment, loading, error, refetch: fetchProjectEquipment };
 }
