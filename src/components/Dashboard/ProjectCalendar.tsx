@@ -276,7 +276,7 @@ export function ProjectCalendar() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
-                          className="absolute pointer-events-auto cursor-pointer rounded-md px-2 py-1 transition-all hover:scale-105 hover:shadow-md flex items-center justify-center text-white font-medium text-xs truncate border border-white/20"
+                          className="absolute pointer-events-auto cursor-pointer rounded-lg px-2 py-1 transition-all hover:scale-105 hover:shadow-md flex items-center justify-center text-white font-medium text-xs truncate border border-white/20"
                           style={{
                             backgroundColor: bar.color,
                             left: `${((bar.gridColumnStart - 1) / 7) * 100}%`,
