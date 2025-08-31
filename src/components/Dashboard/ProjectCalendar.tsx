@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isToday, parseISO, differenceInDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Calendar, Clock, AlertTriangle, Package, Eye, EyeOff, Users, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,7 @@ interface ProjectBar {
 
 export const ProjectCalendar: React.FC = () => {
   const { projects, loading } = useProjects();
+  const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hiddenSteps, setHiddenSteps] = useState<Set<ProjectStep>>(new Set());
   const [showOnlyUserProjects, setShowOnlyUserProjects] = useState(false);
@@ -57,6 +59,11 @@ export const ProjectCalendar: React.FC = () => {
       return newSet;
     });
   }, []);
+
+  // Handle project click navigation
+  const handleProjectClick = useCallback((projectId: string) => {
+    navigate(`/projects/${projectId}`);
+  }, [navigate]);
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -333,6 +340,7 @@ export const ProjectCalendar: React.FC = () => {
                           animationDelay: `${bar.track * 100}ms`,
                           padding: '8px 12px',
                         }}
+                        onClick={() => handleProjectClick(bar.project.id)}
                         aria-label={`Projeto ${bar.name} - ${stepLabels[bar.step]}`}
                         role="button"
                         tabIndex={0}
