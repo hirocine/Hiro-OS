@@ -38,6 +38,9 @@ export interface Project {
   withdrawalDate?: string;
   separationDate?: string;
   recordingType?: string;
+  withdrawalUserId?: string;
+  withdrawalUserName?: string;
+  withdrawalTime?: string;
 }
 
 export interface ProjectFilters {

@@ -66,7 +66,10 @@ export function useProjectDetails(projectId: string) {
           responsibleUserId: data.responsible_user_id,
           withdrawalDate: data.withdrawal_date,
           separationDate: data.separation_date,
-          recordingType: data.recording_type
+          recordingType: data.recording_type,
+          withdrawalUserId: data.withdrawal_user_id,
+          withdrawalUserName: data.withdrawal_user_name,
+          withdrawalTime: data.withdrawal_time
         };
 
         setProject(projectData);
@@ -118,7 +121,11 @@ export function useProjectDetails(projectId: string) {
     }
   };
 
-  const updateProjectStep = async (newStep: ProjectStep, notes?: string) => {
+  const updateProjectStep = async (newStep: ProjectStep, notes?: string, withdrawalData?: {
+    userId: string;
+    userName: string;
+    withdrawalTime: string;
+  }) => {
     if (!project) return;
 
     try {
@@ -138,6 +145,13 @@ export function useProjectDetails(projectId: string) {
         step_history: JSON.stringify(updatedStepHistory),
         updated_at: new Date().toISOString()
       };
+
+      // Add withdrawal data if provided (for in_use step)
+      if (withdrawalData && newStep === 'in_use') {
+        updates.withdrawal_user_id = withdrawalData.userId;
+        updates.withdrawal_user_name = withdrawalData.userName;
+        updates.withdrawal_time = withdrawalData.withdrawalTime;
+      }
 
       if (shouldComplete) {
         updates.status = 'completed';
@@ -162,6 +176,13 @@ export function useProjectDetails(projectId: string) {
           step: newStep,
           stepHistory: updatedStepHistory
         };
+
+        // Update withdrawal data if provided
+        if (withdrawalData && newStep === 'in_use') {
+          updated.withdrawalUserId = withdrawalData.userId;
+          updated.withdrawalUserName = withdrawalData.userName;
+          updated.withdrawalTime = withdrawalData.withdrawalTime;
+        }
         
         if (shouldComplete) {
           updated.status = 'completed';
