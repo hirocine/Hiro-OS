@@ -37,6 +37,7 @@ interface UnifiedEquipmentFiltersProps {
 export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment = [], stats }: UnifiedEquipmentFiltersProps) {
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search || '');
+  const [brandSearch, setBrandSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -327,19 +328,35 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
 
           <div className="space-y-2">
             <Label className="text-sm">Marca</Label>
-            <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Todas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as marcas</SelectItem>
-                {suggestions.brands.map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar marca..."
+                  value={brandSearch}
+                  onChange={(e) => setBrandSearch(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
+              <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as marcas</SelectItem>
+                  {suggestions.brands
+                    .filter((brand) => 
+                      brandSearch === '' || 
+                      brand.toLowerCase().includes(brandSearch.toLowerCase())
+                    )
+                    .map((brand) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
