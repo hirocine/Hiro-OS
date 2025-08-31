@@ -23,7 +23,7 @@ import { Equipment } from '@/types/equipment';
 interface NewWithdrawalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, selectedEquipment: Equipment[]) => void;
 }
 
 interface SelectedCamera {
@@ -506,6 +506,32 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
     const selectedUser = users.find(u => u.id === data.responsibleUserId);
     
+    // Convert selected equipment to flat array
+    const flattenSelectedEquipment = (): Equipment[] => {
+      const equipment: Equipment[] = [];
+      
+      // Add cameras and their accessories
+      data.selectedEquipment.cameras.forEach(({ camera, accessories }) => {
+        equipment.push(camera);
+        equipment.push(...accessories);
+      });
+      
+      // Add all other equipment types
+      equipment.push(...data.selectedEquipment.lenses);
+      equipment.push(...data.selectedEquipment.cameraAccessories);
+      equipment.push(...data.selectedEquipment.tripods);
+      equipment.push(...data.selectedEquipment.lights);
+      equipment.push(...data.selectedEquipment.lightModifiers);
+      equipment.push(...data.selectedEquipment.machinery);
+      equipment.push(...data.selectedEquipment.electrical);
+      equipment.push(...data.selectedEquipment.storage);
+      equipment.push(...data.selectedEquipment.computers);
+      
+      return equipment;
+    };
+
+    const selectedEquipment = flattenSelectedEquipment();
+    
     const projectData = {
       name: `${data.projectNumber} - ${data.company}: ${data.projectName}`, // Required field for database
       projectNumber: data.projectNumber,
@@ -521,12 +547,18 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       separationDate: data.separationDate?.toISOString().split('T')[0] || '',
       recordingType: data.recordingType,
       status: 'active' as const,
-      equipmentCount: 0,
+      equipmentCount: selectedEquipment.length,
       loanIds: []
     };
 
+    console.log('🚀 Creating project with selected equipment:', {
+      projectData: projectData.name,
+      equipmentCount: selectedEquipment.length,
+      equipment: selectedEquipment.map(e => e.name)
+    });
+
     try {
-      await onSubmit(projectData);
+      await onSubmit(projectData, selectedEquipment);
       
       // Reset form
       setCurrentStep(1);
