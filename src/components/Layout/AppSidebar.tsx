@@ -52,14 +52,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-border">
-        <div className="flex items-center justify-center gap-3 px-3 py-3">
+        <div className="flex items-center px-3 py-3">
           <img 
             src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
             alt="HIRO Logo" 
             className="w-auto h-8 flex-shrink-0"
           />
           {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-foreground">
+            <span className="text-lg font-semibold text-foreground ml-3">
               Inventário
             </span>
           )}
