@@ -45,15 +45,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       bgColor: 'bg-success/10',
     },
     {
-      title: 'Em Uso',
-      value: stats.inUse,
-      icon: TrendingUp,
-      description: `${Math.round((stats.inUse / stats.total) * 100)}% do total`,
-      trend: stats.inUse > 0 ? 'Ativo' : 'Nenhum',
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
-    },
-    {
       title: 'Em Manutenção',
       value: stats.maintenance,
       icon: Wrench,
@@ -70,8 +61,8 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {[...Array(3)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="pb-2">
               <div className="h-4 bg-muted rounded w-3/4"></div>
@@ -89,7 +80,7 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
   return (
     <div className="space-y-4 mb-6">
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statsCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
