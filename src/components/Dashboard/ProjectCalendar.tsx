@@ -321,7 +321,7 @@ export const ProjectCalendar: React.FC = () => {
                           hover:shadow-lg hover:z-30 hover:brightness-110 hover:saturate-105
                           flex items-center gap-2 overflow-hidden
                           ${bar.color}
-                          ${bar.isOverdue ? 'ring-2 ring-destructive/50' : ''}
+                          ${bar.isOverdue ? 'opacity-90' : ''}
                           animate-slide-up
                         `}
                         style={{
