@@ -213,7 +213,7 @@ export default function ProjectSeparation() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     {mainItems.map((mainItem) => {
                       const accessories = getAccessoriesForItem(mainItem.id);
                       const mainItemChecked = checkedItems[mainItem.id];
