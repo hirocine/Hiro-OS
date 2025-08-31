@@ -350,7 +350,9 @@ export type Database = {
           updated_at: string
           withdrawal_date: string | null
           withdrawal_notes: string | null
+          withdrawal_time: string | null
           withdrawal_user_id: string | null
+          withdrawal_user_name: string | null
         }
         Insert: {
           actual_end_date?: string | null
@@ -380,7 +382,9 @@ export type Database = {
           updated_at?: string
           withdrawal_date?: string | null
           withdrawal_notes?: string | null
+          withdrawal_time?: string | null
           withdrawal_user_id?: string | null
+          withdrawal_user_name?: string | null
         }
         Update: {
           actual_end_date?: string | null
@@ -410,7 +414,9 @@ export type Database = {
           updated_at?: string
           withdrawal_date?: string | null
           withdrawal_notes?: string | null
+          withdrawal_time?: string | null
           withdrawal_user_id?: string | null
+          withdrawal_user_name?: string | null
         }
         Relationships: []
       }
