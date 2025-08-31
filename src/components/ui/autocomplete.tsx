@@ -31,11 +31,8 @@ export function Autocomplete({
   allowCustomValue = true,
   onInputChange
 }: AutocompleteProps) {
-  const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
-  const [isFocused, setIsFocused] = React.useState(false);
   const debouncedInput = useDebounce(inputValue, 150);
-  const timeoutRef = React.useRef<NodeJS.Timeout>();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -49,51 +46,16 @@ export function Autocomplete({
     if (allowCustomValue) {
       onValueChange(newValue);
     }
-
-    // Auto-open dropdown when typing if focused
-    if (isFocused && newValue.length >= 0) {
-      setOpen(true);
-    }
-  }, [allowCustomValue, onValueChange, onInputChange, isFocused]);
+  }, [allowCustomValue, onValueChange, onInputChange]);
 
   const handleSelect = React.useCallback((selectedValue: string) => {
     setInputValue(selectedValue);
     onValueChange(selectedValue);
-    setOpen(false);
-    // Clear focus after selection
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
   }, [onValueChange]);
-
-  const handleInputFocus = React.useCallback(() => {
-    setIsFocused(true);
-    setOpen(true);
-  }, []);
-
-  const handleInputBlur = React.useCallback(() => {
-    setIsFocused(false);
-    // Delay closing to allow for option selection
-    timeoutRef.current = setTimeout(() => {
-      setOpen(false);
-    }, 150);
-  }, []);
 
   const handleOptionMouseDown = React.useCallback((e: React.MouseEvent) => {
     // Prevent blur event when clicking on option
     e.preventDefault();
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  }, []);
-
-  // Cleanup timeout on unmount
-  React.useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
   }, []);
 
   const highlightMatch = (text: string, search: string) => {
@@ -149,7 +111,7 @@ export function Autocomplete({
   const hasResults = filteredOptions.length > 0;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <div className="relative">
           <Input
@@ -158,8 +120,6 @@ export function Autocomplete({
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder={placeholder}
             className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
           />
           <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
             {inputValue && hasResults ? (
