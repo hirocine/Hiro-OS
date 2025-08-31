@@ -48,7 +48,9 @@ export function Autocomplete({
   };
 
   const handleSelect = (selectedValue: string) => {
-    const option = options.find(opt => opt.value === selectedValue);
+    if (!selectedValue) return;
+    
+    const option = options?.find(opt => opt?.value === selectedValue);
     const finalValue = option ? option.value : selectedValue;
     
     setInputValue(finalValue);
@@ -56,10 +58,14 @@ export function Autocomplete({
     setOpen(false);
   };
 
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-    option.value.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  const filteredOptions = React.useMemo(() => {
+    if (!options || !Array.isArray(options)) return [];
+    return options.filter(option =>
+      option && option.label && option.value &&
+      (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+       option.value.toLowerCase().includes(inputValue.toLowerCase()))
+    );
+  }, [options, inputValue]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -88,25 +94,27 @@ export function Autocomplete({
             {allowCustomValue ? "Nenhuma sugestão encontrada." : "Nenhuma opção encontrada."}
           </CommandEmpty>
           <CommandGroup className="max-h-64 overflow-auto">
-            {filteredOptions.map((option) => (
-              <CommandItem
-                key={option.value}
-                value={option.value}
-                onSelect={() => handleSelect(option.value)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === option.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <div className="flex-1">
-                  <div>{option.label}</div>
-                  {option.description && (
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  )}
-                </div>
-              </CommandItem>
+            {filteredOptions && filteredOptions.length > 0 && filteredOptions.map((option) => (
+              option && option.value && option.label && (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={() => handleSelect(option.value)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="flex-1">
+                    <div>{option.label}</div>
+                    {option.description && (
+                      <div className="text-xs text-muted-foreground">{option.description}</div>
+                    )}
+                  </div>
+                </CommandItem>
+              )
             ))}
           </CommandGroup>
         </Command>
