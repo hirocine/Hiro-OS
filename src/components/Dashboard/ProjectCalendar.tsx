@@ -319,7 +319,7 @@ export const ProjectCalendar: React.FC = () => {
                           absolute pointer-events-auto cursor-pointer rounded-md
                           text-xs font-medium transition-all duration-300 
                           hover:shadow-lg hover:z-30 hover:brightness-110 hover:saturate-105
-                          flex items-center gap-2 overflow-hidden
+                          flex items-center gap-2 overflow-hidden mx-0.5
                           ${bar.color}
                           ${bar.isOverdue ? 'opacity-90' : ''}
                           animate-slide-up
