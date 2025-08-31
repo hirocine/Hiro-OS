@@ -78,12 +78,11 @@ export function AppSidebar() {
                 }
                 
                 return (
-                  <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild>
+                <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton asChild className="!px-3 py-2">
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
-                        className="px-3"
                       >
                         <item.icon className={cn(
                           "h-4 w-4 flex-shrink-0",
@@ -98,10 +97,9 @@ export function AppSidebar() {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="!px-3 py-2">
                     <NavLink
                       to="/admin"
-                      className="px-3"
                     >
                       <Shield className={cn(
                         "h-4 w-4 flex-shrink-0",
