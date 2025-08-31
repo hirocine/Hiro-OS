@@ -21,54 +21,52 @@ export function useProjectEquipment(projectId: string) {
   const fetchProjectEquipment = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Usar a função RPC segura para buscar equipamentos do projeto
+      // Usar a função segura do banco para buscar equipamentos do projeto
       const { data: projectEquipmentData, error } = await supabase
         .rpc('get_project_equipment', { _project_id: projectId });
 
-      if (error) {
-        console.error('Error fetching project equipment:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (!projectEquipmentData || projectEquipmentData.length === 0) {
         setEquipment([]);
         return;
       }
 
-      // Transformar os dados para o formato esperado
-      const projectEquipment: ProjectEquipment[] = projectEquipmentData.map(data => ({
-        id: data.equipment_id,
-        name: data.equipment_name,
-        brand: data.equipment_brand,
-        category: data.equipment_category as EquipmentCategory,
-        subcategory: data.equipment_subcategory,
-        customCategory: data.equipment_custom_category,
-        status: data.equipment_status as Equipment['status'],
-        itemType: data.equipment_item_type as Equipment['itemType'],
-        parentId: data.equipment_parent_id,
+      // Transformar dados para o formato esperado
+      const projectEquipment: ProjectEquipment[] = projectEquipmentData.map(item => ({
+        id: item.equipment_id,
+        name: item.equipment_name,
+        brand: item.equipment_brand,
+        category: item.equipment_category as EquipmentCategory,
+        subcategory: item.equipment_subcategory,
+        customCategory: item.equipment_custom_category,
+        status: item.equipment_status as Equipment['status'],
+        itemType: item.equipment_item_type as Equipment['itemType'],
+        parentId: item.equipment_parent_id,
         hasAccessories: false,
         isExpanded: false,
-        serialNumber: data.equipment_serial_number,
-        purchaseDate: data.equipment_purchase_date,
-        lastMaintenance: data.equipment_last_maintenance,
-        description: data.equipment_description,
-        image: data.equipment_image,
-        value: data.equipment_value,
-        patrimonyNumber: data.equipment_patrimony_number,
-        depreciatedValue: data.equipment_depreciated_value,
-        receiveDate: data.equipment_receive_date,
-        store: data.equipment_store,
-        invoice: data.equipment_invoice,
-        currentLoanId: data.equipment_current_loan_id,
-        currentBorrower: data.equipment_current_borrower,
-        lastLoanDate: data.equipment_last_loan_date,
+        serialNumber: item.equipment_serial_number,
+        purchaseDate: item.equipment_purchase_date,
+        lastMaintenance: item.equipment_last_maintenance,
+        description: item.equipment_description,
+        image: item.equipment_image,
+        value: item.equipment_value,
+        patrimonyNumber: item.equipment_patrimony_number,
+        depreciatedValue: item.equipment_depreciated_value,
+        receiveDate: item.equipment_receive_date,
+        store: item.equipment_store,
+        invoice: item.equipment_invoice,
+        currentLoanId: item.equipment_current_loan_id,
+        currentBorrower: item.equipment_current_borrower,
+        lastLoanDate: item.equipment_last_loan_date,
         loanInfo: {
-          loanId: data.loan_id,
-          borrowerName: data.loan_borrower_name,
-          loanDate: data.loan_date,
-          expectedReturnDate: data.loan_expected_return_date,
-          status: data.loan_status as Loan['status']
+          loanId: item.loan_id,
+          borrowerName: item.loan_borrower_name,
+          loanDate: item.loan_date,
+          expectedReturnDate: item.loan_expected_return_date,
+          status: item.loan_status as Loan['status']
         }
       }));
 
