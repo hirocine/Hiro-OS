@@ -48,6 +48,8 @@ All colors MUST be HSL.
     --step-pending-foreground: 0 0% 98%;
     --step-separated: 217 91% 60%;
     --step-separated-foreground: 0 0% 98%;
+    --step-pickup: 25 95% 53%;
+    --step-pickup-foreground: 0 0% 98%;
     --step-in-use: 142 76% 36%;
     --step-in-use-foreground: 210 40% 98%;
     --step-verification: 45 93% 47%;

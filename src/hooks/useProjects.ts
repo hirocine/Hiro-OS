@@ -81,6 +81,7 @@ export function useProjects() {
     const byStep = {
       pending_separation: updatedProjects.filter(p => p.step === 'pending_separation').length,
       separated: updatedProjects.filter(p => p.step === 'separated').length,
+      ready_for_pickup: updatedProjects.filter(p => p.step === 'ready_for_pickup').length,
       in_use: updatedProjects.filter(p => p.step === 'in_use').length,
       pending_verification: updatedProjects.filter(p => p.step === 'pending_verification').length,
       verified: updatedProjects.filter(p => p.step === 'verified').length,

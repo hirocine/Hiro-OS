@@ -3,6 +3,7 @@ export type ProjectStatus = 'active' | 'completed' | 'archived';
 export type ProjectStep = 
   | 'pending_separation'   // Pendente Separação (Padrão)
   | 'separated'           // Separado
+  | 'ready_for_pickup'    // Retirar
   | 'in_use'              // Em uso
   | 'pending_verification' // Pendente Verificação de Retorno
   | 'verified';           // Verificado
@@ -55,6 +56,7 @@ export interface ProjectStats {
   byStep: {
     pending_separation: number;
     separated: number;
+    ready_for_pickup: number;
     in_use: number;
     pending_verification: number;
     verified: number;
