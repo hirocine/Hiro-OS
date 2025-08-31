@@ -22,80 +22,60 @@ export function useProjectEquipment(projectId: string) {
     try {
       setLoading(true);
       
-      // Primeiro, buscar o projeto para obter o nome
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .select('name')
-        .eq('id', projectId)
-        .single();
+      // Usar a função RPC segura para buscar equipamentos do projeto
+      const { data: projectEquipmentData, error } = await supabase
+        .rpc('get_project_equipment', { _project_id: projectId });
 
-      if (projectError) throw projectError;
-      
-      // Buscar empréstimos ativos/em atraso do projeto (por nome ou ID)
-      const { data: loans, error: loansError } = await supabase
-        .from('loans')
-        .select('*')
-        .or(`project.eq.${project.name},project.eq.${projectId}`)
-        .in('status', ['active', 'overdue']);
+      if (error) {
+        console.error('Error fetching project equipment:', error);
+        throw error;
+      }
 
-      if (loansError) throw loansError;
-
-      if (!loans || loans.length === 0) {
+      if (!projectEquipmentData || projectEquipmentData.length === 0) {
         setEquipment([]);
         return;
       }
 
-      // Buscar equipamentos correspondentes
-      const equipmentIds = loans.map(loan => loan.equipment_id);
-      const { data: equipmentData, error: equipmentError } = await supabase
-        .from('equipments')
-        .select('*')
-        .in('id', equipmentIds);
-
-      if (equipmentError) throw equipmentError;
-
-      // Combinar dados de equipamentos com informações do empréstimo
-      const projectEquipment: ProjectEquipment[] = (equipmentData || []).map(eq => {
-        const loan = loans.find(l => l.equipment_id === eq.id);
-        return {
-          id: eq.id,
-          name: eq.name,
-          brand: eq.brand,
-          category: eq.category as EquipmentCategory,
-          subcategory: eq.subcategory,
-          customCategory: eq.custom_category,
-          status: eq.status as Equipment['status'],
-          itemType: eq.item_type as Equipment['itemType'],
-          parentId: eq.parent_id,
-          hasAccessories: false,
-          serialNumber: eq.serial_number,
-          purchaseDate: eq.purchase_date,
-          lastMaintenance: eq.last_maintenance,
-          description: eq.description,
-          image: eq.image,
-          value: eq.value,
-          patrimonyNumber: eq.patrimony_number,
-          depreciatedValue: eq.depreciated_value,
-          receiveDate: eq.receive_date,
-          store: eq.store,
-          invoice: eq.invoice,
-          currentLoanId: eq.current_loan_id,
-          currentBorrower: eq.current_borrower,
-          lastLoanDate: eq.last_loan_date,
-          loanInfo: {
-            loanId: loan!.id,
-            borrowerName: loan!.borrower_name,
-            loanDate: loan!.loan_date,
-            expectedReturnDate: loan!.expected_return_date,
-            status: loan!.status as Loan['status']
-          }
-        };
-      });
+      // Transformar os dados para o formato esperado
+      const projectEquipment: ProjectEquipment[] = projectEquipmentData.map(data => ({
+        id: data.equipment_id,
+        name: data.equipment_name,
+        brand: data.equipment_brand,
+        category: data.equipment_category as EquipmentCategory,
+        subcategory: data.equipment_subcategory,
+        customCategory: data.equipment_custom_category,
+        status: data.equipment_status as Equipment['status'],
+        itemType: data.equipment_item_type as Equipment['itemType'],
+        parentId: data.equipment_parent_id,
+        hasAccessories: false,
+        isExpanded: false,
+        serialNumber: data.equipment_serial_number,
+        purchaseDate: data.equipment_purchase_date,
+        lastMaintenance: data.equipment_last_maintenance,
+        description: data.equipment_description,
+        image: data.equipment_image,
+        value: data.equipment_value,
+        patrimonyNumber: data.equipment_patrimony_number,
+        depreciatedValue: data.equipment_depreciated_value,
+        receiveDate: data.equipment_receive_date,
+        store: data.equipment_store,
+        invoice: data.equipment_invoice,
+        currentLoanId: data.equipment_current_loan_id,
+        currentBorrower: data.equipment_current_borrower,
+        lastLoanDate: data.equipment_last_loan_date,
+        loanInfo: {
+          loanId: data.loan_id,
+          borrowerName: data.loan_borrower_name,
+          loanDate: data.loan_date,
+          expectedReturnDate: data.loan_expected_return_date,
+          status: data.loan_status as Loan['status']
+        }
+      }));
 
       setEquipment(projectEquipment);
     } catch (err) {
       console.error('Error fetching project equipment:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao carregar equipamentos');
+      setError(err instanceof Error ? err.message : 'Erro ao carregar equipamentos do projeto');
     } finally {
       setLoading(false);
     }

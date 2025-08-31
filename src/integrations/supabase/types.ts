@@ -524,6 +524,39 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_project_equipment: {
+        Args: { _project_id: string }
+        Returns: {
+          equipment_brand: string
+          equipment_category: string
+          equipment_current_borrower: string
+          equipment_current_loan_id: string
+          equipment_custom_category: string
+          equipment_depreciated_value: number
+          equipment_description: string
+          equipment_id: string
+          equipment_image: string
+          equipment_invoice: string
+          equipment_item_type: string
+          equipment_last_loan_date: string
+          equipment_last_maintenance: string
+          equipment_name: string
+          equipment_parent_id: string
+          equipment_patrimony_number: string
+          equipment_purchase_date: string
+          equipment_receive_date: string
+          equipment_serial_number: string
+          equipment_status: string
+          equipment_store: string
+          equipment_subcategory: string
+          equipment_value: number
+          loan_borrower_name: string
+          loan_date: string
+          loan_expected_return_date: string
+          loan_id: string
+          loan_status: string
+        }[]
+      }
       get_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
