@@ -51,7 +51,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                   "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-500 ease-out",
                   {
                     "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg scale-105": status === 'completed',
-                    "bg-step-in-use border-step-in-use text-step-in-use-foreground shadow-elegant animate-pulse": status === 'current',
+                    "bg-warning border-warning text-warning-foreground shadow-elegant animate-pulse": status === 'current',
                     "bg-muted border-border text-muted-foreground hover:bg-muted/80": status === 'pending'
                   }
                 )}
@@ -104,7 +104,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className }: Project
                     "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300",
                     {
                       "bg-step-verified border-step-verified text-step-verified-foreground": status === 'completed',
-                      "bg-step-in-use border-step-in-use text-step-in-use-foreground": status === 'current',
+                      "bg-warning border-warning text-warning-foreground": status === 'current',
                       "bg-muted border-border text-muted-foreground": status === 'pending'
                     }
                   )}
