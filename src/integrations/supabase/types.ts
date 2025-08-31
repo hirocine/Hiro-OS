@@ -601,6 +601,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      manual_sync_equipment_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       mark_all_notifications_as_read: {
         Args: Record<PropertyKey, never>
         Returns: number
