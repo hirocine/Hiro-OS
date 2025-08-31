@@ -229,18 +229,18 @@ export default function ProjectSeparation() {
                               onCheckedChange={() => toggleMainItemWithAccessories(mainItem.id)}
                               className="flex-shrink-0"
                             />
-                            <div className="flex-1 min-w-0">
-                              <Label 
-                                htmlFor={mainItem.id} 
-                                className="font-medium cursor-pointer block truncate"
-                              >
+                            <div 
+                              className="flex-1 min-w-0 font-medium cursor-pointer" 
+                              onClick={() => toggleMainItemWithAccessories(mainItem.id)}
+                            >
+                              <span className="block truncate">
                                 {mainItem.name}
                                 {accessories.length > 0 && (
                                   <span className="text-sm text-muted-foreground ml-2">
                                     • {accessories.length} acessório{accessories.length > 1 ? 's' : ''}
                                   </span>
                                 )}
-                              </Label>
+                              </span>
                             </div>
                             {mainItemChecked && allAccessoriesCheckedForItem && (
                               <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -261,14 +261,14 @@ export default function ProjectSeparation() {
                                     onCheckedChange={() => toggleItem(accessory.id)}
                                     className="flex-shrink-0"
                                   />
-                                  <div className="flex-1 min-w-0">
-                                    <Label 
-                                      htmlFor={accessory.id} 
-                                      className="text-sm cursor-pointer block truncate"
-                                    >
-                                      {accessory.name}
-                                    </Label>
-                                  </div>
+                                   <div 
+                                     className="flex-1 min-w-0 text-sm cursor-pointer" 
+                                     onClick={() => toggleItem(accessory.id)}
+                                   >
+                                     <span className="block truncate">
+                                       {accessory.name}
+                                     </span>
+                                   </div>
                                   {checkedItems[accessory.id] && (
                                     <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                                   )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 interface EquipmentItem {
   id: string;
@@ -37,14 +37,16 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
 
   // Reset checklist when equipment changes
   useEffect(() => {
-    console.log('🔄 Resetting checklist state for', equipment.length, 'items');
+    const equipmentIds = equipment.map(item => item.id).sort().join(',');
+    console.log('🔄 Equipment effect triggered, current equipment IDs:', equipmentIds);
+    
     const initialState: ChecklistState = {};
     equipment.forEach(item => {
       initialState[item.id] = false;
     });
     console.log('📋 Initial checklist state:', initialState);
     setCheckedItems(initialState);
-  }, [equipment]);
+  }, [equipment.length, equipment.map(item => item.id).join(',')]);
 
   // Group equipment by category with hierarchy
   const categorizedEquipment = useMemo(() => {
@@ -121,45 +123,44 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
   };
 
   // Toggle item check
-  const toggleItem = (itemId: string) => {
-    console.log('🔄 Toggling item:', itemId, 'current state:', checkedItems[itemId]);
+  const toggleItem = useCallback((itemId: string) => {
+    console.log('🔄 Toggling item:', itemId);
     setCheckedItems(prev => {
-      const newState = {
+      const currentState = prev[itemId];
+      const newState = !currentState;
+      console.log('✅ Toggling', itemId, 'from', currentState, 'to', newState);
+      return {
         ...prev,
-        [itemId]: !prev[itemId]
+        [itemId]: newState
       };
-      console.log('✅ New checked state for', itemId, ':', newState[itemId]);
-      return newState;
     });
-  };
+  }, []);
 
   // Toggle main item and all its accessories
-  const toggleMainItemWithAccessories = (itemId: string) => {
-    const accessories = getAccessoriesForItem(itemId);
-    const newCheckedState = !checkedItems[itemId];
-    
-    console.log('🔄 Toggling main item with accessories:', {
-      itemId,
-      currentState: checkedItems[itemId],
-      newState: newCheckedState,
-      accessoriesCount: accessories.length,
-      accessories: accessories.map(acc => acc.id)
-    });
-    
+  const toggleMainItemWithAccessories = useCallback((itemId: string) => {
+    console.log('🔄 Toggling main item with accessories:', itemId);
     setCheckedItems(prev => {
+      const accessories = equipment.filter(item => 
+        item.itemType === 'accessory' && item.parentId === itemId
+      );
+      const currentState = prev[itemId];
+      const newState = !currentState;
+      
+      console.log('🔧 Main item', itemId, 'changing from', currentState, 'to', newState);
+      console.log('🔧 Accessories to update:', accessories.length);
+      
       const updated = { ...prev };
-      updated[itemId] = newCheckedState;
+      updated[itemId] = newState;
       
       // Update all accessories
       accessories.forEach(acc => {
-        updated[acc.id] = newCheckedState;
-        console.log('🔧 Setting accessory', acc.id, 'to:', newCheckedState);
+        updated[acc.id] = newState;
+        console.log('🔧 Setting accessory', acc.id, 'to:', newState);
       });
       
-      console.log('✅ Updated checklist state:', Object.keys(updated).filter(key => updated[key]));
       return updated;
     });
-  };
+  }, [equipment]);
 
   // Get checked count for statistics
   const checkedCount = Object.values(checkedItems).filter(Boolean).length;
