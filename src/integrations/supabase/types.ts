@@ -105,6 +105,7 @@ export type Database = {
           purchase_date: string | null
           receive_date: string | null
           serial_number: string | null
+          simplified_status: string | null
           status: string
           store: string | null
           subcategory: string | null
@@ -132,6 +133,7 @@ export type Database = {
           purchase_date?: string | null
           receive_date?: string | null
           serial_number?: string | null
+          simplified_status?: string | null
           status?: string
           store?: string | null
           subcategory?: string | null
@@ -159,6 +161,7 @@ export type Database = {
           purchase_date?: string | null
           receive_date?: string | null
           serial_number?: string | null
+          simplified_status?: string | null
           status?: string
           store?: string | null
           subcategory?: string | null
@@ -337,6 +340,8 @@ export type Database = {
           responsible_email: string | null
           responsible_name: string
           responsible_user_id: string | null
+          return_condition: string | null
+          return_notes: string | null
           separation_date: string | null
           start_date: string
           status: string
@@ -344,6 +349,8 @@ export type Database = {
           step_history: Json | null
           updated_at: string
           withdrawal_date: string | null
+          withdrawal_notes: string | null
+          withdrawal_user_id: string | null
         }
         Insert: {
           actual_end_date?: string | null
@@ -363,6 +370,8 @@ export type Database = {
           responsible_email?: string | null
           responsible_name: string
           responsible_user_id?: string | null
+          return_condition?: string | null
+          return_notes?: string | null
           separation_date?: string | null
           start_date: string
           status?: string
@@ -370,6 +379,8 @@ export type Database = {
           step_history?: Json | null
           updated_at?: string
           withdrawal_date?: string | null
+          withdrawal_notes?: string | null
+          withdrawal_user_id?: string | null
         }
         Update: {
           actual_end_date?: string | null
@@ -389,6 +400,8 @@ export type Database = {
           responsible_email?: string | null
           responsible_name?: string
           responsible_user_id?: string | null
+          return_condition?: string | null
+          return_notes?: string | null
           separation_date?: string | null
           start_date?: string
           status?: string
@@ -396,6 +409,8 @@ export type Database = {
           step_history?: Json | null
           updated_at?: string
           withdrawal_date?: string | null
+          withdrawal_notes?: string | null
+          withdrawal_user_id?: string | null
         }
         Relationships: []
       }
