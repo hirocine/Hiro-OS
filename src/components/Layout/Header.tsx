@@ -32,7 +32,6 @@ export function Header() {
     <header className="sticky top-0 z-40 h-16 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 shadow-card">
       <div className="flex h-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="h-8 w-8 rounded-md hover:bg-sidebar-accent text-sidebar-foreground" />
           <div className="hidden sm:block">
             <h2 className="text-lg font-semibold text-foreground">Inventário</h2>
             <p className="text-sm text-muted-foreground hidden md:block">
@@ -42,6 +41,7 @@ export function Header() {
           <div className="sm:hidden">
             <h2 className="text-base font-semibold text-foreground">Inventário</h2>
           </div>
+          <SidebarTrigger className="h-8 w-8 rounded-md hover:bg-sidebar-accent text-sidebar-foreground" />
         </div>
         
         <div className="flex items-center gap-2 md:gap-4">
