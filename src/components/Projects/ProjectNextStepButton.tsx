@@ -26,6 +26,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, className }: Proj
 
   const NextStepIcon = stepIcons[nextStep];
   const isCompleting = nextStep === 'verified';
+  const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
 
   const handleClick = () => {
     onStepUpdate(nextStep);
@@ -44,7 +45,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, className }: Proj
       )}
     >
       <NextStepIcon className="mr-2 h-4 w-4" />
-      {isCompleting ? 'Finalizar' : `${stepLabels[nextStep]}`}
+      {isCompleting ? 'Finalizar' : isSeparating ? 'Separar' : `${stepLabels[nextStep]}`}
       {!isCompleting && <ArrowRight className="ml-2 h-3 w-3" />}
       {isCompleting && <CheckCircle className="ml-2 h-3 w-3" />}
     </Button>
