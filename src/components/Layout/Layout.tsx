@@ -7,6 +7,7 @@ export function Layout() {
   return (
     <SidebarProvider 
       defaultOpen={true}
+      className="w-full"
     >
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />

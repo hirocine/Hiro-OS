@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
+import { LayoutDashboard, Package, BarChart3, FolderOpen, Shield, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -12,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -47,7 +48,7 @@ const navigation: NavigationItem[] = [
 
 export function AppSidebar() {
   const { isAdmin } = useUserRole();
-  const { state, isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
 
   return (
     <Sidebar 
@@ -56,20 +57,28 @@ export function AppSidebar() {
       variant="sidebar"
     >
       <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
-        <div className="flex items-center gap-3 px-4 py-4">
-          <img 
-            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-            alt="HIRO Logo" 
-            className={cn(
-              "transition-all duration-300 ease-in-out flex-shrink-0",
-              state === 'collapsed' ? "h-6 w-auto" : "h-8 w-auto"
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+              alt="HIRO Logo" 
+              className={cn(
+                "transition-all duration-300 ease-in-out flex-shrink-0",
+                state === 'collapsed' ? "h-6 w-auto" : "h-8 w-auto"
+              )}
+            />
+            {state !== 'collapsed' && (
+              <div>
+                <span className="text-lg font-semibold text-sidebar-foreground">
+                  Inventário
+                </span>
+                <p className="text-xs text-sidebar-foreground/70">
+                  Produtora Audiovisual
+                </p>
+              </div>
             )}
-          />
-          {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-sidebar-foreground transition-all duration-200">
-              Inventário
-            </span>
-          )}
+          </div>
+          <SidebarTrigger className="h-8 w-8 rounded-md hover:bg-sidebar-accent text-sidebar-foreground" />
         </div>
       </SidebarHeader>
       
@@ -83,7 +92,6 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {navigation.map((item) => {
-                // Hide admin-only items for non-admin users
                 if (item.adminOnly && !isAdmin) {
                   return null;
                 }
