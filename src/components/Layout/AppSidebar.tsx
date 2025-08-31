@@ -78,8 +78,8 @@ export function AppSidebar() {
                 }
                 
                 return (
-                  <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild>
+                  <SidebarMenuItem key={item.name} className="w-full flex justify-center">
+                    <SidebarMenuButton asChild className="w-full max-w-full">
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
@@ -101,8 +101,8 @@ export function AppSidebar() {
               })}
               
               {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                <SidebarMenuItem className="w-full flex justify-center">
+                  <SidebarMenuButton asChild className="w-full max-w-full">
                     <NavLink
                       to="/admin"
                       className={cn(
