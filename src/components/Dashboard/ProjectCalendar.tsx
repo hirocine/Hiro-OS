@@ -220,7 +220,7 @@ export function ProjectCalendar() {
       <div className="relative">
         {/* Grid container */}
         <div 
-          className="grid grid-cols-7 gap-1 rounded-lg overflow-hidden border border-border"
+          className="grid grid-cols-7 gap-1 rounded-lg overflow-hidden"
           style={{ 
             minHeight: `${Math.max(400, 60 + (projectBars.maxTracks * 35))}px` 
           }}
