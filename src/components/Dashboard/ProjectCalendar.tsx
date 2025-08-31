@@ -319,15 +319,15 @@ export const ProjectCalendar: React.FC = () => {
                           absolute pointer-events-auto cursor-pointer rounded-md
                           text-xs font-medium transition-all duration-300 
                           hover:shadow-lg hover:z-30 hover:brightness-110 hover:saturate-105
-                          flex items-center gap-2 overflow-hidden mx-0.5
+                          flex items-center gap-2 overflow-hidden
                           ${bar.color}
                           ${bar.isOverdue ? 'opacity-90' : ''}
                           animate-slide-up
                         `}
                         style={{
                           top: `${(bar.week * 96) + 40 + (bar.track * 34)}px`,
-                          left: `${(bar.startDay / 7) * 100}%`,
-                          width: `${(bar.span / 7) * 100}%`,
+                          left: `calc(${(bar.startDay / 7) * 100}% + 2px)`,
+                          width: `calc(${(bar.span / 7) * 100}% - 4px)`,
                           height: '28px',
                           zIndex: 10 + bar.track,
                           animationDelay: `${bar.track * 100}ms`,
