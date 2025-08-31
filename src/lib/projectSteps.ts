@@ -1,5 +1,5 @@
 import { ProjectStep, ProjectStatus } from '@/types/project';
-import { ClipboardList, Package, Truck, Play, Clock, CheckCircle } from 'lucide-react';
+import { ClipboardList, Package, Truck, Play, Clock, Building2, CheckCircle } from 'lucide-react';
 
 export const stepLabels: Record<ProjectStep, string> = {
   pending_separation: 'Pendente Separação',
@@ -7,6 +7,7 @@ export const stepLabels: Record<ProjectStep, string> = {
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
   pending_verification: 'Check Desmontagem',
+  office_receipt: 'Confirmar Recebimento no Escritório',
   verified: 'Verificado'
 };
 
@@ -16,6 +17,7 @@ export const stepColors: Record<ProjectStep, string> = {
   ready_for_pickup: 'step-pickup',
   in_use: 'step-in-use',
   pending_verification: 'step-verification',
+  office_receipt: 'step-office-receipt',
   verified: 'step-verified'
 };
 
@@ -44,6 +46,7 @@ export const getProjectClasses = (status: ProjectStatus, step: ProjectStep): str
     'step-pickup': 'bg-step-pickup text-step-pickup-foreground',
     'step-in-use': 'bg-step-in-use text-step-in-use-foreground',
     'step-verification': 'bg-step-verification text-step-verification-foreground',
+    'step-office-receipt': 'bg-step-office-receipt text-step-office-receipt-foreground',
     'step-verified': 'bg-step-verified text-step-verified-foreground',
     'status-active': 'bg-status-active text-status-active-foreground',
     'status-completed': 'bg-status-completed text-status-completed-foreground',
@@ -59,6 +62,7 @@ export const stepIcons: Record<ProjectStep, any> = {
   ready_for_pickup: Truck,
   in_use: Play,
   pending_verification: Clock,
+  office_receipt: Building2,
   verified: CheckCircle
 };
 
@@ -68,6 +72,7 @@ export const stepOrder: ProjectStep[] = [
   'ready_for_pickup',
   'in_use',
   'pending_verification',
+  'office_receipt',
   'verified'
 ];
 

@@ -12,6 +12,7 @@ export const stepLabels: Record<ProjectStep, string> = {
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
   pending_verification: 'Pendente Verificação',
+  office_receipt: 'Confirmar Recebimento no Escritório',
   verified: 'Verificado'
 };
 

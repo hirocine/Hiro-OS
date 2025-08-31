@@ -6,6 +6,7 @@ import { stepLabels, stepOrder, stepIcons } from '@/lib/projectSteps';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WithdrawalDialog, WithdrawalData } from './WithdrawalDialog';
+import { OfficeReceiptDialog, OfficeReceiptData } from './OfficeReceiptDialog';
 
 interface ProjectNextStepButtonProps {
   project: Project;
@@ -13,6 +14,10 @@ interface ProjectNextStepButtonProps {
     userId: string;
     userName: string;
     withdrawalTime: string;
+  }, officeReceiptData?: {
+    userId: string;
+    userName: string;
+    receiptTime: string;
   }) => void;
   onSeparationClick?: () => void;
   className?: string;
@@ -21,6 +26,7 @@ interface ProjectNextStepButtonProps {
 export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick, className }: ProjectNextStepButtonProps) {
   const navigate = useNavigate();
   const [withdrawalDialogOpen, setWithdrawalDialogOpen] = useState(false);
+  const [officeReceiptDialogOpen, setOfficeReceiptDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
   if (project.status !== 'active') {
@@ -40,13 +46,15 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
   const isWithdrawing = project.step === 'ready_for_pickup' && nextStep === 'in_use';
   const isVerifying = project.step === 'in_use' && nextStep === 'pending_verification';
+  const isOfficeReceipt = project.step === 'pending_verification' && nextStep === 'office_receipt';
 
   const handleClick = () => {
     console.log('🔄 Button clicked', { 
       currentStep: project.step, 
       nextStep, 
       isSeparating, 
-      isWithdrawing 
+      isWithdrawing,
+      isOfficeReceipt
     });
     
     if (isSeparating) {
@@ -56,6 +64,9 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       setWithdrawalDialogOpen(true);
     } else if (isVerifying) {
       navigate(`/projects/${project.id}/verification`);
+    } else if (isOfficeReceipt) {
+      console.log('🏢 Opening office receipt dialog');
+      setOfficeReceiptDialogOpen(true);
     } else {
       console.log('⏭️ Normal step update to:', nextStep);
       onStepUpdate(nextStep);
@@ -71,6 +82,20 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         withdrawalTime: withdrawalData.withdrawalTime
       });
       setWithdrawalDialogOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOfficeReceiptConfirm = async (officeReceiptData: OfficeReceiptData) => {
+    setLoading(true);
+    try {
+      await onStepUpdate(nextStep, undefined, undefined, {
+        userId: officeReceiptData.userId,
+        userName: officeReceiptData.userName,
+        receiptTime: officeReceiptData.receiptTime
+      });
+      setOfficeReceiptDialogOpen(false);
     } finally {
       setLoading(false);
     }
@@ -94,6 +119,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         {loading ? 'Processando...' : 
          isSeparating ? 'Separar' : 
          isWithdrawing ? 'Registrar Retirada' : 
+         isOfficeReceipt ? 'Confirmar Recebimento' :
          isCompleting ? 'Finalizar' : 
          `${stepLabels[nextStep]}`}
         {!isCompleting && !loading && <ArrowRight className="ml-2 h-3 w-3" />}
@@ -104,6 +130,13 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         open={withdrawalDialogOpen}
         onOpenChange={setWithdrawalDialogOpen}
         onConfirm={handleWithdrawalConfirm}
+        loading={loading}
+      />
+
+      <OfficeReceiptDialog
+        open={officeReceiptDialogOpen}
+        onOpenChange={setOfficeReceiptDialogOpen}
+        onConfirm={handleOfficeReceiptConfirm}
         loading={loading}
       />
     </>

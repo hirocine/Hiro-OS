@@ -84,6 +84,7 @@ export function useProjects() {
       ready_for_pickup: updatedProjects.filter(p => p.step === 'ready_for_pickup').length,
       in_use: updatedProjects.filter(p => p.step === 'in_use').length,
       pending_verification: updatedProjects.filter(p => p.step === 'pending_verification').length,
+      office_receipt: updatedProjects.filter(p => p.step === 'office_receipt').length,
       verified: updatedProjects.filter(p => p.step === 'verified').length,
     };
 

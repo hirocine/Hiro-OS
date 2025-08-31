@@ -54,6 +54,8 @@ All colors MUST be HSL.
     --step-in-use-foreground: 210 40% 98%;
     --step-verification: 45 93% 47%;
     --step-verification-foreground: 0 0% 98%;
+    --step-office-receipt: 271 91% 65%;
+    --step-office-receipt-foreground: 0 0% 98%;
     --step-verified: 126 100% 65%;
     --step-verified-foreground: 0 0% 15%;
 

@@ -5,7 +5,8 @@ export type ProjectStep =
   | 'separated'           // Separado
   | 'ready_for_pickup'    // Retirar
   | 'in_use'              // Gravação
-  | 'pending_verification' // Pendente Verificação de Retorno
+  | 'pending_verification' // Check Desmontagem
+  | 'office_receipt'      // Confirmar Recebimento no Escritório
   | 'verified';           // Verificado
 
 export interface StepChange {
@@ -62,6 +63,7 @@ export interface ProjectStats {
     ready_for_pickup: number;
     in_use: number;
     pending_verification: number;
+    office_receipt: number;
     verified: number;
   };
 }

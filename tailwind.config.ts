@@ -81,6 +81,10 @@ export default {
 					DEFAULT: 'hsl(var(--step-verification))',
 					foreground: 'hsl(var(--step-verification-foreground))'
 				},
+				'step-office-receipt': {
+					DEFAULT: 'hsl(var(--step-office-receipt))',
+					foreground: 'hsl(var(--step-office-receipt-foreground))'
+				},
 				'step-verified': {
 					DEFAULT: 'hsl(var(--step-verified))',
 					foreground: 'hsl(var(--step-verified-foreground))'
