@@ -92,7 +92,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'active':
-        return 'Em uso';
+        return 'Gravação';
       case 'overdue':
         return 'Em atraso';
       default:
