@@ -267,7 +267,7 @@ export const ProjectCalendar: React.FC = () => {
           {/* Calendar Weeks */}
           <div 
             className="relative"
-            style={{ minHeight: `${320 + (projectBars.maxTracks * 32)}px` }}
+            style={{ minHeight: `${360 + (projectBars.maxTracks * 34)}px` }}
           >
             {calendarStructure.weeks.map((week, weekIndex) => (
               <div key={weekIndex} className="grid grid-cols-7 border-b border-border/30 last:border-b-0">
@@ -279,7 +279,7 @@ export const ProjectCalendar: React.FC = () => {
                     <div
                       key={format(day, 'yyyy-MM-dd')}
                       className={`
-                        relative h-20 p-2 border-r border-border/30 last:border-r-0
+                        relative h-24 p-2 border-r border-border/30 last:border-r-0
                         transition-all duration-200 hover:bg-muted/20
                         ${isCurrentMonth 
                           ? isCurrentDay 
@@ -290,7 +290,7 @@ export const ProjectCalendar: React.FC = () => {
                       `}
                     >
                       <div className={`
-                        text-sm font-medium
+                        text-sm font-medium mb-1
                         ${isCurrentMonth 
                           ? isCurrentDay 
                             ? 'text-primary font-bold' 
@@ -316,19 +316,19 @@ export const ProjectCalendar: React.FC = () => {
                     <TooltipTrigger asChild>
                       <div
                         className={`
-                          absolute pointer-events-auto cursor-pointer rounded-lg px-3 py-2
+                          absolute pointer-events-auto cursor-pointer rounded-lg px-3 py-1.5
                           text-xs font-medium transition-all duration-200 
-                          hover:scale-105 hover:shadow-lg hover:z-30 hover:brightness-110
-                          flex items-center gap-2 border-l-2 border-l-primary/30
+                          hover:shadow-md hover:z-30 hover:brightness-110 hover:saturate-110
+                          flex items-center gap-2 border-l-3 border-l-primary/40
                           ${bar.color} ${bar.isOverdue ? 'ring-1 ring-destructive/50' : ''}
                           ${bar.extendsBeforeMonth || bar.extendsAfterMonth ? 'bg-gradient-to-r' : ''}
                           animate-slide-up
                         `}
                         style={{
-                          top: `${(bar.week * 80) + 26 + (bar.track * 32)}px`,
+                          top: `${(bar.week * 96) + 40 + (bar.track * 34)}px`,
                           left: `${(bar.startDay / 7) * 100}%`,
                           width: `${(bar.span / 7) * 100}%`,
-                          height: '26px',
+                          height: '28px',
                           zIndex: 10 + bar.track,
                           animationDelay: `${bar.track * 100}ms`,
                         }}
