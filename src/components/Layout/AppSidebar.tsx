@@ -83,6 +83,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
+                        className="px-3"
                       >
                         <item.icon className={cn(
                           "h-4 w-4 flex-shrink-0",
@@ -100,6 +101,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to="/admin"
+                      className="px-3"
                     >
                       <Shield className={cn(
                         "h-4 w-4 flex-shrink-0",
