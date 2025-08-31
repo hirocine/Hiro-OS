@@ -6,7 +6,7 @@ export const stepLabels: Record<ProjectStep, string> = {
   separated: 'Separado',
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
-  pending_verification: 'Pendente Verificação',
+  pending_verification: 'Check Desmontagem',
   verified: 'Verificado'
 };
 

@@ -39,6 +39,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isCompleting = nextStep === 'verified';
   const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
   const isWithdrawing = project.step === 'ready_for_pickup' && nextStep === 'in_use';
+  const isVerifying = project.step === 'in_use' && nextStep === 'pending_verification';
 
   const handleClick = () => {
     console.log('🔄 Button clicked', { 
@@ -53,6 +54,8 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     } else if (isWithdrawing) {
       console.log('🔓 Opening withdrawal dialog');
       setWithdrawalDialogOpen(true);
+    } else if (isVerifying) {
+      navigate(`/projects/${project.id}/verification`);
     } else {
       console.log('⏭️ Normal step update to:', nextStep);
       onStepUpdate(nextStep);

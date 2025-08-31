@@ -10,6 +10,7 @@ import Equipment from "./pages/Equipment";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import ProjectSeparation from "./pages/ProjectSeparation";
+import ProjectVerification from "./pages/ProjectVerification";
 import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetails />} />
             <Route path="projects/:id/separation" element={<ProjectSeparation />} />
+            <Route path="projects/:id/verification" element={<ProjectVerification />} />
             <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
             
