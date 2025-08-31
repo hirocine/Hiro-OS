@@ -511,6 +511,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_project_loans_direct: {
+        Args: { _project_id: string; _project_name: string }
+        Returns: undefined
+      }
       create_notification_for_all_users: {
         Args: {
           _description?: string
