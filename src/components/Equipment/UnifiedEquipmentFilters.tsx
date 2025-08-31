@@ -114,12 +114,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
       label: 'Manutenção',
       filters: { status: 'maintenance' },
       count: quickFilterStats?.maintenance
-    },
-    {
-      key: 'onLoan',
-      label: 'Emprestado', 
-      filters: { loanStatus: 'on_loan' },
-      count: quickFilterStats?.onLoan
     }
   ];
 
