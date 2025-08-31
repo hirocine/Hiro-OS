@@ -100,56 +100,85 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
     }
   };
 
+  // Group equipment by category and sort categories alphabetically
+  const equipmentByCategory = equipment.reduce((acc, item) => {
+    const category = item.category || 'Sem categoria';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, typeof equipment>);
+
+  const sortedCategories = Object.keys(equipmentByCategory).sort();
+
   return (
-    <div className="space-y-3">
-      {equipment.map((item) => (
-        <Card key={item.id} className="transition-all hover:shadow-md">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-medium truncate">{item.name}</h4>
-                  <Badge variant={getStatusVariant(item.loanInfo.status)}>
-                    {getStatusLabel(item.loanInfo.status)}
-                  </Badge>
-                  {item.loanInfo.status === 'overdue' && (
-                    <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
-                  )}
-                 </div>
-                 
-                 <div className="text-sm text-muted-foreground space-y-1">
-                   <div className="flex items-center gap-1">
-                     <Package className="h-3 w-3" />
-                     <span>{item.brand} • {item.category}</span>
-                     {item.patrimonyNumber && (
-                       <span>• Patrimônio: {item.patrimonyNumber}</span>
-                     )}
-                   </div>
-                 </div>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleViewDetails(item.id)}
-                >
-                  Ver Detalhes
-                </Button>
-                
-                {item.loanInfo.status === 'overdue' && (
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => handleSendReminder(item)}
-                  >
-                    Cobrar Retorno
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      {sortedCategories.map((category) => (
+        <div key={category} className="space-y-3">
+          <div className="flex items-center gap-2 py-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+              {category}
+            </h3>
+            <div className="flex-1 border-b border-border" />
+            <Badge variant="secondary" className="text-xs">
+              {equipmentByCategory[category].length}
+            </Badge>
+          </div>
+          
+          <div className="space-y-3">
+            {equipmentByCategory[category].map((item) => (
+              <Card key={item.id} className="transition-all hover:shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-medium truncate">{item.name}</h4>
+                        <Badge variant={getStatusVariant(item.loanInfo.status)}>
+                          {getStatusLabel(item.loanInfo.status)}
+                        </Badge>
+                        {item.loanInfo.status === 'overdue' && (
+                          <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                        )}
+                       </div>
+                       
+                       <div className="text-sm text-muted-foreground space-y-1">
+                         <div className="flex items-center gap-1">
+                           <Package className="h-3 w-3" />
+                           <span>{item.brand}</span>
+                           {item.patrimonyNumber && (
+                             <span>• Patrimônio: {item.patrimonyNumber}</span>
+                           )}
+                         </div>
+                       </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetails(item.id)}
+                      >
+                        Ver Detalhes
+                      </Button>
+                      
+                      {item.loanInfo.status === 'overdue' && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleSendReminder(item)}
+                        >
+                          Cobrar Retorno
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       ))}
 
       <EquipmentDetailsDialog
