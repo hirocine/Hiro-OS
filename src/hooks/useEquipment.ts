@@ -143,6 +143,9 @@ export function useEquipment() {
       // Apply item type filter
       if (filters.itemType && item.itemType !== filters.itemType) return false;
       
+      // Apply brand filter
+      if (filters.brand && item.brand.toLowerCase() !== filters.brand.toLowerCase()) return false;
+      
       // Apply search filter (in addition to other filters, not exclusively)
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
