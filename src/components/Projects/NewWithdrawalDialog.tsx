@@ -73,6 +73,7 @@ const RECORDING_TYPES = [
 export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdrawalDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [expandedCameras, setExpandedCameras] = useState<Set<string>>(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
     company: '',
@@ -495,6 +496,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return; // Prevent double submission
+    
     if (!isStepValid()) {
       toast({
         title: "Erro",
@@ -503,6 +506,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       });
       return;
     }
+
+    setIsSubmitting(true);
 
     const selectedUser = users.find(u => u.id === data.responsibleUserId);
     
@@ -599,6 +604,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         description: "Erro ao criar nova retirada. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -2757,9 +2764,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     <Download className="h-4 w-4 mr-2" />
                     Baixar PDF
                   </Button>
-                  <Button onClick={handleSubmit} disabled={!isStepValid()}>
+                  <Button onClick={handleSubmit} disabled={!isStepValid() || isSubmitting}>
                     <Check className="h-4 w-4 mr-2" />
-                    Criar Retirada
+                    {isSubmitting ? 'Criando...' : 'Criar Retirada'}
                   </Button>
                 </>
               ) : (
