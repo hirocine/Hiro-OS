@@ -12,7 +12,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -53,23 +52,20 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-border">
-        <div className="flex items-center justify-between px-3 py-3">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-              alt="HIRO Logo" 
-              className={cn(
-                "w-auto flex-shrink-0 transition-all duration-200",
-                state === 'collapsed' ? "h-6" : "h-8"
-              )}
-            />
-            {state !== 'collapsed' && (
-              <span className="text-lg font-semibold text-foreground">
-                Inventário
-              </span>
+        <div className="flex items-center gap-3 px-3 py-3">
+          <img 
+            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+            alt="HIRO Logo" 
+            className={cn(
+              "w-auto flex-shrink-0 transition-all duration-200",
+              state === 'collapsed' ? "h-6" : "h-8"
             )}
-          </div>
-          <SidebarTrigger className="ml-auto" />
+          />
+          {state !== 'collapsed' && (
+            <span className="text-lg font-semibold text-foreground">
+              Inventário
+            </span>
+          )}
         </div>
       </SidebarHeader>
       
