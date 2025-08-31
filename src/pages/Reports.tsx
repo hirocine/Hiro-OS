@@ -2,14 +2,12 @@ import { BarChart3, TrendingUp, Package, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useProjects } from '@/hooks/useProjects';
-import { useLoans } from '@/hooks/useLoans';
 
 export default function Reports() {
   const { stats: equipmentStats, loading: equipmentLoading } = useEquipment();
   const { stats: projectStats, loading: projectLoading } = useProjects();
-  const { stats: loanStats, loading: loanLoading } = useLoans();
 
-  const loading = equipmentLoading || projectLoading || loanLoading;
+  const loading = equipmentLoading || projectLoading;
 
   if (loading) {
     return (
@@ -126,15 +124,6 @@ export default function Reports() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {loanStats.overdue > 0 && (
-              <div className="border-l-4 border-destructive bg-destructive/10 p-4 rounded-r-lg">
-                <h4 className="font-medium">Empréstimos em Atraso</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {loanStats.overdue} empréstimos estão em atraso
-                </p>
-              </div>
-            )}
-            
             <div className="border-l-4 border-warning bg-warning/10 p-4 rounded-r-lg">
               <h4 className="font-medium">Equipamentos em Manutenção</h4>
               <p className="text-sm text-muted-foreground mt-1">
@@ -146,6 +135,13 @@ export default function Reports() {
               <h4 className="font-medium">Equipamentos Disponíveis</h4>
               <p className="text-sm text-muted-foreground mt-1">
                 {equipmentStats.available} equipamentos disponíveis para uso
+              </p>
+            </div>
+            
+            <div className="border-l-4 border-primary bg-primary/10 p-4 rounded-r-lg">
+              <h4 className="font-medium">Equipamentos em Projetos</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                {equipmentStats.total - equipmentStats.available - equipmentStats.maintenance} equipamentos em uso em projetos
               </p>
             </div>
           </div>

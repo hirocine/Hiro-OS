@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useProjects } from '@/hooks/useProjects';
-import { useLoans } from '@/hooks/useLoans';
 import { toast } from 'sonner';
 import { Download, Upload, Save, RotateCcw } from 'lucide-react';
 
@@ -15,7 +14,6 @@ export function SettingsActions() {
   const [isImporting, setIsImporting] = useState(false);
   const { equipment } = useEquipment();
   const { projects } = useProjects();
-  const { loans } = useLoans();
 
   const handleExportData = async () => {
     setIsExporting(true);
@@ -37,14 +35,6 @@ export function SettingsActions() {
           expected_end_date: proj.expectedEndDate,
           status: proj.status,
           step: proj.step,
-        })),
-        loans: loans.map(loan => ({
-          equipment_name: loan.equipmentName,
-          borrower_name: loan.borrowerName,
-          loan_date: loan.loanDate,
-          expected_return_date: loan.expectedReturnDate,
-          status: loan.status,
-          project: loan.project,
         }))
       };
 
@@ -81,7 +71,7 @@ export function SettingsActions() {
       const data = JSON.parse(text);
       
       // Validate data structure
-      if (!data.equipment || !data.projects || !data.loans) {
+      if (!data.equipment || !data.projects) {
         throw new Error('Formato de arquivo inválido');
       }
 
@@ -93,7 +83,7 @@ export function SettingsActions() {
       // For now, just show success message
       setTimeout(() => {
         toast.success('Dados importados com sucesso', {
-          description: `${data.equipment.length} equipamentos, ${data.projects.length} projetos e ${data.loans.length} empréstimos foram importados.`
+          description: `${data.equipment.length} equipamentos e ${data.projects.length} projetos foram importados.`
         });
       }, 2000);
 

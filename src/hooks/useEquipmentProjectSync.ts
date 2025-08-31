@@ -1,60 +1,23 @@
 import { useEffect } from 'react';
 import { useEquipment } from './useEquipment';
-import { useLoans } from './useLoans';
 
 /**
- * Hook para sincronizar status de equipamentos com empréstimos
- * Atualiza automaticamente o status dos equipamentos baseado nos empréstimos ativos
+ * Hook simplificado para equipamentos e projetos
+ * A sincronização agora é feita automaticamente pelo banco de dados via triggers
  */
 export function useEquipmentProjectSync() {
-  const { allEquipment, updateEquipment } = useEquipment();
-  const { allLoans } = useLoans();
+  const { allEquipment } = useEquipment();
 
   useEffect(() => {
-    // Mapear quais equipamentos estão em empréstimos ativos
-    const activeLoansMap = new Map();
-    
-    allLoans
-      .filter(loan => loan.status === 'active' || loan.status === 'overdue')
-      .forEach(loan => {
-        activeLoansMap.set(loan.equipmentId, {
-          loanId: loan.id,
-          borrower: loan.borrowerName,
-          project: loan.project,
-          loanDate: loan.loanDate
-        });
-      });
-
-    // Atualizar equipamentos conforme necessário
-    allEquipment.forEach(equipment => {
-      const activeLoan = activeLoansMap.get(equipment.id);
-      
-      if (activeLoan) {
-        // Equipamento deveria estar como "em uso" mas não está
-        if (!equipment.currentLoanId || equipment.currentBorrower !== activeLoan.borrower) {
-          updateEquipment(equipment.id, {
-            currentLoanId: activeLoan.loanId,
-            currentBorrower: activeLoan.borrower,
-            lastLoanDate: activeLoan.loanDate
-          });
-        }
-      } else {
-        // Equipamento não tem empréstimo ativo mas está marcado como emprestado
-        if (equipment.currentLoanId) {
-          updateEquipment(equipment.id, {
-            currentLoanId: undefined,
-            currentBorrower: undefined
-          });
-        }
-      }
-    });
-  }, [allEquipment, allLoans, updateEquipment]);
+    // A sincronização agora é automática via triggers no banco de dados
+    // Este hook é mantido apenas para compatibilidade, mas não precisa fazer nada
+    console.log('Equipment project sync: Automatic via database triggers');
+  }, [allEquipment]);
 
   return {
-    // Função para forçar sincronização
+    // Função para forçar sincronização (não necessária mais, mas mantida para compatibilidade)
     syncEquipmentStatus: () => {
-      // A sincronização já acontece automaticamente via useEffect
-      console.log('Equipment status sync triggered');
+      console.log('Equipment status sync: Handled automatically by database');
     }
   };
 }

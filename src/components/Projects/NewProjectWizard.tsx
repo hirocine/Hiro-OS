@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
-import { useLoans } from '@/hooks/useLoans';
 import { Equipment, EquipmentCategory } from '@/types/equipment';
 import { toast } from 'sonner';
 
@@ -58,7 +57,6 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   });
 
   const { allEquipment } = useEquipment();
-  const { addLoan } = useLoans();
 
   const updateField = (field: keyof ProjectData, value: string) => {
     setProjectData(prev => ({ ...prev, [field]: value }));
@@ -86,6 +84,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
   const getAvailableEquipment = (category: EquipmentCategory, subcategory?: string) => {
     return allEquipment.filter(eq => {
+      // Use simplified status - only show equipment that is actually available
       if (eq.status !== 'available') return false;
       if (eq.category !== category) return false;
       

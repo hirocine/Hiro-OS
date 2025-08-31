@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
-import { useLoans } from './useLoans';
 import { naturalSort } from '@/lib/utils';
 
 export function useEquipment() {
@@ -11,7 +10,6 @@ export function useEquipment() {
     sortOrder: 'asc'
   });
   const [loading, setLoading] = useState(true);
-  const { getActiveLoanByEquipment } = useLoans();
 
   // Fetch equipment from Supabase
   useEffect(() => {
@@ -39,7 +37,9 @@ export function useEquipment() {
         category: (item.category || 'accessories') as any,
         subcategory: item.subcategory || undefined,
         customCategory: item.custom_category || undefined,
-        status: (item.status || 'available') as any,
+        status: item.simplified_status === 'available' ? 'available' : 
+               item.simplified_status === 'in_project' ? 'on_loan' : 
+               item.simplified_status || 'available',
         itemType: (item.item_type || 'main') as any,
         parentId: item.parent_id || undefined,
         hasAccessories: false,
@@ -69,22 +69,17 @@ export function useEquipment() {
   };
 
   const enrichedEquipment = useMemo(() => {
-    const enriched = equipment.map(item => {
-      const activeLoan = getActiveLoanByEquipment(item.id);
-      // FIX: If there's an active loan, equipment is NOT available
-      const newStatus = activeLoan ? 'maintenance' as const : item.status;
-      const enrichedItem = {
+    return equipment.map(item => {
+      // Use the simplified_status from the database which is automatically updated by triggers
+      return {
         ...item,
-        currentLoanId: activeLoan?.id,
-        currentBorrower: activeLoan?.borrowerName,
-        lastLoanDate: activeLoan?.loanDate,
-        // Auto-update status based on loan
-        status: newStatus
+        // Keep existing loan info for display purposes
+        currentLoanId: item.currentLoanId,
+        currentBorrower: item.currentBorrower,
+        lastLoanDate: item.lastLoanDate,
       };
-      return enrichedItem;
     });
-    return enriched;
-  }, [equipment, getActiveLoanByEquipment]);
+  }, [equipment]);
 
   const sortEquipment = <T extends Equipment>(items: T[], sortBy: SortableField, sortOrder: SortOrder): T[] => {
     return [...items].sort((a, b) => {

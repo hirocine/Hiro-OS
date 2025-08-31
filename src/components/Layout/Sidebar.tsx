@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, ArrowRightLeft, FolderOpen, Shield } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -25,12 +25,6 @@ const navigation: NavigationItem[] = [
     name: 'Projetos',
     href: '/projects',
     icon: FolderOpen,
-  },
-  {
-    name: 'Empréstimos',
-    href: '/loans',
-    icon: ArrowRightLeft,
-    adminOnly: true,
   },
   {
     name: 'Relatórios',

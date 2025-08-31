@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
-import { useLoans } from '@/hooks/useLoans';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
 import { ProjectFilters } from '@/components/Projects/ProjectFilters';
@@ -30,7 +29,6 @@ export default function Projects() {
     completeProject, 
     archiveProject 
   } = useProjects();
-  const { addLoan } = useLoans();
   
   // Sincronização automática entre equipamentos e projetos
   useEquipmentProjectSync();
