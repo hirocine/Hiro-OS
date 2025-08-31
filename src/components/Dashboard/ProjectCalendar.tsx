@@ -220,7 +220,7 @@ export function ProjectCalendar() {
       <div className="relative">
         {/* Grid container */}
         <div 
-          className="grid grid-cols-7 gap-1 rounded-lg overflow-hidden"
+          className="grid grid-cols-7 gap-2 rounded-lg overflow-hidden bg-card shadow-sm"
           style={{ 
             minHeight: `${Math.max(400, 60 + (projectBars.maxTracks * 35))}px` 
           }}
@@ -229,11 +229,7 @@ export function ProjectCalendar() {
           {weekDays.map((day, index) => (
             <div 
               key={day} 
-              className={`p-3 text-center text-sm font-medium text-muted-foreground border-b border-border bg-muted/50 ${
-                index === 0 ? 'rounded-tl-lg' : ''
-              } ${
-                index === 6 ? 'rounded-tr-lg' : ''
-              }`}
+              className="p-3 text-center text-sm font-medium text-muted-foreground bg-muted/50 border-b border-border"
             >
               {day}
             </div>
@@ -244,23 +240,18 @@ export function ProjectCalendar() {
             const dayKey = format(day, 'yyyy-MM-dd');
             const isCurrentMonth = isSameMonth(day, currentMonth);
             const isCurrentDay = isToday(day);
-            const isLastWeek = dayIndex >= calendarDays.length - 7;
 
             return (
               <div 
                 key={dayKey}
-                className={`min-h-[60px] p-2 border-r border-b border-border rounded-md ${
-                  isCurrentMonth ? 'bg-card' : 'bg-muted/20'
-                } ${isCurrentDay ? 'ring-2 ring-primary' : ''} ${
-                  isLastWeek && dayIndex === calendarDays.length - 7 ? 'rounded-bl-lg' : ''
-                } ${
-                  isLastWeek && dayIndex === calendarDays.length - 1 ? 'rounded-br-lg' : ''
-                }`}
+                className={`min-h-[60px] p-3 rounded-lg transition-colors ${
+                  isCurrentMonth ? 'bg-background hover:bg-muted/20' : 'bg-muted/10'
+                } ${isCurrentDay ? 'ring-2 ring-primary bg-primary/5' : ''}`}
               >
                 {/* Day number */}
-                <div className={`text-sm mb-1 ${
+                <div className={`text-sm font-medium ${
                   isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
-                } ${isCurrentDay ? 'font-bold text-primary' : ''}`}>
+                } ${isCurrentDay ? 'text-primary font-bold' : ''}`}>
                   {format(day, 'd')}
                 </div>
               </div>
@@ -277,7 +268,7 @@ export function ProjectCalendar() {
               className="relative" 
               style={{ 
                 height: `${60 + (projectBars.maxTracks * 32)}px`,
-                top: `${weekIndex * 61}px` // 60px + 1px border
+                top: `${weekIndex * 68}px` // Adjusted for gap-2 spacing
               }}
             >
               {/* Week bars */}
