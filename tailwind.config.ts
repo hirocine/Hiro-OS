@@ -69,6 +69,10 @@ export default {
 					DEFAULT: 'hsl(var(--step-separated))',
 					foreground: 'hsl(var(--step-separated-foreground))'
 				},
+				'step-pickup': {
+					DEFAULT: 'hsl(var(--step-pickup))',
+					foreground: 'hsl(var(--step-pickup-foreground))'
+				},
 				'step-in-use': {
 					DEFAULT: 'hsl(var(--step-in-use))',
 					foreground: 'hsl(var(--step-in-use-foreground))'

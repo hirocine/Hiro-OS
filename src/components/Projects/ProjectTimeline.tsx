@@ -40,35 +40,37 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="flex items-center justify-between relative">
-        {/* Progress Line */}
-        <div className="absolute top-6 left-6 right-6 h-0.5 bg-border z-0">
-          <div 
-            className="h-full bg-gradient-to-r from-step-separated to-step-verified transition-all duration-500 ease-out"
-            style={{ 
-              width: `${(currentStepIndex / (stepOrder.length - 1)) * 100}%` 
-            }}
-          />
-        </div>
+      {/* Desktop Timeline */}
+      <div className="hidden md:block">
+        <div className="flex items-start justify-center gap-4 lg:gap-8 relative max-w-5xl mx-auto">
+          {/* Progress Line */}
+          <div className="absolute top-6 left-8 right-8 h-1 bg-muted rounded-full z-0">
+            <div 
+              className="h-full bg-gradient-to-r from-step-separated via-step-pickup to-step-verified rounded-full transition-all duration-700 ease-out shadow-sm"
+              style={{ 
+                width: `${(currentStepIndex / (stepOrder.length - 1)) * 100}%` 
+              }}
+            />
+          </div>
 
-        {/* Timeline Steps */}
-        {stepOrder.map((step, index) => {
+          {/* Timeline Steps */}
+          {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
           const Icon = stepIcons[step];
           const stepDate = getStepDate(step);
           const clickable = isStepClickable(index);
 
           return (
-            <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in">
+            <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in min-w-0 flex-1">
               {/* Step Circle */}
               <div
                 className={cn(
-                  "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-500 ease-out",
+                  "w-14 h-14 rounded-full border-3 flex items-center justify-center transition-all duration-500 ease-out relative",
                   {
-                    "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg scale-105": status === 'completed',
-                    "bg-warning border-warning text-warning-foreground shadow-elegant animate-pulse": status === 'current',
-                    "bg-muted border-border text-muted-foreground hover:bg-muted/80": status === 'pending' && !clickable,
-                    "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:scale-110 ring-2 ring-primary/20": status === 'pending' && clickable
+                    "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20 scale-105": status === 'completed',
+                    "bg-warning border-warning text-warning-foreground shadow-elegant shadow-warning/30 animate-pulse scale-110": status === 'current',
+                    "bg-card border-border text-muted-foreground hover:bg-muted/50 hover:border-muted": status === 'pending' && !clickable,
+                    "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:shadow-primary/20 hover:scale-110 ring-2 ring-primary/20 hover:ring-primary/40": status === 'pending' && clickable
                   }
                 )}
                 onClick={() => handleStepClick(step, index)}
@@ -76,17 +78,22 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
               >
                 <Icon className={cn(
                   "transition-all duration-300",
-                  status === 'current' ? "w-6 h-6" : "w-5 h-5"
+                  status === 'current' ? "w-7 h-7" : "w-6 h-6"
                 )} />
+                
+                {/* Glow effect for current step */}
+                {status === 'current' && (
+                  <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping" />
+                )}
               </div>
 
               {/* Step Label */}
-              <div className="mt-3 text-center">
+              <div className="mt-4 text-center px-2 min-w-0">
                 <div
                   className={cn(
-                    "text-sm font-medium transition-colors duration-300",
+                    "text-sm font-medium transition-colors duration-300 break-words leading-tight",
                     {
-                      "text-foreground": status === 'completed' || status === 'current',
+                      "text-foreground font-semibold": status === 'completed' || status === 'current',
                       "text-muted-foreground": status === 'pending' && !clickable,
                       "text-primary font-semibold": status === 'pending' && clickable
                     }
@@ -94,7 +101,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 >
                   {stepLabels[step]}
                   {clickable && (
-                    <div className="text-xs text-primary/70 mt-1 animate-pulse">
+                    <div className="text-xs text-primary/70 mt-1 animate-pulse font-normal">
                       Clique para avançar
                     </div>
                   )}
@@ -102,7 +109,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
 
                 {/* Step Date */}
                 {stepDate && (
-                  <div className="text-xs text-muted-foreground mt-1 animate-fade-in">
+                  <div className="text-xs text-muted-foreground mt-2 animate-fade-in font-normal">
                     {stepDate}
                   </div>
                 )}
@@ -110,10 +117,11 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
             </div>
           );
         })}
+        </div>
       </div>
 
-      {/* Mobile Timeline (Vertical) - Hidden on desktop */}
-      <div className="block md:hidden mt-8 space-y-4">
+      {/* Mobile Timeline (Vertical) */}
+      <div className="block md:hidden space-y-6">
         {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
           const Icon = stepIcons[step];
@@ -121,32 +129,40 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           const clickable = isStepClickable(index);
 
           return (
-            <div key={step} className="relative">
-              <div className="flex items-center space-x-4">
+            <div key={step} className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+              <div className="flex items-start space-x-4">
                 {/* Step Circle */}
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300",
+                    "w-12 h-12 rounded-full border-3 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative",
                     {
-                      "bg-step-verified border-step-verified text-step-verified-foreground": status === 'completed',
-                      "bg-warning border-warning text-warning-foreground": status === 'current',
-                      "bg-muted border-border text-muted-foreground": status === 'pending' && !clickable,
+                      "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20": status === 'completed',
+                      "bg-warning border-warning text-warning-foreground shadow-lg shadow-warning/30 animate-pulse": status === 'current',
+                      "bg-card border-border text-muted-foreground": status === 'pending' && !clickable,
                       "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg ring-2 ring-primary/20": status === 'pending' && clickable
                     }
                   )}
                   onClick={() => handleStepClick(step, index)}
                   title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className={cn(
+                    "transition-all duration-300",
+                    status === 'current' ? "w-6 h-6" : "w-5 h-5"
+                  )} />
+                  
+                  {/* Glow effect for current step */}
+                  {status === 'current' && (
+                    <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping" />
+                  )}
                 </div>
 
                 {/* Step Info */}
-                <div className="flex-1">
+                <div className="flex-1 pb-2">
                   <div
                     className={cn(
-                      "font-medium transition-colors duration-300",
+                      "font-medium transition-colors duration-300 text-base leading-tight",
                       {
-                        "text-foreground": status === 'completed' || status === 'current',
+                        "text-foreground font-semibold": status === 'completed' || status === 'current',
                         "text-muted-foreground": status === 'pending' && !clickable,
                         "text-primary font-semibold": status === 'pending' && clickable
                       }
@@ -154,13 +170,13 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   >
                     {stepLabels[step]}
                     {clickable && (
-                      <div className="text-xs text-primary/70 mt-1">
+                      <div className="text-sm text-primary/70 mt-1 animate-pulse font-normal">
                         Toque para avançar
                       </div>
                     )}
                   </div>
                   {stepDate && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground mt-1 font-normal">
                       {stepDate}
                     </div>
                   )}
@@ -171,8 +187,8 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
               {index < stepOrder.length - 1 && (
                 <div 
                   className={cn(
-                    "absolute left-5 top-10 w-0.5 h-8 transition-colors duration-300",
-                    status === 'completed' ? "bg-step-verified" : "bg-border"
+                    "absolute left-6 top-12 w-1 h-10 rounded-full transition-all duration-500",
+                    status === 'completed' ? "bg-gradient-to-b from-step-verified to-step-verified/50 shadow-sm" : "bg-muted"
                   )} 
                 />
               )}
