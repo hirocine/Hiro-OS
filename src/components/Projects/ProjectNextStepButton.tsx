@@ -41,11 +41,20 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isWithdrawing = project.step === 'ready_for_pickup' && nextStep === 'in_use';
 
   const handleClick = () => {
+    console.log('🔄 Button clicked', { 
+      currentStep: project.step, 
+      nextStep, 
+      isSeparating, 
+      isWithdrawing 
+    });
+    
     if (isSeparating) {
       navigate(`/projects/${project.id}/separation`);
     } else if (isWithdrawing) {
+      console.log('🔓 Opening withdrawal dialog');
       setWithdrawalDialogOpen(true);
     } else {
+      console.log('⏭️ Normal step update to:', nextStep);
       onStepUpdate(nextStep);
     }
   };
@@ -79,8 +88,12 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         )}
       >
         <NextStepIcon className="mr-2 h-4 w-4" />
-        {isSeparating ? 'Separar' : isWithdrawing ? 'Retirar' : isCompleting ? 'Finalizar' : `${stepLabels[nextStep]}`}
-        {!isCompleting && <ArrowRight className="ml-2 h-3 w-3" />}
+        {loading ? 'Processando...' : 
+         isSeparating ? 'Separar' : 
+         isWithdrawing ? 'Registrar Retirada' : 
+         isCompleting ? 'Finalizar' : 
+         `${stepLabels[nextStep]}`}
+        {!isCompleting && !loading && <ArrowRight className="ml-2 h-3 w-3" />}
         {isCompleting && <CheckCircle className="ml-2 h-3 w-3" />}
       </Button>
 
