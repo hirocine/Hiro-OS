@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Calendar, User, AlertTriangle } from "lucide-react";
+import { Package, AlertTriangle } from "lucide-react";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EquipmentDetailsDialog } from '@/components/Equipment/EquipmentDetailsDialog';
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
@@ -117,37 +115,17 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                   {item.loanInfo.status === 'overdue' && (
                     <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
                   )}
-                </div>
-                
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <div className="flex items-center gap-1">
-                    <Package className="h-3 w-3" />
-                    <span>{item.brand} • {item.category}</span>
-                    {item.patrimonyNumber && (
-                      <span>• Patrimônio: {item.patrimonyNumber}</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <User className="h-3 w-3" />
-                    <span>{item.loanInfo.borrowerName}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>
-                      Emprestado em {format(new Date(item.loanInfo.loanDate), 'dd/MM/yyyy', { locale: ptBR })}
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Retorno previsto: {format(new Date(item.loanInfo.expectedReturnDate), 'dd/MM/yyyy', { locale: ptBR })}
-                    </span>
-                  </div>
-                  
-                  <div className="text-xs text-primary bg-primary/10 px-2 py-1 rounded mt-1">
-                    💡 Este equipamento pode estar em outros projetos simultaneamente
-                  </div>
-                </div>
+                 </div>
+                 
+                 <div className="text-sm text-muted-foreground space-y-1">
+                   <div className="flex items-center gap-1">
+                     <Package className="h-3 w-3" />
+                     <span>{item.brand} • {item.category}</span>
+                     {item.patrimonyNumber && (
+                       <span>• Patrimônio: {item.patrimonyNumber}</span>
+                     )}
+                   </div>
+                 </div>
               </div>
               
               <div className="flex flex-col gap-2">
