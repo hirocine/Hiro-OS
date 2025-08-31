@@ -4,7 +4,7 @@ export type ProjectStep =
   | 'pending_separation'   // Pendente Separação (Padrão)
   | 'separated'           // Separado
   | 'ready_for_pickup'    // Retirar
-  | 'in_use'              // Em uso
+  | 'in_use'              // Gravação
   | 'pending_verification' // Pendente Verificação de Retorno
   | 'verified';           // Verificado
 

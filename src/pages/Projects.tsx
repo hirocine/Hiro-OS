@@ -272,7 +272,7 @@ export default function Projects() {
         <Card className="shadow-card">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium">Em Uso</span>
+              <span className="text-sm font-medium">Gravação</span>
               <Play className="h-4 w-4 text-success" />
             </CardTitle>
           </CardHeader>

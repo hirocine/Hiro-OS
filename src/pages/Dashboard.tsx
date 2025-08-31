@@ -49,7 +49,7 @@ export default function Dashboard() {
       trend: { value: 8, isPositive: true }
     },
     {
-      title: 'Em Uso',
+      title: 'Gravação',
       value: stats.inUse,
       icon: Clock,
       trend: { value: 5, isPositive: false }
