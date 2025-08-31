@@ -70,7 +70,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="items-center">
+            <SidebarMenu>
               {navigation.map((item) => {
                 // Hide admin-only items for non-admin users
                 if (item.adminOnly && !isAdmin) {
@@ -79,17 +79,17 @@ export function AppSidebar() {
                 
                 return (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild className="!px-6 py-2 justify-center">
+                    <SidebarMenuButton asChild className="!px-0 py-2">
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
-                        className="flex items-center justify-center w-full"
+                        className="flex items-center justify-center w-full px-6"
                       >
                         <item.icon className={cn(
                           "h-4 w-4 flex-shrink-0",
                           state !== 'collapsed' && "mr-3"
                         )} />
-                        <span>{item.name}</span>
+                        {state !== 'collapsed' && <span>{item.name}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -98,16 +98,16 @@ export function AppSidebar() {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="!px-6 py-2 justify-center">
+                  <SidebarMenuButton asChild className="!px-0 py-2">
                     <NavLink
                       to="/admin"
-                      className="flex items-center justify-center w-full"
+                      className="flex items-center justify-center w-full px-6"
                     >
                       <Shield className={cn(
                         "h-4 w-4 flex-shrink-0",
                         state !== 'collapsed' && "mr-3"
                       )} />
-                      <span>Administração</span>
+                      {state !== 'collapsed' && <span>Administração</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
