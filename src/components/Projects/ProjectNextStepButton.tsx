@@ -45,7 +45,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, className }: Proj
       )}
     >
       <NextStepIcon className="mr-2 h-4 w-4" />
-      {isCompleting ? 'Finalizar' : isSeparating ? 'Separar' : `${stepLabels[nextStep]}`}
+      {isSeparating ? 'Separar' : isCompleting ? 'Finalizar' : `${stepLabels[nextStep]}`}
       {!isCompleting && <ArrowRight className="ml-2 h-3 w-3" />}
       {isCompleting && <CheckCircle className="ml-2 h-3 w-3" />}
     </Button>
