@@ -134,7 +134,7 @@ export function Autocomplete({
           role="combobox"
           aria-expanded={isOpen}
           className={cn(
-            "justify-between h-10 px-3 py-2 text-left font-normal",
+            "justify-between h-9 px-3 py-2 text-left font-normal",
             !value && "text-muted-foreground",
             className
           )}
