@@ -192,7 +192,7 @@ export function SeparationConfirmationDialog({
                         return (
                           <div key={mainItem.id} className="space-y-2">
                             {/* Main Item */}
-                            <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/50 transition-colors">
+                            <div className="flex items-center space-x-3 p-2 border rounded-lg bg-background hover:bg-accent/50 transition-colors">
                               <Checkbox
                                 id={mainItem.id}
                                 checked={mainItemChecked}
@@ -205,18 +205,12 @@ export function SeparationConfirmationDialog({
                                   className="font-medium cursor-pointer block truncate"
                                 >
                                   {mainItem.name}
-                                </Label>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                  {mainItem.brand && (
-                                    <span>{mainItem.brand}</span>
-                                  )}
-                                  {mainItem.patrimonyNumber && (
-                                    <span>• #{mainItem.patrimonyNumber}</span>
-                                  )}
                                   {accessories.length > 0 && (
-                                    <span>• {accessories.length} acessório{accessories.length > 1 ? 's' : ''}</span>
+                                    <span className="text-sm text-muted-foreground ml-2">
+                                      • {accessories.length} acessório{accessories.length > 1 ? 's' : ''}
+                                    </span>
                                   )}
-                                </div>
+                                </Label>
                               </div>
                               {mainItemChecked && allAccessoriesCheckedForItem && (
                                 <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -229,7 +223,7 @@ export function SeparationConfirmationDialog({
                                 {accessories.map((accessory) => (
                                   <div
                                     key={accessory.id}
-                                    className="flex items-center space-x-3 p-2 border border-dashed rounded bg-muted/30 hover:bg-muted/50 transition-colors"
+                                    className="flex items-center space-x-3 py-1.5 px-2 border border-dashed rounded bg-muted/30 hover:bg-muted/50 transition-colors"
                                   >
                                     <Checkbox
                                       id={accessory.id}
@@ -244,11 +238,6 @@ export function SeparationConfirmationDialog({
                                       >
                                         {accessory.name}
                                       </Label>
-                                      {accessory.patrimonyNumber && (
-                                        <span className="text-xs text-muted-foreground">
-                                          #{accessory.patrimonyNumber}
-                                        </span>
-                                      )}
                                     </div>
                                     {checkedItems[accessory.id] && (
                                       <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
