@@ -20,6 +20,8 @@ import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { equipmentDebug } from '@/lib/debug';
+import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 
 type ViewMode = 'table' | 'grid' | 'cards';
 
@@ -64,6 +66,12 @@ export default function EquipmentPage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     open: boolean;
     equipment: Equipment | null;
+  }>({ open: false, equipment: null });
+
+  // Undo dialog state
+  const [undoDeleteDialog, setUndoDeleteDialog] = useState<{
+    open: boolean;
+    equipment: any | null;
   }>({ open: false, equipment: null });
   
   // Pagination and view states
