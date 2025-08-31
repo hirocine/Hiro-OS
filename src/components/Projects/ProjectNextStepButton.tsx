@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils';
 interface ProjectNextStepButtonProps {
   project: Project;
   onStepUpdate: (newStep: ProjectStep, notes?: string) => void;
+  onSeparationClick?: () => void;
   className?: string;
 }
 
-export function ProjectNextStepButton({ project, onStepUpdate, className }: ProjectNextStepButtonProps) {
+export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick, className }: ProjectNextStepButtonProps) {
   if (project.status !== 'active') {
     return null;
   }
@@ -29,7 +30,11 @@ export function ProjectNextStepButton({ project, onStepUpdate, className }: Proj
   const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
 
   const handleClick = () => {
-    onStepUpdate(nextStep);
+    if (isSeparating && onSeparationClick) {
+      onSeparationClick();
+    } else {
+      onStepUpdate(nextStep);
+    }
   };
 
   return (
