@@ -507,6 +507,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     const selectedUser = users.find(u => u.id === data.responsibleUserId);
     
     const projectData = {
+      name: `${data.projectNumber} - ${data.company}: ${data.projectName}`, // Required field for database
       projectNumber: data.projectNumber,
       company: data.company,
       projectName: data.projectName,

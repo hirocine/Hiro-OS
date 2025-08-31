@@ -118,7 +118,20 @@ export function useProjects() {
   }, [updatedProjects]);
 
   const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>) => {
+    console.log('🚀 Adding new project:', newProject);
+    
     try {
+      // Validate required fields
+      if (!newProject.name || !newProject.startDate || !newProject.expectedEndDate || !newProject.responsibleName) {
+        console.error('❌ Missing required fields:', { 
+          name: !!newProject.name, 
+          startDate: !!newProject.startDate, 
+          expectedEndDate: !!newProject.expectedEndDate, 
+          responsibleName: !!newProject.responsibleName 
+        });
+        throw new Error('Campos obrigatórios estão faltando');
+      }
+
       // Transform to database format
       const dbProject = {
         name: newProject.name,
@@ -137,8 +150,18 @@ export function useProjects() {
             step: 'pending_separation' as const,
             timestamp: new Date().toISOString()
           }
-        ]
+        ],
+        // Add new fields for structured project creation
+        project_number: (newProject as any).projectNumber,
+        company: (newProject as any).company,
+        project_name: (newProject as any).projectName,
+        responsible_user_id: (newProject as any).responsibleUserId,
+        withdrawal_date: (newProject as any).withdrawalDate,
+        separation_date: (newProject as any).separationDate,
+        recording_type: (newProject as any).recordingType
       };
+
+      console.log('📤 Sending to database:', dbProject);
 
       const { data, error } = await supabase
         .from('projects')
@@ -147,11 +170,13 @@ export function useProjects() {
         .single();
 
       if (error) {
-        console.error('Error adding project:', error);
-        return;
+        console.error('❌ Database error:', error);
+        throw error;
       }
 
       if (data) {
+        console.log('✅ Project created successfully:', data);
+        
         const projectData = {
           ...data,
           startDate: data.start_date,
@@ -163,10 +188,17 @@ export function useProjects() {
           loanIds: data.loan_ids || [],
           stepHistory: (data.step_history as any) || []
         } as Project;
-        setProjects(prev => [...prev, projectData]);
+        
+        setProjects(prev => {
+          console.log('📝 Updating local state with new project');
+          return [...prev, projectData];
+        });
+        
+        return projectData;
       }
     } catch (error) {
-      console.error('Error adding project:', error);
+      console.error('❌ Error adding project:', error);
+      throw error;
     }
   };
 
