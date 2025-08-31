@@ -182,7 +182,7 @@ export const ProjectCalendar: React.FC = () => {
     return { bars, maxTracks };
   }, [projects, currentMonth, calendarStructure.weeks]);
 
-  // Filter bars based on visibility settings
+  // Filter bars based on visibility settings  
   const visibleBars = useMemo(() => {
     return projectBars.bars.filter(bar => !hiddenSteps.has(bar.step));
   }, [projectBars.bars, hiddenSteps]);
