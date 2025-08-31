@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { stepLabels } from '@/lib/projectSteps';
 import { useState } from 'react';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
+import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
 import { AdminOnly } from '@/components/RoleGuard';
 
 export default function ProjectDetails() {
@@ -342,11 +343,11 @@ export default function ProjectDetails() {
                   <p className="text-muted-foreground">Nenhum equipamento vinculado</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     {project.equipmentCount} equipamentos vinculados a este projeto
                   </p>
-                  {/* TODO: Implementar lista de equipamentos */}
+                  <ProjectEquipmentList projectName={project.name} />
                 </div>
               )}
             </CardContent>
