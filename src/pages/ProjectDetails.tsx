@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, User, Building, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Building, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
@@ -14,6 +14,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useToast } from '@/hooks/use-toast';
 import { stepLabels } from '@/lib/projectSteps';
 import { useState } from 'react';
+import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
+import { AdminOnly } from '@/components/RoleGuard';
 
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +23,8 @@ export default function ProjectDetails() {
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const {
     project,
@@ -29,6 +33,7 @@ export default function ProjectDetails() {
     updateProject,
     completeProject,
     archiveProject,
+    deleteProject,
     updateProjectStep
   } = useProjectDetails(id!);
 
@@ -92,6 +97,28 @@ export default function ProjectDetails() {
       title: "Status atualizado",
       description: `O projeto foi atualizado para "${stepLabels[newStep]}".`,
     });
+  };
+
+  const handleDeleteProject = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteProject();
+      toast({
+        title: "Projeto excluído",
+        description: "O projeto foi excluído permanentemente.",
+        variant: "destructive"
+      });
+      navigate('/projects');
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir o projeto.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const getStatusVariant = (status: string) => {
@@ -166,6 +193,16 @@ export default function ProjectDetails() {
                 </DropdownMenuItem>
               </>
             )}
+            <AdminOnly>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir Projeto
+              </DropdownMenuItem>
+            </AdminOnly>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -391,6 +428,14 @@ export default function ProjectDetails() {
         open={showStepDialog}
         onOpenChange={setShowStepDialog}
         onUpdate={handleUpdateStep}
+      />
+
+      <DeleteProjectDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        projectName={project.name}
+        onConfirm={handleDeleteProject}
+        loading={isDeleting}
       />
     </div>
   );

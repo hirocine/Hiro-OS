@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectStep, ProjectStatus, StepChange } from '@/types/project';
+import { useUserRole } from './useUserRole';
 
 export function useProjectDetails(projectId: string) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { logAuditEntry } = useUserRole();
 
   useEffect(() => {
     if (projectId) {
@@ -231,6 +233,37 @@ export function useProjectDetails(projectId: string) {
     }
   };
 
+  const deleteProject = async () => {
+    if (!project) return false;
+
+    try {
+      // Log audit entry before deletion
+      await logAuditEntry(
+        'delete_project',
+        'projects',
+        project.id,
+        project,
+        null
+      );
+
+      // Delete from database
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Error deleting project:', error);
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
+  };
+
   return {
     project,
     loading,
@@ -239,6 +272,7 @@ export function useProjectDetails(projectId: string) {
     updateProjectStep,
     completeProject,
     archiveProject,
+    deleteProject,
     refetch: fetchProject
   };
 }
