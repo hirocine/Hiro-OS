@@ -9,6 +9,7 @@ import { Loader2, Upload, User, Camera, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { profileDebug } from '@/lib/debug';
 
 interface UserProfile {
   id: string;
@@ -58,7 +59,7 @@ export default function Profile() {
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      profileDebug('Error fetching profile', error);
       toast({
         title: "Erro ao carregar perfil",
         description: "Não foi possível carregar as informações do perfil.",
@@ -75,7 +76,7 @@ export default function Profile() {
 
     try {
       setSaving(true);
-      console.log('🔧 Profile: Starting profile update', {
+      profileDebug('Starting profile update', {
         userId: user.id,
         formData
       });
@@ -87,7 +88,7 @@ export default function Profile() {
         department: formData.department || null
       };
 
-      console.log('🔧 Profile: Upsert data', updateData);
+      profileDebug('Upsert data', updateData);
       
       const { error } = await supabase
         .from('profiles')
@@ -96,11 +97,11 @@ export default function Profile() {
         });
 
       if (error) {
-        console.error('🔧 Profile: Upsert error', error);
+        profileDebug('Upsert error', error);
         throw error;
       }
 
-      console.log('🔧 Profile: Update successful');
+      profileDebug('Update successful');
 
       toast({
         title: "Perfil atualizado",
@@ -109,7 +110,7 @@ export default function Profile() {
 
       await fetchProfile();
     } catch (error: any) {
-      console.error('🔧 Profile: Error updating profile:', error);
+      profileDebug('Error updating profile', error);
       toast({
         title: "Erro ao salvar",
         description: error.message || "Não foi possível salvar as alterações.",
@@ -123,7 +124,7 @@ export default function Profile() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
-      console.log('🖼️ Avatar: Starting upload process');
+      profileDebug('Avatar: Starting upload process');
       
       if (!user?.id) {
         throw new Error('Usuário não autenticado');
@@ -134,7 +135,7 @@ export default function Profile() {
       }
 
       const file = event.target.files[0];
-      console.log('🖼️ Avatar: File selected', { 
+      profileDebug('Avatar: File selected', { 
         name: file.name, 
         size: file.size, 
         type: file.type 
@@ -152,31 +153,31 @@ export default function Profile() {
 
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/avatar.${fileExt}`;
-      console.log('🖼️ Avatar: Upload path', filePath);
+      profileDebug('Avatar: Upload path', filePath);
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
-        console.error('🖼️ Avatar: Upload error', uploadError);
+        profileDebug('Avatar: Upload error', uploadError);
         throw uploadError;
       }
 
-      console.log('🖼️ Avatar: Upload successful, getting public URL');
+      profileDebug('Avatar: Upload successful, getting public URL');
 
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      console.log('🖼️ Avatar: Public URL obtained', data.publicUrl);
+      profileDebug('Avatar: Public URL obtained', data.publicUrl);
 
       const updateData = {
         user_id: user.id,
         avatar_url: data.publicUrl
       };
 
-      console.log('🖼️ Avatar: Updating profile with avatar URL', updateData);
+      profileDebug('Avatar: Updating profile with avatar URL', updateData);
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -185,11 +186,11 @@ export default function Profile() {
         });
 
       if (updateError) {
-        console.error('🖼️ Avatar: Profile update error', updateError);
+        profileDebug('Avatar: Profile update error', updateError);
         throw updateError;
       }
 
-      console.log('🖼️ Avatar: Profile updated successfully');
+      profileDebug('Avatar: Profile updated successfully');
 
       toast({
         title: "Avatar atualizado",
@@ -198,7 +199,7 @@ export default function Profile() {
 
       await fetchProfile();
     } catch (error: any) {
-      console.error('🖼️ Avatar: Error in upload process:', error);
+      profileDebug('Avatar: Error in upload process', error);
       toast({
         title: "Erro ao fazer upload",
         description: error.message || "Não foi possível atualizar o avatar.",

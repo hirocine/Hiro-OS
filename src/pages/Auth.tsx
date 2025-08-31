@@ -9,6 +9,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { authDebug } from '@/lib/debug';
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -26,12 +27,12 @@ export default function Auth() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  console.log('Auth page: Current user state', { user: user?.email, authLoading });
+  authDebug('Auth page current user state', { user: user?.email, authLoading });
 
   // Redirect if already authenticated (but wait for loading to finish)
   useEffect(() => {
     if (!authLoading && user) {
-      console.log('Auth page: User authenticated, redirecting to dashboard');
+      authDebug('User authenticated, redirecting to dashboard');
       navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);

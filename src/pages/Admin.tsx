@@ -18,6 +18,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
+import { adminDebug } from '@/lib/debug';
 
 interface User {
   id: string;
@@ -61,9 +62,9 @@ export default function Admin() {
   });
 
   useEffect(() => {
-    console.log('🔄 Admin: Effect triggered', { isAdmin, roleLoading, user: user?.email });
+    adminDebug('Effect triggered', { isAdmin, roleLoading, user: user?.email });
     if (isAdmin && !roleLoading && user) {
-      console.log('🚀 Admin: Starting data fetch...');
+      adminDebug('Starting data fetch...');
       fetchUsers();
       fetchAuditLogs();
     }
@@ -112,14 +113,14 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      console.log('🔍 Admin: Fetching users using RPC...');
+      adminDebug('Fetching users using RPC...');
       setLoadingUsers(true);
       
       // Use the existing RPC function that properly combines data
       const { data, error } = await supabase.rpc('get_users_for_admin');
 
       if (error) {
-        console.error('❌ Admin: Error fetching users via RPC:', error);
+        adminDebug('Error fetching users via RPC', error);
         throw error;
       }
 
@@ -136,10 +137,10 @@ export default function Admin() {
         is_active: user.is_active ?? true
       }));
 
-      console.log('✅ Admin: Users fetched successfully:', usersData.length, 'users');
+      adminDebug('Users fetched successfully', { count: usersData.length });
       setUsers(usersData);
     } catch (error) {
-      console.error('❌ Admin: Error fetching users:', error);
+      adminDebug('Error fetching users', error);
       toast({
         title: 'Erro',
         description: 'Erro ao carregar usuários. Verifique se você tem permissões de administrador.',
@@ -175,7 +176,7 @@ export default function Admin() {
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
     try {
-      console.log('🔄 Admin: Updating user role', { userId, newRole });
+      adminDebug('Updating user role', { userId, newRole });
       
       // Security check: prevent self-role-elevation on frontend
       if (userId === user?.id) {
@@ -214,7 +215,7 @@ export default function Admin() {
         _new_values: { role: newRole }
       });
 
-      console.log('✅ Admin: User role updated successfully');
+      adminDebug('User role updated successfully');
       toast({
         title: 'Sucesso',
         description: 'Role do usuário atualizada com sucesso',
@@ -222,7 +223,7 @@ export default function Admin() {
 
       fetchUsers();
     } catch (error: any) {
-      console.error('❌ Admin: Error updating user role:', error);
+      adminDebug('Error updating user role', error);
       
       // Check for specific security-related errors
       if (error.message?.includes('row-level security') || error.message?.includes('policy')) {

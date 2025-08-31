@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Upload, Download, AlertCircle, CheckCircle, FileText, FileSpreadsheet } from 'lucide-react';
 import { parseCSV, parseExcel, generateTemplate, ImportResult, ImportError } from '@/lib/csvParser';
 import { useToast } from '@/hooks/use-toast';
+import { importDebug } from '@/lib/debug';
 
 interface ImportDialogProps {
   open: boolean;
@@ -75,16 +76,16 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
     setIsProcessing(true);
     try {
-      console.log('🚀 Starting import of', importResult.data.length, 'items...');
+      importDebug('Starting import of items', { count: importResult.data.length });
       await onImport(importResult.data);
       setStep('complete');
-      console.log('✅ Import completed successfully');
+      importDebug('Import completed successfully');
       toast({
         title: "Importação concluída",
         description: `${importResult.successRows} equipamentos importados com sucesso.`,
       });
     } catch (error) {
-      console.error('💥 Import failed:', error);
+      importDebug('Import failed', error);
       toast({
         title: "Erro na importação",
         description: error instanceof Error ? error.message : 'Erro desconhecido na importação',

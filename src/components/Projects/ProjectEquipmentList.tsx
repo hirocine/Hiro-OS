@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,8 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EquipmentDetailsDialog } from '@/components/Equipment/EquipmentDetailsDialog';
+import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
 
 interface ProjectEquipmentListProps {
   projectId: string;
@@ -13,6 +16,33 @@ interface ProjectEquipmentListProps {
 
 export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   const { equipment, loading, error } = useProjectEquipment(projectId);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
+  const [selectedLoanData, setSelectedLoanData] = useState<any>(null);
+
+  const handleViewDetails = (equipmentId: string) => {
+    setSelectedEquipmentId(equipmentId);
+    setDetailsDialogOpen(true);
+  };
+
+  const handleSendReminder = (item: any) => {
+    const overdueDays = Math.floor(
+      (Date.now() - new Date(item.loanInfo.expectedReturnDate).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    setSelectedLoanData({
+      id: item.loanInfo.loanId,
+      equipmentName: item.name,
+      borrowerName: item.loanInfo.borrowerName,
+      borrowerEmail: item.loanInfo.borrowerEmail,
+      borrowerPhone: item.loanInfo.borrowerPhone,
+      expectedReturnDate: item.loanInfo.expectedReturnDate,
+      loanDate: item.loanInfo.loanDate,
+      overdueDays: Math.max(0, overdueDays)
+    });
+    setReminderDialogOpen(true);
+  };
 
   if (loading) {
     return (
@@ -120,10 +150,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => {
-                    // TODO: Implementar navegação para detalhes do equipamento
-                    console.log('View equipment details:', item.id);
-                  }}
+                  onClick={() => handleViewDetails(item.id)}
                 >
                   Ver Detalhes
                 </Button>
@@ -132,10 +159,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => {
-                      // TODO: Implementar ação de cobrança/lembrete
-                      console.log('Send reminder for:', item.loanInfo.loanId);
-                    }}
+                    onClick={() => handleSendReminder(item)}
                   >
                     Cobrar Retorno
                   </Button>
@@ -145,6 +169,18 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
           </CardContent>
         </Card>
       ))}
+
+      <EquipmentDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        equipmentId={selectedEquipmentId}
+      />
+
+      <ReminderDialog
+        open={reminderDialogOpen}
+        onOpenChange={setReminderDialogOpen}
+        loanData={selectedLoanData}
+      />
     </div>
   );
 }

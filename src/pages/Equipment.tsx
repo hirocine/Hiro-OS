@@ -190,8 +190,18 @@ export default function EquipmentPage() {
         action: {
           label: 'Desfazer',
           onClick: () => {
-            // TODO: Implement undo functionality
-            enhancedToast.info({ title: 'Funcionalidade em desenvolvimento' });
+            setUndoDeleteDialog({
+              open: true,
+              equipment: {
+                id: equipment.id,
+                name: equipment.name,
+                brand: equipment.brand,
+                category: equipment.category,
+                patrimony_number: equipment.patrimonyNumber,
+                deletedAt: new Date(),
+                canRestore: true
+              }
+            });
           }
         }
       });
@@ -661,6 +671,15 @@ export default function EquipmentPage() {
         variant="destructive"
         icon="delete"
         onConfirm={confirmDelete}
+      />
+      <UndoDeleteDialog
+        open={undoDeleteDialog.open}
+        onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
+        deletedEquipment={undoDeleteDialog.equipment}
+        onRestore={async (equipmentId) => {
+          equipmentDebug('Restoring equipment', { equipmentId });
+          // Implementar lógica de restauração quando necessário
+        }}
       />
     </div>
   );

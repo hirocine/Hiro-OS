@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { authDebug } from '@/lib/debug';
 
 export interface AuthState {
   user: User | null;
@@ -22,12 +23,12 @@ export function useAuth() {
     if (isInitialized.current) return;
     isInitialized.current = true;
 
-    console.log('useAuth: Setting up auth listeners');
+    authDebug('Setting up auth listeners');
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('useAuth: Auth state changed', { event, user: session?.user?.email, hasSession: !!session });
+        authDebug('Auth state changed', { event, user: session?.user?.email, hasSession: !!session });
         setAuthState(prevState => {
           // Prevent unnecessary state updates
           if (prevState.session?.access_token === session?.access_token && 
@@ -46,7 +47,7 @@ export function useAuth() {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('useAuth: Initial session check', { 
+      authDebug('Initial session check', { 
         user: session?.user?.email, 
         hasSession: !!session, 
         error 
