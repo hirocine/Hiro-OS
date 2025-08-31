@@ -66,7 +66,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="flex flex-col items-center">
         <SidebarGroup>
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -79,17 +79,19 @@ export function AppSidebar() {
                 
                 return (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild className="!px-0 py-2">
+                    <SidebarMenuButton asChild className="w-full">
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
-                        className="flex items-center justify-center w-full px-6"
+                        className={cn(
+                          "flex items-center w-full px-3 py-2",
+                          state === 'collapsed' ? "justify-center" : "justify-start"
+                        )}
                       >
-                        <item.icon className={cn(
-                          "h-4 w-4 flex-shrink-0",
-                          state !== 'collapsed' && "mr-3"
-                        )} />
-                        {state !== 'collapsed' && <span>{item.name}</span>}
+                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                        {state !== 'collapsed' && (
+                          <span className="ml-3">{item.name}</span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -98,16 +100,18 @@ export function AppSidebar() {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="!px-0 py-2">
+                  <SidebarMenuButton asChild className="w-full">
                     <NavLink
                       to="/admin"
-                      className="flex items-center justify-center w-full px-6"
+                      className={cn(
+                        "flex items-center w-full px-3 py-2",
+                        state === 'collapsed' ? "justify-center" : "justify-start"
+                      )}
                     >
-                      <Shield className={cn(
-                        "h-4 w-4 flex-shrink-0",
-                        state !== 'collapsed' && "mr-3"
-                      )} />
-                      {state !== 'collapsed' && <span>Administração</span>}
+                      <Shield className="h-4 w-4 flex-shrink-0" />
+                      {state !== 'collapsed' && (
+                        <span className="ml-3">Administração</span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
