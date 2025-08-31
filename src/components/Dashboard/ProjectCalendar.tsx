@@ -1,197 +1,209 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useProjects } from '@/hooks/useProjects';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calendar, CalendarDays } from 'lucide-react';
-import { format, addWeeks, startOfWeek, endOfWeek, eachWeekOfInterval, differenceInDays } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, getDay, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-interface TimelineProject {
+interface DayProject {
   id: string;
   name: string;
-  startDate: Date;
-  endDate: Date;
   status: string;
   step: string;
-  isCompleted: boolean;
+  isStart: boolean;
+  isEnd: boolean;
+  isActive: boolean;
+  color: string;
 }
 
 export function ProjectCalendar() {
   const { projects } = useProjects();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Process projects for timeline display
-  const timelineProjects = useMemo((): TimelineProject[] => {
-    return projects
-      .filter(project => {
-        // Only show projects that have both start and end dates
-        const hasStart = project.separationDate || project.startDate;
-        const hasEnd = project.actualEndDate || project.expectedEndDate;
-        return hasStart && hasEnd;
-      })
-      .map(project => {
-        const startDate = new Date(project.separationDate || project.startDate);
-        const endDate = new Date(project.actualEndDate || project.expectedEndDate);
-        return {
-          id: project.id,
-          name: project.name,
-          startDate,
-          endDate,
-          status: project.status,
-          step: project.step,
-          isCompleted: !!project.actualEndDate
-        };
-      });
-  }, [projects]);
-
-  // Calculate timeline range
-  const timelineRange = useMemo(() => {
-    if (timelineProjects.length === 0) {
-      const now = new Date();
-      return {
-        start: startOfWeek(now),
-        end: endOfWeek(addWeeks(now, 8))
-      };
-    }
-
-    const allDates = timelineProjects.flatMap(p => [p.startDate, p.endDate]);
-    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
-    const maxDate = new Date(Math.max(...allDates.map(d => d.getTime())));
-
-    return {
-      start: startOfWeek(minDate),
-      end: endOfWeek(addWeeks(maxDate, 2))
-    };
-  }, [timelineProjects]);
-
-  // Generate week columns
-  const weekColumns = useMemo(() => {
-    return eachWeekOfInterval({
-      start: timelineRange.start,
-      end: timelineRange.end
-    });
-  }, [timelineRange]);
-
-  const getProjectBarStyle = (project: TimelineProject) => {
-    const totalDays = differenceInDays(timelineRange.end, timelineRange.start);
-    const startOffset = differenceInDays(project.startDate, timelineRange.start);
-    const projectDuration = differenceInDays(project.endDate, project.startDate) + 1;
+  // Get calendar days for current month
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calendarStart = startOfWeek(monthStart);
+    const calendarEnd = endOfWeek(monthEnd);
     
-    const leftPercent = (startOffset / totalDays) * 100;
-    const widthPercent = (projectDuration / totalDays) * 100;
+    return eachDayOfInterval({
+      start: calendarStart,
+      end: calendarEnd
+    });
+  }, [currentMonth]);
 
-    return {
-      left: `${Math.max(0, leftPercent)}%`,
-      width: `${Math.min(100 - Math.max(0, leftPercent), widthPercent)}%`
-    };
-  };
+  // Process projects for each day
+  const dayProjects = useMemo(() => {
+    const dayProjectsMap = new Map<string, DayProject[]>();
 
-  const getProjectColor = (project: TimelineProject) => {
-    switch (project.status) {
-      case 'completed':
-        return 'hsl(var(--success))';
-      case 'active':
-        return project.isCompleted ? 'hsl(var(--success))' : 'hsl(var(--primary))';
-      case 'archived':
-        return 'hsl(var(--muted))';
-      default:
-        return 'hsl(var(--primary))';
-    }
+    projects.forEach(project => {
+      const startDate = project.separationDate || project.startDate;
+      const endDate = project.actualEndDate || project.expectedEndDate;
+      
+      if (!startDate || !endDate) return;
+
+      const projectStart = new Date(startDate);
+      const projectEnd = new Date(endDate);
+
+      // Get project color based on status
+      const getProjectColor = () => {
+        switch (project.status) {
+          case 'completed':
+            return 'hsl(var(--success))';
+          case 'active':
+            return project.actualEndDate ? 'hsl(var(--success))' : 'hsl(var(--primary))';
+          case 'archived':
+            return 'hsl(var(--muted))';
+          default:
+            return 'hsl(var(--primary))';
+        }
+      };
+
+      // Add project to each day it spans
+      calendarDays.forEach(day => {
+        if (day >= projectStart && day <= projectEnd && isSameMonth(day, currentMonth)) {
+          const dayKey = format(day, 'yyyy-MM-dd');
+          
+          if (!dayProjectsMap.has(dayKey)) {
+            dayProjectsMap.set(dayKey, []);
+          }
+
+          dayProjectsMap.get(dayKey)!.push({
+            id: project.id,
+            name: project.name,
+            status: project.status,
+            step: project.step,
+            isStart: isSameDay(day, projectStart),
+            isEnd: isSameDay(day, projectEnd),
+            isActive: day >= projectStart && day <= projectEnd,
+            color: getProjectColor()
+          });
+        }
+      });
+    });
+
+    return dayProjectsMap;
+  }, [projects, currentMonth, calendarDays]);
+
+  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
   };
 
   return (
     <div className="bg-gradient-card rounded-lg p-6 shadow-elegant">
-      <div className="flex items-center gap-3 mb-6">
-        <Calendar className="h-6 w-6 text-primary" />
-        <div>
-          <h2 className="text-xl font-semibold">Timeline de Projetos</h2>
-          <p className="text-sm text-muted-foreground">
-            Cronograma visual dos projetos em andamento
-          </p>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Calendar className="h-6 w-6 text-primary" />
+          <div>
+            <h2 className="text-xl font-semibold">Calendário de Projetos</h2>
+            <p className="text-sm text-muted-foreground">
+              Cronograma mensal dos projetos
+            </p>
+          </div>
+        </div>
+        
+        {/* Month Navigation */}
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigateMonth('prev')}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-[160px] text-center">
+            <span className="font-medium">
+              {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+            </span>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigateMonth('next')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-[800px]">
-          {/* Week headers */}
-          <div className="flex border-b border-border mb-4">
-            {weekColumns.map((week, index) => (
-              <div key={index} className="flex-1 px-2 py-3 text-center border-r border-border last:border-r-0">
-                <div className="text-xs font-medium text-muted-foreground">
-                  {format(week, 'dd/MM', { locale: ptBR })}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {format(week, 'EEE', { locale: ptBR })}
-                </div>
-              </div>
-            ))}
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {/* Week day headers */}
+        {weekDays.map(day => (
+          <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
+            {day}
           </div>
+        ))}
 
-          {/* Project timeline */}
-          <div className="relative space-y-6">
-            {timelineProjects.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum projeto com datas definidas encontrado</p>
+        {/* Calendar days */}
+        {calendarDays.map((day) => {
+          const dayKey = format(day, 'yyyy-MM-dd');
+          const dayProjs = dayProjects.get(dayKey) || [];
+          const isCurrentMonth = isSameMonth(day, currentMonth);
+          const isCurrentDay = isToday(day);
+
+          return (
+            <div 
+              key={dayKey}
+              className={`min-h-[80px] p-2 border border-border rounded-md ${
+                isCurrentMonth ? 'bg-card' : 'bg-muted/20'
+              } ${isCurrentDay ? 'ring-2 ring-primary' : ''}`}
+            >
+              {/* Day number */}
+              <div className={`text-sm mb-1 ${
+                isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+              } ${isCurrentDay ? 'font-bold text-primary' : ''}`}>
+                {format(day, 'd')}
               </div>
-            ) : (
-              timelineProjects.map((project, index) => (
-                <div key={project.id} className="relative">
-                  {/* Project name */}
-                  <div className="mb-2">
-                    <span className="text-sm font-medium">{project.name}</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge 
-                        variant={project.status === 'completed' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {project.status === 'active' ? 'Ativo' : 
-                         project.status === 'completed' ? 'Finalizado' : 'Arquivado'}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {project.step === 'pending_separation' ? 'Pendente Separação' :
-                         project.step === 'separated' ? 'Separado' :
-                         project.step === 'in_use' ? 'Em Uso' :
-                         project.step === 'pending_verification' ? 'Pendente Verificação' :
-                         project.step === 'verified' ? 'Verificado' : project.step}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  {/* Timeline bar */}
-                  <div className="relative h-8 bg-muted/20 rounded-md border">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className="absolute top-0 h-full rounded-md transition-colors cursor-pointer"
-                            style={{
-                              ...getProjectBarStyle(project),
-                              backgroundColor: getProjectColor(project)
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="space-y-1">
-                            <p className="font-medium">{project.name}</p>
-                            <p className="text-xs">
-                              Início: {format(project.startDate, 'dd/MM/yyyy', { locale: ptBR })}
-                            </p>
-                            <p className="text-xs">
-                              {project.isCompleted ? 'Finalizado' : 'Previsão'}: {format(project.endDate, 'dd/MM/yyyy', { locale: ptBR })}
-                            </p>
-                            <p className="text-xs">
-                              Duração: {differenceInDays(project.endDate, project.startDate) + 1} dias
-                            </p>
+
+              {/* Project bars */}
+              <div className="space-y-1">
+                {dayProjs.slice(0, 3).map((project) => (
+                  <TooltipProvider key={project.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="h-2 rounded-full cursor-pointer transition-opacity hover:opacity-80"
+                          style={{ backgroundColor: project.color }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="space-y-1">
+                          <p className="font-medium text-xs">{project.name}</p>
+                          <div className="flex gap-1">
+                            {project.isStart && (
+                              <Badge variant="secondary" className="text-xs">Início</Badge>
+                            )}
+                            {project.isEnd && (
+                              <Badge variant="outline" className="text-xs">Fim</Badge>
+                            )}
                           </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          <p className="text-xs">
+                            Status: {project.status === 'active' ? 'Ativo' : 
+                                    project.status === 'completed' ? 'Finalizado' : 'Arquivado'}
+                          </p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+                
+                {/* Show count if more than 3 projects */}
+                {dayProjs.length > 3 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{dayProjs.length - 3} mais
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Legend */}
@@ -199,15 +211,15 @@ export function ProjectCalendar() {
         <h4 className="font-medium text-sm mb-3">Legenda</h4>
         <div className="flex flex-wrap gap-4 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded" style={{ backgroundColor: 'hsl(var(--primary))' }} />
+            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }} />
             <span>Projeto Ativo</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded" style={{ backgroundColor: 'hsl(var(--success))' }} />
+            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--success))' }} />
             <span>Projeto Finalizado</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-3 rounded" style={{ backgroundColor: 'hsl(var(--muted))' }} />
+            <div className="w-4 h-2 rounded-full" style={{ backgroundColor: 'hsl(var(--muted))' }} />
             <span>Projeto Arquivado</span>
           </div>
         </div>
