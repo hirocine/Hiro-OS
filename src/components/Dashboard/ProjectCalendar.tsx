@@ -290,7 +290,7 @@ export const ProjectCalendar: React.FC = () => {
                         transition-all duration-200 hover:bg-muted/20
                         ${isCurrentMonth 
                           ? isCurrentDay 
-                            ? 'bg-accent' 
+                            ? 'bg-muted' 
                             : 'bg-background'
                           : 'bg-muted/10'
                         }
