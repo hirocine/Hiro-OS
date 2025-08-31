@@ -524,6 +524,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_equipment_project_count: {
+        Args: { equipment_id: string }
+        Returns: number
+      }
       get_project_equipment: {
         Args: { _project_id: string }
         Returns: {
