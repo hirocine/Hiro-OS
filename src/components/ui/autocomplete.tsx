@@ -33,13 +33,15 @@ export function Autocomplete({
 }: AutocompleteProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
+  const [isFocused, setIsFocused] = React.useState(false);
   const debouncedInput = useDebounce(inputValue, 150);
+  const timeoutRef = React.useRef<NodeJS.Timeout>();
 
   React.useEffect(() => {
     setInputValue(value);
   }, [value]);
 
-  const handleInputChange = (newValue: string) => {
+  const handleInputChange = React.useCallback((newValue: string) => {
     setInputValue(newValue);
     onInputChange?.(newValue);
     
@@ -47,17 +49,51 @@ export function Autocomplete({
       onValueChange(newValue);
     }
 
-    // Auto-open dropdown when typing
-    if (newValue.length > 0 && !open) {
+    // Auto-open dropdown when typing if focused
+    if (isFocused && newValue.length >= 0) {
       setOpen(true);
     }
-  };
+  }, [allowCustomValue, onValueChange, onInputChange, isFocused]);
 
-  const handleSelect = (selectedValue: string) => {
+  const handleSelect = React.useCallback((selectedValue: string) => {
     setInputValue(selectedValue);
     onValueChange(selectedValue);
     setOpen(false);
-  };
+    // Clear focus after selection
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, [onValueChange]);
+
+  const handleInputFocus = React.useCallback(() => {
+    setIsFocused(true);
+    setOpen(true);
+  }, []);
+
+  const handleInputBlur = React.useCallback(() => {
+    setIsFocused(false);
+    // Delay closing to allow for option selection
+    timeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 150);
+  }, []);
+
+  const handleOptionMouseDown = React.useCallback((e: React.MouseEvent) => {
+    // Prevent blur event when clicking on option
+    e.preventDefault();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const highlightMatch = (text: string, search: string) => {
     if (!search.trim()) return text;
@@ -120,8 +156,8 @@ export function Autocomplete({
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder={placeholder}
             className={cn("pr-8", hasResults && inputValue ? "ring-1 ring-accent" : "", className)}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 200)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
           />
           <div className="absolute right-0 top-0 h-full flex items-center px-2 pointer-events-none">
             {inputValue && hasResults ? (
@@ -172,7 +208,7 @@ export function Autocomplete({
                   key={option.value}
                   className="flex items-center p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-150 bg-popover"
                   onClick={() => handleSelect(option.value)}
-                  onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                  onMouseDown={handleOptionMouseDown}
                 >
                   <Check
                     className={cn(
