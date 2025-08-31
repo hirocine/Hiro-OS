@@ -7,11 +7,6 @@ export function Layout() {
   return (
     <SidebarProvider 
       defaultOpen={true}
-      style={{
-        '--sidebar-width': '280px',
-        '--sidebar-width-mobile': '280px',
-        '--sidebar-width-icon': '60px',
-      } as React.CSSProperties}
     >
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />

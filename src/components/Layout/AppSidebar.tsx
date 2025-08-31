@@ -66,7 +66,7 @@ export function AppSidebar() {
             )}
           />
           {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-sidebar-foreground animate-fade-in">
+            <span className="text-lg font-semibold text-sidebar-foreground transition-all duration-200">
               Inventário
             </span>
           )}
@@ -114,7 +114,7 @@ export function AppSidebar() {
                       >
                         <item.icon className="h-4 w-4 flex-shrink-0" />
                         {state !== 'collapsed' && (
-                          <span className="animate-fade-in">{item.name}</span>
+                          <span className="transition-all duration-200">{item.name}</span>
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -147,7 +147,7 @@ export function AppSidebar() {
                     >
                       <Shield className="h-4 w-4 flex-shrink-0" />
                       {state !== 'collapsed' && (
-                        <span className="animate-fade-in">Administração</span>
+                        <span className="transition-all duration-200">Administração</span>
                       )}
                     </NavLink>
                   </SidebarMenuButton>
