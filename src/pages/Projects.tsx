@@ -184,7 +184,7 @@ export default function Projects() {
 
         <FiltersSkeleton />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <ProjectCardSkeleton key={i} />
           ))}
@@ -299,7 +299,7 @@ export default function Projects() {
               <span className="text-sm text-muted-foreground">({upcomingProjects.length})</span>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {upcomingProjects.map((project) => (
                 <ProjectSummaryCard
                   key={project.id}
@@ -325,7 +325,7 @@ export default function Projects() {
               <span className="text-sm text-muted-foreground">({overdueProjects.length})</span>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {overdueProjects.map((project) => (
                 <ProjectSummaryCard
                   key={project.id}
@@ -363,7 +363,7 @@ export default function Projects() {
             </Button>
             
             {showCompleted && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {completedProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
@@ -402,7 +402,7 @@ export default function Projects() {
             </Button>
             
             {showArchived && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {archivedProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
