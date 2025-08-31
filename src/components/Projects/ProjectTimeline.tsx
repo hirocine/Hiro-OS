@@ -46,9 +46,12 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           {/* Progress Line */}
           <div className="absolute top-6 left-8 right-8 h-1 bg-muted rounded-full z-0">
             <div 
-              className="h-full bg-gradient-to-r from-step-separated via-step-pickup to-step-verified rounded-full transition-all duration-700 ease-out shadow-sm"
+              className={cn(
+                "h-full rounded-full transition-all duration-700 ease-out shadow-sm",
+                currentStepIndex === 0 ? "bg-muted" : "bg-gradient-to-r from-step-verified to-step-verified"
+              )}
               style={{ 
-                width: `${(currentStepIndex / (stepOrder.length - 1)) * 100}%` 
+                width: `${Math.max(0, (currentStepIndex / (stepOrder.length - 1)) * 100)}%` 
               }}
             />
           </div>
@@ -61,29 +64,29 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           const clickable = isStepClickable(index);
 
           return (
-            <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in min-w-0 flex-1">
+            <div key={step} className="flex flex-col items-center relative z-20 animate-fade-in min-w-0 flex-1">
               {/* Step Circle */}
               <div
                 className={cn(
-                  "w-14 h-14 rounded-full border-3 flex items-center justify-center transition-all duration-500 ease-out relative",
+                  "w-14 h-14 rounded-full border-3 flex items-center justify-center transition-all duration-500 ease-out relative z-20",
                   {
                     "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20 scale-105": status === 'completed',
                     "bg-warning border-warning text-warning-foreground shadow-elegant shadow-warning/30 animate-pulse scale-110": status === 'current',
-                    "bg-card border-border text-muted-foreground hover:bg-muted/50 hover:border-muted": status === 'pending' && !clickable,
-                    "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:shadow-primary/20 hover:scale-110 ring-2 ring-primary/20 hover:ring-primary/40": status === 'pending' && clickable
+                    "bg-background border-border text-muted-foreground hover:bg-muted hover:border-muted-foreground/50": status === 'pending' && !clickable,
+                    "bg-background border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:shadow-primary/20 hover:scale-110 ring-2 ring-primary/20 hover:ring-primary/40": status === 'pending' && clickable
                   }
                 )}
                 onClick={() => handleStepClick(step, index)}
                 title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
               >
                 <Icon className={cn(
-                  "transition-all duration-300",
+                  "transition-all duration-300 z-10",
                   status === 'current' ? "w-7 h-7" : "w-6 h-6"
                 )} />
                 
                 {/* Glow effect for current step */}
                 {status === 'current' && (
-                  <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping" />
+                  <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping z-0" />
                 )}
               </div>
 
@@ -134,25 +137,25 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 {/* Step Circle */}
                 <div
                   className={cn(
-                    "w-12 h-12 rounded-full border-3 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative",
+                    "w-12 h-12 rounded-full border-3 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative z-20",
                     {
                       "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20": status === 'completed',
                       "bg-warning border-warning text-warning-foreground shadow-lg shadow-warning/30 animate-pulse": status === 'current',
-                      "bg-card border-border text-muted-foreground": status === 'pending' && !clickable,
-                      "bg-primary/10 border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg ring-2 ring-primary/20": status === 'pending' && clickable
+                      "bg-background border-border text-muted-foreground": status === 'pending' && !clickable,
+                      "bg-background border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg ring-2 ring-primary/20": status === 'pending' && clickable
                     }
                   )}
                   onClick={() => handleStepClick(step, index)}
                   title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
                   <Icon className={cn(
-                    "transition-all duration-300",
+                    "transition-all duration-300 z-10",
                     status === 'current' ? "w-6 h-6" : "w-5 h-5"
                   )} />
                   
                   {/* Glow effect for current step */}
                   {status === 'current' && (
-                    <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping" />
+                    <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping z-0" />
                   )}
                 </div>
 
@@ -187,8 +190,8 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
               {index < stepOrder.length - 1 && (
                 <div 
                   className={cn(
-                    "absolute left-6 top-12 w-1 h-10 rounded-full transition-all duration-500",
-                    status === 'completed' ? "bg-gradient-to-b from-step-verified to-step-verified/50 shadow-sm" : "bg-muted"
+                    "absolute left-6 top-12 w-1 h-10 rounded-full transition-all duration-500 z-0",
+                    status === 'completed' ? "bg-step-verified shadow-sm" : "bg-muted"
                   )} 
                 />
               )}
