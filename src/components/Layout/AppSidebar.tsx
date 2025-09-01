@@ -51,7 +51,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="data-[state=collapsed]:w-20">
       <SidebarHeader className="h-16 border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">
           <img 
