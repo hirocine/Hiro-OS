@@ -82,7 +82,7 @@ export default function ProjectVerification() {
     
     setIsSubmitting(true);
     try {
-      await updateProjectStep('verified', notes.trim() || undefined);
+      await updateProjectStep('office_receipt', notes.trim() || undefined);
       toast({
         title: "Verificação concluída",
         description: "A verificação dos equipamentos foi confirmada com sucesso.",
