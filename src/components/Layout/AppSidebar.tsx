@@ -50,7 +50,7 @@ const navigation: NavigationItem[] = [
 
 export function AppSidebar() {
   const { isAdmin } = useUserRole();
-  const { state } = useSidebar();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
@@ -100,9 +100,25 @@ export function AppSidebar() {
         
         {/* Botão de toggle no final da sidebar */}
         <div className="mt-auto px-4 pt-4 pb-16 border-t border-border flex justify-center">
-          <div className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-accent">
-            <SidebarTrigger className="h-6 w-6" />
-          </div>
+          <button
+            onClick={toggleSidebar}
+            className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-accent"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+          </button>
         </div>
       </SidebarContent>
     </Sidebar>
