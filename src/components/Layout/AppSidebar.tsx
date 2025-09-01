@@ -59,7 +59,7 @@ export function AppSidebar() {
             <img 
               src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
               alt="HIRO Logo" 
-              className="h-8 w-auto flex-shrink-0"
+              className="h-12 w-auto flex-shrink-0"
             />
             {state !== 'collapsed' && (
               <span className="text-lg font-semibold text-foreground">
