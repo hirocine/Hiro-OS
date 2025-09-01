@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -53,17 +54,20 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-16 border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <img 
-            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-            alt="HIRO Logo" 
-            className="h-8 w-auto flex-shrink-0"
-          />
-          {state !== 'collapsed' && (
-            <span className="text-lg font-semibold text-foreground">
-              Inventário
-            </span>
-          )}
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+              alt="HIRO Logo" 
+              className="h-8 w-auto flex-shrink-0"
+            />
+            {state !== 'collapsed' && (
+              <span className="text-lg font-semibold text-foreground">
+                Inventário
+              </span>
+            )}
+          </div>
+          <SidebarTrigger className="h-8 w-8" />
         </div>
       </SidebarHeader>
       
