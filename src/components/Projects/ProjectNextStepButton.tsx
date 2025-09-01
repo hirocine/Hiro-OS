@@ -46,13 +46,15 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isWithdrawing = project.step === 'ready_for_pickup' && nextStep === 'in_use';
   const isVerifying = project.step === 'in_use' && nextStep === 'pending_verification';
   const isOfficeReceipt = project.step === 'pending_verification' && nextStep === 'office_receipt';
+  const isSeparating = project.step === 'pending_separation' && nextStep === 'ready_for_pickup';
 
   const handleClick = () => {
     console.log('🔄 Button clicked', { 
       currentStep: project.step, 
       nextStep, 
       isWithdrawing,
-      isOfficeReceipt
+      isOfficeReceipt,
+      isSeparating
     });
     
     if (isWithdrawing) {
@@ -63,6 +65,9 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     } else if (isOfficeReceipt) {
       console.log('🏢 Opening office receipt dialog');
       setOfficeReceiptDialogOpen(true);
+    } else if (isSeparating) {
+      console.log('📦 Navigating to separation page');
+      navigate(`/projects/${project.id}/separation`);
     } else {
       console.log('⏭️ Normal step update to:', nextStep);
       onStepUpdate(nextStep);
@@ -113,6 +118,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       >
         <NextStepIcon className="mr-2 h-4 w-4" />
         {loading ? 'Processando...' : 
+         isSeparating ? 'Separar' :
          isWithdrawing ? 'Registrar Retirada' : 
          isOfficeReceipt ? 'Confirmar Retorno' :
          isCompleting ? 'Finalizar' : 
