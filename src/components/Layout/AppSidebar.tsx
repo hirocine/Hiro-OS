@@ -100,7 +100,7 @@ export function AppSidebar() {
         
         {/* Botão de toggle no final da sidebar */}
         <div className="mt-auto px-4 pt-4 pb-16 border-t border-border flex justify-center">
-          <SidebarTrigger className="h-10 w-10 p-2 rounded-md hover:bg-accent" />
+          <SidebarTrigger className="h-10 w-10 p-2 rounded-md hover:bg-accent transition-all duration-200 ease-out hover:scale-105" />
         </div>
       </SidebarContent>
     </Sidebar>
