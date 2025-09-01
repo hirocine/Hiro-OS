@@ -10,11 +10,10 @@ max_rows = 1000
 [auth]
 enabled = true
 port = 9999
-site_url = "https://oddxoicvreymmeynfxxj.supabase.co"
+site_url = "https://inventario.hiro.film"
 additional_redirect_urls = [
   "http://localhost:3000/**",
-  "https://localhost:3000/**", 
-  "https://preview--hirofilms-inventario.lovable.app/**",
+  "https://inventario.hiro.film/**",
   "https://oddxoicvreymmeynfxxj.supabase.co/auth/v1/callback"
 ]
 jwt_expiry = 3600
