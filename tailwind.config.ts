@@ -153,13 +153,57 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0)'
 					}
+				},
+				'sidebar-expand': {
+					'0%': {
+						transform: 'scaleX(0.95)',
+						opacity: '0.8'
+					},
+					'100%': {
+						transform: 'scaleX(1)',
+						opacity: '1'
+					}
+				},
+				'sidebar-collapse': {
+					'0%': {
+						transform: 'scaleX(1)',
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'scaleX(0.95)',
+						opacity: '0.9'
+					}
+				},
+				'text-fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateX(-10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
+				},
+				'text-fade-out': {
+					'0%': {
+						opacity: '1',
+						transform: 'translateX(0)'
+					},
+					'100%': {
+						opacity: '0',
+						transform: 'translateX(-10px)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'slide-up': 'slide-up 0.4s ease-out'
+				'slide-up': 'slide-up 0.4s ease-out',
+				'sidebar-expand': 'sidebar-expand 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+				'sidebar-collapse': 'sidebar-collapse 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+				'text-fade-in': 'text-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+				'text-fade-out': 'text-fade-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
