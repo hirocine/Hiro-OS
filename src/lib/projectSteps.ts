@@ -7,7 +7,7 @@ export const stepLabels: Record<ProjectStep, string> = {
   in_use: 'Gravação',
   pending_verification: 'Check Desmontagem',
   office_receipt: 'Retorno',
-  verified: 'Verificado'
+  verified: 'Finalizado'
 };
 
 export const stepColors: Record<ProjectStep, string> = {

@@ -6,7 +6,7 @@ export type ProjectStep =
   | 'in_use'              // Gravação
   | 'pending_verification' // Check Desmontagem
   | 'office_receipt'      // Confirmar Recebimento no Escritório
-  | 'verified';           // Verificado
+  | 'verified';           // Finalizado
 
 export interface StepChange {
   step: ProjectStep;
