@@ -51,7 +51,10 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
       <div className="hidden md:block">
         <div className="flex items-start justify-center gap-4 lg:gap-8 relative max-w-5xl mx-auto">
           {/* Progress Line */}
-          <div className="absolute top-6 left-8 right-8 h-1 bg-muted rounded-full z-0">
+          <div className="absolute top-6 h-1 bg-muted rounded-full z-0" style={{ 
+            left: `calc(${100 / stepOrder.length / 2}% + 28px)`, 
+            right: `calc(${100 / stepOrder.length / 2}% + 28px)` 
+          }}>
             <div 
               className={cn(
                 "h-full rounded-full transition-all duration-700 ease-out shadow-sm",
