@@ -61,11 +61,6 @@ export function AppSidebar() {
               alt="HIRO Logo" 
               className="h-12 w-auto flex-shrink-0"
             />
-            {state !== 'collapsed' && (
-              <span className="text-lg font-semibold text-foreground">
-                Inventário
-              </span>
-            )}
           </div>
           <SidebarTrigger className="h-8 w-8" />
         </div>
