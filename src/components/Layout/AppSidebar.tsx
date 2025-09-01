@@ -99,8 +99,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4">
-        <SidebarTrigger className="h-8 w-8" />
+      <SidebarFooter className="p-4 bg-red-500/20 border-t border-border">
+        <SidebarTrigger className="h-8 w-8 bg-primary text-primary-foreground" />
       </SidebarFooter>
     </Sidebar>
   );
