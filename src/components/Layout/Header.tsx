@@ -2,6 +2,7 @@ import { User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +31,7 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-6">
       <div className="flex items-center space-x-4">
+        <SidebarTrigger className="h-8 w-8" />
         <img 
           src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
           alt="HIRO Logo" 

@@ -13,7 +13,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -53,11 +52,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-16 border-b border-border">
-        <div className="flex items-center justify-end px-4 py-3">
-          <SidebarTrigger className="h-8 w-8" />
-        </div>
-      </SidebarHeader>
+      <SidebarHeader className="h-16 border-b border-border" />
       
       <SidebarContent className="px-4">
         <SidebarGroup>
