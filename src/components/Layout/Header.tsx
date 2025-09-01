@@ -29,7 +29,7 @@ export function Header() {
     : user?.email?.substring(0, 2).toUpperCase() || 'U';
 
   return (
-    <header className="h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-6">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-6">
       <div className="flex items-center space-x-4">
         <SidebarTrigger />
         <div>

@@ -15,7 +15,7 @@ export function Layout() {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <Header />
-          <main className="flex-1 overflow-auto pb-12">
+          <main className="flex-1 overflow-auto pb-12 pt-16">
             <Outlet />
           </main>
         </SidebarInset>
