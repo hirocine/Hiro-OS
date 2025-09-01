@@ -89,7 +89,7 @@ export function AppSidebar() {
                         to={item.href}
                         end={item.href === '/'}
                       >
-                        <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                        <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
                         <span>{item.name}</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -103,7 +103,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/admin"
                     >
-                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <Shield className="mr-3 h-5 w-5 flex-shrink-0" />
                       <span>Administração</span>
                     </NavLink>
                   </SidebarMenuButton>
