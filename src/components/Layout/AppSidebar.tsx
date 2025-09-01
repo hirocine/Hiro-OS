@@ -1,3 +1,4 @@
+
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -51,7 +52,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-border">
+      <SidebarHeader className="h-16 border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">
           <img 
             src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
