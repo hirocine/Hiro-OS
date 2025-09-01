@@ -2,7 +2,7 @@ import { ProjectStep, ProjectStatus } from '@/types/project';
 import { ClipboardList, Package, Truck, Play, Clock, Building2, CheckCircle } from 'lucide-react';
 
 export const stepLabels: Record<ProjectStep, string> = {
-  pending_separation: 'Pendente Separação',
+  pending_separation: 'Separação',
   separated: 'Separado',
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
