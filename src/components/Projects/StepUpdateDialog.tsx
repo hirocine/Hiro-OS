@@ -31,15 +31,6 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
   const handleSubmit = () => {
     if (!selectedStep) return;
     
-    // Special handling for separation - navigate to separation page
-    if (currentStep === 'pending_separation' && selectedStep === 'separated') {
-      onOpenChange(false);
-      setSelectedStep('');
-      setNotes('');
-      navigate(`/projects/${project.id}/separation`);
-      return;
-    }
-    
     onUpdate(project.id, selectedStep, notes.trim() || undefined);
     onOpenChange(false);
     setSelectedStep('');
@@ -87,15 +78,6 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
             </Select>
           </div>
 
-          {currentStep === 'pending_separation' && selectedStep === 'separated' && (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Você será redirecionado para confirmar a separação individual de cada equipamento.
-              </AlertDescription>
-            </Alert>
-          )}
-
           {willCompleteProject && (
             <Alert>
               <AlertTriangle className="h-4 w-4" />
@@ -126,10 +108,7 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
             onClick={handleSubmit}
             disabled={!selectedStep}
           >
-            {currentStep === 'pending_separation' && selectedStep === 'separated' 
-              ? 'Iniciar Separação' 
-              : 'Atualizar Status'
-            }
+            Atualizar Status
           </Button>
         </DialogFooter>
       </DialogContent>

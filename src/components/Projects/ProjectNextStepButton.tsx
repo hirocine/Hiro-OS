@@ -43,7 +43,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
 
   const NextStepIcon = stepIcons[nextStep];
   const isCompleting = nextStep === 'verified';
-  const isSeparating = project.step === 'pending_separation' && nextStep === 'separated';
   const isWithdrawing = project.step === 'ready_for_pickup' && nextStep === 'in_use';
   const isVerifying = project.step === 'in_use' && nextStep === 'pending_verification';
   const isOfficeReceipt = project.step === 'pending_verification' && nextStep === 'office_receipt';
@@ -52,14 +51,11 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     console.log('🔄 Button clicked', { 
       currentStep: project.step, 
       nextStep, 
-      isSeparating, 
       isWithdrawing,
       isOfficeReceipt
     });
     
-    if (isSeparating) {
-      navigate(`/projects/${project.id}/separation`);
-    } else if (isWithdrawing) {
+    if (isWithdrawing) {
       console.log('🔓 Opening withdrawal dialog');
       setWithdrawalDialogOpen(true);
     } else if (isVerifying) {
@@ -117,7 +113,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       >
         <NextStepIcon className="mr-2 h-4 w-4" />
         {loading ? 'Processando...' : 
-         isSeparating ? 'Separar' : 
          isWithdrawing ? 'Registrar Retirada' : 
          isOfficeReceipt ? 'Confirmar Retorno' :
          isCompleting ? 'Finalizar' : 

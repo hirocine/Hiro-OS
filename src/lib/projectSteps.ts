@@ -3,7 +3,6 @@ import { ClipboardList, Package, Truck, Play, Clock, Building2, CheckCircle } fr
 
 export const stepLabels: Record<ProjectStep, string> = {
   pending_separation: 'Separação',
-  separated: 'Separado',
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
   pending_verification: 'Check Desmontagem',
@@ -13,7 +12,6 @@ export const stepLabels: Record<ProjectStep, string> = {
 
 export const stepColors: Record<ProjectStep, string> = {
   pending_separation: 'step-pending',
-  separated: 'step-separated',
   ready_for_pickup: 'step-pickup',
   in_use: 'step-in-use',
   pending_verification: 'step-verification',
@@ -42,7 +40,6 @@ export const getProjectClasses = (status: ProjectStatus, step: ProjectStep): str
   
   const classMap: Record<string, string> = {
     'step-pending': 'bg-step-pending text-step-pending-foreground',
-    'step-separated': 'bg-step-separated text-step-separated-foreground',
     'step-pickup': 'bg-step-pickup text-step-pickup-foreground',
     'step-in-use': 'bg-step-in-use text-step-in-use-foreground',
     'step-verification': 'bg-step-verification text-step-verification-foreground',
@@ -58,7 +55,6 @@ export const getProjectClasses = (status: ProjectStatus, step: ProjectStep): str
 
 export const stepIcons: Record<ProjectStep, any> = {
   pending_separation: ClipboardList,
-  separated: Package,
   ready_for_pickup: Truck,
   in_use: Play,
   pending_verification: Clock,
@@ -68,7 +64,6 @@ export const stepIcons: Record<ProjectStep, any> = {
 
 export const stepOrder: ProjectStep[] = [
   'pending_separation',
-  'separated',
   'ready_for_pickup',
   'in_use',
   'pending_verification',
@@ -89,7 +84,7 @@ export function canTransitionTo(currentStep: ProjectStep, nextStep: ProjectStep)
 }
 
 export function shouldAutoUpdateToInUse(startDate: string, step: ProjectStep): boolean {
-  if (step !== 'separated') return false;
+  if (step !== 'pending_separation') return false;
   
   const today = new Date().toISOString().split('T')[0];
   return startDate <= today;

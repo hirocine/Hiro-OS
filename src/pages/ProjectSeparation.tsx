@@ -81,7 +81,7 @@ export default function ProjectSeparation() {
     
     setIsSubmitting(true);
     try {
-      await updateProjectStep('separated', notes.trim() || undefined);
+      await updateProjectStep('ready_for_pickup', notes.trim() || undefined);
       toast({
         title: "Equipamentos separados",
         description: "A separação dos equipamentos foi confirmada com sucesso.",

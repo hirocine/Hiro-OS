@@ -7,11 +7,10 @@ export const statusLabels: Record<ProjectStatus, string> = {
 };
 
 export const stepLabels: Record<ProjectStep, string> = {
-  pending_separation: 'Pendente Separação',
-  separated: 'Separado',
+  pending_separation: 'Separação',
   ready_for_pickup: 'Retirar',
   in_use: 'Gravação',
-  pending_verification: 'Pendente Verificação',
+  pending_verification: 'Check Desmontagem',
   office_receipt: 'Retorno',
   verified: 'Verificado'
 };
