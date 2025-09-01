@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { ProjectStep } from '@/types/project';
+import { ProjectStep, ProjectStatus } from '@/types/project';
 import { stepLabels, stepIcons, stepOrder } from '@/lib/projectSteps';
 
 interface ProjectTimelineProps {
@@ -9,15 +9,22 @@ interface ProjectTimelineProps {
   className?: string;
   onStepClick?: (step: ProjectStep) => void;
   isProjectActive?: boolean;
+  projectStatus?: ProjectStatus;
 }
 
-export function ProjectTimeline({ currentStep, stepHistory, className, onStepClick, isProjectActive = false }: ProjectTimelineProps) {
+export function ProjectTimeline({ currentStep, stepHistory, className, onStepClick, isProjectActive = false, projectStatus }: ProjectTimelineProps) {
   const getCurrentStepIndex = () => stepOrder.indexOf(currentStep);
   const currentStepIndex = getCurrentStepIndex();
 
   const getStepStatus = (stepIndex: number) => {
     if (stepIndex < currentStepIndex) return 'completed';
-    if (stepIndex === currentStepIndex) return 'current';
+    if (stepIndex === currentStepIndex) {
+      // If project is completed and we're at the final step, show as completed (green)
+      if (projectStatus === 'completed' && stepIndex === stepOrder.length - 1) {
+        return 'completed';
+      }
+      return 'current';
+    }
     return 'pending';
   };
 

@@ -253,6 +253,7 @@ export default function ProjectDetails() {
             stepHistory={project.stepHistory}
             onStepClick={handleUpdateStep}
             isProjectActive={project.status === 'active'}
+            projectStatus={project.status}
           />
         </CardContent>
       </Card>
