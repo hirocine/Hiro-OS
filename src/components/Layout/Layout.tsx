@@ -5,7 +5,11 @@ import { Header } from './Header';
 
 export function Layout() {
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={{
+        "--sidebar-width-icon": "5rem",
+      } as React.CSSProperties}
+    >
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
