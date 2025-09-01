@@ -229,11 +229,11 @@ export default function ProjectDetails() {
       </div>
 
       {/* Timeline */}
-      <Card className="p-6">
-        <CardHeader className="pb-4">
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Status do Projeto</CardTitle>
+              <CardTitle>Status do Projeto</CardTitle>
               <CardDescription>
                 Progresso atual: {stepLabels[project.step]}
               </CardDescription>
