@@ -21,12 +21,16 @@ const badgeVariants = cva(
           "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
         "step-pending":
           "border-transparent bg-step-pending text-step-pending-foreground hover:bg-step-pending/80",
+        "step-pickup":
+          "border-transparent bg-step-pickup text-step-pickup-foreground hover:bg-step-pickup/80",
         "step-separated":
           "border-transparent bg-step-separated text-step-separated-foreground hover:bg-step-separated/80",
         "step-in-use":
           "border-transparent bg-step-in-use text-step-in-use-foreground hover:bg-step-in-use/80",
         "step-verification":
           "border-transparent bg-step-verification text-step-verification-foreground hover:bg-step-verification/80",
+        "step-office-receipt":
+          "border-transparent bg-step-office-receipt text-step-office-receipt-foreground hover:bg-step-office-receipt/80",
         "step-verified":
           "border-transparent bg-step-verified text-step-verified-foreground hover:bg-step-verified/80",
         "status-active":
