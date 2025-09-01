@@ -246,6 +246,36 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempt_time: string | null
+          failure_reason: string | null
+          id: string
+          ip_address: unknown
+          success: boolean | null
+          user_agent: string | null
+          user_email: string | null
+        }
+        Insert: {
+          attempt_time?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address: unknown
+          success?: boolean | null
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Update: {
+          attempt_time?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown
+          success?: boolean | null
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -447,6 +477,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       user_notification_status: {
         Row: {
           created_at: string
@@ -520,6 +589,19 @@ export type Database = {
           table_name: string
         }[]
       }
+      check_login_rate_limit: {
+        Args: { _ip_address: unknown; _user_email?: string }
+        Returns: Json
+      }
+      check_password_security_settings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_status: string
+          priority: string
+          recommendation: string
+          setting_name: string
+        }[]
+      }
       create_notification_for_all_users: {
         Args: {
           _description?: string
@@ -531,9 +613,23 @@ export type Database = {
         }
         Returns: string
       }
+      create_security_alert: {
+        Args: {
+          _alert_type: string
+          _description?: string
+          _metadata?: Json
+          _severity: string
+          _title: string
+        }
+        Returns: string
+      }
       deactivate_user: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      detect_suspicious_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -588,6 +684,10 @@ export type Database = {
           status: string
         }[]
       }
+      get_security_dashboard: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -617,6 +717,16 @@ export type Database = {
           _old_values?: Json
           _record_id?: string
           _table_name: string
+        }
+        Returns: undefined
+      }
+      log_login_attempt: {
+        Args: {
+          _failure_reason?: string
+          _ip_address: unknown
+          _success: boolean
+          _user_agent?: string
+          _user_email: string
         }
         Returns: undefined
       }

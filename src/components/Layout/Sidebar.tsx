@@ -33,6 +33,21 @@ const navigation: NavigationItem[] = [
   },
 ];
 
+const adminNavigation: NavigationItem[] = [
+  {
+    name: 'Administração',
+    href: '/admin',
+    icon: Settings,
+    adminOnly: true,
+  },
+  {
+    name: 'Segurança',
+    href: '/security',
+    icon: Shield,
+    adminOnly: true,
+  },
+];
+
 export function Sidebar() {
   const { isAdmin } = useUserRole();
 
@@ -52,35 +67,11 @@ export function Sidebar() {
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
-        {navigation.map((item) => {
-          // Hide admin-only items for non-admin users
-          if (item.adminOnly && !isAdmin) {
-            return null;
-          }
-          
-          return (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              end={item.href === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-elegant'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                )
-              }
-            >
-              <item.icon className="mr-3 h-4 w-4" />
-              {item.name}
-            </NavLink>
-          );
-        })}
-        
-        {isAdmin && (
+        {navigation.map((item) => (
           <NavLink
-            to="/admin"
+            key={item.name}
+            to={item.href}
+            end={item.href === '/'}
             className={({ isActive }) =>
               cn(
                 'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
@@ -90,9 +81,36 @@ export function Sidebar() {
               )
             }
           >
-            <Shield className="mr-3 h-4 w-4" />
-            Administração
+            <item.icon className="mr-3 h-4 w-4" />
+            {item.name}
           </NavLink>
+        ))}
+        
+        {isAdmin && (
+          <div className="pt-4 border-t border-border mt-4">
+            <div className="pb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Administração
+              </p>
+            </div>
+            {adminNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-elegant'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  )
+                }
+              >
+                <item.icon className="mr-3 h-4 w-4" />
+                {item.name}
+              </NavLink>
+            ))}
+          </div>
         )}
       </nav>
     </div>
