@@ -13,8 +13,7 @@ port = 9999
 site_url = "https://inventario.hiro.film"
 additional_redirect_urls = [
   "http://localhost:3000/**",
-  "https://inventario.hiro.film/**",
-  "https://oddxoicvreymmeynfxxj.supabase.co/auth/v1/callback"
+  "https://inventario.hiro.film/**"
 ]
 jwt_expiry = 3600
 enable_signup = false

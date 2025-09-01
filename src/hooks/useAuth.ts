@@ -92,9 +92,25 @@ export function useAuth() {
   };
 
   const signInWithGoogle = async () => {
+    authDebug('Iniciando OAuth com Google...');
+    
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google'
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account',
+        }
+      }
     });
+    
+    if (error) {
+      authDebug('Erro no OAuth Google', { error: error.message });
+    } else {
+      authDebug('OAuth Google iniciado com sucesso');
+    }
+    
     return { error };
   };
 

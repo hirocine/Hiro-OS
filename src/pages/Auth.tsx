@@ -90,16 +90,36 @@ export default function Auth() {
   };
 
   const handleGoogleAuth = async () => {
+    authDebug('Iniciando processo de autenticação Google...');
     setLoading(true);
     setError(null);
 
     try {
+      authDebug('Chamando signInWithGoogle...');
       const { error } = await signInWithGoogle();
+      
       if (error) {
-        setError(error.message);
+        authDebug('Erro retornado do signInWithGoogle', { 
+          message: error.message,
+          status: error.status,
+          name: error.name 
+        });
+        
+        // Mensagens de erro mais específicas
+        if (error.message.includes('requested path is invalid')) {
+          setError('Erro de configuração OAuth. Verifique se as URLs estão corretas no Supabase e Google Cloud.');
+        } else if (error.message.includes('unauthorized_client')) {
+          setError('Cliente não autorizado. Verifique a configuração no Google Cloud Console.');
+        } else {
+          setError(`Erro de autenticação: ${error.message}`);
+        }
+      } else {
+        authDebug('signInWithGoogle executado sem erro, aguardando redirecionamento...');
+        // O OAuth redirecionará, então não devemos chegar aqui imediatamente
       }
     } catch (err) {
-      setError('Erro ao conectar com Google');
+      authDebug('Erro capturado no handleGoogleAuth', err);
+      setError('Erro inesperado ao conectar com Google. Tente novamente.');
     } finally {
       setLoading(false);
     }
