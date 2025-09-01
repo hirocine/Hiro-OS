@@ -511,6 +511,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audit_data_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          policy_name: string
+          potential_exposure: string
+          severity: string
+          table_name: string
+        }[]
+      }
       create_notification_for_all_users: {
         Args: {
           _description?: string
@@ -622,6 +631,10 @@ export type Database = {
       mark_notification_as_read: {
         Args: { _notification_id: string }
         Returns: undefined
+      }
+      user_can_access_equipment: {
+        Args: { equipment_id: string }
+        Returns: boolean
       }
     }
     Enums: {
