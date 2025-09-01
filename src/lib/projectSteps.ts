@@ -31,6 +31,11 @@ export const getProjectColor = (status: ProjectStatus, step: ProjectStep): strin
     return stepColors[step];
   }
   
+  // Special case: completed projects that are verified should show green
+  if (status === 'completed' && step === 'verified') {
+    return stepColors[step];
+  }
+  
   // For completed and archived, use status color
   return statusColors[status];
 };
