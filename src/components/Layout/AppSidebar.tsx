@@ -99,7 +99,7 @@ export function AppSidebar() {
         </SidebarGroup>
         
         {/* Botão de toggle no final da sidebar */}
-        <div className="mt-auto px-4 pt-4 pb-16 border-t border-border">
+        <div className="mt-auto px-4 pt-4 pb-16 border-t border-border flex justify-center">
           <SidebarTrigger className="h-8 w-8" />
         </div>
       </SidebarContent>
