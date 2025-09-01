@@ -4,7 +4,7 @@ export function Footer() {
       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
         <span>© 2025 Hiro Films</span>
         <span>•</span>
-        <span>Produtora Audiovisual</span>
+        <span>Inventário</span>
       </div>
     </footer>
   );
