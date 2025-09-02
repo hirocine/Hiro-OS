@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Upload, User, Camera, Shield } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { profileDebug } from '@/lib/debug';
+import { AvatarUploadArea } from '@/components/ui/avatar-upload-area';
+import { AvatarCropperDialog } from '@/components/ui/avatar-cropper-dialog';
+import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 
 interface UserProfile {
   id: string;
@@ -25,13 +27,17 @@ export default function Profile() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
     display_name: '',
     position: '',
     department: ''
   });
+
+  // Avatar cropping state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string>('');
+  const { uploading, validateFile, uploadAvatar, removeAvatar, setImageUrl } = useAvatarUpload();
 
   useEffect(() => {
     if (user) {
@@ -121,92 +127,47 @@ export default function Profile() {
     }
   };
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (file: File) => {
     try {
-      setUploading(true);
-      profileDebug('Avatar: Starting upload process');
-      
-      if (!user?.id) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Você deve selecionar uma imagem para upload.');
-      }
-
-      const file = event.target.files[0];
-      profileDebug('Avatar: File selected', { 
-        name: file.name, 
-        size: file.size, 
-        type: file.type 
-      });
-
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Por favor, selecione apenas arquivos de imagem.');
-      }
-
-      // Validar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('A imagem deve ter no máximo 5MB.');
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
-      profileDebug('Avatar: Upload path', filePath);
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) {
-        profileDebug('Avatar: Upload error', uploadError);
-        throw uploadError;
-      }
-
-      profileDebug('Avatar: Upload successful, getting public URL');
-
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      profileDebug('Avatar: Public URL obtained', data.publicUrl);
-
-      const updateData = {
-        user_id: user.id,
-        avatar_url: data.publicUrl
-      };
-
-      profileDebug('Avatar: Updating profile with avatar URL', updateData);
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert(updateData, {
-          onConflict: 'user_id'
-        });
-
-      if (updateError) {
-        profileDebug('Avatar: Profile update error', updateError);
-        throw updateError;
-      }
-
-      profileDebug('Avatar: Profile updated successfully');
-
-      toast({
-        title: "Avatar atualizado",
-        description: "Sua foto de perfil foi atualizada com sucesso.",
-      });
-
-      await fetchProfile();
+      validateFile(file);
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImageSrc(imageUrl);
+      setCropperOpen(true);
     } catch (error: any) {
-      profileDebug('Avatar: Error in upload process', error);
       toast({
-        title: "Erro ao fazer upload",
-        description: error.message || "Não foi possível atualizar o avatar.",
+        title: "Arquivo inválido",
+        description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploading(false);
+    }
+  };
+
+  const handleCropComplete = async (croppedImageData: { file: Blob; url: string }) => {
+    if (!user?.id) return;
+
+    try {
+      await uploadAvatar(user.id, croppedImageData, {
+        quality: 0.9,
+        maxWidth: 512,
+        maxHeight: 512
+      });
+      
+      setCropperOpen(false);
+      setSelectedImageSrc('');
+      await fetchProfile();
+    } catch (error) {
+      // Error is handled by the hook
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user?.id) return;
+
+    try {
+      await removeAvatar(user.id);
+      await fetchProfile();
+    } catch (error) {
+      // Error is handled by the hook
     }
   };
 
@@ -236,36 +197,18 @@ export default function Profile() {
           <CardHeader>
             <CardTitle>Foto do Perfil</CardTitle>
             <CardDescription>
-              Clique na foto para alterar sua imagem de perfil.
+              Selecione uma imagem para seu perfil. Você poderá ajustar o crop antes de salvar.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profile?.avatar_url || undefined} />
-                <AvatarFallback className="text-lg">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <label
-                htmlFor="avatar-upload"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-              >
-                {uploading ? (
-                  <Loader2 className="h-6 w-6 text-white animate-spin" />
-                ) : (
-                  <Camera className="h-6 w-6 text-white" />
-                )}
-              </label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                disabled={uploading}
-                className="hidden"
-              />
-            </div>
+            <AvatarUploadArea
+              currentAvatarUrl={profile?.avatar_url}
+              userInitials={userInitials}
+              onFileSelect={handleFileSelect}
+              onRemoveAvatar={profile?.avatar_url ? handleRemoveAvatar : undefined}
+              uploading={uploading}
+              size="lg"
+            />
             <div className="text-center">
               <p className="font-medium">{profile?.display_name || 'Nome não definido'}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
@@ -380,6 +323,15 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Avatar Cropper Dialog */}
+      <AvatarCropperDialog
+        open={cropperOpen}
+        onOpenChange={setCropperOpen}
+        imageSrc={selectedImageSrc}
+        onCropComplete={handleCropComplete}
+        loading={uploading}
+      />
     </div>
   );
 }
