@@ -7,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { authDebug } from '@/lib/debug';
+import { validateEmail, sanitizeInput } from '@/lib/security';
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -22,6 +24,8 @@ export default function Auth() {
     department: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [passwordValid, setPasswordValid] = useState(false);
+  const [emailValid, setEmailValid] = useState(false);
 
   const { user, loading: authLoading, signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
@@ -55,6 +59,19 @@ export default function Auth() {
     setLoading(true);
     setError(null);
 
+    // Enhanced client-side validation
+    if (!validateEmail(formData.email)) {
+      setError('Por favor, insira um email válido');
+      setLoading(false);
+      return;
+    }
+
+    if (mode === 'signup' && !passwordValid) {
+      setError('Por favor, crie uma senha que atenda aos requisitos de segurança');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (mode === 'login') {
         const { error } = await signIn(formData.email, formData.password);
@@ -68,9 +85,9 @@ export default function Auth() {
         }
       } else {
         const { error } = await signUp(formData.email, formData.password, {
-          full_name: formData.full_name,
-          position: formData.position,
-          department: formData.department
+          full_name: sanitizeInput(formData.full_name),
+          position: sanitizeInput(formData.position),
+          department: sanitizeInput(formData.department)
         });
         if (error) {
           setError(error.message);
@@ -162,33 +179,36 @@ export default function Auth() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">Nome Completo</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                   <Label htmlFor="full_name">Nome Completo</Label>
+                   <Input
+                     id="full_name"
+                     value={formData.full_name}
+                     onChange={(e) => setFormData(prev => ({ ...prev, full_name: sanitizeInput(e.target.value) }))}
+                     required
+                     maxLength={100}
+                   />
+                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
                     <Label htmlFor="position">Cargo</Label>
-                    <Input
-                      id="position"
-                      value={formData.position}
-                      onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                      placeholder="Ex: Editor"
-                    />
+                     <Input
+                       id="position"
+                       value={formData.position}
+                       onChange={(e) => setFormData(prev => ({ ...prev, position: sanitizeInput(e.target.value) }))}
+                       placeholder="Ex: Editor"
+                       maxLength={50}
+                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="department">Área</Label>
-                    <Input
-                      id="department"
-                      value={formData.department}
-                      onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                      placeholder="Ex: Pós-produção"
-                    />
+                     <Input
+                       id="department"
+                       value={formData.department}
+                       onChange={(e) => setFormData(prev => ({ ...prev, department: sanitizeInput(e.target.value) }))}
+                       placeholder="Ex: Pós-produção"
+                       maxLength={50}
+                     />
                   </div>
                 </div>
               </>
@@ -200,23 +220,36 @@ export default function Auth() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => {
+                  const email = sanitizeInput(e.target.value);
+                  setFormData(prev => ({ ...prev, email }));
+                  setEmailValid(validateEmail(email));
+                }}
                 required
+                maxLength={100}
+                className={emailValid || !formData.email ? '' : 'border-destructive focus-visible:ring-destructive'}
               />
+              {formData.email && !emailValid && (
+                <p className="text-sm text-destructive">Por favor, insira um email válido</p>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                required
-                minLength={6}
-              />
-            </div>
+            <PasswordInput
+              id="password"
+              label="Senha"
+              showStrength={mode === 'signup'}
+              requirements={mode === 'signup' ? {} : { minLength: 1 }} // Relaxed for login
+              onChange={(password, isValid) => {
+                setFormData(prev => ({ ...prev, password }));
+                setPasswordValid(isValid);
+              }}
+              required
+            />
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading || (mode === 'signup' && (!passwordValid || !emailValid))}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === 'login' ? 'Entrar' : 'Criar Conta'}
             </Button>

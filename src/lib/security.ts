@@ -18,13 +18,28 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Validates email format
+ * Validates email format with enhanced security checks
  * @param email - Email string to validate
  * @returns Boolean indicating if email is valid
  */
 export function validateEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  
+  // Basic format check
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  if (!emailRegex.test(email)) return false;
+  
+  // Additional security checks
+  const suspiciousPatterns = [
+    /\.\./,           // Double dots
+    /^\.|\.$/, // Starting or ending with dot
+    /@\.|\@$/,        // @ followed by dot or at end
+    /\s/,             // Whitespace
+    /[<>]/,           // HTML characters
+    /javascript:/i,   // JavaScript protocol
+  ];
+  
+  return !suspiciousPatterns.some(pattern => pattern.test(email));
 }
 
 /**
