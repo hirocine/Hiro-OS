@@ -1,44 +1,75 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
 import { naturalSort } from '@/lib/utils';
+import { logger } from '@/lib/logger';
+import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
+import type { Result, ApiResponse } from '@/types/common';
 
-export function useEquipment() {
+export interface UseEquipmentReturn {
+  equipment: Equipment[];
+  enrichedEquipment: Equipment[];
+  filteredEquipment: Equipment[];
+  equipmentHierarchy: EquipmentHierarchy[];
+  unlinkedAccessories: Equipment[];
+  stats: DashboardStats;
+  filters: EquipmentFilters;
+  loading: boolean;
+  error: string | null;
+  allEquipment: Equipment[];
+  setFilters: (filters: EquipmentFilters) => void;
+  addEquipment: (equipment: Omit<Equipment, 'id'>) => Promise<Result<Equipment>>;
+  updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<Result<void>>;
+  deleteEquipment: (id: string) => Promise<Result<void>>;
+  convertToAccessory: (equipmentId: string, parentId: string) => Promise<Result<void>>;
+  importEquipment: (equipment: Omit<Equipment, 'id'>[]) => Promise<Result<Equipment[]>>;
+  toggleEquipmentExpansion: (id: string) => void;
+  getMainItems: () => Equipment[];
+  handleSort: (field: SortableField, order: SortOrder) => void;
+  clearSort: () => void;
+  fetchEquipment: () => Promise<void>;
+}
+
+export function useEquipment(): UseEquipmentReturn {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [filters, setFilters] = useState<EquipmentFilters>({
     sortBy: 'patrimonyNumber',
     sortOrder: 'asc'
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch equipment from Supabase
   useEffect(() => {
     fetchEquipment();
   }, []);
 
-  const fetchEquipment = async () => {
-    try {
+  const fetchEquipment = useCallback(async (): Promise<void> => {
+    const result = await wrapAsync(async () => {
       setLoading(true);
+      setError(null);
+      
+      logger.apiCall('fetchEquipment', 'GET', '/equipments');
+
       const { data, error } = await supabase
         .from('equipments')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching equipment:', error);
-        return;
+        throw createDatabaseError('Erro ao buscar equipamentos', { originalError: error.message });
       }
 
       // Transform database data with proper type safety and fallbacks
-      const equipmentData = (data || []).map((item: any): Equipment => ({
+      const equipmentData: Equipment[] = (data || []).map((item): Equipment => ({
         id: String(item.id || ''),
         name: String(item.name || 'Nome não informado'),
         brand: String(item.brand || 'Marca não informada'),
-        category: (item.category || 'accessories') as any,
+        category: (item.category || 'accessories') as Equipment['category'],
         subcategory: item.subcategory || undefined,
         customCategory: item.custom_category || undefined,
         status: item.status === 'maintenance' ? 'maintenance' : 'available',
-        itemType: (item.item_type || 'main') as any,
+        itemType: (item.item_type || 'main') as Equipment['itemType'],
         parentId: item.parent_id || undefined,
         hasAccessories: false,
         isExpanded: false,
@@ -47,9 +78,9 @@ export function useEquipment() {
         lastMaintenance: item.last_maintenance || undefined,
         description: item.description || undefined,
         image: item.image || undefined,
-        value: item.value || undefined,
+        value: item.value ? Number(item.value) : undefined,
         patrimonyNumber: item.patrimony_number || undefined,
-        depreciatedValue: item.depreciated_value || undefined,
+        depreciatedValue: item.depreciated_value ? Number(item.depreciated_value) : undefined,
         receiveDate: item.receive_date || undefined,
         store: item.store || undefined,
         invoice: item.invoice || undefined,
@@ -58,13 +89,21 @@ export function useEquipment() {
         lastLoanDate: item.last_loan_date || undefined,
       }));
       
-      setEquipment(equipmentData);
-    } catch (error) {
-      console.error('Error fetching equipment:', error);
-    } finally {
-      setLoading(false);
+      logger.apiResponse('fetchEquipment', 'success');
+      return equipmentData;
+    });
+
+    if (result.error) {
+      logger.error('Falha ao buscar equipamentos', { error: result.error.message });
+      setError(result.error.message);
+      return { success: false, error: result.error.message };
+    } else {
+      setEquipment(result.data || []);
+      return { success: true, data: result.data };
     }
-  };
+    
+    setLoading(false);
+  }, []);
 
   const enrichedEquipment = useMemo(() => {
     return equipment.map(item => {
@@ -226,8 +265,8 @@ export function useEquipment() {
     };
   }, [enrichedEquipment]);
 
-  const addEquipment = async (newEquipment: Omit<Equipment, 'id'>) => {
-    try {
+  const addEquipment = async (newEquipment: Omit<Equipment, 'id'>): Promise<Result<Equipment>> => {
+    const result = await wrapAsync(async () => {
       // Convert camelCase to snake_case for database
       const dbEquipment = {
         name: newEquipment.name,
@@ -258,48 +297,51 @@ export function useEquipment() {
         .single();
 
       if (error) {
-        console.error('Error adding equipment:', error);
-        throw error;
+        throw createDatabaseError('Erro ao adicionar equipamento', { originalError: error });
       }
 
-      if (data) {
-        const equipmentData = {
-          id: data.id,
-          name: data.name,
-          brand: data.brand,
-          category: data.category,
-          subcategory: data.subcategory,
-          customCategory: data.custom_category,
-          status: data.status,
-          itemType: data.item_type || 'main',
-          parentId: data.parent_id,
-          isExpanded: false,
-          serialNumber: data.serial_number,
-          purchaseDate: data.purchase_date,
-          lastMaintenance: data.last_maintenance,
-          description: data.description,
-          image: data.image,
-          value: data.value,
-          patrimonyNumber: data.patrimony_number,
-          depreciatedValue: data.depreciated_value,
-          receiveDate: data.receive_date,
-          store: data.store,
-          invoice: data.invoice,
-          currentLoanId: data.current_loan_id,
-          currentBorrower: data.current_borrower,
-          lastLoanDate: data.last_loan_date
-        } as Equipment;
-        setEquipment(prev => [...prev, equipmentData]);
-        return { success: true };
+      if (!data) {
+        throw createDatabaseError('Nenhum dado retornado após inserção');
       }
-    } catch (error) {
-      console.error('Error adding equipment:', error);
-      throw error;
-    }
+
+      const equipmentData: Equipment = {
+        id: data.id,
+        name: data.name,
+        brand: data.brand,
+        category: data.category,
+        subcategory: data.subcategory,
+        customCategory: data.custom_category,
+        status: data.status,
+        itemType: data.item_type || 'main',
+        parentId: data.parent_id,
+        isExpanded: false,
+        serialNumber: data.serial_number,
+        purchaseDate: data.purchase_date,
+        lastMaintenance: data.last_maintenance,
+        description: data.description,
+        image: data.image,
+        value: data.value ? Number(data.value) : undefined,
+        patrimonyNumber: data.patrimony_number,
+        depreciatedValue: data.depreciated_value ? Number(data.depreciated_value) : undefined,
+        receiveDate: data.receive_date,
+        store: data.store,
+        invoice: data.invoice,
+        currentLoanId: data.current_loan_id,
+        currentBorrower: data.current_borrower,
+        lastLoanDate: data.last_loan_date
+      };
+      
+      setEquipment(prev => [...prev, equipmentData]);
+      logger.userAction('equipment_created', { equipmentId: data.id, name: data.name });
+      
+      return equipmentData;
+    });
+
+    return result;
   };
 
-  const updateEquipment = async (id: string, updates: Partial<Equipment>) => {
-    try {
+  const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
+    const result = await wrapAsync(async () => {
       // Convert camelCase to snake_case for database
       const dbUpdates = {
         name: updates.name,
@@ -328,7 +370,7 @@ export function useEquipment() {
 
       // Remove undefined values
       const cleanedUpdates = Object.fromEntries(
-        Object.entries(dbUpdates).filter(([_, value]) => value !== undefined)
+        Object.entries(dbUpdates).filter(([, value]) => value !== undefined)
       );
 
       const { error } = await supabase
@@ -337,60 +379,58 @@ export function useEquipment() {
         .eq('id', id);
 
       if (error) {
-        console.error('Error updating equipment:', error);
-        throw error;
+        throw createDatabaseError('Erro ao atualizar equipamento', { originalError: error });
       }
 
       setEquipment(prev => 
         prev.map(item => item.id === id ? { ...item, ...updates } : item)
       );
 
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating equipment:', error);
-      throw error;
-    }
+      logger.userAction('equipment_updated', { equipmentId: id });
+    });
+
+    return result;
   };
 
-  const deleteEquipment = async (id: string) => {
-    try {
+  const deleteEquipment = async (id: string): Promise<Result<void>> => {
+    const result = await wrapAsync(async () => {
       const { error } = await supabase
         .from('equipments')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error deleting equipment:', error);
-        return;
+        throw createDatabaseError('Erro ao deletar equipamento', { originalError: error });
       }
 
       setEquipment(prev => prev.filter(item => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting equipment:', error);
-    }
+      logger.userAction('equipment_deleted', { equipmentId: id });
+    });
+
+    return result;
   };
 
-  const convertToAccessory = async (equipmentId: string, parentId: string) => {
-    try {
+  const convertToAccessory = async (equipmentId: string, parentId: string): Promise<Result<void>> => {
+    const result = await wrapAsync(async () => {
       // First, check if the equipment has accessories attached to it
       const equipmentToConvert = equipment.find(item => item.id === equipmentId);
       if (!equipmentToConvert) {
-        throw new Error('Equipment not found');
+        throw createValidationError('Equipment not found');
       }
 
       // Check if this equipment has accessories (it's a main item with accessories)
       const hasAccessories = equipment.some(item => item.parentId === equipmentId);
       if (hasAccessories) {
-        throw new Error('Cannot convert equipment that has accessories attached. Please convert or reassign accessories first.');
+        throw createValidationError('Cannot convert equipment that has accessories attached. Please convert or reassign accessories first.');
       }
 
       // Validate that the parent exists and is a main item
       const parentItem = equipment.find(item => item.id === parentId);
       if (!parentItem) {
-        throw new Error('Parent item not found');
+        throw createValidationError('Parent item not found');
       }
       if (parentItem.itemType !== 'main') {
-        throw new Error('Parent item must be a main equipment item');
+        throw createValidationError('Parent item must be a main equipment item');
       }
 
       // Update the equipment to be an accessory
@@ -403,8 +443,7 @@ export function useEquipment() {
         .eq('id', equipmentId);
 
       if (error) {
-        console.error('Error converting to accessory:', error);
-        throw error;
+        throw createDatabaseError('Erro ao converter para acessório', { originalError: error });
       }
 
       // Update local state
@@ -416,11 +455,10 @@ export function useEquipment() {
         )
       );
 
-      return { success: true };
-    } catch (error) {
-      console.error('Error converting to accessory:', error);
-      throw error;
-    }
+      logger.userAction('equipment_converted_to_accessory', { equipmentId, parentId });
+    });
+
+    return result;
   };
 
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
