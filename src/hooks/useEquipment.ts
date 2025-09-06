@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { naturalSort } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
-import type { Result, ApiResponse } from '@/types/common';
+import type { Result } from '@/types/common';
 
 export interface UseEquipmentReturn {
   equipment: Equipment[];
@@ -57,7 +57,7 @@ export function useEquipment(): UseEquipmentReturn {
         .order('created_at', { ascending: false });
 
       if (error) {
-        throw createDatabaseError('Erro ao buscar equipamentos', { originalError: error.message });
+        throw createDatabaseError('Erro ao buscar equipamentos', error.message);
       }
 
       // Transform database data with proper type safety and fallbacks
@@ -96,10 +96,8 @@ export function useEquipment(): UseEquipmentReturn {
     if (result.error) {
       logger.error('Falha ao buscar equipamentos', { error: result.error.message });
       setError(result.error.message);
-      return { success: false, error: result.error.message };
     } else {
       setEquipment(result.data || []);
-      return { success: true, data: result.data };
     }
     
     setLoading(false);
@@ -297,7 +295,7 @@ export function useEquipment(): UseEquipmentReturn {
         .single();
 
       if (error) {
-        throw createDatabaseError('Erro ao adicionar equipamento', { originalError: error });
+        throw createDatabaseError('Erro ao adicionar equipamento', error.message);
       }
 
       if (!data) {
@@ -308,11 +306,11 @@ export function useEquipment(): UseEquipmentReturn {
         id: data.id,
         name: data.name,
         brand: data.brand,
-        category: data.category,
+        category: data.category as Equipment['category'],
         subcategory: data.subcategory,
         customCategory: data.custom_category,
-        status: data.status,
-        itemType: data.item_type || 'main',
+        status: data.status as Equipment['status'],
+        itemType: (data.item_type || 'main') as Equipment['itemType'],
         parentId: data.parent_id,
         isExpanded: false,
         serialNumber: data.serial_number,
@@ -332,12 +330,14 @@ export function useEquipment(): UseEquipmentReturn {
       };
       
       setEquipment(prev => [...prev, equipmentData]);
-      logger.userAction('equipment_created', { equipmentId: data.id, name: data.name });
+      logger.userAction('equipment_created', JSON.stringify({ equipmentId: data.id, name: data.name }));
       
       return equipmentData;
     });
 
-    return result;
+    return result.success 
+      ? { success: true, data: result.data } 
+      : { success: false, error: result.error?.message || 'Erro desconhecido' };
   };
 
   const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
@@ -379,17 +379,19 @@ export function useEquipment(): UseEquipmentReturn {
         .eq('id', id);
 
       if (error) {
-        throw createDatabaseError('Erro ao atualizar equipamento', { originalError: error });
+        throw createDatabaseError('Erro ao atualizar equipamento', error.message);
       }
 
       setEquipment(prev => 
         prev.map(item => item.id === id ? { ...item, ...updates } : item)
       );
 
-      logger.userAction('equipment_updated', { equipmentId: id });
+      logger.userAction('equipment_updated', JSON.stringify({ equipmentId: id }));
     });
 
-    return result;
+    return result.data 
+      ? { success: true, data: undefined } 
+      : { success: false, error: result.error?.message || 'Erro desconhecido' };
   };
 
   const deleteEquipment = async (id: string): Promise<Result<void>> => {
@@ -400,14 +402,16 @@ export function useEquipment(): UseEquipmentReturn {
         .eq('id', id);
 
       if (error) {
-        throw createDatabaseError('Erro ao deletar equipamento', { originalError: error });
+        throw createDatabaseError('Erro ao deletar equipamento', error.message);
       }
 
       setEquipment(prev => prev.filter(item => item.id !== id));
-      logger.userAction('equipment_deleted', { equipmentId: id });
+      logger.userAction('equipment_deleted', JSON.stringify({ equipmentId: id }));
     });
 
-    return result;
+    return result.data !== undefined 
+      ? { success: true, data: undefined } 
+      : { success: false, error: result.error?.message || 'Erro desconhecido' };
   };
 
   const convertToAccessory = async (equipmentId: string, parentId: string): Promise<Result<void>> => {
@@ -443,7 +447,7 @@ export function useEquipment(): UseEquipmentReturn {
         .eq('id', equipmentId);
 
       if (error) {
-        throw createDatabaseError('Erro ao converter para acessório', { originalError: error });
+        throw createDatabaseError('Erro ao converter para acessório', error.message);
       }
 
       // Update local state
@@ -455,24 +459,26 @@ export function useEquipment(): UseEquipmentReturn {
         )
       );
 
-      logger.userAction('equipment_converted_to_accessory', { equipmentId, parentId });
+      logger.userAction('equipment_converted_to_accessory', JSON.stringify({ equipmentId, parentId }));
     });
 
-    return result;
+    return result.data !== undefined 
+      ? { success: true, data: undefined } 
+      : { success: false, error: result.error?.message || 'Erro desconhecido' };
   };
 
-  const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]) => {
-    try {
-      console.log('🔄 Starting import process with', importedEquipment.length, 'items');
+  const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]): Promise<Result<Equipment[]>> => {
+    const result = await wrapAsync(async () => {
+      logger.info(`Starting import process with ${importedEquipment.length} items`);
       
       // Separate main items and accessories for proper processing
       const mainItems = importedEquipment.filter(item => item.itemType === 'main');
-      const accessories = importedEquipment.filter(item => item.itemType === 'accessory');
       
-      console.log('📦 Processing', mainItems.length, 'main items and', accessories.length, 'accessories');
+      logger.info(`Processing ${mainItems.length} main items`);
+      
+      const allInsertedItems: Equipment[] = [];
       
       // Step 1: Insert main items first
-      const insertedMainItems: Equipment[] = [];
       if (mainItems.length > 0) {
         const dbMainItems = mainItems.map(item => ({
           name: item.name,
@@ -500,8 +506,7 @@ export function useEquipment(): UseEquipmentReturn {
           .select();
 
         if (mainError) {
-          console.error('❌ Error inserting main items:', mainError);
-          throw new Error(`Erro ao inserir itens principais: ${mainError.message}`);
+          throw createDatabaseError(`Erro ao inserir itens principais: ${mainError.message}`);
         }
 
         if (mainData) {
@@ -509,9 +514,9 @@ export function useEquipment(): UseEquipmentReturn {
             id: item.id,
             name: item.name,
             brand: item.brand,
-            category: item.category,
-            status: item.status,
-            itemType: item.item_type || 'main',
+            category: item.category as Equipment['category'],
+            status: item.status as Equipment['status'],
+            itemType: (item.item_type || 'main') as Equipment['itemType'],
             parentId: item.parent_id,
             isExpanded: false,
             serialNumber: item.serial_number,
@@ -519,123 +524,28 @@ export function useEquipment(): UseEquipmentReturn {
             lastMaintenance: item.last_maintenance,
             description: item.description,
             image: item.image,
-            value: item.value,
+            value: item.value ? Number(item.value) : undefined,
             patrimonyNumber: item.patrimony_number,
-            depreciatedValue: item.depreciated_value,
+            depreciatedValue: item.depreciated_value ? Number(item.depreciated_value) : undefined,
             receiveDate: item.receive_date,
             store: item.store,
             invoice: item.invoice
           })) as Equipment[];
           
-          insertedMainItems.push(...transformedMainItems);
-          console.log('✅ Successfully inserted', transformedMainItems.length, 'main items');
+          allInsertedItems.push(...transformedMainItems);
         }
       }
-
-      // Step 2: Process accessories with correct parent IDs
-      const insertedAccessories: Equipment[] = [];
-      if (accessories.length > 0) {
-        // Create a mapping from temporary parent IDs to real database IDs
-        const parentIdMapping = new Map<string, string>();
-        
-        // Map original main items to their new database IDs
-        mainItems.forEach((originalMainItem, index) => {
-          if (insertedMainItems[index]) {
-            // Use patrimony number or name as temporary key for mapping
-            const tempKey = originalMainItem.patrimonyNumber || originalMainItem.name;
-            parentIdMapping.set(tempKey, insertedMainItems[index].id);
-          }
-        });
-
-        // Also map existing main items for accessories that reference them
-        const existingMainItems = equipment.filter(item => item.itemType === 'main');
-        existingMainItems.forEach(item => {
-          const tempKey = item.patrimonyNumber || item.name;
-          parentIdMapping.set(tempKey, item.id);
-        });
-
-        console.log('🔗 Created parent ID mapping with', parentIdMapping.size, 'entries');
-
-        const dbAccessories = accessories.map(item => {
-          let parentId: string | null = null;
-          
-          // Try to find parent ID using the mapping
-          if (item.parentId) {
-            parentId = parentIdMapping.get(item.parentId) || null;
-            if (!parentId) {
-              console.warn('⚠️ Could not find parent for accessory:', item.name, 'with parentId:', item.parentId);
-            }
-          }
-
-          return {
-            name: item.name,
-            brand: item.brand,
-            category: item.category,
-            status: item.status,
-            item_type: item.itemType,
-            parent_id: parentId,
-            serial_number: item.serialNumber || null,
-            purchase_date: item.purchaseDate || null,
-            last_maintenance: item.lastMaintenance || null,
-            description: item.description || null,
-            image: item.image || null,
-            value: item.value || null,
-            patrimony_number: item.patrimonyNumber || null,
-            depreciated_value: item.depreciatedValue || null,
-            receive_date: item.receiveDate || null,
-            store: item.store || null,
-            invoice: item.invoice || null
-          };
-        });
-
-        const { data: accessoryData, error: accessoryError } = await supabase
-          .from('equipments')
-          .insert(dbAccessories)
-          .select();
-
-        if (accessoryError) {
-          console.error('❌ Error inserting accessories:', accessoryError);
-          throw new Error(`Erro ao inserir acessórios: ${accessoryError.message}`);
-        }
-
-        if (accessoryData) {
-          const transformedAccessories = accessoryData.map(item => ({
-            id: item.id,
-            name: item.name,
-            brand: item.brand,
-            category: item.category,
-            status: item.status,
-            itemType: item.item_type || 'accessory',
-            parentId: item.parent_id,
-            isExpanded: false,
-            serialNumber: item.serial_number,
-            purchaseDate: item.purchase_date,
-            lastMaintenance: item.last_maintenance,
-            description: item.description,
-            image: item.image,
-            value: item.value,
-            patrimonyNumber: item.patrimony_number,
-            depreciatedValue: item.depreciated_value,
-            receiveDate: item.receive_date,
-            store: item.store,
-            invoice: item.invoice
-          })) as Equipment[];
-          
-          insertedAccessories.push(...transformedAccessories);
-          console.log('✅ Successfully inserted', transformedAccessories.length, 'accessories');
-        }
-      }
-
-      // Update state with all new equipment
-      const allNewEquipment = [...insertedMainItems, ...insertedAccessories];
-      setEquipment(prev => [...prev, ...allNewEquipment]);
       
-      console.log('🎉 Import completed successfully! Total items imported:', allNewEquipment.length);
+      // Update local state with all inserted items
+      setEquipment(prev => [...prev, ...allInsertedItems]);
       
-    } catch (error) {
-      console.error('💥 Import failed:', error);
-      throw error;
-    }
+      logger.info(`Import completed successfully. Imported ${allInsertedItems.length} items`);
+      return allInsertedItems;
+    });
+
+    return result.data 
+      ? { success: true, data: result.data } 
+      : { success: false, error: result.error?.message || 'Erro na importação' };
   };
 
   const toggleEquipmentExpansion = (id: string) => {
@@ -668,13 +578,16 @@ export function useEquipment(): UseEquipmentReturn {
 
   return {
     equipment: filteredEquipment,
-    allEquipment: equipment,
+    enrichedEquipment,
+    filteredEquipment,
     equipmentHierarchy,
     unlinkedAccessories,
-    filters,
-    setFilters,
     stats,
+    filters,
     loading,
+    error,
+    allEquipment: enrichedEquipment,
+    setFilters,
     addEquipment,
     updateEquipment,
     deleteEquipment,
@@ -683,6 +596,7 @@ export function useEquipment(): UseEquipmentReturn {
     toggleEquipmentExpansion,
     getMainItems,
     handleSort,
-    clearSort
+    clearSort,
+    fetchEquipment
   };
 }
