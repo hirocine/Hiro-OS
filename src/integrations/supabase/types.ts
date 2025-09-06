@@ -848,6 +848,37 @@ export type Database = {
           status: string
         }[]
       }
+      get_safe_equipment_list: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          brand: string
+          category: string
+          created_at: string
+          current_borrower: string
+          current_loan_id: string
+          custom_category: string
+          depreciated_value: number
+          description: string
+          id: string
+          image: string
+          invoice: string
+          item_type: string
+          last_loan_date: string
+          last_maintenance: string
+          name: string
+          parent_id: string
+          patrimony_number: string
+          purchase_date: string
+          receive_date: string
+          serial_number: string
+          simplified_status: string
+          status: string
+          store: string
+          subcategory: string
+          updated_at: string
+          value: number
+        }[]
+      }
       get_security_dashboard: {
         Args: Record<PropertyKey, never>
         Returns: Json
