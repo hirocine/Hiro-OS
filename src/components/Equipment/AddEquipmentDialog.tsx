@@ -415,7 +415,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
                     </Popover>
                   )}
                   {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
-                    <p className="text-sm text-green-600">
+                    <p className="text-sm text-green-600 dark:text-green-400">
                       ✓ Este acessório será vinculado ao item selecionado
                     </p>
                   )}

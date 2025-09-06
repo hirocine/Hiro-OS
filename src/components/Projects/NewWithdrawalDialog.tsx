@@ -1109,7 +1109,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 {/* Selected Cameras Preview */}
                 <div className="flex-1 flex flex-col min-h-0">
                   <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                    <Check className="h-5 w-5 text-green-600" />
+                     <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <h4 className="font-medium">Câmeras Selecionadas</h4>
                     <Badge variant="default">
                       {data.selectedEquipment.cameras.length} / {data.selectedEquipment.cameraQuantity}
@@ -1133,8 +1133,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                         <Card key={selectedCamera.camera.id} className="border-primary/20 h-24">
                           <CardContent className="p-4 h-full">
                             <div className="flex items-center gap-3 h-full">
-                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Check className="h-6 w-6 text-green-600" />
+                               <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                 <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                               </div>
                               <div className="flex-1 min-w-0 h-full">
                                 <div className="flex items-center justify-between h-full">
@@ -1294,7 +1294,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Lenses */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Lentes Selecionadas</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.lenses.length}
@@ -1318,8 +1318,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={lens.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -1449,7 +1449,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Camera Accessories */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Acessórios Selecionados</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.cameraAccessories.length}
@@ -1473,8 +1473,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={accessory.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -1604,7 +1604,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Tripods */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Equipamentos Selecionados</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.tripods.length}
@@ -1628,8 +1628,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={tripod.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -1759,7 +1759,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Lights */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Luzes Selecionadas</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.lights.length}
@@ -1783,8 +1783,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={light.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -1914,7 +1914,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Light Modifiers */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Modificadores Selecionados</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.lightModifiers.length}
@@ -1938,8 +1938,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={modifier.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -2069,7 +2069,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Machinery */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Maquinário Selecionado</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.machinery.length}
@@ -2093,8 +2093,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={machine.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -2224,7 +2224,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Electrical */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Equipamentos Selecionados</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.electrical.length}
@@ -2248,8 +2248,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={electrical.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -2379,7 +2379,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Storage */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                   <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Armazenamento Selecionado</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.storage.length}
@@ -2403,8 +2403,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={storage.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">
@@ -2534,7 +2534,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               {/* Selected Computers */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-2 flex-shrink-0 mb-4">
-                  <Check className="h-5 w-5 text-green-600" />
+                  <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h4 className="font-medium">Computadores Selecionados</h4>
                   <Badge variant="default">
                     {data.selectedEquipment.computers.length}
@@ -2558,8 +2558,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <Card key={computer.id} className="border-primary/20 h-24">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Check className="h-6 w-6 text-green-600" />
+                             <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                               <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0 h-full">
                               <div className="flex items-center justify-between h-full">

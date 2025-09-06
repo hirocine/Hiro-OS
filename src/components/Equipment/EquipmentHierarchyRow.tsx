@@ -100,13 +100,13 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
         {/* Imagem */}
         <div className="col-span-1 flex items-center">
           <div 
-            className="w-12 h-12 rounded border-2 border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-colors flex items-center justify-center"
+            className="w-12 h-12 rounded border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-primary transition-colors flex items-center justify-center"
             onClick={handleImageClick}
           >
             {equipment.image ? (
               <img src={equipment.image} alt={equipment.name} className="w-full h-full object-cover rounded" />
             ) : (
-              <Camera className="h-5 w-5 text-gray-400" />
+              <Camera className="h-5 w-5 text-muted-foreground" />
             )}
           </div>
           <input

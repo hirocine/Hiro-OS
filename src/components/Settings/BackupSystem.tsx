@@ -138,7 +138,7 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
 
           {lastBackup && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               Último backup: {lastBackup.toLocaleString('pt-BR')}
             </div>
           )}
@@ -205,7 +205,7 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">256-bit</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">256-bit</div>
               <div className="text-sm text-muted-foreground">Criptografia AES</div>
             </div>
             <div className="text-center p-4 border rounded-lg">

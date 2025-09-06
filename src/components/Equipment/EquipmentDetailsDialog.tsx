@@ -113,13 +113,13 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'available':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case 'maintenance':
         return <Wrench className="h-4 w-4 text-orange-500" />;
       case 'on_loan':
         return <User className="h-4 w-4 text-primary" />;
       default:
-        return <Package className="h-4 w-4 text-gray-500" />;
+        return <Package className="h-4 w-4 text-muted-foreground" />;
     }
   };
 

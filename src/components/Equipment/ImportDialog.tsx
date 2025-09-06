@@ -262,7 +262,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
   const renderCompleteStep = () => (
     <div className="text-center space-y-4">
-      <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+      <CheckCircle className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
       <div>
         <h3 className="text-lg font-semibold">Importação Concluída!</h3>
         <p className="text-muted-foreground">

@@ -171,7 +171,7 @@ export default function ProjectVerification() {
                 {checkedCount}/{totalCount} itens verificados
               </Badge>
               {allItemsChecked && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                   <CheckCircle className="w-4 h-4" />
                   <span className="font-medium">Todos os itens verificados</span>
                 </div>

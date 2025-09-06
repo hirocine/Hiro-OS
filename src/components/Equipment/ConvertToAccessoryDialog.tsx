@@ -151,8 +151,8 @@ export function ConvertToAccessoryDialog({
           </div>
 
           {selectedParentId && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-700">
+            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <p className="text-sm text-green-700 dark:text-green-300">
                 ✓ Este item será convertido em acessório e aparecerá agrupado com o item principal selecionado.
               </p>
             </div>

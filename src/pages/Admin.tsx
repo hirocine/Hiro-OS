@@ -274,7 +274,7 @@ export default function Admin() {
     if (!emailConfirmed) {
       return <Badge variant="secondary">Email não confirmado</Badge>;
     }
-    return <Badge variant="outline" className="text-green-600 border-green-600">Ativo</Badge>;
+    return <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400">Ativo</Badge>;
   };
 
   const formatLastAccess = (lastSignIn: string | null) => {
