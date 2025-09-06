@@ -74,9 +74,9 @@ export default function Auth() {
 
     try {
       if (mode === 'login') {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) {
-          setError(error.message);
+        const result = await signIn(formData.email, formData.password);
+        if (!result.success) {
+          setError(result.error);
         } else {
           toast({
             title: "Login realizado com sucesso!",
@@ -111,30 +111,27 @@ export default function Auth() {
     setLoading(true);
     setError(null);
 
-    try {
-      authDebug('Chamando signInWithGoogle...');
-      const { error } = await signInWithGoogle();
-      
-      if (error) {
-        authDebug('Erro retornado do signInWithGoogle', { 
-          message: error.message,
-          status: error.status,
-          name: error.name 
-        });
+      try {
+        authDebug('Chamando signInWithGoogle...');
+        const result = await signInWithGoogle();
         
-        // Mensagens de erro mais específicas
-        if (error.message.includes('requested path is invalid')) {
-          setError('Erro de configuração OAuth. Verifique se as URLs estão corretas no Supabase e Google Cloud.');
-        } else if (error.message.includes('unauthorized_client')) {
-          setError('Cliente não autorizado. Verifique a configuração no Google Cloud Console.');
+        if (!result.success) {
+          authDebug('Erro retornado do signInWithGoogle', { 
+            message: result.error
+          });
+          
+          // Mensagens de erro mais específicas
+          if (result.error.includes('requested path is invalid')) {
+            setError('Erro de configuração OAuth. Verifique se as URLs estão corretas no Supabase e Google Cloud.');
+          } else if (result.error.includes('unauthorized_client')) {
+            setError('Cliente não autorizado. Verifique a configuração no Google Cloud Console.');
+          } else {
+            setError(`Erro de autenticação: ${result.error}`);
+          }
         } else {
-          setError(`Erro de autenticação: ${error.message}`);
+          authDebug('signInWithGoogle executado sem erro, aguardando redirecionamento...');
         }
-      } else {
-        authDebug('signInWithGoogle executado sem erro, aguardando redirecionamento...');
-        // O OAuth redirecionará, então não devemos chegar aqui imediatamente
-      }
-    } catch (err) {
+      } catch (err) {
       authDebug('Erro capturado no handleGoogleAuth', err);
       setError('Erro inesperado ao conectar com Google. Tente novamente.');
     } finally {

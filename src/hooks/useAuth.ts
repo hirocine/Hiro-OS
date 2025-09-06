@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { authDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
+import { handleLegacyError, AuthenticationError, wrapAsync } from '@/lib/errors';
+import type { Result } from '@/types/common';
 
 export interface AuthState {
   user: User | null;
@@ -23,12 +25,15 @@ export function useAuth() {
     if (isInitialized.current) return;
     isInitialized.current = true;
 
-    authDebug('Setting up auth listeners');
+    logger.debug('Setting up auth listeners', { module: 'auth' });
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        authDebug('Auth state changed', { event, user: session?.user?.email, hasSession: !!session });
+        logger.auth(`Auth state changed: ${event}`, session?.user?.id, { 
+          userEmail: session?.user?.email, 
+          hasSession: !!session 
+        });
         setAuthState(prevState => {
           // Prevent unnecessary state updates
           if (prevState.session?.access_token === session?.access_token && 
@@ -47,10 +52,10 @@ export function useAuth() {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
-      authDebug('Initial session check', { 
-        user: session?.user?.email, 
+      logger.auth('Initial session check', session?.user?.id, { 
+        userEmail: session?.user?.email, 
         hasSession: !!session, 
-        error 
+        error: error?.message 
       });
       setAuthState({
         session,
@@ -83,79 +88,98 @@ export function useAuth() {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
-    authDebug('Tentativa de login', { email });
+  const signIn = async (email: string, password: string): Promise<Result<void>> => {
+    logger.auth('Login attempt', undefined, { email });
     
-    // Verificar rate limiting antes de tentar login
-    try {
-      const userIP = '127.0.0.1'; // Em produção, obter IP real do usuário
-      const { data: rateLimitCheck } = await supabase.rpc('check_login_rate_limit', {
-        _ip_address: userIP,
-        _user_email: email
-      });
-      
-      if (rateLimitCheck && !(rateLimitCheck as any).allowed) {
-        const rateLimitData = rateLimitCheck as any;
-        const error = new Error(`Muitas tentativas de login. Tente novamente em ${rateLimitData.retry_after_minutes} minutos.`);
-        authDebug('Login bloqueado por rate limiting', rateLimitData);
-        return { error };
+    const result = await wrapAsync(async () => {
+      // Check rate limiting before attempting login
+      try {
+        const userIP = '127.0.0.1'; // In production, get real user IP
+        const { data: rateLimitCheck } = await supabase.rpc('check_login_rate_limit', {
+          _ip_address: userIP,
+          _user_email: email
+        });
+        
+        if (rateLimitCheck && !(rateLimitCheck as Record<string, unknown>).allowed) {
+          const rateLimitData = rateLimitCheck as Record<string, unknown>;
+          logger.security('Login blocked by rate limiting', { 
+            data: { email, retryAfterMinutes: rateLimitData.retry_after_minutes }
+          });
+          throw new AuthenticationError(
+            `Too many login attempts. Try again in ${rateLimitData.retry_after_minutes} minutes.`
+          );
+        }
+      } catch (rateLimitError) {
+        logger.warn('Error checking rate limiting', { 
+          module: 'auth', 
+          error: rateLimitError instanceof Error ? rateLimitError.message : 'Unknown error' 
+        });
+        // Continue with login even if rate limiting check fails
       }
-    } catch (rateLimitError) {
-      authDebug('Erro ao verificar rate limiting', rateLimitError);
-      // Continuar com login mesmo se rate limiting falhar
-    }
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    // Log da tentativa de login
-    try {
-      const userIP = '127.0.0.1'; // Em produção, obter IP real
-      const userAgent = navigator.userAgent;
       
-      await supabase.rpc('log_login_attempt', {
-        _ip_address: userIP,
-        _user_email: email,
-        _success: !error,
-        _failure_reason: error?.message || null,
-        _user_agent: userAgent
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } catch (logError) {
-      authDebug('Erro ao registrar tentativa de login', logError);
-    }
-    
-    if (error) {
-      authDebug('Erro no login', { error: error.message });
-    } else {
-      authDebug('Login bem-sucedido');
-    }
-    
-    return { error };
+      
+      // Log login attempt
+      try {
+        const userIP = '127.0.0.1'; // In production, get real IP
+        const userAgent = navigator.userAgent;
+        
+        await supabase.rpc('log_login_attempt', {
+          _ip_address: userIP,
+          _user_email: email,
+          _success: !error,
+          _failure_reason: error?.message || null,
+          _user_agent: userAgent
+        });
+      } catch (logError) {
+        logger.warn('Error logging login attempt', { 
+          module: 'auth', 
+          error: logError instanceof Error ? logError.message : 'Unknown error' 
+        });
+      }
+      
+      if (error) {
+        logger.auth(`Login failed: ${error.message}`, undefined, { data: { email } });
+        throw new AuthenticationError(error.message);
+      }
+      
+        logger.auth('Login successful', undefined, { data: { email } });
+    });
+
+    return result.error 
+      ? { success: false, error: result.error.message }
+      : { success: true, data: undefined };
   };
 
-  const signInWithGoogle = async () => {
-    authDebug('Iniciando OAuth com Google...');
+  const signInWithGoogle = async (): Promise<Result<void>> => {
+    logger.auth('Starting Google OAuth...');
     
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'select_account',
+    const result = await wrapAsync(async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          }
         }
+      });
+      
+      if (error) {
+        logger.auth(`Google OAuth failed: ${error.message}`);
+        throw new AuthenticationError(error.message);
       }
+      
+      logger.auth('Google OAuth initiated successfully');
     });
-    
-    if (error) {
-      authDebug('Erro no OAuth Google', { error: error.message });
-    } else {
-      authDebug('OAuth Google iniciado com sucesso');
-    }
-    
-    return { error };
+
+    return result.error 
+      ? { success: false, error: result.error.message }
+      : { success: true, data: undefined };
   };
 
   const signOut = async () => {

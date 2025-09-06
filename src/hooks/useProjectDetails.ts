@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectStep, ProjectStatus, StepChange } from '@/types/project';
 import { useUserRole } from './useUserRole';
+import { logger } from '@/lib/logger';
+import { handleLegacyError, DatabaseError, NotFoundError, wrapAsync } from '@/lib/errors';
+import type { Result } from '@/types/common';
+import type { ProjectDbRow, ProjectDbUpdate } from '@/types/database';
 
 export function useProjectDetails(projectId: string) {
   const [project, setProject] = useState<Project | null>(null);
@@ -16,7 +20,9 @@ export function useProjectDetails(projectId: string) {
   }, [projectId]);
 
   const fetchProject = async () => {
-    try {
+    logger.apiCall('GET', `/projects/${projectId}`);
+    
+    const result = await wrapAsync(async () => {
       setLoading(true);
       setError(null);
 
@@ -27,9 +33,11 @@ export function useProjectDetails(projectId: string) {
         .single();
 
       if (fetchError) {
-        console.error('Error fetching project:', fetchError);
-        setError('Erro ao carregar o projeto');
-        return;
+        logger.database('select', 'projects', false, fetchError);
+        if (fetchError.code === 'PGRST116') {
+          throw new NotFoundError(`Project with id ${projectId} not found`);
+        }
+        throw new DatabaseError(`Failed to fetch project: ${fetchError.message}`, 'select', 'projects');
       }
 
       if (data) {
@@ -47,9 +55,12 @@ export function useProjectDetails(projectId: string) {
               if (typeof data.step_history === 'string') {
                 return JSON.parse(data.step_history) || [];
               }
-              return data.step_history || [];
-            } catch (error) {
-              console.error('Error parsing step_history:', error);
+              return Array.isArray(data.step_history) ? data.step_history : [];
+            } catch (parseError) {
+              logger.warn('Error parsing step_history', { 
+                module: 'projects', 
+                data: { projectId, stepHistory: data.step_history } 
+              });
               return [];
             }
           })(),
@@ -59,7 +70,6 @@ export function useProjectDetails(projectId: string) {
           equipmentCount: data.equipment_count || 0,
           loanIds: data.loan_ids || [],
           notes: data.notes,
-          // New structured fields
           projectNumber: data.project_number,
           company: data.company,
           projectName: data.project_name,
@@ -72,14 +82,21 @@ export function useProjectDetails(projectId: string) {
           withdrawalTime: data.withdrawal_time
         };
 
+        logger.database('select', 'projects', true);
+        logger.apiResponse('GET', `/projects/${projectId}`, true, { projectName: projectData.name });
+        
         setProject(projectData);
+        return projectData;
       }
-    } catch (err) {
-      console.error('Error fetching project:', err);
-      setError('Erro ao carregar o projeto');
-    } finally {
-      setLoading(false);
+
+      throw new NotFoundError(`Project with id ${projectId} not found`);
+    });
+
+    if (result.error) {
+      setError(result.error.message);
     }
+    
+    setLoading(false);
   };
 
   const updateProject = async (updates: Partial<Project>) => {
