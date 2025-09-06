@@ -21,7 +21,7 @@ export const enhancedToast = {
         label: action.label,
         onClick: action.onClick,
       } : undefined,
-      className: 'border-green-200 bg-green-50',
+      className: 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300',
     });
   },
 
@@ -34,7 +34,7 @@ export const enhancedToast = {
         label: action.label,
         onClick: action.onClick,
       } : undefined,
-      className: 'border-red-200 bg-red-50',
+      className: 'border-destructive/30 bg-destructive/10 text-destructive',
     });
   },
 
@@ -47,7 +47,7 @@ export const enhancedToast = {
         label: action.label,
         onClick: action.onClick,
       } : undefined,
-      className: 'border-orange-200 bg-orange-50',
+      className: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-300',
     });
   },
 

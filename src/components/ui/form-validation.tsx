@@ -74,9 +74,9 @@ interface FormSuccessProps {
 
 export function FormSuccess({ message, className }: FormSuccessProps) {
   return (
-    <Alert className={cn('border-green-200 text-green-800 bg-green-50', className)}>
-      <CheckCircle className="h-4 w-4 text-green-600" />
-      <AlertDescription className="text-green-800">
+    <Alert className={cn('border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300', className)}>
+      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+      <AlertDescription className="text-green-700 dark:text-green-300">
         {message}
       </AlertDescription>
     </Alert>
