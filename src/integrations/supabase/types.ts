@@ -214,13 +214,6 @@ export type Database = {
             foreignKeyName: "equipments_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "equipment_safe_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "equipments_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
             referencedRelation: "equipments"
             referencedColumns: ["id"]
           },
@@ -276,13 +269,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "loans_equipment_id_fkey"
-            columns: ["equipment_id"]
-            isOneToOne: false
-            referencedRelation: "equipment_safe_view"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "loans_equipment_id_fkey"
             columns: ["equipment_id"]
@@ -623,108 +609,7 @@ export type Database = {
       }
     }
     Views: {
-      equipment_safe_view: {
-        Row: {
-          brand: string | null
-          category: string | null
-          created_at: string | null
-          current_borrower: string | null
-          current_loan_id: string | null
-          custom_category: string | null
-          depreciated_value: number | null
-          description: string | null
-          id: string | null
-          image: string | null
-          invoice: string | null
-          item_type: string | null
-          last_loan_date: string | null
-          last_maintenance: string | null
-          name: string | null
-          parent_id: string | null
-          patrimony_number: string | null
-          purchase_date: string | null
-          receive_date: string | null
-          serial_number: string | null
-          simplified_status: string | null
-          status: string | null
-          store: string | null
-          subcategory: string | null
-          updated_at: string | null
-          value: number | null
-        }
-        Insert: {
-          brand?: string | null
-          category?: string | null
-          created_at?: string | null
-          current_borrower?: string | null
-          current_loan_id?: string | null
-          custom_category?: string | null
-          depreciated_value?: never
-          description?: string | null
-          id?: string | null
-          image?: string | null
-          invoice?: never
-          item_type?: string | null
-          last_loan_date?: string | null
-          last_maintenance?: string | null
-          name?: string | null
-          parent_id?: string | null
-          patrimony_number?: string | null
-          purchase_date?: string | null
-          receive_date?: string | null
-          serial_number?: string | null
-          simplified_status?: string | null
-          status?: string | null
-          store?: never
-          subcategory?: string | null
-          updated_at?: string | null
-          value?: never
-        }
-        Update: {
-          brand?: string | null
-          category?: string | null
-          created_at?: string | null
-          current_borrower?: string | null
-          current_loan_id?: string | null
-          custom_category?: string | null
-          depreciated_value?: never
-          description?: string | null
-          id?: string | null
-          image?: string | null
-          invoice?: never
-          item_type?: string | null
-          last_loan_date?: string | null
-          last_maintenance?: string | null
-          name?: string | null
-          parent_id?: string | null
-          patrimony_number?: string | null
-          purchase_date?: string | null
-          receive_date?: string | null
-          serial_number?: string | null
-          simplified_status?: string | null
-          status?: string | null
-          store?: never
-          subcategory?: string | null
-          updated_at?: string | null
-          value?: never
-        }
-        Relationships: [
-          {
-            foreignKeyName: "equipments_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "equipment_safe_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "equipments_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "equipments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       audit_data_access: {
@@ -786,6 +671,10 @@ export type Database = {
       detect_suspicious_activity: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      finalize_security_improvements: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
