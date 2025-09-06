@@ -209,7 +209,7 @@ export function BackupSystem({ onExportData, onImportData }: BackupSystemProps) 
               <div className="text-sm text-muted-foreground">Criptografia AES</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">99.9%</div>
+              <div className="text-2xl font-bold text-primary">99.9%</div>
               <div className="text-sm text-muted-foreground">Uptime garantido</div>
             </div>
           </div>

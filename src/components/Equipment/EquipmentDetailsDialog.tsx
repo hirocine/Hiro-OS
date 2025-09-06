@@ -117,7 +117,7 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
       case 'maintenance':
         return <Wrench className="h-4 w-4 text-orange-500" />;
       case 'on_loan':
-        return <User className="h-4 w-4 text-blue-500" />;
+        return <User className="h-4 w-4 text-primary" />;
       default:
         return <Package className="h-4 w-4 text-gray-500" />;
     }

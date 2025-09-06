@@ -33,10 +33,10 @@ export function SelectableEquipmentCard({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'on_loan': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      case 'available': return 'bg-success/10 text-success border border-success/20';
+      case 'maintenance': return 'bg-warning/10 text-warning border border-warning/20';
+      case 'on_loan': return 'bg-primary/10 text-primary border border-primary/20';
+      default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
 

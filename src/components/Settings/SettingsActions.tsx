@@ -134,7 +134,7 @@ export function SettingsActions() {
                   disabled={isImporting}
                 />
                 {isImporting && (
-                  <p className="text-sm text-blue-600">Importando dados...</p>
+                  <p className="text-sm text-primary">Importando dados...</p>
                 )}
               </div>
             </DialogContent>

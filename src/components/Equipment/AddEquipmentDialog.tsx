@@ -227,7 +227,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           {/* Seção 2: Classificação */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Classificação</h3>
             </div>
             

@@ -60,7 +60,7 @@ export const enhancedToast = {
         label: action.label,
         onClick: action.onClick,
       } : undefined,
-      className: 'border-blue-200 bg-blue-50',
+      className: 'border-primary/20 bg-primary/5',
     });
   },
 

@@ -59,11 +59,11 @@ export function NotificationPanel() {
     
     switch (type) {
       case 'project':
-        return `text-blue-600 dark:text-blue-400 ${baseOpacity}`;
+        return `text-primary ${baseOpacity}`;
       case 'equipment':
-        return `text-amber-600 dark:text-amber-400 ${baseOpacity}`;
+        return `text-warning ${baseOpacity}`;
       case 'loan':
-        return `text-green-600 dark:text-green-400 ${baseOpacity}`;
+        return `text-success ${baseOpacity}`;
       case 'system':
         return `text-purple-600 dark:text-purple-400 ${baseOpacity}`;
       default:

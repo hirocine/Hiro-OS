@@ -80,7 +80,7 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
   const getStatusIcon = (status: ImageFile['status']) => {
     switch (status) {
       case 'uploading':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
       case 'success':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'error':

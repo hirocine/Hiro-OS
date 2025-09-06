@@ -90,9 +90,9 @@ interface FormInfoProps {
 
 export function FormInfo({ message, className }: FormInfoProps) {
   return (
-    <Alert className={cn('border-blue-200 text-blue-800 bg-blue-50', className)}>
-      <Info className="h-4 w-4 text-blue-600" />
-      <AlertDescription className="text-blue-800">
+    <Alert className={cn('border-primary/20 text-primary bg-primary/5', className)}>
+      <Info className="h-4 w-4 text-primary" />
+      <AlertDescription className="text-primary">
         {message}
       </AlertDescription>
     </Alert>
