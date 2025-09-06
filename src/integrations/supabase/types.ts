@@ -56,6 +56,47 @@ export type Database = {
         }
         Relationships: []
       }
+      borrower_contacts: {
+        Row: {
+          borrower_email: string | null
+          borrower_phone: string | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          id: string
+          loan_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          borrower_email?: string | null
+          borrower_phone?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          loan_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          borrower_email?: string | null
+          borrower_phone?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          loan_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "borrower_contacts_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_categories: {
         Row: {
           category: string
@@ -181,11 +222,8 @@ export type Database = {
       loans: {
         Row: {
           actual_return_date: string | null
-          borrower_email: string | null
           borrower_name: string
-          borrower_phone: string | null
           created_at: string
-          department: string | null
           equipment_id: string
           equipment_name: string
           expected_return_date: string
@@ -200,11 +238,8 @@ export type Database = {
         }
         Insert: {
           actual_return_date?: string | null
-          borrower_email?: string | null
           borrower_name: string
-          borrower_phone?: string | null
           created_at?: string
-          department?: string | null
           equipment_id: string
           equipment_name: string
           expected_return_date: string
@@ -219,11 +254,8 @@ export type Database = {
         }
         Update: {
           actual_return_date?: string | null
-          borrower_email?: string | null
           borrower_name?: string
-          borrower_phone?: string | null
           created_at?: string
-          department?: string | null
           equipment_id?: string
           equipment_name?: string
           expected_return_date?: string
@@ -648,6 +680,14 @@ export type Database = {
         Args: { equipment_id: string }
         Returns: number
       }
+      get_loan_contact_info: {
+        Args: { loan_id: string }
+        Returns: {
+          borrower_email: string
+          borrower_phone: string
+          department: string
+        }[]
+      }
       get_project_equipment: {
         Args: { _project_id: string }
         Returns: {
@@ -749,6 +789,18 @@ export type Database = {
       }
       mark_notification_as_read: {
         Args: { _notification_id: string }
+        Returns: undefined
+      }
+      monitor_contact_access: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      run_security_maintenance: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      sanitize_audit_logs: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       user_can_access_equipment: {
