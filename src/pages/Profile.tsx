@@ -12,6 +12,8 @@ import { profileDebug } from '@/lib/debug';
 import { AvatarUploadArea } from '@/components/ui/avatar-upload-area';
 import { AvatarCropperDialog } from '@/components/ui/avatar-cropper-dialog';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
+import { useGoogleProfile } from '@/hooks/useGoogleProfile';
+import { getAvatarData } from '@/lib/avatarUtils';
 
 interface UserProfile {
   id: string;
@@ -38,6 +40,7 @@ export default function Profile() {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string>('');
   const { uploading, validateFile, uploadAvatar, removeAvatar, setImageUrl } = useAvatarUpload();
+  const { hasGoogleAvatar, googleAvatarUrl, isGoogleUser, syncGoogleAvatarToProfile } = useGoogleProfile();
 
   useEffect(() => {
     if (user) {
@@ -171,9 +174,34 @@ export default function Profile() {
     }
   };
 
-  const userInitials = profile?.display_name
-    ? profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase()
-    : user?.email?.substring(0, 2).toUpperCase() || 'U';
+  const handleUseGoogleAvatar = async () => {
+    if (!hasGoogleAvatar) return;
+
+    try {
+      setSaving(true);
+      const result = await syncGoogleAvatarToProfile();
+      
+      if (result.success) {
+        toast({
+          title: "Avatar do Google importado",
+          description: "Sua foto do Google foi definida como avatar do perfil.",
+        });
+        await fetchProfile();
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao importar avatar",
+        description: error.message || "Não foi possível importar a foto do Google.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const avatarData = getAvatarData(user, profile?.avatar_url, profile?.display_name);
 
   if (loading) {
     return (
@@ -202,16 +230,33 @@ export default function Profile() {
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-4">
             <AvatarUploadArea
-              currentAvatarUrl={profile?.avatar_url}
-              userInitials={userInitials}
+              currentAvatarUrl={avatarData.url}
+              userInitials={avatarData.initials}
               onFileSelect={handleFileSelect}
               onRemoveAvatar={profile?.avatar_url ? handleRemoveAvatar : undefined}
               uploading={uploading}
               size="lg"
             />
+            
+            {/* Botão para usar avatar do Google */}
+            {isGoogleUser && hasGoogleAvatar && !profile?.avatar_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUseGoogleAvatar}
+                disabled={saving}
+                className="mt-2"
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Usar Foto do Google
+              </Button>
+            )}
             <div className="text-center">
-              <p className="font-medium">{profile?.display_name || 'Nome não definido'}</p>
+              <p className="font-medium">{avatarData.displayName || 'Nome não definido'}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
+              {avatarData.isGoogleUser && (
+                <p className="text-xs text-muted-foreground mt-1">Conta Google</p>
+              )}
             </div>
           </CardContent>
         </Card>
