@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { logger } from '@/lib/logger';
 
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
@@ -150,7 +151,12 @@ export default function EquipmentPage() {
       });
       return { success: true };
     } catch (error) {
-      console.error('Error adding equipment:', error);
+      logger.error('Error adding equipment in page', {
+        module: 'equipment-page',
+        action: 'add_equipment',
+        error,
+        data: { equipmentName: equipmentData.name }
+      });
       enhancedToast.error({
         title: 'Erro ao adicionar equipamento',
         description: 'Tente novamente ou contate o suporte.'
@@ -177,7 +183,12 @@ export default function EquipmentPage() {
         });
         return { success: true };
       } catch (error) {
-        console.error('Error updating equipment:', error);
+        logger.error('Error updating equipment in page', {
+          module: 'equipment-page',
+          action: 'update_equipment',
+          error,
+          data: { equipmentId: editingEquipment.id, equipmentName: editingEquipment.name }
+        });
         enhancedToast.error({
           title: 'Erro ao atualizar equipamento',
           description: 'Tente novamente ou contate o suporte.'
@@ -224,7 +235,12 @@ export default function EquipmentPage() {
         }
       });
     } catch (error) {
-      console.error('Error deleting equipment:', error);
+      logger.error('Error deleting equipment in page', {
+        module: 'equipment-page',
+        action: 'delete_equipment',
+        error,
+        data: { equipmentId: equipment.id, equipmentName: equipment.name }
+      });
       enhancedToast.error({
         title: 'Erro ao excluir equipamento',
         description: 'Tente novamente ou contate o suporte.'
@@ -268,7 +284,12 @@ export default function EquipmentPage() {
         description: `Imagem de ${equipment.name} foi atualizada.`
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      logger.error('Error uploading equipment image in page', {
+        module: 'equipment-page',
+        action: 'upload_image',
+        error,
+        data: { equipmentId: equipment.id, equipmentName: equipment.name }
+      });
       enhancedToast.error({
         title: 'Erro ao fazer upload da imagem',
         description: 'Tente novamente ou contate o suporte.'
@@ -702,7 +723,12 @@ export default function EquipmentPage() {
               
               return result;
             } catch (error: any) {
-              console.error('Error converting to accessory:', error);
+              logger.error('Error converting equipment to accessory in page', {
+                module: 'equipment-page',
+                action: 'convert_to_accessory',
+                error,
+                data: { equipmentId, parentId }
+              });
               
               let errorMessage = 'Ocorreu um erro ao converter o item.';
               if (error.message?.includes('accessories attached')) {

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { logger } from '@/lib/logger';
 
 interface BulkActionsBarProps {
   selectedItems: Equipment[];
@@ -41,7 +42,12 @@ export function BulkActionsBar({
         description: `${selectedCount} equipamento(s) foram excluídos com sucesso.`
       });
     } catch (error) {
-      console.error('Erro ao excluir equipamentos:', error);
+      logger.error('Error deleting equipment in bulk', {
+        module: 'equipment',
+        action: 'bulk_delete',
+        error,
+        data: { selectedCount, equipmentIds: selectedItems.map(item => item.id) }
+      });
       enhancedToast.error({
         title: 'Erro na exclusão',
         description: 'Não foi possível excluir os equipamentos selecionados.'

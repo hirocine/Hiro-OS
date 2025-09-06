@@ -19,6 +19,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { useEquipment } from '@/hooks/useEquipment';
 import { Equipment } from '@/types/equipment';
+import { logger } from '@/lib/logger';
 
 interface NewWithdrawalDialogProps {
   open: boolean;
@@ -351,7 +352,15 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   const generatePDF = () => {
     try {
-      console.log('Iniciando geração do PDF...', data);
+      logger.info('Initiating PDF generation', {
+        module: 'withdrawal-dialog',
+        action: 'generate_pdf',
+        data: { 
+          projectNumber: data.projectNumber,
+          projectName: data.projectName,
+          company: data.company
+        }
+      });
       
       // Verificar se há dados válidos
       if (!data.projectNumber || !data.projectName) {
@@ -448,7 +457,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         });
       });
       
-      console.log('Dados da tabela preparados:', tableData);
+      logger.debug('PDF table data prepared', {
+        module: 'withdrawal-dialog',
+        action: 'pdf_table_prepared',
+        data: { rowCount: tableData.length }
+      });
       
       // Gerar tabela
       (doc as any).autoTable({
@@ -477,7 +490,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       
       // Download do arquivo
       const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
-      console.log('Salvando arquivo:', fileName);
+      logger.info('PDF file generated successfully', {
+        module: 'withdrawal-dialog',
+        action: 'pdf_saved',
+        data: { fileName, itemCount: tableData.length }
+      });
       doc.save(fileName);
       
       toast({
@@ -486,7 +503,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       });
       
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
+      logger.error('Error generating PDF', {
+        module: 'withdrawal-dialog',
+        action: 'pdf_generation_error',
+        error
+      });
       toast({
         title: "Erro",
         description: "Falha ao gerar o PDF. Tente novamente.",
@@ -556,10 +577,14 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       loanIds: []
     };
 
-    console.log('🚀 Creating project with selected equipment:', {
-      projectData: projectData.name,
-      equipmentCount: selectedEquipment.length,
-      equipment: selectedEquipment.map(e => e.name)
+    logger.info('Creating project with selected equipment', {
+      module: 'withdrawal-dialog',
+      action: 'create_project_with_equipment',
+      data: {
+        projectName: projectData.name,
+        equipmentCount: selectedEquipment.length,
+        equipmentNames: selectedEquipment.map(e => e.name)
+      }
     });
 
     try {
@@ -598,7 +623,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         description: "Nova retirada criada com sucesso!",
       });
     } catch (error) {
-      console.error('Error creating withdrawal:', error);
+      logger.error('Error creating withdrawal', {
+        module: 'withdrawal-dialog',
+        action: 'create_withdrawal_error',
+        error
+      });
       toast({
         title: "Erro",
         description: "Erro ao criar nova retirada. Tente novamente.",

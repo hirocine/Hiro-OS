@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUploadArea } from '@/components/ui/image-upload-area';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { logger } from '@/lib/logger';
 
 interface ImageUploadResult {
   filename: string;
@@ -107,7 +108,12 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
       
       setStep('review');
     } catch (error) {
-      console.error('Erro no upload em massa:', error);
+      logger.error('Error during bulk image upload', {
+        module: 'equipment',
+        action: 'bulk_image_upload',
+        error,
+        data: { imageCount: images.length }
+      });
       enhancedToast.error({
         title: 'Erro durante processamento',
         description: 'Falha ao processar as imagens'
@@ -165,7 +171,12 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
         description: `${filename} associada com sucesso!`
       });
     } catch (error) {
-      console.error('Erro no match manual:', error);
+      logger.error('Error in manual image match', {
+        module: 'equipment',
+        action: 'manual_image_match',
+        error,
+        data: { filename, equipmentId }
+      });
       enhancedToast.error({
         title: 'Erro na associação',
         description: `Falha ao associar ${filename}`

@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
 import { Equipment, EquipmentCategory } from '@/types/equipment';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface NewProjectWizardProps {
   open: boolean;
@@ -184,7 +185,12 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
       
       toast.success('Projeto criado com sucesso!');
     } catch (error) {
-      console.error('Error creating project:', error);
+      logger.error('Error creating project in wizard', {
+        module: 'project',
+        action: 'create_project_wizard',
+        error,
+        data: { projectName: finalData.name, equipmentCount: allSelectedEquipment.length }
+      });
       toast.error('Erro ao criar projeto');
     }
   };

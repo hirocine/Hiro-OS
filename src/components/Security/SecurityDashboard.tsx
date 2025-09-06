@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, AlertTriangle, Activity, Users, Lock } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface SecurityDashboardData {
   timestamp: string;
@@ -76,7 +77,11 @@ export function SecurityDashboard() {
       setDashboardData(dashboardResult as unknown as SecurityDashboardData);
       setAlerts((alertsData || []) as SecurityAlert[]);
     } catch (error) {
-      console.error('Erro ao buscar dados de segurança:', error);
+      logger.error('Error fetching security dashboard data', {
+        module: 'security',
+        action: 'fetch_security_data',
+        error
+      });
       toast.error('Erro ao carregar dashboard de segurança');
     } finally {
       setLoading(false);
@@ -89,7 +94,11 @@ export function SecurityDashboard() {
       toast.success('Scan de segurança executado');
       fetchSecurityData();
     } catch (error) {
-      console.error('Erro ao executar scan:', error);
+      logger.error('Error executing security scan', {
+        module: 'security',
+        action: 'run_security_scan',
+        error
+      });
       toast.error('Erro ao executar scan de segurança');
     }
   };
@@ -110,7 +119,12 @@ export function SecurityDashboard() {
       toast.success('Alerta resolvido');
       fetchSecurityData();
     } catch (error) {
-      console.error('Erro ao resolver alerta:', error);
+      logger.error('Error resolving security alert', {
+        module: 'security',
+        action: 'resolve_alert',
+        error,
+        data: { alertId }
+      });
       toast.error('Erro ao resolver alerta');
     }
   };

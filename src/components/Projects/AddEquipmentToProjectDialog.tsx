@@ -20,6 +20,7 @@ import { Equipment } from '@/types/equipment';
 import { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface AddEquipmentToProjectDialogProps {
   open: boolean;
@@ -71,13 +72,21 @@ export function AddEquipmentToProjectDialog({
         .rpc('get_equipment_project_count', { equipment_id: equipmentId });
       
       if (error) {
-        console.error('Error getting project count:', error);
+        logger.error('Error getting project count', { 
+          module: 'equipment-project-count',
+          error,
+          data: { equipment_id: equipmentId }
+        });
         return 0;
       }
       
       return data || 0;
     } catch (error) {
-      console.error('Error getting project count:', error);
+      logger.error('Error getting project count', { 
+        module: 'equipment-project-count',
+        error,
+        data: { equipment_id: equipmentId }
+      });
       return 0;
     }
   };
@@ -119,11 +128,15 @@ export function AddEquipmentToProjectDialog({
       return;
     }
 
-    console.log('Starting loan creation process...', {
-      selectedEquipmentCount: selectedEquipment.size,
-      project: project.name,
-      borrower: borrowerName,
-      selectedEquipmentIds: Array.from(selectedEquipment)
+    logger.info('Starting loan creation process', {
+      module: 'project-equipment',
+      action: 'create_loans',
+      data: {
+        selectedEquipmentCount: selectedEquipment.size,
+        project: project.name,
+        borrower: borrowerName,
+        selectedEquipmentIds: Array.from(selectedEquipment)
+      }
     });
 
     try {
@@ -136,13 +149,21 @@ export function AddEquipmentToProjectDialog({
       const loanPromises = Array.from(selectedEquipment).map(async (equipmentId) => {
         const equipment = allEquipment.find(eq => eq.id === equipmentId);
         if (!equipment) {
-          console.error('Equipment not found:', equipmentId);
+          logger.error('Equipment not found for loan creation', { 
+            module: 'project-equipment',
+            action: 'create_loan',
+            data: { equipmentId }
+          });
           errors.push(`Equipamento não encontrado: ${equipmentId}`);
           return;
         }
 
         try {
-          console.log('Creating loan for equipment:', equipment.name, equipmentId);
+          logger.debug('Creating loan for equipment', {
+            module: 'project-equipment',
+            action: 'create_loan',
+            data: { equipmentName: equipment.name, equipmentId }
+          });
           
           await addLoan({
             equipmentId: equipment.id,
@@ -159,10 +180,19 @@ export function AddEquipmentToProjectDialog({
           });
           
           successCount++;
-          console.log('Loan created successfully for:', equipment.name);
+          logger.debug('Loan created successfully', {
+            module: 'project-equipment',
+            action: 'loan_created',
+            data: { equipmentName: equipment.name }
+          });
           
         } catch (loanError) {
-          console.error('Error creating loan for equipment:', equipment.name, loanError);
+          logger.error('Error creating loan for equipment', { 
+            module: 'project-equipment',
+            action: 'create_loan',
+            error: loanError,
+            data: { equipmentName: equipment.name }
+          });
           const errorMessage = loanError instanceof Error ? loanError.message : 'Erro desconhecido';
           errors.push(`${equipment.name}: ${errorMessage}`);
         }
@@ -175,7 +205,11 @@ export function AddEquipmentToProjectDialog({
           title: "Sucesso",
           description: `${successCount} equipamento(s) adicionado(s) ao projeto`,
         });
-        console.log('Successfully created', successCount, 'loans');
+        logger.info('Loans created successfully', {
+          module: 'project-equipment',
+          action: 'loans_completed',
+          data: { successCount }
+        });
         
         // Reset form and close dialog
         setSelectedEquipment(new Set());
@@ -189,7 +223,11 @@ export function AddEquipmentToProjectDialog({
       }
       
       if (errors.length > 0) {
-        console.error('Loan creation errors:', errors);
+        logger.error('Loan creation completed with errors', {
+          module: 'project-equipment',
+          action: 'loan_creation_errors',
+          data: { errors, errorCount: errors.length }
+        });
         toast({
           title: "Erros detectados",
           description: errors.slice(0, 3).join('\n') + (errors.length > 3 ? '\n...' : ''),
@@ -198,7 +236,11 @@ export function AddEquipmentToProjectDialog({
       }
       
     } catch (error) {
-      console.error('Error in loan creation process:', error);
+      logger.error('Error in loan creation process', {
+        module: 'project-equipment',
+        action: 'loan_creation_process',
+        error
+      });
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro",

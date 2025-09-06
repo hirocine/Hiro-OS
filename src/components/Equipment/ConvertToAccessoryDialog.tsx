@@ -8,6 +8,7 @@ import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@
 import { Loader2, Package2, Package, Search, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { logger } from '@/lib/logger';
 
 interface ConvertToAccessoryDialogProps {
   open: boolean;
@@ -51,7 +52,12 @@ export function ConvertToAccessoryDialog({
         setSelectedParentId('');
       }
     } catch (error) {
-      console.error('Error converting to accessory:', error);
+      logger.error('Error converting equipment to accessory', {
+        module: 'equipment',
+        action: 'convert_to_accessory',
+        error,
+        data: { equipmentId: equipment.id, equipmentName: equipment.name, parentId: selectedParentId }
+      });
       enhancedToast.error({
         title: 'Erro na conversão',
         description: 'Ocorreu um erro ao converter o item. Tente novamente.'

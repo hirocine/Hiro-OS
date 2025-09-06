@@ -15,6 +15,7 @@ import { Project, ProjectStep } from '@/types/project';
 import { getStepLabel } from '@/lib/projectLabels';
 import { Equipment } from '@/types/equipment';
 import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
+import { logger } from '@/lib/logger';
 
 export default function Projects() {
   const { 
@@ -77,7 +78,11 @@ export default function Projects() {
         description: `O projeto "${projectData.name}" foi criado com ${selectedEquipment.length} equipamentos.`,
       });
     } catch (error) {
-      console.error('Error creating project:', error);
+      logger.error('Error creating project', {
+        module: 'projects-page',
+        action: 'create_project',
+        error
+      });
       toast({
         title: "Erro ao criar projeto",
         description: "Tente novamente em alguns instantes.",
@@ -96,7 +101,11 @@ export default function Projects() {
         description: "As informações foram salvas com sucesso.",
       });
     } catch (error) {
-      console.error('Error updating project:', error);
+      logger.error('Error updating project', {
+        module: 'projects-page', 
+        action: 'update_project',
+        error
+      });
       toast({
         title: "Erro ao atualizar projeto",
         description: "Tente novamente em alguns instantes.",
@@ -118,7 +127,11 @@ export default function Projects() {
         description: `Projeto movido para: ${getStepLabel(step)}`,
       });
     } catch (error) {
-      console.error('Error updating step:', error);
+      logger.error('Error updating step', {
+        module: 'projects-page',
+        action: 'update_step', 
+        error
+      });
       toast({
         title: "Erro ao atualizar etapa",
         description: "Tente novamente em alguns instantes.",
@@ -138,7 +151,11 @@ export default function Projects() {
         description: "O projeto foi marcado como finalizado.",
       });
     } catch (error) {
-      console.error('Error completing project:', error);
+      logger.error('Error completing project', {
+        module: 'projects-page',
+        action: 'complete_project',
+        error
+      });
       toast({
         title: "Erro ao finalizar projeto",
         description: "Tente novamente em alguns instantes.",
@@ -155,7 +172,11 @@ export default function Projects() {
         description: "O projeto foi arquivado.",
       });
     } catch (error) {
-      console.error('Error archiving project:', error);
+      logger.error('Error archiving project', {
+        module: 'projects-page',
+        action: 'archive_project',
+        error  
+      });
       toast({
         title: "Erro ao arquivar projeto",
         description: "Tente novamente em alguns instantes.",

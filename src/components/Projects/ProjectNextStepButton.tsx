@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WithdrawalDialog, WithdrawalData } from './WithdrawalDialog';
 import { OfficeReceiptDialog, OfficeReceiptData } from './OfficeReceiptDialog';
+import { logger } from '@/lib/logger';
 
 interface ProjectNextStepButtonProps {
   project: Project;
@@ -49,27 +50,48 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const isSeparating = project.step === 'pending_separation' && nextStep === 'ready_for_pickup';
 
   const handleClick = () => {
-    console.log('🔄 Button clicked', { 
-      currentStep: project.step, 
-      nextStep, 
-      isWithdrawing,
-      isOfficeReceipt,
-      isSeparating
+    logger.debug('Project next step button clicked', {
+      module: 'project-step',
+      action: 'button_clicked',
+      data: {
+        currentStep: project.step, 
+        nextStep, 
+        isWithdrawing,
+        isOfficeReceipt,
+        isSeparating,
+        projectId: project.id
+      }
     });
     
     if (isWithdrawing) {
-      console.log('🔓 Opening withdrawal dialog');
+      logger.debug('Opening withdrawal dialog', {
+        module: 'project-step',
+        action: 'open_withdrawal_dialog',
+        data: { projectId: project.id }
+      });
       setWithdrawalDialogOpen(true);
     } else if (isVerifying) {
       navigate(`/projects/${project.id}/verification`);
     } else if (isOfficeReceipt) {
-      console.log('🏢 Opening office receipt dialog');
+      logger.debug('Opening office receipt dialog', {
+        module: 'project-step',
+        action: 'open_office_receipt_dialog',
+        data: { projectId: project.id }
+      });
       setOfficeReceiptDialogOpen(true);
     } else if (isSeparating) {
-      console.log('📦 Navigating to separation page');
+      logger.debug('Navigating to separation page', {
+        module: 'project-step',
+        action: 'navigate_to_separation',
+        data: { projectId: project.id }
+      });
       navigate(`/projects/${project.id}/separation`);
     } else {
-      console.log('⏭️ Normal step update to:', nextStep);
+      logger.debug('Normal step update', {
+        module: 'project-step',
+        action: 'normal_step_update',
+        data: { currentStep: project.step, nextStep, projectId: project.id }
+      });
       onStepUpdate(nextStep);
     }
   };

@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Loader2, RotateCw, ZoomIn } from 'lucide-react';
 import Cropper from 'react-easy-crop';
+import { logger } from '@/lib/logger';
 
 interface CropArea {
   x: number;
@@ -136,7 +137,11 @@ export const AvatarCropperDialog = ({
       const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
       onCropComplete(croppedImage);
     } catch (error) {
-      console.error('Error cropping image:', error);
+      logger.error('Error cropping avatar image', {
+        module: 'avatar',
+        action: 'crop_image',
+        error
+      });
     }
   };
 

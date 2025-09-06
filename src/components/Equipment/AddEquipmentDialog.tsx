@@ -13,6 +13,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { Loader2, Check, ChevronsUpDown, Search, Plus } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface AddEquipmentDialogProps {
   open: boolean;
@@ -135,7 +136,12 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
         }
       }
     } catch (error) {
-      console.error('Error submitting equipment:', error);
+      logger.error('Error submitting equipment', {
+        module: 'equipment',
+        action: 'submit_equipment',
+        error,
+        data: { equipmentName: formData.name, isEdit: !!equipment }
+      });
       enhancedToast.error({
         title: 'Erro ao salvar',
         description: 'Ocorreu um erro ao salvar o equipamento. Tente novamente.'

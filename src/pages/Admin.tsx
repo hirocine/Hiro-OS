@@ -19,6 +19,7 @@ import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
 import { adminDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 
 interface User {
   id: string;
@@ -163,7 +164,11 @@ export default function Admin() {
       if (error) throw error;
       setAuditLogs(data || []);
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      logger.error('Error fetching audit logs', {
+        module: 'admin',
+        action: 'fetch_audit_logs', 
+        error
+      });
       toast({
         title: 'Erro',
         description: 'Erro ao carregar logs de auditoria',
@@ -258,7 +263,11 @@ export default function Admin() {
       // Atualizar a lista de usuários
       fetchUsers();
     } catch (error: any) {
-      console.error('Error deactivating user:', error);
+      logger.error('Error deactivating user', {
+        module: 'admin',
+        action: 'deactivate_user',
+        error
+      });
       toast({
         title: 'Erro ao desativar usuário',
         description: error.message || 'Ocorreu um erro inesperado.',
