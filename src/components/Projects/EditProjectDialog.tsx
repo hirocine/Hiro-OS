@@ -120,30 +120,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
             </Popover>
           </div>
 
-          {/* Read-only project information */}
-          <div className="border-t pt-4 space-y-3">
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Responsável</Label>
-              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
-                {project?.responsibleName || 'Não informado'}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Email do Responsável</Label>
-              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
-                {project?.responsibleEmail || 'Não informado'}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Departamento</Label>
-              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
-                {project?.department || 'Não informado'}
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
             <Textarea
