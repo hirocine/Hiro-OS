@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 interface EquipmentItem {
   id: string;
@@ -22,36 +23,41 @@ interface ChecklistState {
 export function useSeparationChecklist(equipment: EquipmentItem[]) {
   const [checkedItems, setCheckedItems] = useState<ChecklistState>({});
 
-  console.log('🧾 useSeparationChecklist received equipment:', {
-    totalCount: equipment.length,
-    mainItems: equipment.filter(eq => eq.itemType === 'main').length,
-    accessories: equipment.filter(eq => eq.itemType === 'accessory').length,
-    items: equipment.map(eq => ({
-      id: eq.id,
-      name: eq.name,
-      itemType: eq.itemType,
-      parentId: eq.parentId,
-      category: eq.category
-    }))
+  logger.debug('Separation checklist initialized', {
+    module: 'separation-checklist',
+    data: {
+      totalCount: equipment.length,
+      mainItems: equipment.filter(eq => eq.itemType === 'main').length,
+      accessories: equipment.filter(eq => eq.itemType === 'accessory').length
+    },
+    action: 'initialize_checklist'
   });
 
   // Reset checklist when equipment changes
   useEffect(() => {
-    const equipmentIds = equipment.map(item => item.id).sort().join(',');
-    console.log('🔄 Equipment effect triggered, current equipment IDs:', equipmentIds);
+    logger.debug('Equipment changed, resetting checklist', {
+      module: 'separation-checklist',
+      data: { equipmentCount: equipment.length },
+      action: 'reset_checklist'
+    });
     
     const initialState: ChecklistState = {};
     equipment.forEach(item => {
       initialState[item.id] = false;
     });
-    console.log('📋 Initial checklist state:', initialState);
     setCheckedItems(initialState);
   }, [equipment.length, equipment.map(item => item.id).join(',')]);
 
   // Group equipment by category with hierarchy
   const categorizedEquipment = useMemo(() => {
-    console.log('🏗️ Building categorized equipment from:', equipment.length, 'items');
+    logger.debug('Building categorized equipment', {
+      module: 'separation-checklist',
+      data: { totalItems: equipment.length },
+      action: 'categorize_equipment'
+    });
+    
     const categories: { [key: string]: CategoryGroup } = {};
+    let orphanedAccessories = 0;
     
     // First pass: add all main items
     equipment.forEach(item => {
@@ -63,7 +69,6 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
           };
         }
         categories[item.category].items.push(item);
-        console.log('➕ Added main item to category', item.category, ':', item.name);
       }
     });
 
@@ -74,9 +79,15 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
         const parent = equipment.find(eq => eq.id === item.parentId);
         if (parent && categories[parent.category]) {
           categories[parent.category].items.push(item);
-          console.log('🔧 Added accessory to category', parent.category, ':', item.name, '(parent:', parent.name, ')');
         } else {
-          console.warn('⚠️ Orphaned accessory found:', item.name, 'parentId:', item.parentId);
+          orphanedAccessories++;
+          logger.warn('Orphaned accessory found', {
+            module: 'separation-checklist',
+            data: {
+              accessoryName: item.name,
+              parentId: item.parentId
+            }
+          });
         }
       }
     });
@@ -91,14 +102,18 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
     });
 
     const result = Object.values(categories);
-    console.log('📦 Categorized equipment result:', {
-      totalCategories: result.length,
-      categories: result.map(cat => ({
-        category: cat.category,
-        itemCount: cat.items.length,
-        mainItems: cat.items.filter(item => item.itemType === 'main').length,
-        accessories: cat.items.filter(item => item.itemType === 'accessory').length
-      }))
+    logger.info('Equipment categorized successfully', {
+      module: 'separation-checklist',
+      data: {
+        totalCategories: result.length,
+        orphanedAccessories,
+        categoryDetails: result.map(cat => ({
+          category: cat.category,
+          itemCount: cat.items.length,
+          mainItems: cat.items.filter(item => item.itemType === 'main').length,
+          accessories: cat.items.filter(item => item.itemType === 'accessory').length
+        }))
+      }
     });
 
     return result;
@@ -124,11 +139,20 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
 
   // Toggle item check
   const toggleItem = useCallback((itemId: string) => {
-    console.log('🔄 Toggling item:', itemId);
     setCheckedItems(prev => {
       const currentState = prev[itemId];
       const newState = !currentState;
-      console.log('✅ Toggling', itemId, 'from', currentState, 'to', newState);
+      
+      logger.debug('Toggling item in checklist', {
+        module: 'separation-checklist',
+        data: {
+          itemId,
+          fromState: currentState,
+          toState: newState
+        },
+        action: 'toggle_item'
+      });
+      
       return {
         ...prev,
         [itemId]: newState
@@ -138,7 +162,6 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
 
   // Toggle main item and all its accessories
   const toggleMainItemWithAccessories = useCallback((itemId: string) => {
-    console.log('🔄 Toggling main item with accessories:', itemId);
     setCheckedItems(prev => {
       const accessories = equipment.filter(item => 
         item.itemType === 'accessory' && item.parentId === itemId
@@ -146,8 +169,16 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       const currentState = prev[itemId];
       const newState = !currentState;
       
-      console.log('🔧 Main item', itemId, 'changing from', currentState, 'to', newState);
-      console.log('🔧 Accessories to update:', accessories.length);
+      logger.debug('Toggling main item with accessories', {
+        module: 'separation-checklist',
+        data: {
+          mainItemId: itemId,
+          fromState: currentState,
+          toState: newState,
+          accessoryCount: accessories.length
+        },
+        action: 'toggle_main_with_accessories'
+      });
       
       const updated = { ...prev };
       updated[itemId] = newState;
@@ -155,7 +186,6 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       // Update all accessories
       accessories.forEach(acc => {
         updated[acc.id] = newState;
-        console.log('🔧 Setting accessory', acc.id, 'to:', newState);
       });
       
       return updated;

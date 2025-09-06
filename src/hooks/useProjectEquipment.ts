@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Equipment, EquipmentCategory } from '@/types/equipment';
 import { Loan } from '@/types/loan';
+import { logger } from '@/lib/logger';
+import { wrapAsync } from '@/lib/errors';
 
 interface ProjectEquipment extends Equipment {
   loanInfo: {
@@ -19,41 +21,47 @@ export function useProjectEquipment(projectId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjectEquipment = async () => {
-    try {
+    logger.debug('Fetching equipment for project', { 
+      module: 'project-equipment', 
+      data: { projectId },
+      action: 'fetch_project_equipment' 
+    });
+
+    const result = await wrapAsync(async () => {
       setLoading(true);
       setError(null);
-      
-      console.log('🔍 Fetching equipment for project:', projectId);
-      
+
       // Usar a função segura do banco para buscar equipamentos do projeto
       const { data: projectEquipmentData, error } = await supabase
         .rpc('get_project_equipment', { _project_id: projectId });
 
-      console.log('📊 RPC get_project_equipment result:', {
-        data: projectEquipmentData,
-        error: error,
-        projectId
+      logger.apiResponse('POST', 'get_project_equipment', !error, { 
+        resultCount: projectEquipmentData?.length || 0,
+        hasError: !!error 
       });
 
       if (error) {
-        console.error('❌ Error in get_project_equipment RPC:', error);
-        throw error;
+        throw new Error(`Failed to fetch project equipment: ${error.message}`);
       }
 
       if (!projectEquipmentData || projectEquipmentData.length === 0) {
-        console.log('📭 No equipment found for project:', projectId);
+        logger.info('No equipment found for project', { 
+          module: 'project-equipment', 
+          data: { projectId }
+        });
         setEquipment([]);
-        return;
+        return [];
       }
 
       // Transformar dados para o formato esperado
       const projectEquipment: ProjectEquipment[] = projectEquipmentData.map(item => {
-        console.log('🔄 Transforming equipment item:', {
-          rawItem: item,
-          equipment_id: item.equipment_id,
-          equipment_name: item.equipment_name,
-          equipment_item_type: item.equipment_item_type,
-          equipment_parent_id: item.equipment_parent_id
+        logger.debug('Transforming equipment item', {
+          module: 'project-equipment',
+          data: {
+            equipmentId: item.equipment_id,
+            equipmentName: item.equipment_name,
+            itemType: item.equipment_item_type
+          }
         });
 
         return {
@@ -92,24 +100,28 @@ export function useProjectEquipment(projectId: string) {
         };
       });
 
-      console.log('✅ Transformed equipment data:', {
-        totalItems: projectEquipment.length,
-        mainItems: projectEquipment.filter(eq => eq.itemType === 'main').length,
-        accessories: projectEquipment.filter(eq => eq.itemType === 'accessory').length,
-        items: projectEquipment.map(eq => ({
-          id: eq.id,
-          name: eq.name,
-          itemType: eq.itemType,
-          parentId: eq.parentId,
-          category: eq.category
-        }))
+      logger.info('Successfully transformed project equipment data', {
+        module: 'project-equipment',
+        data: {
+          totalItems: projectEquipment.length,
+          mainItems: projectEquipment.filter(eq => eq.itemType === 'main').length,
+          accessories: projectEquipment.filter(eq => eq.itemType === 'accessory').length
+        }
       });
 
       setEquipment(projectEquipment);
-    } catch (err) {
-      console.error('Error fetching project equipment:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao carregar equipamentos do projeto');
-    } finally {
+      return projectEquipment;
+    });
+
+    if (result.data !== undefined) {
+      setLoading(false);
+    } else if (result.error) {
+      logger.error('Failed to fetch project equipment', {
+        module: 'project-equipment',
+        data: { projectId },
+        error: result.error
+      });
+      setError(result.error.message);
       setLoading(false);
     }
   };
@@ -120,5 +132,9 @@ export function useProjectEquipment(projectId: string) {
     }
   }, [projectId]);
 
-  return { equipment, loading, error, refetch: fetchProjectEquipment };
+  const refetch = async () => {
+    await fetchProjectEquipment();
+  };
+
+  return { equipment, loading, error, refetch };
 }

@@ -290,7 +290,12 @@ export function useProjectDetails(projectId: string) {
         'delete_project',
         'projects',
         project.id,
-        project,
+        { 
+          id: project.id,
+          name: project.name,
+          status: project.status,
+          step: project.step 
+        } as Record<string, unknown>,
         null
       );
 
