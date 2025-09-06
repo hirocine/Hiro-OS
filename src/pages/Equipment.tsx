@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useEquipment } from '@/hooks/useEquipment';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
-
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
