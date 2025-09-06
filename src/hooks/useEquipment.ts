@@ -89,7 +89,7 @@ export function useEquipment(): UseEquipmentReturn {
         lastLoanDate: item.last_loan_date || undefined,
       }));
       
-      logger.apiResponse('fetchEquipment', 'success');
+      logger.apiResponse('fetchEquipment', 'success', null, 'success');
       return equipmentData;
     });
 
@@ -335,9 +335,10 @@ export function useEquipment(): UseEquipmentReturn {
       return equipmentData;
     });
 
-    return result.success 
-      ? { success: true, data: result.data } 
-      : { success: false, error: result.error?.message || 'Erro desconhecido' };
+    if (result.error) {
+      return { success: false, error: result.error.message };
+    }
+    return { success: true, data: result.data };
   };
 
   const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
@@ -389,9 +390,10 @@ export function useEquipment(): UseEquipmentReturn {
       logger.userAction('equipment_updated', JSON.stringify({ equipmentId: id }));
     });
 
-    return result.data 
-      ? { success: true, data: undefined } 
-      : { success: false, error: result.error?.message || 'Erro desconhecido' };
+    if (result.error) {
+      return { success: false, error: result.error.message };
+    }
+    return { success: true, data: undefined };
   };
 
   const deleteEquipment = async (id: string): Promise<Result<void>> => {
