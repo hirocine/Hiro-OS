@@ -214,6 +214,13 @@ export type Database = {
             foreignKeyName: "equipments_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
+            referencedRelation: "equipment_safe_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
             referencedRelation: "equipments"
             referencedColumns: ["id"]
           },
@@ -269,6 +276,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "loans_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_safe_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loans_equipment_id_fkey"
             columns: ["equipment_id"]
@@ -609,7 +623,108 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      equipment_safe_view: {
+        Row: {
+          brand: string | null
+          category: string | null
+          created_at: string | null
+          current_borrower: string | null
+          current_loan_id: string | null
+          custom_category: string | null
+          depreciated_value: number | null
+          description: string | null
+          id: string | null
+          image: string | null
+          invoice: string | null
+          item_type: string | null
+          last_loan_date: string | null
+          last_maintenance: string | null
+          name: string | null
+          parent_id: string | null
+          patrimony_number: string | null
+          purchase_date: string | null
+          receive_date: string | null
+          serial_number: string | null
+          simplified_status: string | null
+          status: string | null
+          store: string | null
+          subcategory: string | null
+          updated_at: string | null
+          value: number | null
+        }
+        Insert: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string | null
+          current_borrower?: string | null
+          current_loan_id?: string | null
+          custom_category?: string | null
+          depreciated_value?: never
+          description?: string | null
+          id?: string | null
+          image?: string | null
+          invoice?: never
+          item_type?: string | null
+          last_loan_date?: string | null
+          last_maintenance?: string | null
+          name?: string | null
+          parent_id?: string | null
+          patrimony_number?: string | null
+          purchase_date?: string | null
+          receive_date?: string | null
+          serial_number?: string | null
+          simplified_status?: string | null
+          status?: string | null
+          store?: never
+          subcategory?: string | null
+          updated_at?: string | null
+          value?: never
+        }
+        Update: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string | null
+          current_borrower?: string | null
+          current_loan_id?: string | null
+          custom_category?: string | null
+          depreciated_value?: never
+          description?: string | null
+          id?: string | null
+          image?: string | null
+          invoice?: never
+          item_type?: string | null
+          last_loan_date?: string | null
+          last_maintenance?: string | null
+          name?: string | null
+          parent_id?: string | null
+          patrimony_number?: string | null
+          purchase_date?: string | null
+          receive_date?: string | null
+          serial_number?: string | null
+          simplified_status?: string | null
+          status?: string | null
+          store?: never
+          subcategory?: string | null
+          updated_at?: string | null
+          value?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_safe_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       audit_data_access: {
@@ -779,6 +894,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_unauthorized_access_attempt: {
+        Args: {
+          _attempted_action: string
+          _record_id: string
+          _table_name: string
+        }
+        Returns: undefined
+      }
       manual_sync_equipment_status: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -795,6 +918,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      run_complete_security_scan: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          critical_issues: number
+          high_issues: number
+          low_issues: number
+          medium_issues: number
+          scan_id: string
+          scan_summary: Json
+          scan_timestamp: string
+          vulnerabilities_found: number
+        }[]
+      }
       run_security_maintenance: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -806,6 +942,15 @@ export type Database = {
       user_can_access_equipment: {
         Args: { equipment_id: string }
         Returns: boolean
+      }
+      user_can_access_equipment_details: {
+        Args: { equipment_id: string }
+        Returns: {
+          access_reason: string
+          can_edit: boolean
+          can_view_commercial: boolean
+          can_view_financial: boolean
+        }[]
       }
     }
     Enums: {
