@@ -23,9 +23,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
     name: project?.name || '',
     description: project?.description || '',
     expectedEndDate: project?.expectedEndDate || '',
-    responsibleName: project?.responsibleName || '',
-    responsibleEmail: project?.responsibleEmail || '',
-    department: project?.department || '',
     notes: project?.notes || ''
   });
 
@@ -38,9 +35,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
         name: project.name,
         description: project.description || '',
         expectedEndDate: project.expectedEndDate,
-        responsibleName: project.responsibleName,
-        responsibleEmail: project.responsibleEmail || '',
-        department: project.department || '',
         notes: project.notes || ''
       });
     }
@@ -53,9 +47,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
       name: formData.name,
       description: formData.description,
       expectedEndDate: formData.expectedEndDate,
-      responsibleName: formData.responsibleName,
-      responsibleEmail: formData.responsibleEmail,
-      department: formData.department,
       notes: formData.notes
     });
     onOpenChange(false);
@@ -71,7 +62,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
     setShowCalendar(false);
   };
 
-  const isFormValid = formData.name.trim() && formData.expectedEndDate && formData.responsibleName.trim();
+  const isFormValid = formData.name.trim() && formData.expectedEndDate;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,35 +120,28 @@ export function EditProjectDialog({ project, open, onOpenChange, onSave }: EditP
             </Popover>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="responsible">Responsável *</Label>
-            <Input
-              id="responsible"
-              value={formData.responsibleName}
-              onChange={(e) => setFormData(prev => ({ ...prev, responsibleName: e.target.value }))}
-              placeholder="Nome do responsável"
-            />
-          </div>
+          {/* Read-only project information */}
+          <div className="border-t pt-4 space-y-3">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Responsável</Label>
+              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
+                {project?.responsibleName || 'Não informado'}
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email do Responsável</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.responsibleEmail}
-              onChange={(e) => setFormData(prev => ({ ...prev, responsibleEmail: e.target.value }))}
-              placeholder="email@exemplo.com"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Email do Responsável</Label>
+              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
+                {project?.responsibleEmail || 'Não informado'}
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="department">Departamento</Label>
-            <Input
-              id="department"
-              value={formData.department}
-              onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-              placeholder="Departamento"
-            />
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Departamento</Label>
+              <div className="px-3 py-2 bg-muted/50 rounded-md text-sm">
+                {project?.department || 'Não informado'}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
