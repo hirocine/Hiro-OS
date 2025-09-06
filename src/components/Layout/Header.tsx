@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { NotificationPanel } from './NotificationPanel';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -42,6 +43,7 @@ export function Header() {
       
       <div className="flex items-center space-x-4">
         <NotificationPanel />
+        <ThemeSwitcher />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

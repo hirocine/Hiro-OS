@@ -1,15 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
 import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
 import { EquipmentMobileCard } from '@/components/Equipment/EquipmentMobileCard';
+import { SelectableEquipmentCard } from '@/components/Equipment/SelectableEquipmentCard';
+import { BulkActionsBar } from '@/components/Equipment/BulkActionsBar';
 import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination';
 import { EquipmentStatsCards } from '@/components/Equipment/EquipmentStatsCards';
 import { SortableHeader } from '@/components/Equipment/SortableHeader';
@@ -21,6 +24,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
@@ -44,6 +48,9 @@ export default function EquipmentPage() {
     toggleEquipmentExpansion,
     handleSort,
   } = useEquipment();
+
+  // Initialize bulk selection
+  const bulkSelection = useBulkSelection(filteredEquipment);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -303,6 +310,45 @@ export default function EquipmentPage() {
     setCurrentPage(1); // Reset to first page
   };
 
+  const handleBulkDelete = async (items: Equipment[]) => {
+    for (const equipment of items) {
+      await deleteEquipment(equipment.id);
+    }
+  };
+
+  const handleBulkEdit = (items: Equipment[]) => {
+    // For now, just show a toast that this feature is coming
+    enhancedToast.info({
+      title: 'Em breve',
+      description: 'Edição em lote será implementada em uma próxima versão.'
+    });
+  };
+
+  const handleBulkExport = (items: Equipment[]) => {
+    // Simple CSV export
+    const csvContent = [
+      'Nome,Marca,Categoria,Patrimônio,Status,Valor',
+      ...items.map(item => 
+        `"${item.name}","${item.brand}","${item.category}","${item.patrimonyNumber || ''}","${item.status}","${item.value || 0}"`
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `equipamentos-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    enhancedToast.success({
+      title: 'Exportação concluída',
+      description: `${items.length} equipamento(s) exportado(s) com sucesso.`
+    });
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -379,7 +425,11 @@ export default function EquipmentPage() {
                 <div className="bg-muted/30 border-b border-border">
                   <div className="grid grid-cols-12 gap-4 px-4 py-3 items-center">
                     <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      Tipo
+                      <Checkbox
+                        checked={bulkSelection.isAllSelected}
+                        onCheckedChange={bulkSelection.toggleAll}
+                        className={bulkSelection.isPartialSelected ? "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : ""}
+                      />
                     </div>
                     <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       Imagem
@@ -441,16 +491,25 @@ export default function EquipmentPage() {
                 {/* Content */}
                 <div className="bg-card">
                   {paginatedData.map((hierarchyItem: any) => (
-                    <EquipmentHierarchyRow
-                      key={hierarchyItem.item.id}
-                      equipment={hierarchyItem.item}
-                      accessories={hierarchyItem.accessories}
-                      onEdit={handleEdit}
-                      onDelete={handleDeleteById}
-                      onToggleExpansion={toggleEquipmentExpansion}
-                      onImageUpload={handleImageUploadById}
-                      onConvertToAccessory={handleConvertToAccessory}
-                    />
+                    <div key={hierarchyItem.item.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <div className="col-span-1 flex items-center">
+                        <Checkbox
+                          checked={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
+                          onCheckedChange={() => bulkSelection.toggleItem(hierarchyItem.item.id)}
+                        />
+                      </div>
+                      <div className="col-span-11">
+                        <EquipmentHierarchyRow
+                          equipment={hierarchyItem.item}
+                          accessories={hierarchyItem.accessories}
+                          onEdit={handleEdit}
+                          onDelete={handleDeleteById}
+                          onToggleExpansion={toggleEquipmentExpansion}
+                          onImageUpload={handleImageUploadById}
+                          onConvertToAccessory={handleConvertToAccessory}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -683,15 +742,25 @@ export default function EquipmentPage() {
         icon="delete"
         onConfirm={confirmDelete}
       />
-      <UndoDeleteDialog
-        open={undoDeleteDialog.open}
-        onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
-        deletedEquipment={undoDeleteDialog.equipment}
-        onRestore={async (equipmentId) => {
-          equipmentDebug('Restoring equipment', { equipmentId });
-          // Implementar lógica de restauração quando necessário
-        }}
-      />
-    </div>
-  );
-}
+       <UndoDeleteDialog
+         open={undoDeleteDialog.open}
+         onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
+         deletedEquipment={undoDeleteDialog.equipment}
+         onRestore={async (equipmentId) => {
+           equipmentDebug('Restoring equipment', { equipmentId });
+           // Implementar lógica de restauração quando necessário
+         }}
+       />
+       
+       {/* Bulk Actions Bar */}
+       <BulkActionsBar
+         selectedItems={bulkSelection.getSelectedItems()}
+         selectedCount={bulkSelection.selectedCount}
+         onClearSelection={bulkSelection.clearSelection}
+         onBulkDelete={handleBulkDelete}
+         onBulkEdit={handleBulkEdit}
+         onBulkExport={handleBulkExport}
+       />
+     </div>
+   );
+ }
