@@ -145,11 +145,11 @@ export const useAvatarUpload = () => {
       });
 
       return data.publicUrl;
-    } catch (error: any) {
+    } catch (error: unknown) {
       profileDebug('Avatar: Error in upload process', error);
       toast({
         title: "Erro ao fazer upload",
-        description: error.message || "Não foi possível atualizar o avatar.",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar o avatar.",
         variant: "destructive",
       });
       throw error;
@@ -175,10 +175,10 @@ export const useAvatarUpload = () => {
         title: "Avatar removido",
         description: "Sua foto de perfil foi removida com sucesso.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Erro ao remover avatar",
-        description: error.message || "Não foi possível remover o avatar.",
+        description: error instanceof Error ? error.message : "Não foi possível remover o avatar.",
         variant: "destructive",
       });
       throw error;

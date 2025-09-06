@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
+import { logger } from '@/lib/logger';
 
 interface SecurityAlert {
   id: string;
@@ -52,7 +53,7 @@ export function useSecurityMonitoring() {
       setAlerts((alertsData || []) as SecurityAlert[]);
 
       if (dashboardData) {
-        const data = dashboardData as any;
+        const data = dashboardData as Record<string, any>;
         setMetrics({
           totalAlerts: data.security_alerts?.total_alerts || 0,
           unresolvedAlerts: data.security_alerts?.unresolved_alerts || 0,
@@ -63,7 +64,11 @@ export function useSecurityMonitoring() {
         });
       }
     } catch (error) {
-      console.error('Erro ao buscar dados de segurança:', error);
+      logger.error('Failed to fetch security data', {
+        module: 'security-monitoring',
+        action: 'fetch_security_data',
+        error: error instanceof Error ? error : String(error)
+      });
     } finally {
       setLoading(false);
     }
@@ -94,7 +99,12 @@ export function useSecurityMonitoring() {
 
       return true;
     } catch (error) {
-      console.error('Erro ao criar alerta de segurança:', error);
+      logger.error('Failed to create security alert', {
+        module: 'security-monitoring',
+        action: 'create_alert',
+        data: { alertType, severity, title },
+        error: error instanceof Error ? error : String(error)
+      });
       return false;
     }
   }, [isAdmin, fetchSecurityData]);
@@ -119,7 +129,12 @@ export function useSecurityMonitoring() {
 
       return true;
     } catch (error) {
-      console.error('Erro ao resolver alerta:', error);
+      logger.error('Failed to resolve alert', {
+        module: 'security-monitoring',
+        action: 'resolve_alert',
+        data: { alertId },
+        error: error instanceof Error ? error : String(error)
+      });
       return false;
     }
   }, [isAdmin, fetchSecurityData]);
@@ -137,7 +152,11 @@ export function useSecurityMonitoring() {
 
       return true;
     } catch (error) {
-      console.error('Erro ao executar scan de segurança:', error);
+      logger.error('Failed to run security scan', {
+        module: 'security-monitoring',
+        action: 'run_security_scan',
+        error: error instanceof Error ? error : String(error)
+      });
       return false;
     }
   }, [isAdmin, fetchSecurityData]);

@@ -118,8 +118,8 @@ export function useEquipment(): UseEquipmentReturn {
 
   const sortEquipment = <T extends Equipment>(items: T[], sortBy: SortableField, sortOrder: SortOrder): T[] => {
     return [...items].sort((a, b) => {
-      let valueA: any;
-      let valueB: any;
+      let valueA: unknown;
+      let valueB: unknown;
 
       switch (sortBy) {
         case 'name':

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export interface User {
   id: string;
@@ -29,7 +30,11 @@ export function useUsers() {
 
       setUsers(data || []);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      logger.error('Failed to fetch users', {
+        module: 'users',
+        action: 'fetch_users',
+        error: err instanceof Error ? err : String(err)
+      });
       setError(err instanceof Error ? err.message : 'Erro ao carregar usuários');
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface SecureUploadOptions {
   bucket: string;
@@ -95,7 +96,12 @@ export function useSecureUpload(options: Partial<SecureUploadOptions> = {}) {
         });
 
       if (error) {
-        console.error('Upload error:', error);
+        logger.error('File upload failed', {
+          module: 'secure-upload',
+          action: 'upload_file',
+          data: { filename, bucket: config.bucket },
+          error
+        });
         toast({
           title: 'Erro no upload',
           description: 'Falha ao fazer upload do arquivo',
@@ -117,7 +123,11 @@ export function useSecureUpload(options: Partial<SecureUploadOptions> = {}) {
       return { url: urlData.publicUrl };
 
     } catch (error) {
-      console.error('Unexpected upload error:', error);
+      logger.error('Unexpected upload error', {
+        module: 'secure-upload',
+        action: 'upload_file',
+        error: error instanceof Error ? error : String(error)
+      });
       toast({
         title: 'Erro inesperado',
         description: 'Ocorreu um erro durante o upload',
@@ -136,13 +146,23 @@ export function useSecureUpload(options: Partial<SecureUploadOptions> = {}) {
         .remove([path]);
 
       if (error) {
-        console.error('Delete error:', error);
+        logger.error('File deletion failed', {
+          module: 'secure-upload',
+          action: 'delete_file',
+          data: { path, bucket: config.bucket },
+          error
+        });
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Unexpected delete error:', error);
+      logger.error('Unexpected delete error', {
+        module: 'secure-upload',
+        action: 'delete_file',
+        data: { path },
+        error: error instanceof Error ? error : String(error)
+      });
       return { success: false, error: 'Erro inesperado ao deletar arquivo' };
     }
   };

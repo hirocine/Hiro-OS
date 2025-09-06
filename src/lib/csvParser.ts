@@ -124,7 +124,7 @@ function validateAndTransformItemType(value: string): EquipmentItemType | null {
   return VALID_ITEM_TYPES.includes(mapped as EquipmentItemType) ? mapped as EquipmentItemType : null;
 }
 
-function validateRow(row: any, index: number, mainItemsLookup?: Map<string, string>): { equipment: Omit<Equipment, 'id'> | null; errors: ImportError[] } {
+function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: Map<string, string>): { equipment: Omit<Equipment, 'id'> | null; errors: ImportError[] } {
   const errors: ImportError[] = [];
   const rowNumber = index + 2; // +2 because index is 0-based and we have a header row
 
@@ -307,11 +307,11 @@ export function parseCSV(file: File): Promise<ImportResult> {
         const errors: ImportError[] = [];
 
         // Two-pass processing: first main items, then accessories
-        const allRows = results.data as any[];
+        const allRows = results.data as Record<string, any>[];
         const mainItemsLookup = new Map<string, string>();
         
         // First pass: process main items and build lookup
-        allRows.forEach((row: any, index: number) => {
+        allRows.forEach((row: Record<string, any>, index: number) => {
           const itemType = validateAndTransformItemType(row.itemType);
           if (itemType === 'main') {
             const { equipment, errors: rowErrors } = validateRow(row, index);
@@ -335,7 +335,7 @@ export function parseCSV(file: File): Promise<ImportResult> {
         });
 
         // Second pass: process accessories with parent references
-        allRows.forEach((row: any, index: number) => {
+        allRows.forEach((row: Record<string, any>, index: number) => {
           const itemType = validateAndTransformItemType(row.itemType);
           if (itemType === 'accessory') {
             const { equipment, errors: rowErrors } = validateRow(row, index, mainItemsLookup);
@@ -406,11 +406,11 @@ export function parseExcel(file: File): Promise<ImportResult> {
         const errors: ImportError[] = [];
 
         // Two-pass processing for Excel files too
-        const allRows: any[] = [];
+        const allRows: Array<{ row: Record<string, any>; index: number }> = [];
         rows.forEach((row: any[], index: number) => {
           if (row.length === 0) return;
 
-          const rowObject: any = {};
+          const rowObject: Record<string, any> = {};
           headers.forEach((header, headerIndex) => {
             if (row[headerIndex] !== undefined && row[headerIndex] !== null && row[headerIndex] !== '') {
               rowObject[header] = row[headerIndex];

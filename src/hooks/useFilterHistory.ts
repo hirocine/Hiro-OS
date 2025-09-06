@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { EquipmentFilters } from '@/types/equipment';
+import { logger } from '@/lib/logger';
 
 interface FilterHistoryItem {
   id: string;
@@ -23,7 +24,11 @@ export function useFilterHistory() {
         setHistory(parsedHistory);
       }
     } catch (error) {
-      console.error('Erro ao carregar histórico de filtros:', error);
+      logger.error('Failed to load filter history from localStorage', {
+        module: 'filter-history',
+        action: 'load_history',
+        error: error instanceof Error ? error : String(error)
+      });
     }
   }, []);
 
@@ -32,7 +37,11 @@ export function useFilterHistory() {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(historyItems));
     } catch (error) {
-      console.error('Erro ao salvar histórico de filtros:', error);
+      logger.error('Failed to save filter history to localStorage', {
+        module: 'filter-history',
+        action: 'save_history',
+        error: error instanceof Error ? error : String(error)
+      });
     }
   }, []);
 

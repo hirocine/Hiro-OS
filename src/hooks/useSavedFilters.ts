@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { EquipmentFilters, SavedFilter } from '@/types/equipment';
+import { logger } from '@/lib/logger';
 
 // Implementação simplificada usando localStorage até os tipos do Supabase serem atualizados
 export function useSavedFilters() {
@@ -18,7 +19,11 @@ export function useSavedFilters() {
         setSavedFilters(parsedFilters);
       }
     } catch (error) {
-      console.error('Erro ao carregar filtros salvos:', error);
+      logger.error('Failed to load saved filters from localStorage', {
+        module: 'saved-filters',
+        action: 'load_saved_filters',
+        error: error instanceof Error ? error : String(error)
+      });
     } finally {
       setLoading(false);
     }
@@ -44,7 +49,12 @@ export function useSavedFilters() {
 
       return newFilter;
     } catch (error) {
-      console.error('Erro ao salvar filtro:', error);
+      logger.error('Failed to save filter', {
+        module: 'saved-filters',
+        action: 'save_filter',
+        data: { name, filters },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -74,7 +84,12 @@ export function useSavedFilters() {
 
       return updatedFilter;
     } catch (error) {
-      console.error('Erro ao atualizar filtro:', error);
+      logger.error('Failed to update filter', {
+        module: 'saved-filters',
+        action: 'update_filter',
+        data: { id, name, filters },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -90,7 +105,12 @@ export function useSavedFilters() {
       setSavedFilters(updatedFilters);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFilters));
     } catch (error) {
-      console.error('Erro ao remover filtro:', error);
+      logger.error('Failed to delete filter', {
+        module: 'saved-filters',
+        action: 'delete_filter',
+        data: { id },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     } finally {
       setLoading(false);

@@ -104,7 +104,7 @@ export function useProjectDetails(projectId: string) {
 
     try {
       // Transform to database format
-      const dbUpdates: any = {};
+      const dbUpdates: Record<string, any> = {};
       
       if (updates.name) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
@@ -126,14 +126,24 @@ export function useProjectDetails(projectId: string) {
         .eq('id', project.id);
 
       if (error) {
-        console.error('Error updating project:', error);
+        logger.error('Failed to update project in database', {
+          module: 'project-details',
+          action: 'update_project',
+          data: { projectId: project.id, updates },
+          error
+        });
         throw error;
       }
 
       // Update local state
       setProject(prev => prev ? { ...prev, ...updates } : null);
     } catch (error) {
-      console.error('Error updating project:', error);
+      logger.error('Unexpected error updating project', {
+        module: 'project-details',
+        action: 'update_project',
+        data: { updates },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     }
   };
@@ -157,7 +167,7 @@ export function useProjectDetails(projectId: string) {
       // Check if project should be completed automatically
       const shouldComplete = newStep === 'verified' && project.status === 'active';
       
-      const updates: any = {
+      const updates: Record<string, any> = {
         step: newStep,
         step_history: JSON.stringify(updatedStepHistory),
         updated_at: new Date().toISOString()
@@ -181,7 +191,12 @@ export function useProjectDetails(projectId: string) {
         .eq('id', project.id);
 
       if (error) {
-        console.error('Error updating project step:', error);
+        logger.error('Failed to update project step in database', {
+          module: 'project-details',
+          action: 'update_project_step',
+          data: { projectId: project.id, newStep, notes },
+          error
+        });
         throw error;
       }
 
@@ -209,7 +224,12 @@ export function useProjectDetails(projectId: string) {
         return updated;
       });
     } catch (error) {
-      console.error('Error updating project step:', error);
+      logger.error('Unexpected error updating project step', {
+        module: 'project-details',
+        action: 'update_project_step',
+        data: { newStep, notes },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     }
   };
@@ -238,7 +258,12 @@ export function useProjectDetails(projectId: string) {
         .eq('id', project.id);
 
       if (error) {
-        console.error('Error completing project:', error);
+        logger.error('Failed to complete project in database', {
+          module: 'project-details',
+          action: 'complete_project',
+          data: { projectId: project.id, notes },
+          error
+        });
         throw error;
       }
 
@@ -251,7 +276,12 @@ export function useProjectDetails(projectId: string) {
         actualEndDate: new Date().toISOString().split('T')[0]
       } : null);
     } catch (error) {
-      console.error('Error completing project:', error);
+      logger.error('Unexpected error completing project', {
+        module: 'project-details',
+        action: 'complete_project',
+        data: { notes },
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     }
   };
@@ -269,14 +299,23 @@ export function useProjectDetails(projectId: string) {
         .eq('id', project.id);
 
       if (error) {
-        console.error('Error archiving project:', error);
+        logger.error('Failed to archive project in database', {
+          module: 'project-details',
+          action: 'archive_project',
+          data: { projectId: project.id },
+          error
+        });
         throw error;
       }
 
       // Update local state
       setProject(prev => prev ? { ...prev, status: 'archived' } : null);
     } catch (error) {
-      console.error('Error archiving project:', error);
+      logger.error('Unexpected error archiving project', {
+        module: 'project-details',
+        action: 'archive_project',
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     }
   };
@@ -306,13 +345,22 @@ export function useProjectDetails(projectId: string) {
         .eq('id', project.id);
 
       if (error) {
-        console.error('Error deleting project:', error);
+        logger.error('Failed to delete project from database', {
+          module: 'project-details',
+          action: 'delete_project',
+          data: { projectId: project.id },
+          error
+        });
         throw error;
       }
 
       return true;
     } catch (error) {
-      console.error('Error deleting project:', error);
+      logger.error('Unexpected error deleting project', {
+        module: 'project-details',
+        action: 'delete_project',
+        error: error instanceof Error ? error : String(error)
+      });
       throw error;
     }
   };

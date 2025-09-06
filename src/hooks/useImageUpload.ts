@@ -123,14 +123,14 @@ export const useImageUpload = () => {
       ));
 
       return { success: true, url: publicUrl };
-    } catch (error: any) {
+    } catch (error: unknown) {
       setImages(prev => prev.map(img => 
         img.id === imageFile.id 
-          ? { ...img, status: 'error', error: error.message }
+          ? { ...img, status: 'error', error: error instanceof Error ? error.message : String(error) }
           : img
       ));
 
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   };
 

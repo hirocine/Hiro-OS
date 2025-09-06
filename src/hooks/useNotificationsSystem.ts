@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification, NotificationFilters, NotificationStats } from '@/types/notification';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export function useNotificationsSystem() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -43,8 +44,8 @@ export function useNotificationsSystem() {
         id: item.notifications?.id || '',
         title: item.notifications?.title || '',
         description: item.notifications?.description,
-        type: item.notifications?.type as any,
-        relatedEntity: item.notifications?.related_entity as any,
+        type: (item.notifications?.type || 'system') as Notification['type'],
+        relatedEntity: (item.notifications?.related_entity || 'system') as Notification['relatedEntity'],
         entityId: item.notifications?.entity_id,
         responsibleUser: item.notifications?.responsible_user_name ? {
           id: '',
@@ -59,7 +60,11 @@ export function useNotificationsSystem() {
 
       setNotifications(processedNotifications);
     } catch (err) {
-      console.error('Erro ao buscar notificações:', err);
+      logger.error('Failed to fetch notifications', {
+        module: 'notifications',
+        action: 'fetch_notifications',
+        error: err instanceof Error ? err : String(err)
+      });
       setError('Erro ao carregar notificações');
       toast.error('Erro ao carregar notificações');
     } finally {
@@ -84,7 +89,12 @@ export function useNotificationsSystem() {
 
       toast.success('Notificação marcada como lida');
     } catch (err) {
-      console.error('Erro ao marcar como lida:', err);
+      logger.error('Failed to mark notification as read', {
+        module: 'notifications',
+        action: 'mark_as_read',
+        data: { notificationId },
+        error: err instanceof Error ? err : String(err)
+      });
       toast.error('Erro ao marcar notificação como lida');
     }
   }, []);
@@ -106,7 +116,11 @@ export function useNotificationsSystem() {
         toast.success(`${updatedCount} notificações marcadas como lidas`);
       }
     } catch (err) {
-      console.error('Erro ao marcar todas como lidas:', err);
+      logger.error('Failed to mark all notifications as read', {
+        module: 'notifications',
+        action: 'mark_all_as_read',
+        error: err instanceof Error ? err : String(err)
+      });
       toast.error('Erro ao marcar todas as notificações como lidas');
     }
   }, []);

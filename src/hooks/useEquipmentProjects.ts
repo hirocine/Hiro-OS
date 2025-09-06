@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface EquipmentProjectInfo {
   equipmentId: string;
@@ -26,7 +27,12 @@ export function useEquipmentProjects(equipmentIds: string[]) {
           .rpc('get_equipment_project_count', { equipment_id: equipmentId });
 
         if (countError) {
-          console.error('Error getting project count for equipment:', equipmentId, countError);
+          logger.error('Failed to get project count for equipment', {
+            module: 'equipment-projects',
+            action: 'get_project_count',
+            data: { equipmentId },
+            error: countError
+          });
           return { equipmentId, projectCount: 0, activeProjects: [] };
         }
 
@@ -38,7 +44,12 @@ export function useEquipmentProjects(equipmentIds: string[]) {
           .eq('status', 'active');
 
         if (loansError) {
-          console.error('Error getting active loans for equipment:', equipmentId, loansError);
+          logger.error('Failed to get active loans for equipment', {
+            module: 'equipment-projects',
+            action: 'get_active_loans',
+            data: { equipmentId },
+            error: loansError
+          });
           return { equipmentId, projectCount: count || 0, activeProjects: [] };
         }
 
@@ -86,7 +97,12 @@ export function useEquipmentProjects(equipmentIds: string[]) {
 
       setProjectInfo(newProjectInfo);
     } catch (error) {
-      console.error('Error fetching project counts:', error);
+      logger.error('Failed to fetch project counts', {
+        module: 'equipment-projects',
+        action: 'fetch_project_counts',
+        data: { equipmentIds },
+        error: error instanceof Error ? error : String(error)
+      });
     } finally {
       setLoading(false);
     }
