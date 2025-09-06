@@ -593,6 +593,15 @@ export type Database = {
         Args: { _ip_address: unknown; _user_email?: string }
         Returns: Json
       }
+      check_password_security: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          priority: string
+          recommendation: string
+          setting_name: string
+          status: string
+        }[]
+      }
       check_password_security_settings: {
         Args: Record<PropertyKey, never>
         Returns: {
