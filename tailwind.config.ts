@@ -118,6 +118,14 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				shimmer: {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(100%)'
+					}
+				},
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -196,6 +204,7 @@ export default {
 				}
 			},
 			animation: {
+				shimmer: 'shimmer 2s infinite',
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',

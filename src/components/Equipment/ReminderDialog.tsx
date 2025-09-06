@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Mail, MessageSquare, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { equipmentDebug } from '@/lib/debug';
+import { sendReminderNotification } from '@/lib/communication';
 
 interface ReminderDialogProps {
   open: boolean;
@@ -67,9 +68,9 @@ Equipe de Inventário`,
         recipient: reminderType === 'email' ? loanData.borrowerEmail : loanData.borrowerPhone
       });
 
-      // TODO: Implementar integração real com serviços de email/SMS
-      // Por enquanto, apenas simula o envio
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Integração com serviços de comunicação
+      await sendReminderNotification(reminderType, loanData, message);
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated API call
 
       // Registrar a notificação no sistema
       const notificationData = {

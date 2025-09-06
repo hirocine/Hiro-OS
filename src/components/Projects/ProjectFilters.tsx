@@ -1,10 +1,12 @@
+import { useState, useEffect, useMemo } from 'react';
 import type { ProjectFilters } from '@/types/project';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { statusLabels } from '@/lib/projectLabels';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface ProjectFiltersProps {
   filters: ProjectFilters;
@@ -12,15 +14,38 @@ interface ProjectFiltersProps {
 }
 
 export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps) {
+  const [nameInput, setNameInput] = useState(filters.name || '');
+  const [responsibleInput, setResponsibleInput] = useState(filters.responsible || '');
+  
+  const debouncedName = useDebounce(nameInput, 300);
+  const debouncedResponsible = useDebounce(responsibleInput, 300);
+  
+  useEffect(() => {
+    if (debouncedName !== filters.name) {
+      updateFilter('name', debouncedName);
+    }
+  }, [debouncedName]);
+  
+  useEffect(() => {
+    if (debouncedResponsible !== filters.responsible) {
+      updateFilter('responsible', debouncedResponsible);
+    }
+  }, [debouncedResponsible]);
+
   const updateFilter = (key: keyof ProjectFilters, value: string | undefined) => {
     onFiltersChange({ ...filters, [key]: value || undefined });
   };
 
   const clearFilters = () => {
+    setNameInput('');
+    setResponsibleInput('');
     onFiltersChange({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined && value !== '');
+  const hasActiveFilters = useMemo(() => 
+    Object.values(filters).some(value => value !== undefined && value !== ''),
+    [filters]
+  );
 
   return (
     <div className="bg-card p-4 rounded-lg border space-y-4">
@@ -54,22 +79,30 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
         
         <div className="space-y-2">
           <Label htmlFor="projectName">Nome do Projeto</Label>
-          <Input
-            id="projectName"
-            placeholder="Buscar por nome..."
-            value={filters.name || ''}
-            onChange={(e) => updateFilter('name', e.target.value)}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="projectName"
+              placeholder="Buscar por nome..."
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="responsible">Responsável</Label>
-          <Input
-            id="responsible"
-            placeholder="Buscar por responsável..."
-            value={filters.responsible || ''}
-            onChange={(e) => updateFilter('responsible', e.target.value)}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="responsible"
+              placeholder="Buscar por responsável..."
+              value={responsibleInput}
+              onChange={(e) => setResponsibleInput(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
       </div>
     </div>
