@@ -60,7 +60,7 @@ export default function ProjectDetails() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 md:p-6">
         <div className="animate-pulse space-y-6">
           <div className="flex items-center space-x-4">
             <div className="w-8 h-8 bg-muted rounded" />
@@ -78,7 +78,7 @@ export default function ProjectDetails() {
 
   if (error || !project) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 md:p-6">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Projeto não encontrado</h1>
           <p className="text-muted-foreground">{error || 'O projeto solicitado não existe.'}</p>
@@ -157,7 +157,7 @@ export default function ProjectDetails() {
     !project.actualEndDate;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">

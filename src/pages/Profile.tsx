@@ -205,14 +205,14 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 flex items-center justify-center">
+      <div className="container mx-auto p-4 md:p-6 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Perfil</h1>
         <p className="text-muted-foreground">
