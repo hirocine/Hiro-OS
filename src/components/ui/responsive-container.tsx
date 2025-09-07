@@ -35,11 +35,11 @@ export function ResponsiveContainer({
     if (padding === 'auto') {
       switch (breakpoint) {
         case 'mobile':
-          return 'p-4';
+          return 'px-6 py-4';
         case 'tablet':
-          return 'p-6';
+          return 'px-8 py-6';
         default:
-          return 'p-6 lg:p-8';
+          return 'px-10 lg:px-12 py-6 lg:py-8';
       }
     }
     

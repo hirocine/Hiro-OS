@@ -486,7 +486,7 @@ export default function EquipmentPage() {
                         field="name" 
                         label="Nome/Modelo" 
                         currentSortBy={filters.sortBy} 
-                        currentOrder={filters.sortOrder}
+                        currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -495,7 +495,7 @@ export default function EquipmentPage() {
                         field="category" 
                         label="Categoria" 
                         currentSortBy={filters.sortBy} 
-                        currentOrder={filters.sortOrder}
+                        currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -504,7 +504,7 @@ export default function EquipmentPage() {
                         field="status" 
                         label="Status" 
                         currentSortBy={filters.sortBy} 
-                        currentOrder={filters.sortOrder}
+                        currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -513,7 +513,7 @@ export default function EquipmentPage() {
                         field="value" 
                         label="Valor" 
                         currentSortBy={filters.sortBy} 
-                        currentOrder={filters.sortOrder}
+                        currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -534,7 +534,6 @@ export default function EquipmentPage() {
                       onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
                       onToggleExpansion={toggleEquipmentExpansion}
-                      bulkSelection={bulkSelection}
                     />
                   ))}
                 </div>
@@ -662,17 +661,20 @@ export default function EquipmentPage() {
           open={isConvertDialogOpen}
           onOpenChange={setIsConvertDialogOpen}
           equipment={convertingEquipment}
-          onSubmit={async (newAccessoryName: string, newAccessoryBrand: string) => {
+          mainItems={allEquipment.filter(eq => eq.itemType === 'main')}
+          onConvert={async (equipmentId: string, parentId: string) => {
             try {
               setLoadingStates(prev => ({ ...prev, convert: true }));
-              await convertToAccessory(convertingEquipment.id, newAccessoryName, newAccessoryBrand);
+              await convertToAccessory(equipmentId, parentId);
               setConvertingEquipment(null);
               setIsConvertDialogOpen(false);
               
               enhancedToast.success({
                 title: 'Conversão realizada!',
-                description: `${convertingEquipment.name} foi convertido para ${newAccessoryName} com sucesso.`
+                description: `${convertingEquipment.name} foi convertido para acessório com sucesso.`
               });
+              
+              return { success: true };
             } catch (error: any) {
               const errorMessage = error?.details || error?.message || 'Erro desconhecido durante a conversão';
               logger.error('Error converting equipment to accessory in page', {
@@ -682,8 +684,7 @@ export default function EquipmentPage() {
                 data: { 
                   equipmentId: convertingEquipment.id, 
                   equipmentName: convertingEquipment.name,
-                  newAccessoryName,
-                  newAccessoryBrand
+                  parentId
                 }
               });
 
@@ -692,7 +693,7 @@ export default function EquipmentPage() {
                 description: errorMessage
               });
               
-              throw error;
+              return { success: false };
             } finally {
               setLoadingStates(prev => ({ ...prev, convert: false }));
             }
