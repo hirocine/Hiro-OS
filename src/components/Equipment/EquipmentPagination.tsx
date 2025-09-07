@@ -29,47 +29,50 @@ export function EquipmentPagination({
 }: EquipmentPaginationProps) {
   const isMobile = useIsMobile();
 
-  // Mobile: Design completamente diferente e minimalista
+  // Mobile: Design super simplificado - apenas navegação essencial
   if (isMobile) {
     return (
-      <div className="bg-background border-t px-4 py-3 space-y-3">
-        {/* Linha 1: Info principal e navegação rápida */}
+      <div className="bg-background border-t px-4 py-4">
         <div className="flex items-center justify-between">
+          {/* Info da página atual */}
           <div className="text-sm text-muted-foreground">
             Página {currentPage} de {totalPages}
           </div>
           
+          {/* Navegação direta com dropdown */}
           <Select 
             value={currentPage.toString()} 
             onValueChange={(value) => onPageChange(Number(value))}
           >
-            <SelectTrigger className="w-24 h-8 text-sm">
-              <SelectValue placeholder={`${currentPage}`} />
+            <SelectTrigger className="w-20 h-8 text-sm">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <SelectItem key={page} value={page.toString()}>
-                  {page}
+                  Página {page}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Linha 2: Navegação Previous/Next */}
-        <div className="flex items-center justify-center gap-4">
+        {/* Navegação Previous/Next mais limpa */}
+        <div className="flex items-center justify-between mt-4 gap-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex-1 max-w-[120px]"
+            className="flex-1"
           >
             Anterior
           </Button>
           
-          <div className="text-xs text-muted-foreground px-2">
-            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems}
+          {/* Info dos itens no centro */}
+          <div className="text-xs text-muted-foreground text-center min-w-0 px-2">
+            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)}<br />
+            <span className="text-[10px]">de {totalItems}</span>
           </div>
           
           <Button
@@ -77,29 +80,10 @@ export function EquipmentPagination({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex-1 max-w-[120px]"
+            className="flex-1"
           >
             Próxima
           </Button>
-        </div>
-
-        {/* Linha 3: Items per page (colapsável) */}
-        <div className="flex items-center justify-center gap-2 pt-1 border-t border-border/50">
-          <span className="text-xs text-muted-foreground">Exibir:</span>
-          <Select 
-            value={itemsPerPage.toString()} 
-            onValueChange={(value) => onItemsPerPageChange(Number(value))}
-          >
-            <SelectTrigger className="w-16 h-7 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-xs text-muted-foreground">itens</span>
         </div>
       </div>
     );
