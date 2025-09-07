@@ -221,6 +221,9 @@ export default {
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
 				'card': 'var(--shadow-card)'
+			},
+			gridTemplateColumns: {
+				'13': 'repeat(13, minmax(0, 1fr))'
 			}
 		}
 	},

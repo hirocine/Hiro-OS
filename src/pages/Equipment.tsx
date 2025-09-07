@@ -448,16 +448,19 @@ export default function EquipmentPage() {
               <div className="min-w-full">
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-12 gap-4 px-4 py-3 items-center">
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                  <div className="grid grid-cols-13 gap-3 px-4 py-3 items-center">
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <Checkbox
                         checked={bulkSelection.isAllSelected}
                         onCheckedChange={bulkSelection.toggleAll}
                         className={bulkSelection.isPartialSelected ? "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : ""}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      Imagem
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                      <span>Tipo</span>
+                    </div>
+                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                      <span>Imagem</span>
                     </div>
                     <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
@@ -508,7 +511,7 @@ export default function EquipmentPage() {
                       />
                     </div>
                     <div className="col-span-2 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      Ações
+                      <span>Ações</span>
                     </div>
                   </div>
                 </div>
@@ -516,25 +519,18 @@ export default function EquipmentPage() {
                 {/* Content */}
                 <div className="bg-card">
                   {paginatedData.map((hierarchyItem: any) => (
-                    <div key={hierarchyItem.item.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      <div className="col-span-1 flex items-center">
-                        <Checkbox
-                          checked={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
-                          onCheckedChange={() => bulkSelection.toggleItem(hierarchyItem.item.id)}
-                        />
-                      </div>
-                      <div className="col-span-11">
-                        <EquipmentHierarchyRow
-                          equipment={hierarchyItem.item}
-                          accessories={hierarchyItem.accessories}
-                          onEdit={handleEdit}
-                          onDelete={handleDeleteById}
-                          onToggleExpansion={toggleEquipmentExpansion}
-                          onImageUpload={handleImageUploadById}
-                          onConvertToAccessory={handleConvertToAccessory}
-                        />
-                      </div>
-                    </div>
+                    <EquipmentHierarchyRow
+                      key={hierarchyItem.item.id}
+                      equipment={hierarchyItem.item}
+                      accessories={hierarchyItem.accessories}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteById}
+                      onToggleExpansion={toggleEquipmentExpansion}
+                      onImageUpload={handleImageUploadById}
+                      onConvertToAccessory={handleConvertToAccessory}
+                      isSelected={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
+                      onSelectionChange={() => bulkSelection.toggleItem(hierarchyItem.item.id)}
+                    />
                   ))}
                 </div>
               </div>

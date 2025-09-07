@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, MoreVertical, ArrowUpRight } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
 
@@ -16,6 +17,8 @@ interface EquipmentHierarchyRowProps {
   onImageUpload?: (equipmentId: string, file: File) => void;
   onConvertToAccessory?: (equipment: Equipment) => void;
   level?: number;
+  isSelected?: boolean;
+  onSelectionChange?: () => void;
 }
 
 export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
@@ -26,7 +29,9 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   onToggleExpansion,
   onImageUpload,
   onConvertToAccessory,
-  level = 0
+  level = 0,
+  isSelected = false,
+  onSelectionChange
 }: EquipmentHierarchyRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,23 +73,39 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-12 gap-4 px-4 py-4 border-b hover:bg-accent/50 transition-colors ${
-          level > 0 ? 'ml-8 border-l-2 border-primary/20' : ''
-        }`}
+        className={`grid grid-cols-13 gap-3 px-4 py-3 border-b transition-all duration-200 ${
+          isSelected ? 'bg-accent/20 border-accent/50' : 'hover:bg-muted/50 border-border'
+        } ${level > 0 ? 'ml-8 border-l-2 border-primary/30' : ''}`}
       >
+        {/* Seleção */}
+        {level === 0 && (
+          <div className="col-span-1 flex items-center justify-center">
+            {onSelectionChange && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={onSelectionChange}
+                className="data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+              />
+            )}
+          </div>
+        )}
+        
+        {/* Espacer para acessórios */}
+        {level > 0 && <div className="col-span-1"></div>}
+
         {/* Expansão / Tipo */}
-        <div className="col-span-1 flex items-center">
+        <div className="col-span-1 flex items-center justify-center">
           {isMainItem && hasAccessories ? (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onToggleExpansion(equipment.id)}
-              className="h-6 w-6 p-0"
+              className="h-7 w-7 p-0 hover:bg-accent/30"
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
           ) : (
-            <div className="h-6 w-6 flex items-center justify-center">
+            <div className="h-7 w-7 flex items-center justify-center">
               {isMainItem ? (
                 <Package className="h-4 w-4 text-primary" />
               ) : (
@@ -98,15 +119,15 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
         </div>
 
         {/* Imagem */}
-        <div className="col-span-1 flex items-center">
+        <div className="col-span-1 flex items-center justify-center">
           <div 
-            className="w-12 h-12 rounded border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-primary transition-colors flex items-center justify-center"
+            className="w-10 h-10 rounded-md border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-accent hover:bg-accent/10 transition-all duration-200 flex items-center justify-center group"
             onClick={handleImageClick}
           >
             {equipment.image ? (
-              <img src={equipment.image} alt={equipment.name} className="w-full h-full object-cover rounded" />
+              <img src={equipment.image} alt={equipment.name} className="w-full h-full object-cover rounded-md" />
             ) : (
-              <Camera className="h-5 w-5 text-muted-foreground" />
+              <Camera className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
             )}
           </div>
           <input
@@ -183,14 +204,23 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
 
         {/* Ações */}
         <div className="col-span-2 flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => onEdit(equipment)}
-            className="h-8 w-8 p-0"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => onEdit(equipment)}
+                  className="h-8 w-8 p-0 hover:bg-accent/30 hover:text-accent-foreground"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Editar equipamento</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
           {isMainItem && onConvertToAccessory && (
             <TooltipProvider>
@@ -200,7 +230,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
                     variant="ghost" 
                     size="sm"
                     onClick={() => onConvertToAccessory(equipment)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-accent hover:bg-accent/10"
                   >
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
@@ -217,14 +247,23 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
               <div className="h-8 w-8" /> // Placeholder para manter alinhamento
             }
           >
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => onDelete(equipment.id)}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => onDelete(equipment.id)}
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Excluir equipamento</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </AdminOnly>
         </div>
       </div>
