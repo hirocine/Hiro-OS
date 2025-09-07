@@ -29,24 +29,24 @@ export function EquipmentPagination({
 }: EquipmentPaginationProps) {
   const isMobile = useIsMobile();
 
-  // Mobile: Design ultra-simplificado - linha única com navegação essencial
+  // Mobile: Design ultra-simplificado - evita overflow
   if (isMobile) {
     return (
       <div className="bg-background border-t px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          {/* Info da página atual */}
-          <div className="text-sm text-muted-foreground flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          {/* Info da página atual - pode comprimir */}
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
             Página {currentPage} de {totalPages}
           </div>
           
-          {/* Navegação Previous/Next */}
-          <div className="flex items-center gap-2">
+          {/* Navegação Previous/Next - flexível */}
+          <div className="flex items-center gap-2 flex-1 justify-center">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3"
+              className="px-2 text-xs"
             >
               Anterior
             </Button>
@@ -56,15 +56,15 @@ export function EquipmentPagination({
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3"
+              className="px-2 text-xs"
             >
               Próxima
             </Button>
           </div>
           
-          {/* Info dos itens - discreta */}
-          <div className="text-xs text-muted-foreground flex-shrink-0">
-            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems}
+          {/* Info dos itens - compacta e pode esconder */}
+          <div className="text-xs text-muted-foreground whitespace-nowrap hidden xs:block">
+            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)}
           </div>
         </div>
       </div>
