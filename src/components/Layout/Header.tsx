@@ -47,9 +47,9 @@ export function Header() {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-visible">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={avatarData.url || undefined} />
+                <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                 <AvatarFallback>{avatarData.initials}</AvatarFallback>
               </Avatar>
             </Button>
