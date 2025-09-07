@@ -199,3 +199,53 @@ All colors MUST be HSL.
     transform: translateX(100%);
   }
 }
+
+/* Regras globais para mobile - CRÍTICO para evitar scroll horizontal */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Containers específicos */
+.mobile-safe {
+  overflow-x: hidden;
+  max-width: 100vw;
+  min-width: 0;
+}
+
+/* Prevent table breakouts */
+.table-container {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+/* Utility classes */
+.no-scroll-x {
+  overflow-x: hidden !important;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Touch targets para mobile */
+@media (max-width: 768px) {
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Force text wrap on small screens */
+  .break-words-mobile {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+}

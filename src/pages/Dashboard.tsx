@@ -98,14 +98,14 @@ export default function Dashboard() {
       <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
         <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Resumo Financeiro</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 lg:gap-4">
-          <div className="text-center p-3 bg-background/50 rounded-lg">
+          <div className="text-center p-3 bg-background/50 rounded-lg min-w-0">
             <p className="text-xs lg:text-sm text-muted-foreground">Valor Total do Inventário</p>
-            <p className="text-lg lg:text-2xl font-bold text-primary break-all">{formatCurrency(totalInventoryValue)}</p>
+            <p className="text-lg lg:text-2xl font-bold text-primary truncate">{formatCurrency(totalInventoryValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Valor pago</p>
           </div>
-          <div className="text-center p-3 bg-background/50 rounded-lg">
+          <div className="text-center p-3 bg-background/50 rounded-lg min-w-0">
             <p className="text-xs lg:text-sm text-muted-foreground">Valor Total Real</p>
-            <p className="text-lg lg:text-2xl font-bold text-destructive break-all">{formatCurrency(totalDepreciatedValue)}</p>
+            <p className="text-lg lg:text-2xl font-bold text-destructive truncate">{formatCurrency(totalDepreciatedValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Com depreciação</p>
           </div>
           <div className="text-center p-3 bg-background/50 rounded-lg">

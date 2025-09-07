@@ -94,9 +94,9 @@ export default function EquipmentPage() {
   const isMobile = useIsMobile();
   const isTablet = false; // Simplified for now
 
-  // Auto-switch view mode based on screen size
+  // Auto-switch view mode based on screen size - FORÇA cards no mobile
   const effectiveViewMode = useMemo(() => {
-    if (isMobile) return 'cards';
+    if (isMobile) return 'cards'; // NUNCA tabela em mobile
     if (isTablet && viewMode === 'table') return 'grid';
     return viewMode;
   }, [isMobile, isTablet, viewMode]);
@@ -441,10 +441,27 @@ export default function EquipmentPage() {
           </div>
         );
 
-      default: // table
+      default: // table - NEVER render on mobile
+        if (isMobile) {
+          return (
+            <div className="grid grid-cols-1 gap-4">
+              {(paginatedData as Equipment[]).map((equipment) => (
+                <EquipmentMobileCard
+                  key={equipment.id}
+                  equipment={equipment}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onImageUpload={handleImageUpload}
+                  onConvertToAccessory={handleConvertToAccessory}
+                />
+              ))}
+            </div>
+          );
+        }
+        
         return (
           <div className="bg-card rounded-lg border overflow-hidden shadow-card">
-            <div className="overflow-x-auto min-w-0">
+            <div className="overflow-x-auto table-container">
               <div className="min-w-[1200px]"> {/* Minimum width for table */}
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
