@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -31,6 +32,17 @@ export default defineConfig(({ mode }) => ({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /^\/.*$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 2 // 2 hours
+              }
+            }
           }
         ]
       },
@@ -39,8 +51,8 @@ export default defineConfig(({ mode }) => ({
         name: 'Hiro® - Inventario',
         short_name: 'Hiro Inventario',
         description: 'Sistema profissional para controle de inventário de equipamentos audiovisuais',
-        theme_color: 'hsl(var(--primary))',
-        background_color: 'hsl(var(--background))',
+        theme_color: '#2563eb',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
