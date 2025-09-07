@@ -97,27 +97,27 @@ export default function Dashboard() {
       <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
         <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Resumo Financeiro</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-            <div className="text-center p-3 bg-background/50 rounded-lg min-w-0">
+            <div className="text-center sm:text-center md:text-left p-3 bg-background/50 rounded-lg min-w-0">
               <p className="text-xs md:text-sm text-muted-foreground">Valor Total do Inventário</p>
               <p className="text-base md:text-lg lg:text-2xl font-bold text-primary truncate">{formatCurrency(totalInventoryValue)}</p>
               <p className="text-xs text-muted-foreground mt-1">Valor pago</p>
             </div>
-            <div className="text-center p-3 bg-background/50 rounded-lg min-w-0">
+            <div className="text-center sm:text-center md:text-left p-3 bg-background/50 rounded-lg min-w-0">
               <p className="text-xs md:text-sm text-muted-foreground">Valor Total Real</p>
               <p className="text-base md:text-lg lg:text-2xl font-bold text-destructive truncate">{formatCurrency(totalDepreciatedValue)}</p>
               <p className="text-xs text-muted-foreground mt-1">Com depreciação</p>
             </div>
-            <div className="text-center p-3 bg-background/50 rounded-lg">
+            <div className="text-center sm:text-center md:text-left p-3 bg-background/50 rounded-lg">
               <p className="text-xs md:text-sm text-muted-foreground">+1 Ano de Uso</p>
               <p className="text-base md:text-lg lg:text-2xl font-bold text-warning">{equipmentByAge.over1Year}</p>
               <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
             </div>
-            <div className="text-center p-3 bg-background/50 rounded-lg">
+            <div className="text-center sm:text-center md:text-left p-3 bg-background/50 rounded-lg">
               <p className="text-xs md:text-sm text-muted-foreground">+2 Anos de Uso</p>
               <p className="text-base md:text-lg lg:text-2xl font-bold text-warning">{equipmentByAge.over2Years}</p>
               <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
             </div>
-            <div className="text-center p-3 bg-background/50 rounded-lg">
+            <div className="text-center sm:text-center md:text-left p-3 bg-background/50 rounded-lg">
               <p className="text-xs md:text-sm text-muted-foreground">+3 Anos de Uso</p>
               <p className="text-base md:text-lg lg:text-2xl font-bold text-destructive">{equipmentByAge.over3Years}</p>
               <p className="text-xs text-muted-foreground mt-1">Equipamentos</p>
