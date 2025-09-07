@@ -45,21 +45,21 @@ export function EquipmentPagination({
 
   return (
     <div className="w-full bg-card border-t overflow-hidden">
-      <div className="flex items-center justify-between gap-4 px-6 py-4 min-w-0">
-        {/* Left: Items info */}
-        <div className="flex items-center gap-6 min-w-0">
-          <p className="text-sm text-muted-foreground shrink-0">
-            <span className="font-medium">{startItem}-{endItem}</span> de{' '}
-            <span className="font-medium">{totalItems}</span>
-          </p>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <label className="text-sm text-muted-foreground">Itens:</label>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-muted/20 border-t">
+        {/* Informações dos itens - mais compacta */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>
+            <span className="font-medium text-foreground">{startItem}-{endItem}</span> de{' '}
+            <span className="font-medium text-foreground">{totalItems}</span>
+          </span>
+          
+          <div className="flex items-center gap-2">
+            <span>Mostrar:</span>
             <Select
               value={itemsPerPage.toString()}
               onValueChange={(value) => onItemsPerPageChange(Number(value))}
             >
-              <SelectTrigger className="w-16 h-8">
+              <SelectTrigger className="w-16 h-7 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -72,72 +72,74 @@ export function EquipmentPagination({
           </div>
         </div>
 
-        {/* Right: Navigation */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
-            className="h-8 w-8"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="h-8 w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+        {/* Navegação mais elegante */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-background rounded-md border p-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPageChange(1)}
+              disabled={currentPage === 1}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronsLeft className="h-3 w-3" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronLeft className="h-3 w-3" />
+            </Button>
 
-          <div className="flex items-center gap-1 mx-2">
-            {getVisiblePages().map((page, index) => {
-              if (page === '...') {
+            <div className="flex items-center gap-0.5 mx-1">
+              {getVisiblePages().map((page, index) => {
+                if (page === '...') {
+                  return (
+                    <span key={`ellipsis-${index}`} className="px-2 text-xs text-muted-foreground">
+                      ...
+                    </span>
+                  );
+                }
+
+                const pageNumber = page as number;
                 return (
-                  <span key={`ellipsis-${index}`} className="px-2 text-sm text-muted-foreground">
-                    ...
-                  </span>
+                  <Button
+                    key={`page-${pageNumber}`}
+                    variant={currentPage === pageNumber ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => onPageChange(pageNumber)}
+                    className="h-7 w-7 p-0 text-xs"
+                  >
+                    {pageNumber}
+                  </Button>
                 );
-              }
+              })}
+            </div>
 
-              const pageNumber = page as number;
-              return (
-                <Button
-                  key={`page-${pageNumber}`}
-                  variant={currentPage === pageNumber ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => onPageChange(pageNumber)}
-                  className="h-8 w-8 p-0"
-                >
-                  {pageNumber}
-                </Button>
-              );
-            })}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronsRight className="h-3 w-3" />
+            </Button>
           </div>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>
