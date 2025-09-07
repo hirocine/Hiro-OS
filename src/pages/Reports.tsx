@@ -1,5 +1,7 @@
 import { BarChart3, TrendingUp, Package, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useProjects } from '@/hooks/useProjects';
 
@@ -11,17 +13,17 @@ export default function Reports() {
 
   if (loading) {
     return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
-        <div className="space-y-4">
-          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
-          <div className="h-4 w-96 bg-muted rounded animate-pulse" />
+      <ResponsiveContainer className="flex items-center justify-center min-h-[50vh]">
+        <div className="space-y-4 text-center">
+          <div className="h-8 w-48 bg-muted rounded animate-pulse mx-auto" />
+          <div className="h-4 w-96 bg-muted rounded animate-pulse mx-auto" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-48 bg-muted rounded animate-pulse" />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-48 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
@@ -41,13 +43,11 @@ export default function Reports() {
     : 0;
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
-        <p className="text-muted-foreground">
-          Análises e insights sobre o inventário de equipamentos
-        </p>
-      </div>
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader 
+        title="Relatórios" 
+        subtitle="Análises e insights sobre o inventário de equipamentos"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <Card className="shadow-card">
@@ -147,6 +147,6 @@ export default function Reports() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ResponsiveContainer>
   );
 }

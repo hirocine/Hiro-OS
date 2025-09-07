@@ -1,5 +1,7 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
@@ -86,13 +88,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 gap-4 p-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Visão geral do inventário de equipamentos audiovisuais
-        </p>
-      </div>
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader 
+        title="Dashboard" 
+        subtitle="Visão geral do inventário de equipamentos audiovisuais"
+      />
 
       {/* Financial Summary */}
       <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
@@ -182,6 +182,6 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 }

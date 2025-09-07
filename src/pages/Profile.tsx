@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Loader2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -205,20 +207,18 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 md:p-6 flex items-center justify-center">
+      <ResponsiveContainer className="flex items-center justify-center min-h-[50vh]">
         <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Perfil</h1>
-        <p className="text-muted-foreground">
-          Gerencie suas informações pessoais e configurações da conta.
-        </p>
-      </div>
+    <ResponsiveContainer maxWidth="6xl">
+      <PageHeader 
+        title="Perfil" 
+        subtitle="Gerencie suas informações pessoais e configurações da conta."
+      />
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
         <Card className="lg:col-span-1">
@@ -377,6 +377,6 @@ export default function Profile() {
         onCropComplete={handleCropComplete}
         loading={uploading}
       />
-    </div>
+    </ResponsiveContainer>
   );
 }

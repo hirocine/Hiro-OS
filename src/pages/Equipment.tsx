@@ -3,6 +3,10 @@ import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download } fr
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { ResponsiveButton } from '@/components/ui/responsive-button';
+import { usePageLayout } from '@/hooks/usePageLayout';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useBulkSelection } from '@/hooks/useBulkSelection';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
@@ -93,6 +97,7 @@ export default function EquipmentPage() {
   
   const isMobile = useIsMobile();
   const isTablet = false; // Simplified for now
+  const { classes } = usePageLayout('table');
 
   // Auto-switch view mode based on screen size - FORÇA cards no mobile
   const effectiveViewMode = useMemo(() => {
@@ -479,27 +484,27 @@ export default function EquipmentPage() {
                     <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="name" 
-                        label="Nome" 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="brand" 
-                        label="Marca" 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
+                        label="Nome/Modelo" 
+                        currentSortBy={filters.sortBy} 
+                        currentOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="category" 
-                        label="Cat." 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
+                        label="Categoria" 
+                        currentSortBy={filters.sortBy} 
+                        currentOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </div>
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                      <SortableHeader 
+                        field="status" 
+                        label="Status" 
+                        currentSortBy={filters.sortBy} 
+                        currentOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -507,8 +512,8 @@ export default function EquipmentPage() {
                       <SortableHeader 
                         field="value" 
                         label="Valor" 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
+                        currentSortBy={filters.sortBy} 
+                        currentOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
@@ -520,18 +525,16 @@ export default function EquipmentPage() {
                 
                 {/* Content */}
                 <div className="bg-card">
-                  {paginatedData.map((hierarchyItem: any) => (
+                  {(paginatedData as any[]).map((item) => (
                     <EquipmentHierarchyRow
-                      key={hierarchyItem.item.id}
-                      equipment={hierarchyItem.item}
-                      accessories={hierarchyItem.accessories}
+                      key={item.id}
+                      equipment={item}
                       onEdit={handleEdit}
                       onDelete={handleDeleteById}
-                      onToggleExpansion={toggleEquipmentExpansion}
                       onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
-                      isSelected={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
-                      onSelectionChange={() => bulkSelection.toggleItem(hierarchyItem.item.id)}
+                      onToggleExpansion={toggleEquipmentExpansion}
+                      bulkSelection={bulkSelection}
                     />
                   ))}
                 </div>
@@ -543,61 +546,30 @@ export default function EquipmentPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 lg:gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Inventário de Equipamentos</h1>
-          <p className="text-sm lg:text-base text-muted-foreground mt-1">
-            Gerencie todos os equipamentos da sua organização
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:gap-4 w-full sm:w-auto">
-          {/* View mode toggle - hidden on mobile */}
-          {!isMobile && (
-            <div className="flex items-center border rounded-lg p-1 bg-muted/30">
-              <Button
-                variant={effectiveViewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('table')}
-                className="h-8 px-2 lg:px-3"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={effectiveViewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-8 px-2 lg:px-3"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={effectiveViewMode === 'cards' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('cards')}
-                className="h-8 px-2 lg:px-3"
-              >
-                <Smartphone className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-          
-          <div className="flex gap-2 ml-auto w-full sm:w-auto">
-            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2 flex-1 sm:flex-none">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Adicionar Equipamento</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
-            
-            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2 flex-1 sm:flex-none">
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Importar</span>
-            </Button>
+    <ResponsiveContainer maxWidth="7xl" className="min-h-screen">
+      <PageHeader 
+        title="Equipamentos" 
+        subtitle="Gerencie o inventário de equipamentos audiovisuais"
+        actions={
+          <div className="flex flex-col sm:flex-row gap-2">
+            <AdminOnly>
+              <ResponsiveButton
+                onClick={() => setIsImportDialogOpen(true)}
+                variant="outline"
+                icon={Upload}
+                mobileText="Importar"
+                desktopText="Importar CSV"
+              />
+            </AdminOnly>
+            <ResponsiveButton
+              onClick={() => setIsAddDialogOpen(true)}
+              icon={Plus}
+              mobileText="Adicionar"
+              desktopText="Adicionar Equipamento"
+            />
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stats Cards */}
       <EquipmentStatsCards stats={stats} isLoading={loading} />
@@ -611,7 +583,7 @@ export default function EquipmentPage() {
       />
 
       {/* Content */}
-      <div className="space-y-4">
+      <div className={classes.section}>
         {/* Current view indicator */}
         {!loading && filteredEquipment.length > 0 && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-muted-foreground">
@@ -651,12 +623,12 @@ export default function EquipmentPage() {
         {renderContent()}
 
         {/* Pagination */}
-        {!loading && filteredEquipment.length > 0 && (
+        {!loading && totalPages > 1 && (
           <EquipmentPagination
             currentPage={currentPage}
             totalPages={totalPages}
+            totalItems={effectiveViewMode === 'grid' || effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length}
             itemsPerPage={itemsPerPage}
-            totalItems={effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
           />
@@ -679,74 +651,41 @@ export default function EquipmentPage() {
           importEquipment(data);
           setIsImportDialogOpen(false);
           enhancedToast.success({
-            title: 'Equipamentos importados!',
-            description: 'Todos os equipamentos foram importados com sucesso.'
+            title: 'Importação concluída!',
+            description: `${data.length} equipamento(s) importado(s) com sucesso.`
           });
         }}
       />
 
-
       {convertingEquipment && (
         <ConvertToAccessoryDialog
           open={isConvertDialogOpen}
-          onOpenChange={(open) => {
-            setIsConvertDialogOpen(open);
-            if (!open) setConvertingEquipment(null);
-          }}
+          onOpenChange={setIsConvertDialogOpen}
           equipment={convertingEquipment}
-          mainItems={filteredEquipment.filter(e => e.itemType === 'main')}
-          onConvert={async (equipmentId, parentId) => {
-            setLoadingStates(prev => ({ ...prev, convert: true }));
+          onSubmit={async (newAccessoryName: string, newAccessoryBrand: string) => {
             try {
-              const result = await convertToAccessory(equipmentId, parentId);
+              setLoadingStates(prev => ({ ...prev, convert: true }));
+              await convertToAccessory(convertingEquipment.id, newAccessoryName, newAccessoryBrand);
+              setConvertingEquipment(null);
+              setIsConvertDialogOpen(false);
               
-              if (result?.success) {
-                const convertedItem = filteredEquipment.find(item => item.id === equipmentId);
-                const parentItem = filteredEquipment.find(item => item.id === parentId);
-                
-                setIsConvertDialogOpen(false);
-                setConvertingEquipment(null);
-                
-                enhancedToast.success({
-                  title: 'Item convertido com sucesso',
-                  description: `"${convertedItem?.name}" foi convertido em acessório de "${parentItem?.name}".`,
-                  action: {
-                    label: 'Desfazer',
-                    onClick: async () => {
-                      try {
-                        await updateEquipment(equipmentId, { itemType: 'main', parentId: undefined });
-                        enhancedToast.info({
-                          title: 'Conversão desfeita',
-                          description: 'O item foi restaurado como item principal.'
-                        });
-                      } catch (error) {
-                        enhancedToast.error({
-                          title: 'Erro ao desfazer',
-                          description: 'Não foi possível desfazer a conversão.'
-                        });
-                      }
-                    }
-                  }
-                });
-              }
-              
-              return result;
+              enhancedToast.success({
+                title: 'Conversão realizada!',
+                description: `${convertingEquipment.name} foi convertido para ${newAccessoryName} com sucesso.`
+              });
             } catch (error: any) {
+              const errorMessage = error?.details || error?.message || 'Erro desconhecido durante a conversão';
               logger.error('Error converting equipment to accessory in page', {
                 module: 'equipment-page',
                 action: 'convert_to_accessory',
                 error,
-                data: { equipmentId, parentId }
+                data: { 
+                  equipmentId: convertingEquipment.id, 
+                  equipmentName: convertingEquipment.name,
+                  newAccessoryName,
+                  newAccessoryBrand
+                }
               });
-              
-              let errorMessage = 'Ocorreu um erro ao converter o item.';
-              if (error.message?.includes('accessories attached')) {
-                errorMessage = 'Este item possui acessórios vinculados. Converta ou reatribua os acessórios primeiro.';
-              } else if (error.message?.includes('Parent item not found')) {
-                errorMessage = 'Item principal não encontrado.';  
-              } else if (error.message?.includes('must be a main equipment')) {
-                errorMessage = 'O item principal selecionado deve ser um item principal válido.';
-              }
 
               enhancedToast.error({
                 title: 'Erro na conversão',
@@ -777,25 +716,26 @@ export default function EquipmentPage() {
         icon="delete"
         onConfirm={confirmDelete}
       />
-       <UndoDeleteDialog
-         open={undoDeleteDialog.open}
-         onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
-         deletedEquipment={undoDeleteDialog.equipment}
-         onRestore={async (equipmentId) => {
-           equipmentDebug('Restoring equipment', { equipmentId });
-           // Implementar lógica de restauração quando necessário
-         }}
-       />
-       
-       {/* Bulk Actions Bar */}
-       <BulkActionsBar
-         selectedItems={bulkSelection.getSelectedItems()}
-         selectedCount={bulkSelection.selectedCount}
-         onClearSelection={bulkSelection.clearSelection}
-         onBulkDelete={handleBulkDelete}
-         onBulkEdit={handleBulkEdit}
-         onBulkExport={handleBulkExport}
-       />
-     </div>
-   );
- }
+      
+      <UndoDeleteDialog
+        open={undoDeleteDialog.open}
+        onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
+        deletedEquipment={undoDeleteDialog.equipment}
+        onRestore={async (equipmentId) => {
+          equipmentDebug('Restoring equipment', { equipmentId });
+          // Implementar lógica de restauração quando necessário
+        }}
+      />
+      
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedItems={bulkSelection.getSelectedItems()}
+        selectedCount={bulkSelection.selectedCount}
+        onClearSelection={bulkSelection.clearSelection}
+        onBulkDelete={handleBulkDelete}
+        onBulkEdit={handleBulkEdit}
+        onBulkExport={handleBulkExport}
+      />
+    </ResponsiveContainer>
+  );
+}

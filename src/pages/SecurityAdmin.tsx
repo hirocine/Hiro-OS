@@ -1,9 +1,15 @@
 import { SecurityDashboard } from '@/components/Security/SecurityDashboard';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 export default function SecurityAdmin() {
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
+    <ResponsiveContainer maxWidth="6xl">
+      <PageHeader 
+        title="Segurança" 
+        subtitle="Dashboard de segurança e monitoramento do sistema"
+      />
       <SecurityDashboard />
-    </div>
+    </ResponsiveContainer>
   );
 }

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
@@ -189,13 +192,11 @@ export default function Projects() {
   // Loading state with skeletons
   if (loading) {
     return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
-          <p className="text-muted-foreground">
-            Gerencie retiradas e devoluções de equipamentos por projeto
-          </p>
-        </div>
+    <ResponsiveContainer maxWidth="7xl">
+        <PageHeader 
+          title="Projetos" 
+          subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatsCardSkeleton />
@@ -210,17 +211,17 @@ export default function Projects() {
             <ProjectCardSkeleton key={i} />
           ))}
         </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
-        </div>
+      <ResponsiveContainer maxWidth="7xl">
+        <PageHeader 
+          title="Projetos" 
+        />
 
         <Card className="shadow-card">
           <CardHeader>
@@ -235,28 +236,25 @@ export default function Projects() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
-          <p className="text-muted-foreground">
-            Gerencie retiradas e devoluções de equipamentos por projeto
-          </p>
-        </div>
-        
-        <Button 
-          onClick={() => setShowNewProjectDialog(true)}
-          className="shadow-elegant"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Retirada
-        </Button>
-      </div>
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader 
+        title="Projetos" 
+        subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
+        actions={
+          <ResponsiveButton 
+            onClick={() => setShowNewProjectDialog(true)}
+            icon={Plus}
+            className="shadow-elegant"
+            mobileText="Nova"
+            desktopText="Nova Retirada"
+          />
+        }
+      />
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -483,6 +481,6 @@ export default function Projects() {
           onUpdate={handleUpdateStep}
         />
       )}
-    </div>
+    </ResponsiveContainer>
   );
 }

@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -312,13 +314,11 @@ export default function Admin() {
 
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Administração</h1>
-        <p className="text-muted-foreground">
-          Gerencie usuários, permissões e monitore atividades do sistema
-        </p>
-      </div>
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader 
+        title="Administração" 
+        subtitle="Gerencie usuários, permissões e monitore atividades do sistema"
+      />
 
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
@@ -673,6 +673,6 @@ export default function Admin() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </ResponsiveContainer>
   );
 }
