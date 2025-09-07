@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff2,woff}'],
         maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
         runtimeCaching: [
           {
@@ -34,6 +34,39 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          {
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          },
+          {
             urlPattern: /^\/.*$/,
             handler: 'NetworkFirst',
             options: {
@@ -46,37 +79,9 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
-      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
-      manifest: {
-        name: 'Hiro® - Inventario',
-        short_name: 'Hiro Inventario',
-        description: 'Sistema profissional para controle de inventário de equipamentos audiovisuais',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
-        categories: ['productivity', 'business', 'utilities'],
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      }
+      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon.png', 'favicon-32x32.png'],
+      manifestFilename: 'manifest.json',
+      useCredentials: true
     })
   ].filter(Boolean),
   resolve: {
