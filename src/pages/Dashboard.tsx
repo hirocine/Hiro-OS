@@ -1,4 +1,5 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
@@ -120,31 +121,45 @@ export default function Dashboard() {
         {/* Equipment Age Analysis */}
         <div className="border-t border-border/20 pt-4">
           <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Análise por Idade dos Equipamentos</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-warning" />
-                <p className="text-xs text-muted-foreground font-medium">Mais de 1 ano</p>
-              </div>
-              <p className="text-base md:text-lg font-bold text-warning">{equipmentByAge.over1Year}</p>
-              <p className="text-xs text-muted-foreground">equipamentos</p>
-            </div>
-            <div className="p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-warning" />
-                <p className="text-xs text-muted-foreground font-medium">Mais de 2 anos</p>
-              </div>
-              <p className="text-base md:text-lg font-bold text-warning">{equipmentByAge.over2Years}</p>
-              <p className="text-xs text-muted-foreground">equipamentos</p>
-            </div>
-            <div className="p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <p className="text-xs text-muted-foreground font-medium">Mais de 3 anos</p>
-              </div>
-              <p className="text-base md:text-lg font-bold text-destructive">{equipmentByAge.over3Years}</p>
-              <p className="text-xs text-muted-foreground">equipamentos</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Mais de 1 ano
+                </CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-warning">{equipmentByAge.over1Year}</div>
+                <p className="text-xs text-muted-foreground">equipamentos</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Mais de 2 anos
+                </CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-warning">{equipmentByAge.over2Years}</div>
+                <p className="text-xs text-muted-foreground">equipamentos</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Mais de 3 anos
+                </CardTitle>
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-destructive">{equipmentByAge.over3Years}</div>
+                <p className="text-xs text-muted-foreground">equipamentos</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
