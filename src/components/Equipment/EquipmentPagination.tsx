@@ -29,61 +29,43 @@ export function EquipmentPagination({
 }: EquipmentPaginationProps) {
   const isMobile = useIsMobile();
 
-  // Mobile: Design super simplificado - apenas navegação essencial
+  // Mobile: Design ultra-simplificado - linha única com navegação essencial
   if (isMobile) {
     return (
-      <div className="bg-background border-t px-4 py-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-background border-t px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
           {/* Info da página atual */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground flex-shrink-0">
             Página {currentPage} de {totalPages}
           </div>
           
-          {/* Navegação direta com dropdown */}
-          <Select 
-            value={currentPage.toString()} 
-            onValueChange={(value) => onPageChange(Number(value))}
-          >
-            <SelectTrigger className="w-20 h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <SelectItem key={page} value={page.toString()}>
-                  Página {page}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Navegação Previous/Next mais limpa */}
-        <div className="flex items-center justify-between mt-4 gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="flex-1"
-          >
-            Anterior
-          </Button>
-          
-          {/* Info dos itens no centro */}
-          <div className="text-xs text-muted-foreground text-center min-w-0 px-2">
-            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)}<br />
-            <span className="text-[10px]">de {totalItems}</span>
+          {/* Navegação Previous/Next */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3"
+            >
+              Anterior
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3"
+            >
+              Próxima
+            </Button>
           </div>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="flex-1"
-          >
-            Próxima
-          </Button>
+          {/* Info dos itens - discreta */}
+          <div className="text-xs text-muted-foreground flex-shrink-0">
+            {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems}
+          </div>
         </div>
       </div>
     );
