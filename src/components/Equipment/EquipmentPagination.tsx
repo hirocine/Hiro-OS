@@ -1,6 +1,13 @@
-import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EquipmentPaginationProps {
@@ -25,54 +32,57 @@ export function EquipmentPagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   const getVisiblePages = () => {
-    const visiblePages: (number | string)[] = [];
-    const maxVisiblePages = isMobile ? 3 : 5;
-
-    if (totalPages <= maxVisiblePages) {
+    const pages: number[] = [];
+    const maxVisible = isMobile ? 3 : 7;
+    
+    if (totalPages <= maxVisible) {
+      // Mostrar todas as páginas se couberem
       for (let i = 1; i <= totalPages; i++) {
-        visiblePages.push(i);
+        pages.push(i);
       }
     } else {
-      if (isMobile) {
-        // Versão simplificada para mobile
-        if (currentPage === 1) {
-          visiblePages.push(1, 2, '...', totalPages);
-        } else if (currentPage === totalPages) {
-          visiblePages.push(1, '...', totalPages - 1, totalPages);
-        } else {
-          visiblePages.push(1, '...', currentPage, '...', totalPages);
+      // Lógica inteligente para páginas visíveis
+      if (currentPage <= 3) {
+        // Início: 1, 2, 3, 4, ...
+        for (let i = 1; i <= Math.min(4, totalPages); i++) {
+          pages.push(i);
+        }
+      } else if (currentPage >= totalPages - 2) {
+        // Final: ..., n-3, n-2, n-1, n
+        for (let i = Math.max(1, totalPages - 3); i <= totalPages; i++) {
+          pages.push(i);
         }
       } else {
-        // Versão completa para desktop
-        if (currentPage <= 3) {
-          visiblePages.push(1, 2, 3, 4, '...', totalPages);
-        } else if (currentPage >= totalPages - 2) {
-          visiblePages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-        } else {
-          visiblePages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+        // Meio: 1, ..., current-1, current, current+1, ..., n
+        pages.push(1);
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
         }
+        pages.push(totalPages);
       }
     }
-
-    return visiblePages;
+    
+    return pages;
   };
+
+  const visiblePages = getVisiblePages();
+  const showStartEllipsis = visiblePages[0] > 1 && visiblePages[1] !== 2;
+  const showEndEllipsis = visiblePages[visiblePages.length - 1] < totalPages && 
+                          visiblePages[visiblePages.length - 2] !== totalPages - 1;
 
   if (isMobile) {
     return (
-      <div className="w-full bg-card border-t min-w-0">
-        <div className="px-3 py-3 space-y-3">
-          {/* Info compacta no mobile */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              {startItem}-{endItem} de {totalItems}
+      <div className="w-full bg-card border-t">
+        <div className="p-4 space-y-4">
+          {/* Info e controles compactos */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              Página {currentPage} de {totalPages}
             </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs">Por página:</span>
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(value) => onItemsPerPageChange(Number(value))}
-              >
-                <SelectTrigger className="w-12 h-6 text-xs border-0 bg-muted/50">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Por página:</span>
+              <Select value={itemsPerPage.toString()} onValueChange={(value) => onItemsPerPageChange(Number(value))}>
+                <SelectTrigger className="w-16 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -84,75 +94,50 @@ export function EquipmentPagination({
             </div>
           </div>
 
-          {/* Navegação simplificada no mobile */}
-          <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-
-            <div className="flex items-center gap-0.5 mx-2">
-              {getVisiblePages().map((page, index) => {
-                if (page === '...') {
-                  return (
-                    <span key={`ellipsis-${index}`} className="px-1 text-xs text-muted-foreground">
-                      ...
-                    </span>
-                  );
-                }
-
-                const pageNumber = page as number;
-                return (
-                  <Button
-                    key={`page-${pageNumber}`}
-                    variant={currentPage === pageNumber ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onPageChange(pageNumber)}
-                    className="h-8 w-8 p-0 text-xs"
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
+          {/* Navegação central */}
+          <Pagination className="mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              
+              <PaginationItem>
+                <span className="px-4 py-2 text-sm">
+                  {startItem}-{endItem} de {totalItems}
+                </span>
+              </PaginationItem>
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full bg-card border-t min-w-0">
-      <div className="flex items-center justify-between gap-4 px-6 py-3 min-w-0">
-        {/* Info dos itens */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground shrink-0">
-          <span className="whitespace-nowrap">
-            <span className="font-medium text-foreground">{startItem}-{endItem}</span> de{' '}
-            <span className="font-medium text-foreground">{totalItems}</span>
+    <div className="w-full bg-card border-t">
+      <div className="flex items-center justify-between px-6 py-4">
+        {/* Info à esquerda */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>
+            Mostrando <span className="font-medium text-foreground">{startItem}</span> a{' '}
+            <span className="font-medium text-foreground">{endItem}</span> de{' '}
+            <span className="font-medium text-foreground">{totalItems}</span> resultados
           </span>
           
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <span>Mostrar:</span>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={(value) => onItemsPerPageChange(Number(value))}
-            >
-              <SelectTrigger className="w-16 h-7 text-xs">
+          <div className="flex items-center gap-2">
+            <span>Itens por página:</span>
+            <Select value={itemsPerPage.toString()} onValueChange={(value) => onItemsPerPageChange(Number(value))}>
+              <SelectTrigger className="w-20 h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -165,73 +150,82 @@ export function EquipmentPagination({
           </div>
         </div>
 
-        {/* Navegação */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronsLeft className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronLeft className="h-3 w-3" />
-          </Button>
-
-          <div className="flex items-center gap-0.5 mx-1">
-            {getVisiblePages().map((page, index) => {
-              if (page === '...') {
-                return (
-                  <span key={`ellipsis-${index}`} className="px-2 text-xs text-muted-foreground">
-                    ...
-                  </span>
-                );
-              }
-
-              const pageNumber = page as number;
+        {/* Navegação à direita */}
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+            
+            {/* Primeira página */}
+            {!visiblePages.includes(1) && (
+              <>
+                <PaginationItem>
+                  <PaginationLink 
+                    onClick={() => onPageChange(1)}
+                    className="cursor-pointer"
+                  >
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+                {showStartEllipsis && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+              </>
+            )}
+            
+            {/* Páginas visíveis */}
+            {visiblePages.map((page, index) => {
+              const isFirst = index === 0 && page === 1;
+              const isLast = index === visiblePages.length - 1 && page === totalPages;
+              const needsStartEllipsis = isFirst && showStartEllipsis;
+              const needsEndEllipsis = isLast && showEndEllipsis;
+              
               return (
-                <Button
-                  key={`page-${pageNumber}`}
-                  variant={currentPage === pageNumber ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onPageChange(pageNumber)}
-                  className="h-8 w-8 p-0 text-xs"
-                >
-                  {pageNumber}
-                </Button>
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => onPageChange(page)}
+                    isActive={currentPage === page}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
               );
             })}
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronRight className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronsRight className="h-3 w-3" />
-          </Button>
-        </div>
+            
+            {/* Última página */}
+            {!visiblePages.includes(totalPages) && totalPages > 1 && (
+              <>
+                {showEndEllipsis && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                <PaginationItem>
+                  <PaginationLink 
+                    onClick={() => onPageChange(totalPages)}
+                    className="cursor-pointer"
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
+            
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
