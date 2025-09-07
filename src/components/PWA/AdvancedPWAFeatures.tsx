@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import { WebShare } from './WebShareAPI';
+import { EnhancedPushNotifications } from './EnhancedPushNotifications';
 import { BackgroundSync } from './BackgroundSync';
-import { PushNotifications } from './PushNotifications';
 
 export function AdvancedPWAFeatures() {
   useEffect(() => {
@@ -88,8 +87,9 @@ export function AdvancedPWAFeatures() {
   return (
     <>
       <BackgroundSync />
+      <EnhancedPushNotifications />
     </>
   );
 }
 
-export { WebShare, PushNotifications };
+export { EnhancedPushNotifications };

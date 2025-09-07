@@ -10,6 +10,7 @@ import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { getAvatarData } from '@/lib/avatarUtils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SyncStatusIndicator } from '@/components/PWA/SyncStatusIndicator';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -42,6 +43,7 @@ export function Header() {
       </div>
       
       <div className="flex items-center space-x-2 lg:space-x-4">
+        <SyncStatusIndicator />
         <NotificationPanel />
         <ThemeSwitcher />
         
