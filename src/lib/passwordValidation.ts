@@ -143,19 +143,15 @@ function hasRepeatedChars(password: string): boolean {
  * Gets password strength description based on score
  */
 export function getPasswordStrengthText(score: number): { text: string; color: string } {
-  switch (score) {
-    case 0:
-    case 1:
-      return { text: 'Muito fraca', color: 'text-destructive' };
-    case 2:
-      return { text: 'Fraca', color: 'text-warning' };
-    case 3:
-      return { text: 'Moderada', color: 'text-warning' };
-    case 4:
-      return { text: 'Forte', color: 'text-success' };
-    case 5:
-      return { text: 'Muito forte', color: 'text-success' };
-    default:
-      return { text: 'Desconhecida', color: 'text-muted-foreground' };
+  if (score >= 80) {
+    return { text: 'Muito forte', color: 'text-success' };
+  } else if (score >= 60) {
+    return { text: 'Forte', color: 'text-success' };
+  } else if (score >= 40) {
+    return { text: 'Moderada', color: 'text-warning' };
+  } else if (score >= 20) {
+    return { text: 'Fraca', color: 'text-warning' };
+  } else {
+    return { text: 'Muito fraca', color: 'text-destructive' };
   }
 }

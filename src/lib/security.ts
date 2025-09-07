@@ -13,7 +13,14 @@ export function sanitizeInput(input: string): string {
   return input
     .replace(/[<>]/g, '') // Remove < and > characters
     .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
     .replace(/on\w+=/gi, '') // Remove onXXX= event handlers
+    .replace(/expression\(/gi, '') // Remove CSS expression
+    .replace(/url\(/gi, '') // Remove CSS url()
+    .replace(/import\s/gi, '') // Remove import statements
+    .replace(/@import/gi, '') // Remove @import
+    .replace(/eval\(/gi, '') // Remove eval calls
     .trim();
 }
 
