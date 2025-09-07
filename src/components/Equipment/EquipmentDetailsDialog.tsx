@@ -160,7 +160,7 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />

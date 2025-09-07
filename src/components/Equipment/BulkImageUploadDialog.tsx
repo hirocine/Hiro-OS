@@ -215,7 +215,7 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
         <DialogHeader>
           <DialogTitle>Upload de Imagens em Massa</DialogTitle>
         </DialogHeader>

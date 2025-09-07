@@ -179,7 +179,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] mx-auto overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {equipment ? 'Editar Equipamento' : 'Adicionar Novo Equipamento'}

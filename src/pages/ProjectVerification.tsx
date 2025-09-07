@@ -315,12 +315,13 @@ export default function ProjectVerification() {
       )}
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-between gap-4 pt-6 border-t">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 border-t">
         <Button 
           type="button" 
           variant="outline" 
           onClick={handleCancel}
           disabled={isSubmitting}
+          className="w-full sm:w-auto"
         >
           Cancelar
         </Button>
@@ -328,7 +329,7 @@ export default function ProjectVerification() {
           type="button" 
           onClick={handleConfirm}
           disabled={!allItemsChecked || isSubmitting}
-          className="bg-green-600 hover:bg-green-700 min-w-[200px]"
+          className="bg-success hover:bg-success/90 w-full sm:min-w-[200px] sm:w-auto"
         >
           {isSubmitting ? (
             <>
