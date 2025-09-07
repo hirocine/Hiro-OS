@@ -16,6 +16,26 @@
       "type": "image/png"
     },
     {
+      "src": "/src/assets/pwa-icons/icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/pwa-icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/pwa-icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/pwa-icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
       "src": "/lovable-uploads/86c2b32c-219b-4fa7-9fa1-7026403ac09b.png",
       "sizes": "180x180",
       "type": "image/png"
@@ -26,13 +46,13 @@
       "type": "image/png"
     },
     {
-      "src": "/lovable-uploads/86c2b32c-219b-4fa7-9fa1-7026403ac09b.png",
-      "sizes": "144x144",
+      "src": "/src/assets/pwa-icons/icon-256x256.png",
+      "sizes": "256x256",
       "type": "image/png"
     },
     {
       "src": "/lovable-uploads/86c2b32c-219b-4fa7-9fa1-7026403ac09b.png",
-      "sizes": "384x384 512x512",
+      "sizes": "384x384",
       "type": "image/png"
     },
     {
@@ -42,21 +62,56 @@
       "purpose": "any maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/src/assets/pwa-screenshots/mobile-screenshot-1.png",
+      "sizes": "512x912",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/src/assets/pwa-screenshots/desktop-screenshot-1.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Dashboard",
       "url": "/dashboard",
-      "description": "Ver dashboard principal"
+      "description": "Ver dashboard principal",
+      "icons": [
+        {
+          "src": "/src/assets/pwa-icons/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Equipamentos",
       "url": "/equipment",
-      "description": "Gerenciar equipamentos"
+      "description": "Gerenciar equipamentos",
+      "icons": [
+        {
+          "src": "/src/assets/pwa-icons/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Projetos",
       "url": "/projects",
-      "description": "Visualizar projetos"
+      "description": "Visualizar projetos",
+      "icons": [
+        {
+          "src": "/src/assets/pwa-icons/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

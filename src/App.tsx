@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PWAEnhancer } from "./components/PWA/PWAEnhancer";
+import { CacheManager } from "./components/PWA/CacheManager";
 import Dashboard from "./pages/Dashboard";
 import Equipment from "./pages/Equipment";
 import Projects from "./pages/Projects";
@@ -23,6 +25,8 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <PWAEnhancer />
+      <CacheManager />
       <Toaster />
       <Sonner />
       <BrowserRouter>

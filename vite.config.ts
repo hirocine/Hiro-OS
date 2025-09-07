@@ -18,6 +18,9 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff2,woff}'],
         maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
+        offlineGoogleAnalytics: true,
+        navigateFallback: '/offline-enhanced.html',
+        navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -67,6 +70,18 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
+            urlPattern: /\/api\/.*$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+            },
+          },
+          {
             urlPattern: /^\/.*$/,
             handler: 'NetworkFirst',
             options: {
@@ -79,7 +94,15 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
-      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon.png', 'favicon-32x32.png'],
+      includeAssets: [
+        'pwa-192x192.png', 
+        'pwa-512x512.png', 
+        'apple-touch-icon.png', 
+        'favicon-32x32.png',
+        'lovable-uploads/**/*',
+        'src/assets/pwa-icons/*.png',
+        'src/assets/pwa-screenshots/*.png'
+      ],
       manifestFilename: 'manifest.json',
       useCredentials: true
     })
