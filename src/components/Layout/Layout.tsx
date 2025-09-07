@@ -13,13 +13,13 @@ export function Layout() {
         "--sidebar-width-icon": "5rem",
       } as React.CSSProperties}
     >
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full max-w-screen overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 min-w-0">
           <Header />
           <OfflineIndicator />
           <UpdateNotification />
-          <main className="flex-1 overflow-auto pt-16">
+          <main className="flex-1 overflow-hidden overflow-y-auto pt-16 min-w-0">
             <Outlet />
           </main>
         </SidebarInset>

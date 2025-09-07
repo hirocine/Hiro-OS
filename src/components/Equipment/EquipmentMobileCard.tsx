@@ -70,14 +70,14 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in">
-      <CardContent className="p-4">
+    <Card className="overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in mobile-safe min-w-0">
+      <CardContent className="p-4 min-w-0">
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between mb-3 min-w-0 gap-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <button
               onClick={handleImageClick}
-              className="w-12 h-12 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/30 hover:bg-muted/50 group"
+              className="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/30 hover:bg-muted/50 group"
             >
               {equipment.image ? (
                 <img
@@ -89,7 +89,7 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
                 <Camera className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               )}
             </button>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 overflow-hidden">
               <h3 className="font-medium text-card-foreground truncate">
                 {String(equipment?.name || 'Nome não informado')}
               </h3>
@@ -101,7 +101,7 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

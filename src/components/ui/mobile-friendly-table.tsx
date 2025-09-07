@@ -20,7 +20,7 @@ export function MobileFriendlyTable({
     <Card className={cn('overflow-hidden shadow-card', className)}>
       <CardContent className="p-0">
         <div className="overflow-x-auto min-w-0">
-          <div style={{ minWidth: isMobile ? minWidth : 'auto' }}>
+          <div style={{ minWidth: isMobile ? 'auto' : minWidth }} className="min-w-0">
             {children}
           </div>
         </div>

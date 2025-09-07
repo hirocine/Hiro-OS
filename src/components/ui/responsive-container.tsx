@@ -32,9 +32,10 @@ export function ResponsiveContainer({
 }: ResponsiveContainerProps) {
   return (
     <div className={cn(
-      'container mx-auto',
+      'container mx-auto mobile-safe',
       maxWidthClasses[maxWidth],
       paddingClasses[padding],
+      'min-w-0 max-w-full overflow-x-hidden',
       className
     )}>
       {children}

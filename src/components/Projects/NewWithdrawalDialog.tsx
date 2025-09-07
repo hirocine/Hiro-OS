@@ -2755,12 +2755,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Nova Retirada - Passo {currentStep} de 15</DialogTitle>
+        <DialogContent className="max-w-5xl max-h-[85vh] w-[95vw] sm:max-w-5xl flex flex-col overflow-x-hidden mobile-safe">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="text-base sm:text-lg truncate">Nova Retirada - Passo {currentStep} de 15</DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden py-4 flex flex-col">
+          <div className="flex-1 overflow-hidden py-2 sm:py-4 flex flex-col min-h-0">
             {/* Progress bar */}
             <div className="w-full bg-muted rounded-full h-2 mb-6">
               <div 
