@@ -59,7 +59,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label>Status</Label>
           <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value === 'all' ? undefined : value)}>

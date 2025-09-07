@@ -43,7 +43,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1" onClick={handleViewDetails}>
             <div className="flex items-center space-x-2 mb-2">
-              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
                 {project.name}
               </h3>
               <Badge variant={getStatusVariant(project.status)}>
@@ -53,7 +53,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
             </div>
             
             {(project.company || project.projectNumber) && (
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-3 truncate">
                 {project.company && project.projectNumber 
                   ? `${project.company} • Nº ${project.projectNumber}`
                   : project.company || `Nº ${project.projectNumber}`
@@ -113,28 +113,28 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
           </div>
 
           {/* Project Info Grid */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
             <div className="flex items-center space-x-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="font-medium">{project.responsibleName}</div>
+              <User className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <div className="font-medium truncate">{project.responsibleName}</div>
                 {project.department && (
-                  <div className="text-muted-foreground text-xs">{project.department}</div>
+                  <div className="text-muted-foreground text-xs truncate">{project.department}</div>
                 )}
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <div>
+              <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
                 <div className="font-medium">{project.equipmentCount} equipamentos</div>
                 <div className="text-muted-foreground text-xs">Vinculados</div>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <div>
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
                 <div className="font-medium">
                   {new Date(project.startDate).toLocaleDateString('pt-BR')}
                 </div>
@@ -143,8 +143,8 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
             </div>
 
             <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <div>
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
                 <div className={cn(
                   "font-medium",
                   isOverdue && "text-destructive"
