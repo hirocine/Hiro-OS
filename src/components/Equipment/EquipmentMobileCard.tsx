@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Camera, Edit, Trash2, MoreVertical, Package, Link, Upload } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface EquipmentMobileCardProps {
   equipment: Equipment;
@@ -17,6 +18,7 @@ interface EquipmentMobileCardProps {
   onDelete: (equipment: Equipment) => void;
   onImageUpload: (equipment: Equipment, file: File) => void;
   onConvertToAccessory?: (equipment: Equipment) => void;
+  accessoryCount?: number;
 }
 
 export const EquipmentMobileCard = memo(function EquipmentMobileCard({
@@ -25,45 +27,28 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onDelete,
   onImageUpload,
   onConvertToAccessory,
+  accessoryCount = 0,
 }: EquipmentMobileCardProps) {
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'success';
-      case 'maintenance':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
-  };
+  const {
+    getStatusVariant,
+    getStatusLabel,
+    formatCurrency,
+    handleImageUpload,
+    isUploading,
+    getHierarchyIndicator,
+  } = useEquipmentCard();
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'Disponível';
-      case 'maintenance':
-        return 'Manutenção';
-      default:
-        return status;
-    }
-  };
-
-  const formatCurrency = (value?: number) => {
-    if (!value) return '-';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
+  const uploading = isUploading(equipment.id);
 
   const handleImageClick = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
-    fileInput.onchange = (e) => {
+    fileInput.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        onImageUpload(equipment, file);
+        await handleImageUpload(equipment, file, onImageUpload);
       }
     };
     fileInput.click();
@@ -77,9 +62,12 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <button
               onClick={handleImageClick}
-              className="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/30 hover:bg-muted/50 group"
+              disabled={uploading}
+              className="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center bg-muted/30 hover:bg-muted/50 group relative"
             >
-              {equipment.image ? (
+              {uploading ? (
+                <Upload className="h-5 w-5 text-primary animate-pulse" />
+              ) : equipment.image ? (
                 <img
                   src={equipment.image}
                   alt={equipment.name}
@@ -127,18 +115,18 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
         </div>
 
         {/* Status and Category */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Badge variant={getStatusVariant(equipment.status)}>
             {getStatusLabel(equipment.status)}
           </Badge>
           <Badge variant="outline" className="text-xs">
             {equipment.category}
           </Badge>
-          {equipment.itemType === 'accessory' && (
-            <Badge variant="secondary" className="text-xs">
-              Acessório
-            </Badge>
-          )}
+          <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
+            {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
+            {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
+            {hierarchyInfo.label}
+          </Badge>
         </div>
 
         {/* Details */}

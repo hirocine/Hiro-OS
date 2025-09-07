@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Edit, Trash2, Upload, MoreVertical, Paperclip, Camera, ImageIcon } from 'lucide-react';
+import { Edit, Trash2, Upload, MoreVertical, Paperclip, Camera, Package, Link } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { formatCurrency, cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface SelectableEquipmentCardProps {
   equipment: Equipment;
@@ -17,6 +18,7 @@ interface SelectableEquipmentCardProps {
   onImageUpload: (equipment: Equipment, file: File) => void;
   onConvertToAccessory?: (equipment: Equipment) => void;
   isLoading?: boolean;
+  accessoryCount?: number;
 }
 
 export function SelectableEquipmentCard({
@@ -27,35 +29,23 @@ export function SelectableEquipmentCard({
   onDelete,
   onImageUpload,
   onConvertToAccessory,
-  isLoading = false
+  isLoading = false,
+  accessoryCount = 0
 }: SelectableEquipmentCardProps) {
-  const [isImageUploading, setIsImageUploading] = useState(false);
+  const {
+    getStatusVariant,
+    getStatusLabel,
+    formatCurrency,
+    handleImageUpload,
+    isUploading,
+    getHierarchyIndicator,
+  } = useEquipmentCard();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available': return 'bg-success/10 text-success border border-success/20';
-      case 'maintenance': return 'bg-warning/10 text-warning border border-warning/20';
-      case 'on_loan': return 'bg-primary/10 text-primary border border-primary/20';
-      default: return 'bg-muted text-muted-foreground border border-border';
-    }
-  };
+  const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
+  const uploading = isUploading(equipment.id);
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'available': return 'Disponível';
-      case 'maintenance': return 'Manutenção';
-      case 'on_loan': return 'Emprestado';
-      default: return status;
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    setIsImageUploading(true);
-    try {
-      await onImageUpload(equipment, file);
-    } finally {
-      setIsImageUploading(false);
-    }
+  const handleImageUploadWrapper = async (file: File) => {
+    await handleImageUpload(equipment, file, onImageUpload);
   };
 
   return (
@@ -93,7 +83,7 @@ export function SelectableEquipmentCard({
                 </div>
               )}
               
-              {isImageUploading && (
+              {uploading && (
                 <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                   <div className="text-white text-center">
                     <Upload className="h-8 w-8 mx-auto mb-2 animate-pulse" />
@@ -109,7 +99,7 @@ export function SelectableEquipmentCard({
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) handleImageUpload(file);
+                  if (file) handleImageUploadWrapper(file);
                 }}
               />
             </div>
@@ -172,8 +162,17 @@ export function SelectableEquipmentCard({
               
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status:</span>
-                <Badge className={cn("text-xs", getStatusColor(equipment.status))}>
+                <Badge variant={getStatusVariant(equipment.status)} className="text-xs">
                   {getStatusLabel(equipment.status)}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Tipo:</span>
+                <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
+                  {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
+                  {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
+                  {hierarchyInfo.label}
                 </Badge>
               </div>
               

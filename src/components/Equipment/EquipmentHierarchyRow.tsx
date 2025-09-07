@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, MoreVertical, ArrowUpRight } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { categoryLabels, statusLabels } from '@/data/mockData';
+import { categoryLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
+import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface EquipmentHierarchyRowProps {
   equipment: Equipment;
@@ -34,37 +35,26 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   onSelectionChange
 }: EquipmentHierarchyRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    getStatusVariant,
+    getStatusLabel,
+    formatCurrency,
+    handleImageUpload,
+    isUploading,
+  } = useEquipmentCard();
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'available': return 'default';
-      case 'maintenance': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    return statusLabels[status as keyof typeof statusLabels] || status;
-  };
-
-  const formatCurrency = (value?: number) => {
-    if (!value) return '-';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  const uploading = isUploading(equipment.id);
 
   const handleImageClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && onImageUpload) {
-      onImageUpload(equipment.id, file);
+      await handleImageUpload(equipment, file, (eq, f) => onImageUpload(eq.id, f));
     }
-  }, [equipment.id, onImageUpload]);
+  }, [equipment, onImageUpload, handleImageUpload]);
 
   const isMainItem = equipment.itemType === 'main';
   const hasAccessories = accessories.length > 0;
@@ -121,10 +111,14 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
         {/* Imagem */}
         <div className="col-span-1 flex items-center justify-center">
           <div 
-            className="w-10 h-10 rounded-md border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-accent hover:bg-accent/10 transition-all duration-200 flex items-center justify-center group"
+            className="w-10 h-10 rounded-md border-2 border-dashed border-muted-foreground/30 bg-muted/50 cursor-pointer hover:border-accent hover:bg-accent/10 transition-all duration-200 flex items-center justify-center group relative"
             onClick={handleImageClick}
           >
-            {equipment.image ? (
+            {uploading ? (
+              <div className="animate-pulse">
+                <Camera className="h-4 w-4 text-primary" />
+              </div>
+            ) : equipment.image ? (
               <img src={equipment.image} alt={equipment.name} className="w-full h-full object-cover rounded-md" />
             ) : (
               <Camera className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />

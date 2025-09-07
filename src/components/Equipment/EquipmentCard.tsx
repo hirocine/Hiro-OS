@@ -2,8 +2,9 @@ import { Equipment } from '@/types/equipment';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, MapPin, Calendar, UserCheck, RotateCcw } from 'lucide-react';
-import { categoryLabels, statusLabels } from '@/data/mockData';
+import { Edit, Trash2, Calendar, UserCheck, Package, Link } from 'lucide-react';
+import { categoryLabels } from '@/data/mockData';
+import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -11,27 +12,25 @@ interface EquipmentCardProps {
   onDelete: (id: string) => void;
   onLoan?: (equipment: Equipment) => void;
   onReturn?: (equipment: Equipment) => void;
+  accessoryCount?: number;
 }
 
-export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }: EquipmentCardProps) {
-  const getStatusVariant = (status: Equipment['status']) => {
-    switch (status) {
-      case 'available':
-        return 'success';
-      case 'maintenance':
-        return 'destructive';
-      default:
-        return 'default';
-    }
-  };
+export function EquipmentCard({ 
+  equipment, 
+  onEdit, 
+  onDelete, 
+  onLoan, 
+  onReturn,
+  accessoryCount = 0 
+}: EquipmentCardProps) {
+  const {
+    getStatusVariant,
+    getStatusLabel,
+    formatCurrency,
+    getHierarchyIndicator,
+  } = useEquipmentCard();
 
-  const formatCurrency = (value?: number) => {
-    if (!value) return '';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
 
   return (
     <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02] animate-fade-in">
@@ -46,7 +45,15 @@ export function EquipmentCard({ equipment, onEdit, onDelete, onLoan, onReturn }:
             </p>
           </div>
           <Badge variant={getStatusVariant(equipment.status)}>
-            {statusLabels[equipment.status]}
+            {getStatusLabel(equipment.status)}
+          </Badge>
+        </div>
+        {/* Hierarchy indicator */}
+        <div className="mt-2">
+          <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
+            {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
+            {hierarchyInfo.icon === 'link' && <Link className="h-3 w-3" />}
+            {hierarchyInfo.label}
           </Badge>
         </div>
       </CardHeader>
