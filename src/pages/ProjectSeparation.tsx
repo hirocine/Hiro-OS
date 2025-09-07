@@ -106,7 +106,7 @@ export default function ProjectSeparation() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 md:p-6">
+      <div className="container mx-auto p-6 md:p-8">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -120,7 +120,7 @@ export default function ProjectSeparation() {
 
   if (error || !project) {
     return (
-      <div className="container mx-auto p-4 md:p-6">
+      <div className="container mx-auto p-6 md:p-8">
         <div className="text-center space-y-4 py-12">
           <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
           <h1 className="text-2xl font-bold text-destructive">Erro ao Carregar</h1>
@@ -132,7 +132,7 @@ export default function ProjectSeparation() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-5xl space-y-4 md:space-y-6">
+    <div className="container mx-auto p-6 md:p-8 max-w-5xl space-y-4 md:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">

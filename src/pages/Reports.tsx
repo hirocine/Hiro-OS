@@ -11,7 +11,7 @@ export default function Reports() {
 
   if (loading) {
     return (
-    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
         <div className="space-y-4">
           <div className="h-8 w-48 bg-muted rounded animate-pulse" />
           <div className="h-4 w-96 bg-muted rounded animate-pulse" />
@@ -41,7 +41,7 @@ export default function Reports() {
     : 0;
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6 animate-fade-in">
+    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6 animate-fade-in">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
         <p className="text-muted-foreground">
