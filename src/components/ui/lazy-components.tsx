@@ -12,13 +12,7 @@ export const LazyProjectTimeline = lazy(() =>
   }))
 );
 
-export const LazyProjectCalendar = lazy(() => 
-  import('@/components/Dashboard/ProjectCalendar').then(module => ({ 
-    default: module.ProjectCalendar 
-  }))
-);
-
-// Equipment heavy components  
+// Equipment heavy components
 export const LazyBulkImageUploadDialog = lazy(() => 
   import('@/components/Equipment/BulkImageUploadDialog').then(module => ({ 
     default: module.BulkImageUploadDialog 
