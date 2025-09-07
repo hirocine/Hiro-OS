@@ -99,20 +99,20 @@ export default function Dashboard() {
         
         {/* Financial Values */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="text-center sm:text-center md:text-left p-4 bg-background/50 rounded-lg border border-border/20">
-            <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+          <div className="p-4 bg-background/50 rounded-lg border border-border/20">
+            <div className="flex items-center gap-2 mb-2">
               <Package className="h-4 w-4 text-primary" />
               <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total do Inventário</p>
             </div>
-            <p className="text-lg md:text-xl lg:text-2xl font-bold text-primary truncate">{formatCurrency(totalInventoryValue)}</p>
+            <p className="text-lg md:text-xl lg:text-2xl font-bold text-primary">{formatCurrency(totalInventoryValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Valor pago original</p>
           </div>
-          <div className="text-center sm:text-center md:text-left p-4 bg-background/50 rounded-lg border border-border/20">
-            <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+          <div className="p-4 bg-background/50 rounded-lg border border-border/20">
+            <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="h-4 w-4 text-destructive" />
               <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total Real</p>
             </div>
-            <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive truncate">{formatCurrency(totalDepreciatedValue)}</p>
+            <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive">{formatCurrency(totalDepreciatedValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Com depreciação aplicada</p>
           </div>
         </div>
@@ -121,26 +121,26 @@ export default function Dashboard() {
         <div className="border-t border-border/20 pt-4">
           <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Análise por Idade dos Equipamentos</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 justify-center mb-1">
-                <Clock className="h-3 w-3 text-warning" />
-                <p className="text-xs text-muted-foreground">+1 Ano de Uso</p>
+            <div className="p-3 bg-background/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-warning" />
+                <p className="text-xs text-muted-foreground font-medium">Mais de 1 ano</p>
               </div>
               <p className="text-base md:text-lg font-bold text-warning">{equipmentByAge.over1Year}</p>
               <p className="text-xs text-muted-foreground">equipamentos</p>
             </div>
-            <div className="text-center p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 justify-center mb-1">
-                <Clock className="h-3 w-3 text-warning" />
-                <p className="text-xs text-muted-foreground">+2 Anos de Uso</p>
+            <div className="p-3 bg-background/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-warning" />
+                <p className="text-xs text-muted-foreground font-medium">Mais de 2 anos</p>
               </div>
               <p className="text-base md:text-lg font-bold text-warning">{equipmentByAge.over2Years}</p>
               <p className="text-xs text-muted-foreground">equipamentos</p>
             </div>
-            <div className="text-center p-3 bg-background/30 rounded-lg">
-              <div className="flex items-center gap-2 justify-center mb-1">
-                <AlertTriangle className="h-3 w-3 text-destructive" />
-                <p className="text-xs text-muted-foreground">+3 Anos de Uso</p>
+            <div className="p-3 bg-background/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <p className="text-xs text-muted-foreground font-medium">Mais de 3 anos</p>
               </div>
               <p className="text-base md:text-lg font-bold text-destructive">{equipmentByAge.over3Years}</p>
               <p className="text-xs text-muted-foreground">equipamentos</p>
