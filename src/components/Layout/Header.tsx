@@ -54,7 +54,7 @@ export function Header() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-card border shadow-lg z-[100]" align="end" forceMount>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
             <div className="flex flex-col space-y-1 p-2">
               <p className="text-sm font-medium leading-none">
                 {avatarData.displayName || 'Usuário'}
