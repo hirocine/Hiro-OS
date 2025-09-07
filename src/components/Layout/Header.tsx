@@ -8,11 +8,14 @@ import { useNavigate } from 'react-router-dom';
 import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { getAvatarData } from '@/lib/avatarUtils';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -28,20 +31,23 @@ export function Header() {
   const avatarData = getAvatarData(user);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-6">
-      <div className="flex items-center space-x-4">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-4 lg:px-6">
+      <div className="flex items-center space-x-2 lg:space-x-4">
+        <SidebarTrigger className="lg:hidden" />
         <img
           src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
           alt="HIRO Logo" 
-          className="h-8 w-auto flex-shrink-0"
+          className="h-6 lg:h-8 w-auto flex-shrink-0"
         />
-        <div>
-          <h2 className="text-lg font-semibold">Sistema de Inventário</h2>
-        </div>
+        {!isMobile && (
+          <div>
+            <h2 className="text-base lg:text-lg font-semibold">Sistema de Inventário</h2>
+          </div>
+        )}
       </div>
       
-      <div className="flex items-center space-x-4">
-        <NotificationPanel />
+      <div className="flex items-center space-x-2 lg:space-x-4">
+        {!isMobile && <NotificationPanel />}
         <ThemeSwitcher />
         
         <DropdownMenu>
@@ -53,7 +59,7 @@ export function Header() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56 z-50" align="end" forceMount>
             <div className="flex flex-col space-y-1 p-2">
               <p className="text-sm font-medium leading-none">
                 {avatarData.displayName || 'Usuário'}
@@ -63,6 +69,14 @@ export function Header() {
               </p>
             </div>
             <DropdownMenuSeparator />
+            {isMobile && (
+              <>
+                <DropdownMenuItem>
+                  <NotificationPanel />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onClick={() => navigate('/profile')}>
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>

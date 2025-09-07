@@ -444,34 +444,34 @@ export default function EquipmentPage() {
       default: // table
         return (
           <div className="bg-card rounded-lg border overflow-hidden shadow-card">
-            <div className="overflow-x-auto">
-              <div className="min-w-full">
+            <div className="overflow-x-auto min-w-0">
+              <div className="min-w-[1200px]"> {/* Minimum width for table */}
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-13 gap-3 px-4 py-3 items-center">
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                  <div className="grid grid-cols-13 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <Checkbox
                         checked={bulkSelection.isAllSelected}
                         onCheckedChange={bulkSelection.toggleAll}
                         className={bulkSelection.isPartialSelected ? "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : ""}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <span>Tipo</span>
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
-                      <span>Imagem</span>
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                      <span>Img</span>
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="patrimonyNumber" 
-                        label="Patrimônio" 
+                        label="Patr." 
                         currentSortBy={filters.sortBy}
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-3 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-3 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="name" 
                         label="Nome" 
@@ -480,7 +480,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="brand" 
                         label="Marca" 
@@ -489,19 +489,19 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="category" 
-                        label="Categoria" 
+                        label="Cat." 
                         currentSortBy={filters.sortBy}
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center min-w-0">
-                      <span className="truncate">Subcategoria</span>
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center min-w-0">
+                      <span className="truncate">Sub.</span>
                     </div>
-                    <div className="col-span-1 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="value" 
                         label="Valor" 
@@ -510,7 +510,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-2 text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <span>Ações</span>
                     </div>
                   </div>
@@ -541,17 +541,17 @@ export default function EquipmentPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6 animate-fade-in">
+    <div className="container mx-auto py-4 lg:py-6 space-y-4 lg:space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 lg:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Inventário de Equipamentos</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Inventário de Equipamentos</h1>
+          <p className="text-sm lg:text-base text-muted-foreground mt-1">
             Gerencie todos os equipamentos da sua organização
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:gap-4 w-full sm:w-auto">
           {/* View mode toggle - hidden on mobile */}
           {!isMobile && (
             <div className="flex items-center border rounded-lg p-1 bg-muted/30">
@@ -559,7 +559,7 @@ export default function EquipmentPage() {
                 variant={effectiveViewMode === 'table' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('table')}
-                className="h-8 px-3"
+                className="h-8 px-2 lg:px-3"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -567,7 +567,7 @@ export default function EquipmentPage() {
                 variant={effectiveViewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className="h-8 px-3"
+                className="h-8 px-2 lg:px-3"
               >
                 <Grid3X3 className="h-4 w-4" />
               </Button>
@@ -575,21 +575,21 @@ export default function EquipmentPage() {
                 variant={effectiveViewMode === 'cards' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('cards')}
-                className="h-8 px-3"
+                className="h-8 px-2 lg:px-3"
               >
                 <Smartphone className="h-4 w-4" />
               </Button>
             </div>
           )}
           
-          <div className="flex gap-2 ml-auto">
-            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+          <div className="flex gap-2 ml-auto w-full sm:w-auto">
+            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2 flex-1 sm:flex-none">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Adicionar Equipamento</span>
               <span className="sm:hidden">Adicionar</span>
             </Button>
             
-            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="flex items-center gap-2 flex-1 sm:flex-none">
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Importar</span>
             </Button>
@@ -612,18 +612,20 @@ export default function EquipmentPage() {
       <div className="space-y-4">
         {/* Current view indicator */}
         {!loading && filteredEquipment.length > 0 && (
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
                 {effectiveViewMode === 'table' ? (
                   <>
                     <Monitor className="h-3 w-3 mr-1" />
-                    Tabela
+                    <span className="hidden sm:inline">Tabela</span>
+                    <span className="sm:hidden">Tab</span>
                   </>
                 ) : effectiveViewMode === 'grid' ? (
                   <>
                     <Tablet className="h-3 w-3 mr-1" />
-                    Grade
+                    <span className="hidden sm:inline">Grade</span>
+                    <span className="sm:hidden">Grid</span>
                   </>
                 ) : (
                   <>
@@ -632,8 +634,13 @@ export default function EquipmentPage() {
                   </>
                 )}
               </Badge>
-              <span>
-                Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length)} de {effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length} equipamentos
+              <span className="text-xs sm:text-sm">
+                <span className="hidden sm:inline">
+                  Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length)} de {effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length} equipamentos
+                </span>
+                <span className="sm:hidden">
+                  {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length)} de {effectiveViewMode === 'cards' ? filteredEquipment.length : equipmentHierarchy.length}
+                </span>
               </span>
             </div>
           </div>
