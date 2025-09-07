@@ -42,7 +42,7 @@ export function Header() {
       </div>
       
       <div className="flex items-center space-x-2 lg:space-x-4">
-        {!isMobile && <NotificationPanel />}
+        <NotificationPanel />
         <ThemeSwitcher />
         
         <DropdownMenu>
@@ -64,14 +64,6 @@ export function Header() {
               </p>
             </div>
             <DropdownMenuSeparator />
-            {isMobile && (
-              <>
-                <DropdownMenuItem>
-                  <NotificationPanel />
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
             <DropdownMenuItem onClick={() => navigate('/profile')}>
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
