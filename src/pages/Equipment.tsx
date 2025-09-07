@@ -462,10 +462,10 @@ export default function EquipmentPage() {
         return (
           <div className="bg-card rounded-lg border overflow-hidden shadow-card">
             <div className="overflow-x-auto table-container">
-              <div className="min-w-[1200px]"> {/* Minimum width for table */}
+              <div className="min-w-0"> {/* Remove fixed width for mobile responsiveness */}
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-13 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
+                  <div className="grid grid-cols-8 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <Checkbox
                         checked={bulkSelection.isAllSelected}
@@ -474,21 +474,9 @@ export default function EquipmentPage() {
                       />
                     </div>
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
-                      <span>Tipo</span>
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <span>Img</span>
                     </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="patrimonyNumber" 
-                        label="Patr." 
-                        currentSortBy={filters.sortBy}
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-3 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="name" 
                         label="Nome" 
@@ -515,9 +503,6 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center min-w-0">
-                      <span className="truncate">Sub.</span>
-                    </div>
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="value" 
@@ -527,7 +512,7 @@ export default function EquipmentPage() {
                         onSort={handleSort}
                       />
                     </div>
-                    <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <span>Ações</span>
                     </div>
                   </div>

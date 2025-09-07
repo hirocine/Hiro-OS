@@ -73,7 +73,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-13 gap-3 px-4 py-3 border-b transition-all duration-200 ${
+        className={`grid grid-cols-8 gap-3 px-4 py-3 border-b transition-all duration-200 ${
           isSelected ? 'bg-accent/20 border-accent/50' : 'hover:bg-muted/50 border-border'
         } ${level > 0 ? 'ml-8 border-l-2 border-primary/30' : ''}`}
       >
@@ -139,13 +139,8 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
           />
         </div>
 
-        {/* Patrimônio */}
-        <div className="col-span-1 flex items-center text-sm font-mono">
-          {equipment.patrimonyNumber || '-'}
-        </div>
-
         {/* Nome */}
-        <div className="col-span-3 flex flex-col min-w-0">
+        <div className="col-span-2 flex flex-col min-w-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -190,20 +185,13 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
           </span>
         </div>
 
-        {/* Subcategoria */}
-        <div className="col-span-1 flex items-center text-sm min-w-0 overflow-hidden">
-          <span className="truncate">
-            {equipment.subcategory || '-'}
-          </span>
-        </div>
-
         {/* Valor */}
         <div className="col-span-1 flex items-center text-sm font-medium">
           {formatCurrency(equipment.value)}
         </div>
 
         {/* Ações */}
-        <div className="col-span-2 flex items-center gap-1">
+        <div className="col-span-1 flex items-center gap-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

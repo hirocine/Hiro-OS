@@ -2755,7 +2755,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[85vh] w-[95vw] sm:max-w-5xl flex flex-col overflow-x-hidden mobile-safe">
+        <DialogContent className="max-w-5xl max-h-[90vh] w-[98vw] sm:max-w-5xl flex flex-col overflow-hidden mobile-safe">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-base sm:text-lg truncate">Nova Retirada - Passo {currentStep} de 15</DialogTitle>
           </DialogHeader>

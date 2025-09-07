@@ -242,10 +242,23 @@ html, body {
     min-width: 44px;
   }
   
-  /* Force text wrap on small screens */
+  /* Ensure text wraps properly on small screens */
   .break-words-mobile {
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+  
+  /* Extra protection against horizontal scroll */
+  .container, .mobile-container {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Better table handling on mobile */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
 }
