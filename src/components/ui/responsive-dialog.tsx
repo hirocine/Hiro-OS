@@ -1,5 +1,7 @@
 import * as React from "react";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
+import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
+import { useAutoScrollOnFocus } from "@/hooks/useAutoScrollOnFocus";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -71,12 +73,32 @@ export function ResponsiveDialog({ open, onOpenChange, children }: ResponsiveDia
 // Content component
 export function ResponsiveDialogContent({ className, children }: ResponsiveDialogContentProps) {
   const { shouldUseDrawer } = useResponsiveDialog();
+  const { availableHeight, isVisible: isKeyboardVisible } = useVirtualKeyboard();
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  
+  // Usa hook de auto scroll para este container
+  useAutoScrollOnFocus(contentRef);
 
   if (shouldUseDrawer) {
+    const dynamicHeight = isKeyboardVisible 
+      ? `${Math.min(availableHeight * 0.96, availableHeight - 20)}px`
+      : '96vh';
+      
     return (
-      <DrawerContent className={cn("max-h-[96vh]", className)}>
-        <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 pb-safe-bottom">
-          <div className="max-h-[85vh] overflow-y-auto">
+      <DrawerContent 
+        ref={contentRef}
+        className={cn(
+          "transition-all duration-300 ease-in-out",
+          "focus:outline-none",
+          className
+        )}
+        style={{
+          height: dynamicHeight,
+          maxHeight: dynamicHeight
+        }}
+      >
+        <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 pb-safe-bottom h-full">
+          <div className="h-full overflow-y-auto">
             {children}
           </div>
         </div>

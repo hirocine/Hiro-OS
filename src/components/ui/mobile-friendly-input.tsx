@@ -2,6 +2,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
 import { cn } from "@/lib/utils";
 
 interface MobileFriendlyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -27,7 +28,15 @@ export const MobileFriendlyInput = React.forwardRef<
   ...props 
 }, ref) => {
   const isMobile = useIsMobile();
+  const { scrollToField } = useVirtualKeyboard();
   const inputId = id || React.useId();
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (isMobile) {
+      scrollToField(e.target);
+    }
+    props.onFocus?.(e);
+  };
 
   return (
     <div className="space-y-2">
@@ -48,6 +57,7 @@ export const MobileFriendlyInput = React.forwardRef<
       <Input
         ref={ref}
         id={inputId}
+        onFocus={handleFocus}
         className={cn(
           isMobile ? "h-12 text-base" : "h-10 text-sm",
           error && "border-destructive focus:ring-destructive",
