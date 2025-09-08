@@ -5,7 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog, 
+  ResponsiveDialogContent, 
+  ResponsiveDialogHeader, 
+  ResponsiveDialogTitle, 
+  ResponsiveDialogFooter 
+} from '@/components/ui/responsive-dialog';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { categoryLabels, statusLabels } from '@/data/mockData';
@@ -178,13 +184,13 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] mx-auto overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {equipment ? 'Editar Equipamento' : 'Adicionar Novo Equipamento'}
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Seção 1: Informações Básicas */}
@@ -621,7 +627,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           </div>
 
           
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button 
               type="button" 
               variant="outline" 
@@ -634,9 +640,9 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {equipment ? 'Atualizar' : 'Adicionar'}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
