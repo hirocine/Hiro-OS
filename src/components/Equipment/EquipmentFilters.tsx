@@ -280,7 +280,6 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
                 filters={filters}
                 onFiltersChange={handleFiltersChange}
                 suggestions={suggestions}
-                valueRange={valueRange}
               />
             </CardContent>
           </CollapsibleContent>

@@ -40,7 +40,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
   
   const { 
     suggestions, 
-    valueRange, 
     applyFiltersWithHistory 
   } = useAdvancedFilters(allEquipment, filters, onFiltersChange);
 
@@ -221,7 +220,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
               filters={filters}
               onFiltersChange={handleFiltersChange}
               suggestions={suggestions}
-              valueRange={valueRange}
             />
           </CollapsibleContent>
         </Collapsible>

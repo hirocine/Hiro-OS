@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Calendar, DollarSign, Hash, Clock } from 'lucide-react';
+import { Calendar, Hash, Clock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RangeSlider } from '@/components/ui/range-slider';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -20,14 +19,12 @@ interface AdvancedFiltersProps {
     brands: string[];
     patrimonySeries: string[];
   };
-  valueRange?: { min: number; max: number };
 }
 
 export function AdvancedFilters({ 
   filters, 
   onFiltersChange, 
-  suggestions,
-  valueRange = { min: 0, max: 50000 }
+  suggestions
 }: AdvancedFiltersProps) {
   const [purchaseDateFromOpen, setPurchaseDateFromOpen] = useState(false);
   const [purchaseDateToOpen, setPurchaseDateToOpen] = useState(false);
@@ -42,51 +39,8 @@ export function AdvancedFilters({
     }
   }, [filters, onFiltersChange]);
 
-  const formatCurrency = useCallback((value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  }, []);
-
-  const handleValueRangeChange = useCallback((value: [number, number]) => {
-    const [min, max] = value;
-    
-    // Se os valores são iguais ao range completo, remove os filtros
-    if (min === valueRange.min && max === valueRange.max) {
-      updateFilter('minValue', undefined);
-      updateFilter('maxValue', undefined);
-    } else {
-      updateFilter('minValue', min === valueRange.min ? undefined : min);
-      updateFilter('maxValue', max === valueRange.max ? undefined : max);
-    }
-  }, [valueRange, updateFilter]);
-
   return (
     <div className="space-y-6">
-      {/* Filtros de Valor */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <Label className="text-sm font-medium">Faixa de Valor</Label>
-        </div>
-        <RangeSlider
-          label=""
-          min={valueRange.min}
-          max={valueRange.max}
-          step={100}
-          value={[
-            filters.minValue ?? valueRange.min,
-            filters.maxValue ?? valueRange.max
-          ]}
-          onValueChange={handleValueRangeChange}
-          formatValue={formatCurrency}
-          className="pl-4"
-        />
-      </div>
-
       {/* Filtros de Data */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
