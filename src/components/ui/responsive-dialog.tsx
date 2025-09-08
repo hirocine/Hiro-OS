@@ -78,16 +78,34 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
   
   useAutoScrollOnFocus(contentRef);
 
+  // Detectar se está em PWA mode
+  const isPWA = React.useMemo(() => {
+    return window.matchMedia('(display-mode: standalone)').matches;
+  }, []);
+
   if (shouldUseDrawer) {
-    const adjustedHeight = isKeyboardVisible 
-      ? `${Math.max(visualViewportHeight * 0.8, 300)}px`
-      : 'max(85vh, 400px)';
+    let adjustedHeight: string;
+    let drawerStyle: React.CSSProperties = {};
+
+    if (isKeyboardVisible) {
+      adjustedHeight = `${Math.max(visualViewportHeight * 0.8, 300)}px`;
+      drawerStyle = { height: adjustedHeight, maxHeight: adjustedHeight };
+    } else if (isPWA) {
+      // No PWA, ajustar para não vazar na status bar
+      adjustedHeight = 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))';
+      drawerStyle = { 
+        maxHeight: adjustedHeight,
+        marginTop: 'env(safe-area-inset-top, 0px)'
+      };
+    } else {
+      adjustedHeight = 'max(85vh, 400px)';
+    }
       
     return (
       <DrawerContent 
         ref={contentRef}
-        className={cn("max-h-[85vh]", className)}
-        style={isKeyboardVisible ? { height: adjustedHeight, maxHeight: adjustedHeight } : undefined}
+        className={cn(!isPWA && "max-h-[85vh]", className)}
+        style={drawerStyle}
       >
         {children}
       </DrawerContent>
