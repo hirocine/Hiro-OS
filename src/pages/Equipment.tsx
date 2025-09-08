@@ -13,7 +13,9 @@ import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
-import { EquipmentHierarchyRow } from '@/components/Equipment/EquipmentHierarchyRow';
+import { EquipmentTableHeader } from '@/components/Equipment/EquipmentTableHeader';
+import { EquipmentTableRow } from '@/components/Equipment/EquipmentTableRow';
+import { EquipmentMobileView } from '@/components/Equipment/EquipmentMobileView';
 import { EquipmentMobileCard } from '@/components/Equipment/EquipmentMobileCard';
 import { SelectableEquipmentCard } from '@/components/Equipment/SelectableEquipmentCard';
 import { BulkActionsBar } from '@/components/Equipment/BulkActionsBar';
@@ -459,112 +461,48 @@ export default function EquipmentPage() {
       default: // table - NEVER render on mobile
         if (isMobile) {
           return (
-            <div className="grid grid-cols-1 gap-4">
-              {(paginatedData as Equipment[]).map((equipment) => (
-                <EquipmentMobileCard
-                  key={equipment.id}
-                  equipment={equipment}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onImageUpload={handleImageUpload}
-                  onConvertToAccessory={handleConvertToAccessory}
-                />
-              ))}
-            </div>
+            <EquipmentMobileView
+              equipment={paginatedData as Equipment[]}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onImageUpload={handleImageUpload}
+              onConvertToAccessory={handleConvertToAccessory}
+              onAddEquipment={() => setIsAddDialogOpen(true)}
+              isLoading={loading}
+            />
           );
         }
-        
+         
         return (
           <div className="bg-card rounded-lg border overflow-hidden shadow-card">
-            <div className="overflow-x-auto table-container">
-              <div className="min-w-0"> {/* Remove fixed width for mobile responsiveness */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[1200px]">
                 {/* Header */}
-                <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-9 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
-                      <Checkbox
-                        checked={bulkSelection.isAllSelected}
-                        onCheckedChange={bulkSelection.toggleAll}
-                        className={bulkSelection.isPartialSelected ? "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : ""}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
-                      <span></span>
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
-                      <span>Img</span>
-                    </div>
-                    <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="name" 
-                        label="Nome/Modelo" 
-                        currentSortBy={filters.sortBy} 
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="brand" 
-                        label="Marca" 
-                        currentSortBy={filters.sortBy} 
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="category" 
-                        label="Categoria" 
-                        currentSortBy={filters.sortBy} 
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="status" 
-                        label="Status" 
-                        currentSortBy={filters.sortBy} 
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <SortableHeader 
-                        field="value" 
-                        label="Valor" 
-                        currentSortBy={filters.sortBy} 
-                        currentSortOrder={filters.sortOrder}
-                        onSort={handleSort}
-                      />
-                    </div>
-                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
-                      <span>Ações</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                 <div className="bg-card">
-                  {(paginatedData as any[]).map((hierarchyItem) => {
-                    return (
-                      <EquipmentHierarchyRow
-                        key={hierarchyItem.item.id}
-                        equipment={hierarchyItem.item}
-                        accessories={hierarchyItem.accessories || []}
-                        onEdit={handleEdit}
-                        onDelete={handleDeleteById}
-                        onImageUpload={handleImageUploadById}
-                        onConvertToAccessory={handleConvertToAccessory}
-                        onToggleExpansion={toggleEquipmentExpansion}
-                        isSelected={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
-                        onSelectionChange={() => {
-                          bulkSelection.toggleItem(hierarchyItem.item.id);
-                        }}
-                      />
-                    );
-                  })}
+                <EquipmentTableHeader
+                  allSelected={bulkSelection.isAllSelected}
+                  someSelected={bulkSelection.isPartialSelected}
+                  onSelectAll={bulkSelection.toggleAll}
+                  onSort={handleSort}
+                  sortBy={filters.sortBy}
+                  sortOrder={filters.sortOrder}
+                />
+
+                {/* Body */}
+                <div className="divide-y divide-border">
+                  {(paginatedData as { item: Equipment; accessories: Equipment[] }[]).map(({ item, accessories }) => (
+                    <EquipmentTableRow
+                      key={item.id}
+                      equipment={item}
+                      accessories={accessories}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteById}
+                      onToggleExpansion={toggleEquipmentExpansion}
+                      onImageUpload={handleImageUploadById}
+                      onConvertToAccessory={handleConvertToAccessory}
+                      isSelected={bulkSelection.selectedItems.has(item.id)}
+                      onSelectionChange={() => bulkSelection.toggleItem(item.id)}
+                    />
+                  ))}
                 </div>
               </div>
             </div>

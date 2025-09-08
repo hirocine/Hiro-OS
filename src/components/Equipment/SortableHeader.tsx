@@ -29,19 +29,19 @@ export function SortableHeader({
       // Segunda vez clicando - ordenação decrescente
       onSort(field, 'desc');
     } else {
-      // Terceira vez clicando - limpar ordenação
+      // Terceira vez clicando - resetar para crescente
       onSort(field, 'asc');
     }
   };
 
   const getIcon = () => {
     if (!isActive) {
-      return <ChevronsUpDown className="h-3 w-3 opacity-50" />;
+      return <ChevronsUpDown className="h-3 w-3 opacity-50 transition-opacity hover:opacity-70" />;
     }
     
     return currentSortOrder === 'asc' ? 
-      <ChevronUp className="h-3 w-3 text-primary" /> : 
-      <ChevronDown className="h-3 w-3 text-primary" />;
+      <ChevronUp className="h-3 w-3 text-primary transition-colors" /> : 
+      <ChevronDown className="h-3 w-3 text-primary transition-colors" />;
   };
 
   return (
@@ -49,11 +49,13 @@ export function SortableHeader({
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className={`h-6 p-0 w-full font-medium justify-between hover:bg-muted/50 min-w-0 ${
-        isActive ? 'text-primary' : 'text-foreground'
+      className={`h-7 px-2 py-1 w-full font-medium justify-between hover:bg-accent/20 transition-colors min-w-0 ${
+        isActive 
+          ? 'text-primary bg-accent/10' 
+          : 'text-muted-foreground hover:text-foreground'
       } ${className}`}
     >
-      <span className="truncate mr-1">{label}</span>
+      <span className="truncate mr-1 text-xs lg:text-sm font-semibold uppercase tracking-wider">{label}</span>
       {getIcon()}
     </Button>
   );
