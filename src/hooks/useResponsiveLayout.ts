@@ -24,7 +24,9 @@ export function useResponsiveLayout() {
   }, []);
 
   const breakpoint: BreakpointSize = useMemo(() => {
-    if (isMobile) return 'mobile';
+    // Considera tanto isMobile (que verifica user agent) quanto dimensões da tela
+    const isSmallScreen = windowWidth < 768; // Mobile breakpoint
+    if (isMobile || isSmallScreen) return 'mobile';
     if (windowWidth < TABLET_BREAKPOINT) return 'tablet';
     if (windowWidth < WIDE_BREAKPOINT) return 'desktop';
     return 'wide';

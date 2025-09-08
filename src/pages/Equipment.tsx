@@ -544,18 +544,31 @@ export default function EquipmentPage() {
                 </div>
                 
                 {/* Content */}
-                <div className="bg-card">
-                  {(paginatedData as any[]).map((item) => (
-                    <EquipmentHierarchyRow
-                      key={item.id}
-                      equipment={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDeleteById}
-                      onImageUpload={handleImageUploadById}
-                      onConvertToAccessory={handleConvertToAccessory}
-                      onToggleExpansion={toggleEquipmentExpansion}
-                    />
-                  ))}
+                 <div className="bg-card">
+                  {(paginatedData as any[]).map((hierarchyItem) => {
+                    console.log('🔧 [Equipment] Renderizando item hierárquico:', {
+                      hasItem: !!hierarchyItem.item,
+                      itemName: hierarchyItem.item?.name,
+                      accessoriesCount: hierarchyItem.accessories?.length || 0
+                    });
+                    
+                    return (
+                      <EquipmentHierarchyRow
+                        key={hierarchyItem.item.id}
+                        equipment={hierarchyItem.item}
+                        accessories={hierarchyItem.accessories || []}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteById}
+                        onImageUpload={handleImageUploadById}
+                        onConvertToAccessory={handleConvertToAccessory}
+                        onToggleExpansion={toggleEquipmentExpansion}
+                        isSelected={bulkSelection.selectedItems.has(hierarchyItem.item.id)}
+                        onSelectionChange={() => {
+                          bulkSelection.toggleItem(hierarchyItem.item.id);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>
