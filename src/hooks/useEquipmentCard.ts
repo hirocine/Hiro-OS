@@ -59,6 +59,15 @@ export function useEquipmentCard() {
   }, [uploadingStates]);
 
   const getHierarchyIndicator = useCallback((equipment: Equipment, accessoryCount?: number) => {
+    if (!equipment) {
+      return {
+        type: 'standalone' as const,
+        label: 'Item principal',
+        variant: 'outline' as const,
+        icon: 'package'
+      };
+    }
+
     if (equipment.itemType === 'accessory') {
       return {
         type: 'accessory' as const,

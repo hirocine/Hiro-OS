@@ -29,6 +29,16 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onConvertToAccessory,
   accessoryCount = 0,
 }: EquipmentMobileCardProps) {
+  // Debug log temporário
+  console.log('🔍 [EquipmentMobileCard] Equipment recebido:', {
+    id: equipment?.id,
+    name: equipment?.name,
+    brand: equipment?.brand,
+    category: equipment?.category,
+    status: equipment?.status,
+    fullEquipment: equipment
+  });
+
   const {
     getStatusVariant,
     getStatusLabel,
@@ -38,8 +48,8 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
     getHierarchyIndicator,
   } = useEquipmentCard();
 
-  const hierarchyInfo = getHierarchyIndicator(equipment, accessoryCount);
-  const uploading = isUploading(equipment.id);
+  const hierarchyInfo = getHierarchyIndicator(equipment || {} as Equipment, accessoryCount);
+  const uploading = isUploading(equipment?.id || '');
 
   const handleImageClick = () => {
     const fileInput = document.createElement('input');
@@ -79,10 +89,10 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
             </button>
             <div className="flex-1 min-w-0 overflow-hidden">
               <h3 className="font-medium text-card-foreground truncate">
-                {equipment?.name || 'Nome não informado'}
+                {equipment?.name || 'Nome não disponível'}
               </h3>
               <p className="text-sm text-muted-foreground truncate">
-                {equipment?.brand || 'Marca não informada'}
+                {equipment?.brand || 'Marca não disponível'}
               </p>
             </div>
           </div>
@@ -116,11 +126,11 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
 
         {/* Status and Category */}
         <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <Badge variant={getStatusVariant(equipment.status)}>
-            {getStatusLabel(equipment.status)}
+          <Badge variant={getStatusVariant(equipment?.status || 'available')}>
+            {getStatusLabel(equipment?.status || 'available')}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {equipment.category}
+            {equipment?.category || 'Categoria não definida'}
           </Badge>
           <Badge variant={hierarchyInfo.variant} className="text-xs flex items-center gap-1">
             {hierarchyInfo.icon === 'package' && <Package className="h-3 w-3" />}
