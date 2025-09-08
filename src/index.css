@@ -271,14 +271,19 @@ html, body {
 
 /* PWA Safe Area Support */
 @media (display-mode: standalone) {
-  body {
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  
-  /* Adjust header in PWA to account for safe area */
+  /* Header fica logo abaixo da status bar */
   .fixed.top-0 {
     top: env(safe-area-inset-top, 0px);
+  }
+  
+  /* Main ajusta padding para compensar header + safe area */
+  main.pt-16 {
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+  
+  /* Safe area inferior */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
