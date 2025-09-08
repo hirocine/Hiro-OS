@@ -4,17 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { X, Filter, ChevronDown, Search, Settings, History, Save, RotateCcw } from 'lucide-react';
+import { X, Filter, ChevronDown, Search, Settings, RotateCcw } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AdvancedFilters } from './AdvancedFilters';
-import { SavedFilters } from './SavedFilters';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
-import { useFilterHistory } from '@/hooks/useFilterHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
-import { Separator } from '@/components/ui/separator';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Autocomplete } from '@/components/ui/autocomplete';
 
 interface UnifiedEquipmentFiltersProps {
@@ -47,8 +43,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
     valueRange, 
     applyFiltersWithHistory 
   } = useAdvancedFilters(allEquipment, filters, onFiltersChange);
-
-  const { history, getFilterDisplayName } = useFilterHistory();
 
   useEffect(() => {
     if (debouncedSearch !== filters.search) {
@@ -116,48 +110,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            {/* History Popover */}
-            {history.length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <History className="h-4 w-4 mr-1" />
-                    Histórico
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80" align="end">
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Filtros Recentes</h4>
-                    <Separator />
-                    {history.slice(0, 5).map((item) => (
-                      <Button
-                        key={item.id}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleFiltersChange(item.filters)}
-                        className="w-full justify-start text-left h-auto py-2"
-                      >
-                        <div className="flex flex-col items-start">
-                          <span className="text-sm font-medium truncate max-w-full">
-                            {item.name || getFilterDisplayName(item.filters)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(item.timestamp).toLocaleDateString('pt-BR')}
-                          </span>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-            
-            {/* Saved Filters */}
-            <SavedFilters 
-              currentFilters={filters} 
-              onFiltersChange={handleFiltersChange}
-            />
-            
             {/* Clear Filters */}
             {activeFiltersCount > 0 && (
               <Button variant="outline" size="sm" onClick={clearFilters}>
