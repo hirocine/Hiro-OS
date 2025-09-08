@@ -1,5 +1,11 @@
 import { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +18,8 @@ import { Upload, Download, AlertCircle, CheckCircle, FileText, FileSpreadsheet }
 import { parseCSV, parseExcel, generateTemplate, ImportResult, ImportError } from '@/lib/csvParser';
 import { useToast } from '@/hooks/use-toast';
 import { importDebug } from '@/lib/debug';
+import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ImportDialogProps {
   open: boolean;
@@ -26,6 +34,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
   const [step, setStep] = useState<'upload' | 'preview' | 'complete'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -237,25 +246,17 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
         <Separator />
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {importResult.successRows > 0 
-              ? `${importResult.successRows} equipamentos serão importados`
-              : 'Nenhum equipamento válido para importar'
-            }
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep('upload')}>
-              Voltar
-            </Button>
-            <Button 
-              onClick={handleImport} 
-              disabled={importResult.successRows === 0 || isProcessing}
-            >
-              {isProcessing ? 'Importando...' : `Importar (${importResult.successRows})`}
-            </Button>
-          </div>
-        </div>
+        <MobileFriendlyFormActions>
+          <Button variant="outline" onClick={() => setStep('upload')}>
+            Voltar
+          </Button>
+          <Button 
+            onClick={handleImport} 
+            disabled={importResult.successRows === 0 || isProcessing}
+          >
+            {isProcessing ? 'Importando...' : `Importar (${importResult.successRows})`}
+          </Button>
+        </MobileFriendlyFormActions>
       </div>
     );
   };
@@ -276,14 +277,14 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
   );
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={handleClose}>
+      <ResponsiveDialogContent className={isMobile ? "" : "max-w-2xl max-h-[80vh]"}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
             Importar Equipamentos
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
         {isProcessing && (
           <div className="space-y-2">
@@ -301,7 +302,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
             {step === 'complete' && renderCompleteStep()}
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

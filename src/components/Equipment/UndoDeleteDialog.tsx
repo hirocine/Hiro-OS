@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import { RotateCcw, Clock, Package, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { equipmentDebug } from '@/lib/debug';
+import { MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DeletedEquipment {
   id: string;
@@ -31,6 +39,7 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
   const [timeLeft, setTimeLeft] = useState(UNDO_TIMEOUT);
   const [restoring, setRestoring] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!open || !deletedEquipment) return;
@@ -97,14 +106,14 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
   if (!deletedEquipment) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className={isMobile ? "" : "max-w-md"}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5" />
             Desfazer Exclusão
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
         <div className="space-y-4">
           {/* Timer Visual */}
@@ -162,29 +171,31 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Fechar
-          </Button>
-          <Button 
-            onClick={handleRestore}
-            disabled={!deletedEquipment.canRestore || restoring || timeLeft <= 0}
-            className="gap-2"
-          >
-            {restoring ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Restaurando...
-              </>
-            ) : (
-              <>
-                <RotateCcw className="h-4 w-4" />
-                Desfazer
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <ResponsiveDialogFooter>
+          <MobileFriendlyFormActions>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Fechar
+            </Button>
+            <Button 
+              onClick={handleRestore}
+              disabled={!deletedEquipment.canRestore || restoring || timeLeft <= 0}
+              className="gap-2"
+            >
+              {restoring ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Restaurando...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Desfazer
+                </>
+              )}
+            </Button>
+          </MobileFriendlyFormActions>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

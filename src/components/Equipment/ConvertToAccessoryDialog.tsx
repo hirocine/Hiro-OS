@@ -2,13 +2,21 @@ import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter
+} from '@/components/ui/responsive-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
 import { Loader2, Package2, Package, Search, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
+import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ConvertToAccessoryDialogProps {
   open: boolean;
@@ -28,6 +36,7 @@ export function ConvertToAccessoryDialog({
   const [selectedParentId, setSelectedParentId] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleConvert = async () => {
     if (!selectedParentId) {
@@ -71,16 +80,21 @@ export function ConvertToAccessoryDialog({
   const selectedItem = availableMainItems.find(item => item.id === selectedParentId);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className={isMobile ? "" : "max-w-md"}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
             Converter para Acessório
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         
-        <div className="space-y-4">
+        <MobileFriendlyForm className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleConvert();
+          }}
+        >
           <div className="p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Package2 className="h-4 w-4 text-primary" />
@@ -100,7 +114,7 @@ export function ConvertToAccessoryDialog({
                   variant="outline"
                   role="combobox"
                   aria-expanded={popoverOpen}
-                  className="w-full justify-between"
+                  className={cn("w-full justify-between", isMobile ? "h-12" : "")}
                   disabled={availableMainItems.length === 0}
                 >
                   {selectedItem ? (
@@ -163,26 +177,28 @@ export function ConvertToAccessoryDialog({
               </p>
             </div>
           )}
-        </div>
+        </MobileFriendlyForm>
         
-        <DialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isConverting}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleConvert} 
-            disabled={isConverting || !selectedParentId || availableMainItems.length === 0}
-          >
-            {isConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Converter em Acessório
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <ResponsiveDialogFooter>
+          <MobileFriendlyFormActions>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isConverting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConvert} 
+              disabled={isConverting || !selectedParentId || availableMainItems.length === 0}
+            >
+              {isConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Converter em Acessório
+            </Button>
+          </MobileFriendlyFormActions>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

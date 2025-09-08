@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -10,6 +16,8 @@ import { AlertTriangle, Mail, MessageSquare, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { equipmentDebug } from '@/lib/debug';
 import { sendReminderNotification } from '@/lib/communication';
+import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReminderDialogProps {
   open: boolean;
@@ -33,6 +41,7 @@ export function ReminderDialog({ open, onOpenChange, loanData }: ReminderDialogP
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const defaultMessages = {
     email: `Olá ${loanData?.borrowerName || '[Nome]'},
@@ -135,16 +144,21 @@ Equipe de Inventário`,
   if (!loanData) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className={isMobile ? "" : "max-w-2xl"}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
             Enviar Lembrete de Devolução
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
-        <div className="space-y-6">
+        <MobileFriendlyForm className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendReminder();
+          }}
+        >
           {/* Informações do Empréstimo */}
           <Card>
             <CardContent className="p-4">
@@ -222,31 +236,33 @@ Equipe de Inventário`,
               )}
             </p>
           </div>
-        </div>
+        </MobileFriendlyForm>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleSendReminder} 
-            disabled={sending || !message.trim()}
-            className="gap-2"
-          >
-            {sending ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Enviando...
-              </>
-            ) : (
-              <>
-                {getReminderIcon(reminderType)}
-                Enviar Lembrete
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <ResponsiveDialogFooter>
+          <MobileFriendlyFormActions>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSendReminder} 
+              disabled={sending || !message.trim()}
+              className="gap-2"
+            >
+              {sending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  {getReminderIcon(reminderType)}
+                  Enviar Lembrete
+                </>
+              )}
+            </Button>
+          </MobileFriendlyFormActions>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

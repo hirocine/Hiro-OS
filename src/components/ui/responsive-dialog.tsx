@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -73,16 +74,18 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
 
   if (shouldUseDrawer) {
     return (
-      <DrawerContent className={className}>
-        <div className="mx-auto w-full max-w-sm">
-          {children}
+      <DrawerContent className={cn("max-h-[95vh]", className)}>
+        <div className="mx-auto w-full max-w-[calc(100vw-2rem)] px-4 pb-safe-bottom">
+          <div className="max-h-[80vh] overflow-y-auto">
+            {children}
+          </div>
         </div>
       </DrawerContent>
     );
   }
 
   return (
-    <DialogContent className={className}>
+    <DialogContent className={cn("max-w-[95vw] max-h-[95vh] overflow-y-auto", className)}>
       {children}
     </DialogContent>
   );
