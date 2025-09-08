@@ -45,7 +45,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
   const { 
     suggestions, 
     valueRange, 
-    quickFilterStats, 
     applyFiltersWithHistory 
   } = useAdvancedFilters(allEquipment, filters, onFiltersChange);
 
@@ -102,57 +101,6 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
     accessory: 'Acessório'
   };
 
-  // Quick filter configurations
-  const quickFilterConfigs = [
-    {
-      key: 'available',
-      label: 'Disponível',
-      filters: { status: 'available' },
-      count: quickFilterStats?.available
-    },
-    {
-      key: 'maintenance', 
-      label: 'Manutenção',
-      filters: { status: 'maintenance' },
-      count: quickFilterStats?.maintenance
-    }
-  ];
-
-  const categoryFilterConfigs = [
-    { key: 'camera', label: 'Câmeras', count: quickFilterStats?.byCategory?.camera },
-    { key: 'audio', label: 'Áudio', count: quickFilterStats?.byCategory?.audio },
-    { key: 'lighting', label: 'Iluminação', count: quickFilterStats?.byCategory?.lighting },
-    { key: 'accessories', label: 'Acessórios', count: quickFilterStats?.byCategory?.accessories }
-  ];
-
-  const isQuickFilterActive = (config: any) => {
-    return Object.entries(config.filters).every(([key, value]) => 
-      filters[key as keyof EquipmentFilters] === value
-    );
-  };
-
-  const applyQuickFilter = (config: any) => {
-    const isActive = isQuickFilterActive(config);
-    if (isActive) {
-      // Remove filter
-      const newFilters = { ...filters };
-      Object.keys(config.filters).forEach(key => {
-        delete newFilters[key as keyof EquipmentFilters];
-      });
-      onFiltersChange(newFilters);
-    } else {
-      // Apply filter
-      onFiltersChange({ ...filters, ...config.filters });
-    }
-  };
-
-  const applyCategoryFilter = (category: string) => {
-    if (filters.category === category) {
-      updateFilter('category', undefined);
-    } else {
-      updateFilter('category', category);
-    }
-  };
 
   return (
     <Card>
@@ -238,60 +186,9 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
           )}
         </div>
 
-        {/* Quick Status Filters */}
-        <div>
-          <Label className="text-sm font-medium mb-2 block">Filtros Rápidos</Label>
-          <div className="flex flex-wrap gap-2">
-            {quickFilterConfigs.map((config) => (
-              <Button
-                key={config.key}
-                variant={isQuickFilterActive(config) ? "default" : "outline"}
-                size="sm"
-                onClick={() => applyQuickFilter(config)}
-                className="h-8"
-              >
-                {config.label}
-                {config.count !== undefined && (
-                  <Badge 
-                    variant={isQuickFilterActive(config) ? "secondary" : "outline"} 
-                    className="ml-2 text-xs"
-                  >
-                    {config.count}
-                  </Badge>
-                )}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Category Filters */}
-        <div>
-          <Label className="text-sm font-medium mb-2 block">Categorias</Label>
-          <div className="flex flex-wrap gap-2">
-            {categoryFilterConfigs.map((config) => (
-              <Button
-                key={config.key}
-                variant={filters.category === config.key ? "default" : "outline"}
-                size="sm"
-                onClick={() => applyCategoryFilter(config.key)}
-                className="h-8"
-              >
-                {config.label}
-                {config.count !== undefined && (
-                  <Badge 
-                    variant={filters.category === config.key ? "secondary" : "outline"} 
-                    className="ml-2 text-xs"
-                  >
-                    {config.count}
-                  </Badge>
-                )}
-              </Button>
-            ))}
-          </div>
-        </div>
 
         {/* Basic Filters Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label className="text-sm">Status</Label>
             <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value === 'all' ? undefined : value)}>
@@ -301,6 +198,23 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
                 {Object.entries(statusLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-sm">Categoria</Label>
+            <Select value={filters.category || 'all'} onValueChange={(value) => updateFilter('category', value === 'all' ? undefined : value)}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {Object.entries(categoryLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>
                     {label}
                   </SelectItem>
