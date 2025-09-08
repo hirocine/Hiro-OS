@@ -269,6 +269,19 @@ html, body {
   }
 }
 
+/* PWA Safe Area Support */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Adjust header in PWA to account for safe area */
+  .fixed.top-0 {
+    top: env(safe-area-inset-top, 0px);
+  }
+}
+
 /* Mobile optimizations - melhor scroll */
 .mobile-scroll-smooth {
   -webkit-overflow-scrolling: touch;
