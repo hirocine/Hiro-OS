@@ -95,6 +95,12 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* PWA safe areas */
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
   }
 
   .dark {
@@ -261,4 +267,41 @@ html, body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
+}
+
+/* PWA-specific styles */
+@media (display-mode: standalone) {
+  body {
+    /* Ajusta para safe areas no PWA */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  
+  .pwa-drawer-content {
+    /* Garante que drawers no PWA considerem safe areas */
+    top: calc(env(safe-area-inset-top, 0px));
+  }
+  
+  .ios-pwa-drawer {
+    /* Comportamentos específicos para iOS PWA */
+    transition: height 0.15s ease-out;
+  }
+}
+
+/* Mobile optimizations - melhor scroll */
+.mobile-scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbars on mobile for cleaner look */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

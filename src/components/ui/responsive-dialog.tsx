@@ -2,6 +2,7 @@ import * as React from "react";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
 import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
 import { useAutoScrollOnFocus } from "@/hooks/useAutoScrollOnFocus";
+import { usePWADetection } from "@/hooks/usePWADetection";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -74,24 +75,45 @@ export function ResponsiveDialog({ open, onOpenChange, children }: ResponsiveDia
 export function ResponsiveDialogContent({ className, children }: ResponsiveDialogContentProps) {
   const { shouldUseDrawer } = useResponsiveDialog();
   const { visualViewportHeight, isVisible: isKeyboardVisible } = useVirtualKeyboard();
+  const { isPWA, isIOSPWA, statusBarHeight, safeAreaTop } = usePWADetection();
   const contentRef = React.useRef<HTMLDivElement>(null);
   
   useAutoScrollOnFocus(contentRef);
 
   if (shouldUseDrawer) {
-    // Constantes para cálculo de altura
-    const APP_HEADER_HEIGHT = 64; // Altura do header da aplicação
-    const DRAWER_HANDLE_HEIGHT = 24; // Altura do handle do drawer
-    const SAFE_MARGINS = 16; // Margem de segurança
+    // Constantes base para cálculo de altura
+    const BASE_APP_HEADER_HEIGHT = 64;
+    const DRAWER_HANDLE_HEIGHT = 24;
+    const SAFE_MARGINS = 16;
+    
+    // Ajusta altura do header baseado no ambiente PWA
+    const APP_HEADER_HEIGHT = isPWA 
+      ? BASE_APP_HEADER_HEIGHT + safeAreaTop // Adiciona safe area no PWA
+      : BASE_APP_HEADER_HEIGHT;
+    
     const TOTAL_OFFSET = APP_HEADER_HEIGHT + DRAWER_HANDLE_HEIGHT + SAFE_MARGINS;
     
-    // Calcula altura disponível considerando o header da app
-    const availableHeight = window.innerHeight - TOTAL_OFFSET;
-    const keyboardAdjustedHeight = visualViewportHeight - TOTAL_OFFSET;
+    // Calcula altura disponível específica para PWA vs Web
+    let availableHeight: number;
+    let keyboardAdjustedHeight: number;
+    
+    if (isPWA) {
+      // No PWA, usa screen.availHeight quando possível, senão window.innerHeight
+      const screenHeight = window.screen?.availHeight || window.innerHeight;
+      availableHeight = screenHeight - TOTAL_OFFSET;
+      keyboardAdjustedHeight = visualViewportHeight - TOTAL_OFFSET;
+    } else {
+      // No navegador web, usa comportamento padrão
+      availableHeight = window.innerHeight - TOTAL_OFFSET;
+      keyboardAdjustedHeight = visualViewportHeight - TOTAL_OFFSET;
+    }
     
     const dynamicHeight = isKeyboardVisible 
       ? `${Math.max(keyboardAdjustedHeight, 200)}px` // Min 200px
       : `${Math.max(availableHeight, 300)}px`; // Min 300px
+    
+    // Margem superior específica para PWA
+    const marginTop = isPWA ? `${APP_HEADER_HEIGHT}px` : `${BASE_APP_HEADER_HEIGHT}px`;
       
     return (
       <DrawerContent 
@@ -99,13 +121,20 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
         className={cn(
           "transition-all duration-200 ease-out",
           "focus:outline-none",
+          // Classes específicas para PWA iOS
+          isPWA && "pwa-drawer-content",
+          isIOSPWA && "ios-pwa-drawer",
           className
         )}
         style={{
           height: dynamicHeight,
           maxHeight: dynamicHeight,
-          // Garantir que não sobreponha o header
-          marginTop: `${APP_HEADER_HEIGHT}px`
+          marginTop: marginTop,
+          // CSS variables para safe areas no PWA
+          ...(isPWA && {
+            '--safe-area-inset-top': `${safeAreaTop}px`,
+            '--status-bar-height': `${statusBarHeight}px`,
+          }),
         }}
       >
         <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 h-full flex flex-col">
