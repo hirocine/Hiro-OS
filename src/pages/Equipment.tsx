@@ -54,6 +54,14 @@ export default function EquipmentPage() {
     handleSort,
   } = useEquipment();
 
+  console.log('🏠 [EquipmentPage] Renderizando com dados:', {
+    filteredEquipmentLength: filteredEquipment.length,
+    allEquipmentLength: allEquipment.length,
+    loading,
+    hasStats: !!stats,
+    statsTotal: stats?.total || 0
+  });
+
   // Initialize bulk selection
   const bulkSelection = useBulkSelection(filteredEquipment);
 

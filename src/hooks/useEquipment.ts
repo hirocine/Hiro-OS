@@ -49,6 +49,7 @@ export function useEquipment(): UseEquipmentReturn {
       setLoading(true);
       setError(null);
       
+      console.log('🔄 [useEquipment] Iniciando busca de equipamentos...');
       logger.apiCall('fetchEquipment', 'GET', '/equipments');
 
       const { data, error } = await supabase
@@ -56,7 +57,15 @@ export function useEquipment(): UseEquipmentReturn {
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('📡 [useEquipment] Resposta do Supabase:', { 
+        hasData: !!data, 
+        dataLength: data?.length || 0, 
+        hasError: !!error, 
+        error: error?.message 
+      });
+
       if (error) {
+        console.error('❌ [useEquipment] Erro na busca:', error);
         throw createDatabaseError('Erro ao buscar equipamentos', error.message);
       }
 
@@ -89,17 +98,29 @@ export function useEquipment(): UseEquipmentReturn {
         lastLoanDate: item.last_loan_date || undefined,
       }));
       
+      console.log('✅ [useEquipment] Dados transformados:', { 
+        equipmentDataLength: equipmentData.length,
+        firstItem: equipmentData[0]?.name || 'Nenhum item',
+        sampleIds: equipmentData.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
+      });
+      
       logger.apiResponse('fetchEquipment', 'success', null, 'success');
       return equipmentData;
     });
 
     if (result.error) {
+      console.error('❌ [useEquipment] Erro no resultado:', result.error.message);
       logger.error('Falha ao buscar equipamentos', { error: result.error.message });
       setError(result.error.message);
     } else {
+      console.log('🎯 [useEquipment] Setando equipamentos no estado:', { 
+        length: result.data?.length || 0,
+        hasData: !!(result.data && result.data.length > 0)
+      });
       setEquipment(result.data || []);
     }
     
+    console.log('🏁 [useEquipment] Finalizando busca, loading = false');
     setLoading(false);
   }, []);
 
@@ -168,6 +189,11 @@ export function useEquipment(): UseEquipmentReturn {
   };
 
   const filteredEquipment = useMemo(() => {
+    console.log('🔍 [useEquipment] Filtrando equipamentos:', { 
+      enrichedLength: enrichedEquipment.length,
+      filters: JSON.stringify(filters)
+    });
+    
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
       if (filters.category && item.category !== filters.category) return false;
@@ -200,6 +226,11 @@ export function useEquipment(): UseEquipmentReturn {
     if (filters.sortBy && filters.sortOrder) {
       filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
     }
+
+    console.log('📋 [useEquipment] Equipamentos filtrados:', { 
+      filteredLength: filtered.length,
+      sampleItems: filtered.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
+    });
 
     return filtered;
   }, [enrichedEquipment, filters]);
