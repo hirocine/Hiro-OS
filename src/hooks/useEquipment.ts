@@ -307,13 +307,6 @@ export function useEquipment(): UseEquipmentReturn {
       // Preservar isExpanded ou expandir por padrão se tem acessórios
       const isExpanded = mainItem.isExpanded ?? (hasAccessories ? true : false);
       
-      console.log('🔧 [useEquipment] Item hierárquico:', {
-        name: mainItem.name,
-        hasAccessories,
-        isExpanded,
-        accessoriesCount: itemAccessories.length
-      });
-      
       return {
         item: { 
           ...mainItem, 
@@ -659,18 +652,10 @@ export function useEquipment(): UseEquipmentReturn {
   };
 
   const toggleEquipmentExpansion = (id: string) => {
-    console.log('🔧 [useEquipment] Toggleando expansão para ID:', id);
-    
     setEquipment(prev => 
       prev.map(item => {
         if (item.id === id) {
-          const newExpanded = !item.isExpanded;
-          console.log('🔧 [useEquipment] Toggle:', { 
-            name: item.name, 
-            oldExpanded: item.isExpanded, 
-            newExpanded 
-          });
-          return { ...item, isExpanded: newExpanded };
+          return { ...item, isExpanded: !item.isExpanded };
         }
         return item;
       })

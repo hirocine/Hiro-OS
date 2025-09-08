@@ -399,12 +399,6 @@ export default function EquipmentPage() {
   }, []);
 
   const renderContent = () => {
-    console.log('🎨 [Equipment] renderContent chamado:', { 
-      loading, 
-      filteredLength: filteredEquipment.length,
-      allEquipmentLength: allEquipment.length
-    });
-    
     if (loading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -416,10 +410,6 @@ export default function EquipmentPage() {
     // Verificação mais robusta - mesmo se filteredEquipment está vazio, 
     // mas temos dados carregados, pode ser um problema de filtro
     if (filteredEquipment.length === 0) {
-      if (allEquipment.length > 0) {
-        console.log('⚠️ [Equipment] Temos dados mas filtrados está vazio - problema de filtro!');
-      }
-      
       return (
         <EmptyState
           icon={Plus}
@@ -490,7 +480,7 @@ export default function EquipmentPage() {
               <div className="min-w-0"> {/* Remove fixed width for mobile responsiveness */}
                 {/* Header */}
                 <div className="bg-muted/30 border-b border-border">
-                  <div className="grid grid-cols-8 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
+                  <div className="grid grid-cols-9 gap-2 lg:gap-3 px-2 lg:px-4 py-3 items-center text-xs">
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <Checkbox
                         checked={bulkSelection.isAllSelected}
@@ -499,12 +489,24 @@ export default function EquipmentPage() {
                       />
                     </div>
                     <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
+                      <span></span>
+                    </div>
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-center">
                       <span>Img</span>
                     </div>
                     <div className="col-span-2 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
                       <SortableHeader 
                         field="name" 
                         label="Nome/Modelo" 
+                        currentSortBy={filters.sortBy} 
+                        currentSortOrder={filters.sortOrder}
+                        onSort={handleSort}
+                      />
+                    </div>
+                    <div className="col-span-1 font-medium text-muted-foreground uppercase tracking-wider flex items-center">
+                      <SortableHeader 
+                        field="brand" 
+                        label="Marca" 
                         currentSortBy={filters.sortBy} 
                         currentSortOrder={filters.sortOrder}
                         onSort={handleSort}
@@ -546,12 +548,6 @@ export default function EquipmentPage() {
                 {/* Content */}
                  <div className="bg-card">
                   {(paginatedData as any[]).map((hierarchyItem) => {
-                    console.log('🔧 [Equipment] Renderizando item hierárquico:', {
-                      hasItem: !!hierarchyItem.item,
-                      itemName: hierarchyItem.item?.name,
-                      accessoriesCount: hierarchyItem.accessories?.length || 0
-                    });
-                    
                     return (
                       <EquipmentHierarchyRow
                         key={hierarchyItem.item.id}
