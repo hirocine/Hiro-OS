@@ -15,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -67,12 +68,7 @@ export function AppSidebar() {
       className="border-r border-border/40"
     >
       <SidebarHeader className="h-16 border-b border-border/40 flex items-center px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-semibold text-foreground">HIRO</span>
-        </div>
+        <SidebarTrigger className="ml-auto" />
       </SidebarHeader>
       
       <SidebarContent className="px-3 py-4">
