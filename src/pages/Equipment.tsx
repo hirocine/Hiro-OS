@@ -399,6 +399,12 @@ export default function EquipmentPage() {
   }, []);
 
   const renderContent = () => {
+    console.log('🎨 [Equipment] renderContent chamado:', { 
+      loading, 
+      filteredLength: filteredEquipment.length,
+      allEquipmentLength: allEquipment.length
+    });
+    
     if (loading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -407,7 +413,13 @@ export default function EquipmentPage() {
       );
     }
 
+    // Verificação mais robusta - mesmo se filteredEquipment está vazio, 
+    // mas temos dados carregados, pode ser um problema de filtro
     if (filteredEquipment.length === 0) {
+      if (allEquipment.length > 0) {
+        console.log('⚠️ [Equipment] Temos dados mas filtrados está vazio - problema de filtro!');
+      }
+      
       return (
         <EmptyState
           icon={Plus}

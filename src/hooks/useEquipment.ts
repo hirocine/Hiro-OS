@@ -38,6 +38,7 @@ export function useEquipment(): UseEquipmentReturn {
 
   // Fetch equipment from Supabase
   useEffect(() => {
+    console.log('🚀 [useEquipment] useEffect executado - iniciando fetch');
     fetchEquipment();
   }, []);
 
@@ -111,16 +112,29 @@ export function useEquipment(): UseEquipmentReturn {
     } else {
       console.log('🎯 [useEquipment] Setando equipamentos no estado:', { 
         length: result.data?.length || 0,
-        hasData: !!(result.data && result.data.length > 0)
+        hasData: !!(result.data && result.data.length > 0),
+        sampleData: result.data?.slice(0, 3).map(item => ({ id: item.id, name: item.name })) || []
       });
       setEquipment(result.data || []);
+      
+      // Log após setEquipment para verificar se o estado foi atualizado
+      setTimeout(() => {
+        console.log('🔄 [useEquipment] Estado após setEquipment:', { 
+          equipmentStateLength: equipment.length 
+        });
+      }, 100);
     }
     
     setLoading(false);
   }, []);
 
   const enrichedEquipment = useMemo(() => {
-    return equipment.map(item => {
+    console.log('🔧 [useEquipment] Calculando enrichedEquipment:', { 
+      equipmentLength: equipment.length,
+      sampleEquipment: equipment.slice(0, 2).map(item => ({ id: item.id, name: item.name }))
+    });
+    
+    const result = equipment.map(item => {
       // All equipment is now available for multiple projects
       return {
         ...item,
@@ -130,6 +144,13 @@ export function useEquipment(): UseEquipmentReturn {
         lastLoanDate: item.lastLoanDate,
       };
     });
+    
+    console.log('✅ [useEquipment] enrichedEquipment calculado:', { 
+      resultLength: result.length,
+      sampleResult: result.slice(0, 2).map(item => ({ id: item.id, name: item.name }))
+    });
+    
+    return result;
   }, [equipment]);
 
   const sortEquipment = <T extends Equipment>(items: T[], sortBy: SortableField, sortOrder: SortOrder): T[] => {
@@ -184,19 +205,59 @@ export function useEquipment(): UseEquipmentReturn {
   };
 
   const filteredEquipment = useMemo(() => {
+    console.log('🎯 [useEquipment] Iniciando filteredEquipment:', { 
+      enrichedLength: enrichedEquipment.length,
+      activeFilters: filters,
+      hasFilters: Object.keys(filters).length > 0,
+      sampleEnriched: enrichedEquipment.slice(0, 2).map(item => ({ 
+        id: item.id, 
+        name: item.name, 
+        category: item.category,
+        status: item.status,
+        itemType: item.itemType 
+      }))
+    });
     
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
-      if (filters.category && item.category !== filters.category) return false;
+      if (filters.category && item.category !== filters.category) {
+        console.log('❌ [useEquipment] Item filtrado por categoria:', { 
+          itemId: item.id, 
+          itemCategory: item.category, 
+          filterCategory: filters.category 
+        });
+        return false;
+      }
       
       // Apply status filter
-      if (filters.status && item.status !== filters.status) return false;
+      if (filters.status && item.status !== filters.status) {
+        console.log('❌ [useEquipment] Item filtrado por status:', { 
+          itemId: item.id, 
+          itemStatus: item.status, 
+          filterStatus: filters.status 
+        });
+        return false;
+      }
       
       // Apply item type filter
-      if (filters.itemType && item.itemType !== filters.itemType) return false;
+      if (filters.itemType && item.itemType !== filters.itemType) {
+        console.log('❌ [useEquipment] Item filtrado por tipo:', { 
+          itemId: item.id, 
+          itemType: item.itemType, 
+          filterType: filters.itemType 
+        });
+        return false;
+      }
       
       // Apply brand filter
-      if (filters.brand && item.brand.toLowerCase() !== filters.brand.toLowerCase()) return false;
+      if (filters.brand && item.brand.toLowerCase() !== filters.brand.toLowerCase()) {
+        console.log('❌ [useEquipment] Item filtrado por marca:', { 
+          itemId: item.id, 
+          itemBrand: item.brand, 
+          filterBrand: filters.brand 
+        });
+        return false;
+      }
       
       // Apply search filter (in addition to other filters, not exclusively)
       if (filters.search) {
@@ -207,7 +268,14 @@ export function useEquipment(): UseEquipmentReturn {
           item.serialNumber?.toLowerCase().includes(searchTerm) ||
           item.description?.toLowerCase().includes(searchTerm)
         );
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {
+          console.log('❌ [useEquipment] Item filtrado por busca:', { 
+            itemId: item.id, 
+            searchTerm, 
+            itemName: item.name 
+          });
+          return false;
+        }
       }
       
       return true;
@@ -218,8 +286,10 @@ export function useEquipment(): UseEquipmentReturn {
       filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
     }
 
-    console.log('📋 [useEquipment] Equipamentos filtrados:', { 
+    console.log('📋 [useEquipment] Equipamentos filtrados FINAL:', { 
+      enrichedLength: enrichedEquipment.length,
       filteredLength: filtered.length,
+      activeFilters: filters,
       sampleItems: filtered.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
     });
 
