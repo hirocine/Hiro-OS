@@ -38,18 +38,40 @@ export function useEquipment(): UseEquipmentReturn {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [emergencyFallback, setEmergencyFallback] = useState(false);
+
+  // Loading timeout and emergency fallback
+  useEffect(() => {
+    if (loading) {
+      const loadingTimeout = setTimeout(() => {
+        console.warn('⏰ [useEquipment] Loading timeout - forçando fallback');
+        setLoading(false);
+        setEmergencyFallback(true);
+        
+        // Auto retry if no data
+        if (equipment.length === 0 && retryCount < 3) {
+          console.log('🔄 [useEquipment] Auto retry:', retryCount + 1);
+          setRetryCount(prev => prev + 1);
+        }
+      }, 5000); // 5 seconds timeout
+
+      return () => clearTimeout(loadingTimeout);
+    }
+  }, [loading, equipment.length, retryCount]);
 
   // Fetch equipment from Supabase
   useEffect(() => {
     fetchEquipment();
-  }, []);
+  }, [retryCount]);
 
   const fetchEquipment = useCallback(async (): Promise<void> => {
     const result = await wrapAsync(async () => {
       setLoading(true);
       setError(null);
+      setEmergencyFallback(false);
       
-      console.log('🔄 [useEquipment] Iniciando busca de equipamentos...');
+      console.log('🔄 [useEquipment] Iniciando busca de equipamentos... Tentativa:', retryCount + 1);
       logger.apiCall('fetchEquipment', 'GET', '/equipments');
 
       const { data, error } = await supabase
@@ -122,7 +144,7 @@ export function useEquipment(): UseEquipmentReturn {
     
     console.log('🏁 [useEquipment] Finalizando busca, loading = false');
     setLoading(false);
-  }, []);
+  }, [retryCount]);
 
   const enrichedEquipment = useMemo(() => {
     return equipment.map(item => {
@@ -191,8 +213,15 @@ export function useEquipment(): UseEquipmentReturn {
   const filteredEquipment = useMemo(() => {
     console.log('🔍 [useEquipment] Filtrando equipamentos:', { 
       enrichedLength: enrichedEquipment.length,
-      filters: JSON.stringify(filters)
+      filters: JSON.stringify(filters),
+      emergencyFallback
     });
+    
+    // Emergency fallback - reset filters if no results and we have data
+    if (enrichedEquipment.length > 0 && emergencyFallback) {
+      console.log('🚨 [useEquipment] Usando fallback de emergência - resetando filtros');
+      return enrichedEquipment;
+    }
     
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
