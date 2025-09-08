@@ -73,22 +73,22 @@ export function ResponsiveDialog({ open, onOpenChange, children }: ResponsiveDia
 // Content component
 export function ResponsiveDialogContent({ className, children }: ResponsiveDialogContentProps) {
   const { shouldUseDrawer } = useResponsiveDialog();
-  const { availableHeight, isVisible: isKeyboardVisible } = useVirtualKeyboard();
+  const { visualViewportHeight, isVisible: isKeyboardVisible } = useVirtualKeyboard();
   const contentRef = React.useRef<HTMLDivElement>(null);
   
-  // Usa hook de auto scroll para este container
   useAutoScrollOnFocus(contentRef);
 
   if (shouldUseDrawer) {
+    // Usa altura consistente em pixels para evitar conflitos
     const dynamicHeight = isKeyboardVisible 
-      ? `${Math.min(availableHeight * 0.96, availableHeight - 20)}px`
-      : '96vh';
+      ? `${visualViewportHeight - 20}px`  // Margem de 20px
+      : '100dvh'; // Dynamic viewport height quando disponível
       
     return (
       <DrawerContent 
         ref={contentRef}
         className={cn(
-          "transition-all duration-300 ease-in-out",
+          "transition-all duration-200 ease-out", // Transição mais rápida
           "focus:outline-none",
           className
         )}

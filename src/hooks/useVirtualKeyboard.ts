@@ -17,48 +17,63 @@ export function useVirtualKeyboard() {
   });
 
   useEffect(() => {
-    // Detecta se o navegador suporta Visual Viewport API
     const supportsVisualViewport = 'visualViewport' in window;
+    let debounceTimeout: NodeJS.Timeout;
     
     const updateKeyboardState = () => {
-      const currentHeight = window.innerHeight;
-      const visualHeight = supportsVisualViewport 
-        ? window.visualViewport?.height ?? currentHeight
-        : currentHeight;
-      
-      const keyboardHeight = Math.max(0, currentHeight - visualHeight);
-      const isKeyboardVisible = keyboardHeight > 0;
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        const currentHeight = window.innerHeight;
+        const visualHeight = supportsVisualViewport 
+          ? window.visualViewport?.height ?? currentHeight
+          : currentHeight;
+        
+        const keyboardHeight = Math.max(0, currentHeight - visualHeight);
+        const isKeyboardVisible = keyboardHeight > 50; // Threshold para evitar falsos positivos
 
-      setKeyboardState({
-        isVisible: isKeyboardVisible,
-        height: keyboardHeight,
-        visualViewportHeight: visualHeight
-      });
+        setKeyboardState({
+          isVisible: isKeyboardVisible,
+          height: keyboardHeight,
+          visualViewportHeight: visualHeight
+        });
+      }, 100); // Debounce de 100ms
     };
 
-    // Event listeners
+    // Event listeners principais
     if (supportsVisualViewport && window.visualViewport) {
       window.visualViewport.addEventListener('resize', updateKeyboardState);
     } else {
-      // Fallback para navegadores sem Visual Viewport API
       window.addEventListener('resize', updateKeyboardState);
     }
 
-    // Detecta foco em inputs para iOS
+    // Detecta foco em inputs
     const handleFocusIn = () => {
-      // Pequeno delay para aguardar o teclado aparecer
-      setTimeout(updateKeyboardState, 300);
+      setTimeout(updateKeyboardState, 150);
     };
 
     const handleFocusOut = () => {
-      setTimeout(updateKeyboardState, 300);
+      // Delay maior para focusout para garantir que o teclado realmente fechou
+      setTimeout(() => {
+        if (!document.activeElement || 
+            (document.activeElement.tagName !== 'INPUT' && 
+             document.activeElement.tagName !== 'TEXTAREA')) {
+          updateKeyboardState();
+        }
+      }, 150);
+    };
+
+    // Reset forçado para iOS
+    const handleOrientationChange = () => {
+      setTimeout(updateKeyboardState, 500);
     };
 
     document.addEventListener('focusin', handleFocusIn);
     document.addEventListener('focusout', handleFocusOut);
+    window.addEventListener('orientationchange', handleOrientationChange);
 
     // Cleanup
     return () => {
+      clearTimeout(debounceTimeout);
       if (supportsVisualViewport && window.visualViewport) {
         window.visualViewport.removeEventListener('resize', updateKeyboardState);
       } else {
@@ -66,6 +81,7 @@ export function useVirtualKeyboard() {
       }
       document.removeEventListener('focusin', handleFocusIn);
       document.removeEventListener('focusout', handleFocusOut);
+      window.removeEventListener('orientationchange', handleOrientationChange);
     };
   }, []);
 
