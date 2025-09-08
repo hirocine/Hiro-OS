@@ -79,26 +79,43 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
   useAutoScrollOnFocus(contentRef);
 
   if (shouldUseDrawer) {
-    // Usa altura consistente em pixels para evitar conflitos
+    // Constantes para cálculo de altura
+    const APP_HEADER_HEIGHT = 64; // Altura do header da aplicação
+    const DRAWER_HANDLE_HEIGHT = 24; // Altura do handle do drawer
+    const SAFE_MARGINS = 16; // Margem de segurança
+    const TOTAL_OFFSET = APP_HEADER_HEIGHT + DRAWER_HANDLE_HEIGHT + SAFE_MARGINS;
+    
+    // Calcula altura disponível considerando o header da app
+    const availableHeight = window.innerHeight - TOTAL_OFFSET;
+    const keyboardAdjustedHeight = visualViewportHeight - TOTAL_OFFSET;
+    
     const dynamicHeight = isKeyboardVisible 
-      ? `${visualViewportHeight - 20}px`  // Margem de 20px
-      : '100dvh'; // Dynamic viewport height quando disponível
+      ? `${Math.max(keyboardAdjustedHeight, 200)}px` // Min 200px
+      : `${Math.max(availableHeight, 300)}px`; // Min 300px
       
     return (
       <DrawerContent 
         ref={contentRef}
         className={cn(
-          "transition-all duration-200 ease-out", // Transição mais rápida
+          "transition-all duration-200 ease-out",
           "focus:outline-none",
           className
         )}
         style={{
           height: dynamicHeight,
-          maxHeight: dynamicHeight
+          maxHeight: dynamicHeight,
+          // Garantir que não sobreponha o header
+          marginTop: `${APP_HEADER_HEIGHT}px`
         }}
       >
-        <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 pb-safe-bottom h-full">
-          <div className="h-full overflow-y-auto">
+        <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 h-full flex flex-col">
+          {/* Handle visual do drawer */}
+          <div className="flex-shrink-0 h-6 flex items-center justify-center">
+            <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+          </div>
+          
+          {/* Conteúdo scrollável */}
+          <div className="flex-1 min-h-0 overflow-y-auto pb-safe-bottom">
             {children}
           </div>
         </div>
