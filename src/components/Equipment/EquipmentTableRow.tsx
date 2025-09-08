@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight, Upload } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { categoryLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
@@ -18,8 +17,6 @@ interface EquipmentTableRowProps {
   onImageUpload?: (equipmentId: string, file: File) => void;
   onConvertToAccessory?: (equipment: Equipment) => void;
   level?: number;
-  isSelected?: boolean;
-  onSelectionChange?: () => void;
   className?: string;
 }
 
@@ -32,8 +29,6 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   onImageUpload,
   onConvertToAccessory,
   level = 0,
-  isSelected = false,
-  onSelectionChange,
   className = ''
 }: EquipmentTableRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,20 +60,8 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-[40px_40px_60px_minmax(200px,1fr)_minmax(120px,200px)_minmax(100px,150px)_100px_120px_120px] gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 hover:bg-muted/30 ${
-          isSelected ? 'bg-accent/20 border-accent/50' : 'border-border'
-        } ${level > 0 ? 'ml-6 border-l-2 border-primary/20 bg-muted/10' : ''} ${className}`}
+        className={`grid grid-cols-[40px_60px_minmax(250px,1fr)_minmax(140px,200px)_minmax(120px,160px)_100px_120px_120px] gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 hover:bg-muted/30 border-border ${level > 0 ? 'ml-6 border-l-2 border-primary/20 bg-muted/10' : ''} ${className}`}
       >
-        {/* Checkbox de seleção - apenas para itens principais */}
-        <div className="flex items-center justify-center">
-          {level === 0 && onSelectionChange && (
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelectionChange}
-              className="data-[state=checked]:bg-accent data-[state=checked]:border-accent"
-            />
-          )}
-        </div>
 
         {/* Expansão / Tipo */}
         <div className="flex items-center justify-center">

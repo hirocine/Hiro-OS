@@ -8,7 +8,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { usePageLayout } from '@/hooks/usePageLayout';
 import { useEquipment } from '@/hooks/useEquipment';
-import { useBulkSelection } from '@/hooks/useBulkSelection';
 import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
@@ -17,8 +16,6 @@ import { EquipmentTableHeader } from '@/components/Equipment/EquipmentTableHeade
 import { EquipmentTableRow } from '@/components/Equipment/EquipmentTableRow';
 import { EquipmentMobileView } from '@/components/Equipment/EquipmentMobileView';
 import { EquipmentMobileCard } from '@/components/Equipment/EquipmentMobileCard';
-import { SelectableEquipmentCard } from '@/components/Equipment/SelectableEquipmentCard';
-import { BulkActionsBar } from '@/components/Equipment/BulkActionsBar';
 import { EquipmentPagination } from '@/components/Equipment/EquipmentPagination';
 import { EquipmentStatsCards } from '@/components/Equipment/EquipmentStatsCards';
 import { SortableHeader } from '@/components/Equipment/SortableHeader';
@@ -30,7 +27,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
-import { Checkbox } from '@/components/ui/checkbox';
 import { logger } from '@/lib/logger';
 
 import { AdminOnly } from '@/components/RoleGuard';
@@ -64,8 +60,6 @@ export default function EquipmentPage() {
     statsTotal: stats?.total || 0
   });
 
-  // Initialize bulk selection
-  const bulkSelection = useBulkSelection(filteredEquipment);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -346,44 +340,6 @@ export default function EquipmentPage() {
     setCurrentPage(1); // Reset to first page
   };
 
-  const handleBulkDelete = async (items: Equipment[]) => {
-    for (const equipment of items) {
-      await deleteEquipment(equipment.id);
-    }
-  };
-
-  const handleBulkEdit = (items: Equipment[]) => {
-    // For now, just show a toast that this feature is coming
-    enhancedToast.info({
-      title: 'Em breve',
-      description: 'Edição em lote será implementada em uma próxima versão.'
-    });
-  };
-
-  const handleBulkExport = useCallback((items: Equipment[]) => {
-    // Simple CSV export
-    const csvContent = [
-      'Nome,Marca,Categoria,Patrimônio,Status,Valor',
-      ...items.map(item => 
-        `"${item.name}","${item.brand}","${item.category}","${item.patrimonyNumber || ''}","${item.status}","${item.value || 0}"`
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `equipamentos-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    enhancedToast.success({
-      title: 'Exportação concluída',
-      description: `${items.length} equipamento(s) exportado(s) com sucesso.`
-    });
-  }, []);
 
   const loadingSkeletons = useMemo(() => {
     return [...Array(6)].map((_, i) => (
@@ -479,9 +435,6 @@ export default function EquipmentPage() {
               <div className="min-w-[1200px]">
                 {/* Header */}
                 <EquipmentTableHeader
-                  allSelected={bulkSelection.isAllSelected}
-                  someSelected={bulkSelection.isPartialSelected}
-                  onSelectAll={bulkSelection.toggleAll}
                   onSort={handleSort}
                   sortBy={filters.sortBy}
                   sortOrder={filters.sortOrder}
@@ -499,8 +452,6 @@ export default function EquipmentPage() {
                       onToggleExpansion={toggleEquipmentExpansion}
                       onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
-                      isSelected={bulkSelection.selectedItems.has(item.id)}
-                      onSelectionChange={() => bulkSelection.toggleItem(item.id)}
                     />
                   ))}
                 </div>
@@ -693,16 +644,6 @@ export default function EquipmentPage() {
           equipmentDebug('Restoring equipment', { equipmentId });
           // Implementar lógica de restauração quando necessário
         }}
-      />
-      
-      {/* Bulk Actions Bar */}
-      <BulkActionsBar
-        selectedItems={bulkSelection.getSelectedItems()}
-        selectedCount={bulkSelection.selectedCount}
-        onClearSelection={bulkSelection.clearSelection}
-        onBulkDelete={handleBulkDelete}
-        onBulkEdit={handleBulkEdit}
-        onBulkExport={handleBulkExport}
       />
     </ResponsiveContainer>
   );
