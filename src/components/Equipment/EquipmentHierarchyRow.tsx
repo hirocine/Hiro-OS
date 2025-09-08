@@ -60,6 +60,14 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   const hasAccessories = accessories.length > 0;
   const isExpanded = equipment.isExpanded;
 
+  console.log('🔧 [EquipmentHierarchyRow] Renderizando:', {
+    name: equipment.name,
+    isMainItem,
+    hasAccessories,
+    isExpanded,
+    accessoriesLength: accessories.length
+  });
+
   return (
     <>
       <div 
@@ -89,7 +97,10 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onToggleExpansion(equipment.id)}
+              onClick={() => {
+                console.log('🔧 [EquipmentHierarchyRow] Clicando expansão:', equipment.name);
+                onToggleExpansion(equipment.id);
+              }}
               className="h-7 w-7 p-0 hover:bg-accent/30"
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
