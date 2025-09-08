@@ -281,6 +281,17 @@ html, body {
     padding-top: calc(4rem + env(safe-area-inset-top, 0px));
   }
   
+  /* DrawerContent não deve vazar por cima da status bar */
+  [data-vaul-drawer-wrapper] [data-vaul-drawer] {
+    max-height: calc(85vh - env(safe-area-inset-top, 0px)) !important;
+    margin-top: env(safe-area-inset-top, 0px);
+  }
+  
+  /* DrawerContent com altura ajustada */
+  [data-vaul-drawer-wrapper] [data-vaul-drawer] > div {
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  }
+  
   /* Safe area inferior */
   body {
     padding-bottom: env(safe-area-inset-bottom, 0px);
