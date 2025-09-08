@@ -35,22 +35,32 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
-        className
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-))
+>(({ className, children, ...props }, ref) => {
+  // Detectar PWA mode
+  const isPWA = React.useMemo(() => {
+    return window.matchMedia('(display-mode: standalone)').matches;
+  }, []);
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed inset-x-0 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          isPWA 
+            ? "top-16 z-40" // PWA: começa abaixo do header (z-index menor)
+            : "bottom-0 z-50 mt-24", // Web: comportamento normal
+          className
+        )}
+        {...props}
+      >
+        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+})
 DrawerContent.displayName = "DrawerContent"
 
 const DrawerHeader = ({

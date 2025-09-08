@@ -91,11 +91,11 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
       adjustedHeight = `${Math.max(visualViewportHeight * 0.8, 300)}px`;
       drawerStyle = { height: adjustedHeight, maxHeight: adjustedHeight };
     } else if (isPWA) {
-      // No PWA, ajustar para não vazar na status bar
-      adjustedHeight = 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))';
+      // No PWA, ajustar altura considerando header (4rem) + safe areas
+      adjustedHeight = 'calc(100vh - 4rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))';
       drawerStyle = { 
-        maxHeight: adjustedHeight,
-        marginTop: 'env(safe-area-inset-top, 0px)'
+        height: adjustedHeight,
+        maxHeight: adjustedHeight
       };
     } else {
       adjustedHeight = 'max(85vh, 400px)';
