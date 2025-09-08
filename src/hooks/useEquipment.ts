@@ -129,25 +129,19 @@ export function useEquipment(): UseEquipmentReturn {
   }, []);
 
   const enrichedEquipment = useMemo(() => {
-    console.log('🔧 [useEquipment] Calculando enrichedEquipment:', { 
-      equipmentLength: equipment.length,
-      sampleEquipment: equipment.slice(0, 2).map(item => ({ id: item.id, name: item.name }))
-    });
-    
     const result = equipment.map(item => {
-      // All equipment is now available for multiple projects
+      const hasAccessories = equipment.some(eq => eq.parentId === item.id);
+      
       return {
         ...item,
+        // Initialize isExpanded for main items with accessories
+        isExpanded: item.isExpanded ?? (hasAccessories && item.itemType === 'main'),
+        hasAccessories,
         // Keep existing loan info for display purposes only
         currentLoanId: item.currentLoanId,
         currentBorrower: item.currentBorrower,
         lastLoanDate: item.lastLoanDate,
       };
-    });
-    
-    console.log('✅ [useEquipment] enrichedEquipment calculado:', { 
-      resultLength: result.length,
-      sampleResult: result.slice(0, 2).map(item => ({ id: item.id, name: item.name }))
     });
     
     return result;

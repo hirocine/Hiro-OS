@@ -63,7 +63,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-9 gap-3 px-4 py-3 border-b transition-all duration-200 ${
+        className={`grid grid-cols-9 gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 ${
           isSelected ? 'bg-accent/20 border-accent/50' : 'hover:bg-muted/50 border-border'
         } ${level > 0 ? 'ml-8 border-l-2 border-primary/30' : ''}`}
       >
