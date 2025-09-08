@@ -10,7 +10,9 @@ export function Layout() {
   return (
     <SidebarProvider
       style={{
-        "--sidebar-width-icon": "5rem",
+        "--sidebar-width": "16rem",
+        "--sidebar-width-icon": "4rem",
+        "--sidebar-width-mobile": "18rem",
       } as React.CSSProperties}
     >
       <div className="min-h-screen flex w-full max-w-screen overflow-hidden">

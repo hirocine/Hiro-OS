@@ -1,8 +1,10 @@
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 interface NavigationItem {
@@ -47,16 +50,38 @@ const navigation: NavigationItem[] = [
 
 export function AppSidebar() {
   const { isAdmin } = useUserRole();
+  const { setOpenMobile } = useSidebar();
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
+  // Auto-close sidebar on mobile when navigating to a new route
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [location.pathname, isMobile, setOpenMobile]);
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="h-16 border-b border-border" />
+    <Sidebar 
+      collapsible={isMobile ? "offcanvas" : "icon"}
+      className="border-r border-border/40"
+    >
+      <SidebarHeader className="h-16 border-b border-border/40 flex items-center px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+            <LayoutDashboard className="w-4 h-4 text-primary" />
+          </div>
+          <span className="font-semibold text-foreground">HIRO</span>
+        </div>
+      </SidebarHeader>
       
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navegação</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-2">
+            Navegação
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigation.map((item) => {
                 // Hide admin-only items for non-admin users
                 if (item.adminOnly && !isAdmin) {
@@ -65,13 +90,19 @@ export function AppSidebar() {
                 
                 return (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild className="h-10">
                       <NavLink
                         to={item.href}
                         end={item.href === '/'}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
+                        )}
                       >
-                        <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                        <span>{item.name}</span>
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="truncate">{item.name}</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -80,12 +111,18 @@ export function AppSidebar() {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="h-10">
                     <NavLink
                       to="/admin"
+                      className={({ isActive }) => cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
+                      )}
                     >
-                      <Shield className="mr-3 h-5 w-5 flex-shrink-0" />
-                      <span>Administração</span>
+                      <Shield className="w-5 h-5 flex-shrink-0" />
+                      <span className="truncate">Administração</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
