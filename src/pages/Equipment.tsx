@@ -399,15 +399,6 @@ export default function EquipmentPage() {
   }, []);
 
   const renderContent = () => {
-    console.log('📱 [EquipmentPage] Renderizando conteúdo:', {
-      loading,
-      filteredCount: filteredEquipment.length,
-      allCount: allEquipment.length,
-      effectiveViewMode,
-      isMobile,
-      paginatedDataLength: Array.isArray(paginatedData) ? paginatedData.length : 0
-    });
-
     if (loading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -416,38 +407,14 @@ export default function EquipmentPage() {
       );
     }
 
-    // Improved empty state handling
     if (filteredEquipment.length === 0) {
-      // Check if we have any equipment but filters are hiding them
-      if (allEquipment.length > 0) {
-        return (
-          <div className="space-y-4">
-            <EmptyState
-              icon={Plus}
-              title="Nenhum equipamento corresponde aos filtros"
-              description={`Encontrados ${allEquipment.length} equipamentos no total, mas nenhum corresponde aos filtros atuais.`}
-              action={{
-                label: "Limpar Filtros",
-                onClick: () => setFilters({})
-              }}
-            />
-            <Card className="p-4 border-warning/20 bg-warning/5">
-              <p className="text-sm text-muted-foreground">
-                💡 Dica: Tente limpar os filtros ou usar uma busca menos específica
-              </p>
-            </Card>
-          </div>
-        );
-      }
-      
-      // No equipment at all
       return (
         <EmptyState
           icon={Plus}
           title="Nenhum equipamento encontrado"
-          description="Não há equipamentos cadastrados."
+          description="Adicione equipamentos para começar a gerenciar seu inventário."
           action={{
-            label: "Adicionar Primeiro Equipamento",
+            label: "Adicionar Equipamento",
             onClick: () => setIsAddDialogOpen(true)
           }}
         />
