@@ -1,5 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  ResponsiveDialog, 
+  ResponsiveDialogContent, 
+  ResponsiveDialogHeader, 
+  ResponsiveDialogTitle, 
+  ResponsiveDialogDescription 
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -253,16 +259,16 @@ export function AddEquipmentToProjectDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Adicionar Equipamentos ao Projeto</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Adicionar Equipamentos ao Projeto</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Selecione os equipamentos que deseja vincular ao projeto "{project.name}"
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        <div className="flex-1 flex gap-6 overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
           {/* Equipment Selection */}
           <div className="flex-1 flex flex-col">
             <div className="space-y-4 mb-4">
@@ -360,36 +366,39 @@ export function AddEquipmentToProjectDialog({
           </div>
 
           {/* Loan Details Form */}
-          <div className="w-80 space-y-4">
+          <div className="w-full lg:w-80 space-y-4">
             <div>
               <Label htmlFor="borrower-name">Nome do Responsável *</Label>
-              <Input
-                id="borrower-name"
-                value={borrowerName}
-                onChange={(e) => setBorrowerName(e.target.value)}
-                placeholder="Nome completo"
-              />
+                <Input
+                  id="borrower-name"
+                  value={borrowerName}
+                  onChange={(e) => setBorrowerName(e.target.value)}
+                  placeholder="Nome completo"
+                  className="h-12"
+                />
             </div>
 
             <div>
               <Label htmlFor="borrower-email">Email</Label>
-              <Input
-                id="borrower-email"
-                type="email"
-                value={borrowerEmail}
-                onChange={(e) => setBorrowerEmail(e.target.value)}
-                placeholder="email@exemplo.com"
-              />
+                <Input
+                  id="borrower-email"
+                  type="email"
+                  value={borrowerEmail}
+                  onChange={(e) => setBorrowerEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className="h-12"
+                />
             </div>
 
             <div>
               <Label htmlFor="borrower-phone">Telefone</Label>
-              <Input
-                id="borrower-phone"
-                value={borrowerPhone}
-                onChange={(e) => setBorrowerPhone(e.target.value)}
-                placeholder="(11) 99999-9999"
-              />
+                <Input
+                  id="borrower-phone"
+                  value={borrowerPhone}
+                  onChange={(e) => setBorrowerPhone(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  className="h-12"
+                />
             </div>
 
             <div>
@@ -399,7 +408,7 @@ export function AddEquipmentToProjectDialog({
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-12",
                       !expectedReturnDate && "text-muted-foreground"
                     )}
                   >
@@ -443,14 +452,14 @@ export function AddEquipmentToProjectDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  className="flex-1"
+                  className="flex-1 h-12"
                 >
                   Cancelar
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={selectedEquipment.size === 0 || loading}
-                  className="flex-1"
+                  className="flex-1 h-12"
                 >
                   {loading ? 'Adicionando...' : 'Adicionar'}
                 </Button>
@@ -458,7 +467,7 @@ export function AddEquipmentToProjectDialog({
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

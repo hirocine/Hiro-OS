@@ -74,9 +74,9 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
 
   if (shouldUseDrawer) {
     return (
-      <DrawerContent className={cn("max-h-[95vh]", className)}>
-        <div className="mx-auto w-full max-w-[calc(100vw-2rem)] px-4 pb-safe-bottom">
-          <div className="max-h-[80vh] overflow-y-auto">
+      <DrawerContent className={cn("max-h-[96vh]", className)}>
+        <div className="mx-auto w-full max-w-[calc(100vw-1rem)] px-3 pb-safe-bottom">
+          <div className="max-h-[85vh] overflow-y-auto">
             {children}
           </div>
         </div>
@@ -85,7 +85,7 @@ export function ResponsiveDialogContent({ className, children }: ResponsiveDialo
   }
 
   return (
-    <DialogContent className={cn("max-w-[95vw] max-h-[95vh] overflow-y-auto", className)}>
+    <DialogContent className={cn("max-w-[96vw] max-h-[96vh] overflow-y-auto", className)}>
       {children}
     </DialogContent>
   );

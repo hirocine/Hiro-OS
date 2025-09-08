@@ -12,10 +12,19 @@ import {
   ResponsiveDialogTitle, 
   ResponsiveDialogFooter 
 } from '@/components/ui/responsive-dialog';
+import { 
+  MobileFriendlyForm, 
+  MobileFriendlyFormSection, 
+  MobileFriendlyFormGrid, 
+  MobileFriendlyFormField,
+  MobileFriendlyFormActions
+} from '@/components/ui/mobile-friendly-form';
+import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { useCategories } from '@/hooks/useCategories';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2, Check, ChevronsUpDown, Search, Plus } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
@@ -56,7 +65,9 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
   const { getSubcategoriesForCategory, addCustomCategory } = useCategories();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (equipment) {
@@ -183,465 +194,494 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     return selectedItem ? `${selectedItem.patrimonyNumber || 'S/N'} - ${selectedItem.name}` : 'Item não encontrado';
   };
 
+  // Componente para renderizar campos de informações básicas
+  const renderBasicInfo = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="name">Nome *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => updateField('name', e.target.value)}
+          placeholder="Ex: Canon EOS R5, Microfone Shure..."
+          required
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="brand">Marca *</Label>
+        <Input
+          id="brand"
+          value={formData.brand}
+          onChange={(e) => updateField('brand', e.target.value)}
+          placeholder="Ex: Canon, Sony, Shure..."
+          required
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField span={2}>
+        <Label htmlFor="description">Descrição</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => updateField('description', e.target.value)}
+          placeholder="Descrição detalhada do equipamento, características especiais, etc."
+          rows={3}
+          className="resize-none"
+        />
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Componente para renderizar classificação
+  const renderClassification = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="category">Categoria *</Label>
+        <Select 
+          value={formData.category} 
+          onValueChange={(value) => {
+            updateField('category', value as EquipmentCategory);
+            updateField('subcategory', ''); // Reset subcategory when category changes
+          }}
+        >
+          <SelectTrigger className="h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(categoryLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="subcategory">Subcategoria</Label>
+        <Select 
+          value={formData.subcategory || ''} 
+          onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
+        >
+          <SelectTrigger className="h-12">
+            <SelectValue placeholder="Selecionar subcategoria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Nenhuma</SelectItem>
+            {getSubcategoriesForCategory(formData.category).map((subcategory) => (
+              <SelectItem key={subcategory} value={subcategory}>
+                {subcategory}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="status">Status *</Label>
+        <Select 
+          value={formData.status} 
+          onValueChange={(value) => updateField('status', value as EquipmentStatus)}
+        >
+          <SelectTrigger className="h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(statusLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="itemType">Tipo de Item *</Label>
+        <Select 
+          value={formData.itemType} 
+          onValueChange={(value: EquipmentItemType) => {
+            updateField('itemType', value);
+            if (value === 'main') {
+              updateField('parentId', '');
+            }
+          }}
+        >
+          <SelectTrigger className="h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="main">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-primary rounded-full"></div>
+                <span className="font-medium">Item Principal</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="accessory">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
+                <span className="font-medium">Acessório</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        {formData.itemType === 'main' && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Este item pode ter acessórios associados a ele
+          </p>
+        )}
+        {formData.itemType === 'accessory' && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Este item será vinculado a um item principal
+          </p>
+        )}
+      </MobileFriendlyFormField>
+
+      {/* Associação de Item Principal (apenas para acessórios) */}
+      {formData.itemType === 'accessory' && (
+        <MobileFriendlyFormField span={2}>
+          <Label htmlFor="parentId">Item Principal</Label>
+          {mainItems.length === 0 ? (
+            <div className="p-4 bg-muted/50 rounded-lg text-center">
+              <p className="text-muted-foreground text-sm">
+                Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
+              </p>
+            </div>
+          ) : (
+            <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={parentSearchOpen}
+                  className="w-full justify-between h-12"
+                >
+                  {getSelectedParentName()}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Pesquisar item principal..." 
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="none"
+                        onSelect={() => {
+                          updateField('parentId', '');
+                          setParentSearchOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
+                          <span className="text-muted-foreground">Nenhum (acessório independente)</span>
+                        </div>
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4",
+                            (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                      {mainItems.map((item) => (
+                        <CommandItem
+                          key={item.id}
+                          value={`${item.patrimonyNumber || 'S/N'} ${item.name} ${item.brand}`}
+                          onSelect={() => {
+                            updateField('parentId', item.id);
+                            setParentSearchOpen(false);
+                          }}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="w-3 h-3 bg-primary rounded-full"></div>
+                            <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
+                            <span className="text-muted-foreground">-</span>
+                            <span className="truncate">{item.name}</span>
+                            <span className="text-muted-foreground text-sm">({item.brand})</span>
+                          </div>
+                          <Check
+                            className={cn(
+                              "ml-auto h-4 w-4",
+                              formData.parentId === item.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          )}
+          {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
+            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+              ✓ Este acessório será vinculado ao item selecionado
+            </p>
+          )}
+        </MobileFriendlyFormField>
+      )}
+
+      {/* Nova Categoria/Subcategoria */}
+      <MobileFriendlyFormField span={2}>
+        <div className="flex items-center justify-between">
+          <Label>Adicionar Nova Categoria/Subcategoria</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCustomCategory(!showCustomCategory)}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            {showCustomCategory ? 'Cancelar' : 'Nova Categoria'}
+          </Button>
+        </div>
+        
+        {showCustomCategory && (
+          <div className="p-4 bg-muted/50 rounded-lg space-y-3 mt-2">
+            <MobileFriendlyFormGrid>
+              <MobileFriendlyFormField>
+                <Label htmlFor="newCategory">Categoria</Label>
+                <Input
+                  id="newCategory"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Ex: storage, camera..."
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+              <MobileFriendlyFormField>
+                <Label htmlFor="newSubcategory">Subcategoria</Label>
+                <Input
+                  id="newSubcategory"
+                  value={newSubcategoryName}
+                  onChange={(e) => setNewSubcategoryName(e.target.value)}
+                  placeholder="Ex: SSD/HD, Filtro..."
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+            </MobileFriendlyFormGrid>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                if (newCategoryName && newSubcategoryName) {
+                  try {
+                    await addCustomCategory(newCategoryName, newSubcategoryName);
+                    updateField('category', newCategoryName as EquipmentCategory);
+                    updateField('subcategory', newSubcategoryName);
+                    setNewCategoryName('');
+                    setNewSubcategoryName('');
+                    setShowCustomCategory(false);
+                    enhancedToast.success({
+                      title: 'Categoria adicionada',
+                      description: 'Nova categoria/subcategoria criada com sucesso!'
+                    });
+                  } catch (error) {
+                    enhancedToast.error({
+                      title: 'Erro',
+                      description: 'Erro ao criar nova categoria. Tente novamente.'
+                    });
+                  }
+                }
+              }}
+              disabled={!newCategoryName || !newSubcategoryName}
+              className="h-11"
+            >
+              Adicionar e Usar
+            </Button>
+          </div>
+        )}
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Componente para renderizar identificação
+  const renderIdentification = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="serialNumber">Número de Série</Label>
+        <Input
+          id="serialNumber"
+          value={formData.serialNumber}
+          onChange={(e) => updateField('serialNumber', e.target.value)}
+          placeholder="Número de série do fabricante"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="patrimonyNumber">Número do Patrimônio</Label>
+        <Input
+          id="patrimonyNumber"
+          value={formData.patrimonyNumber}
+          onChange={(e) => updateField('patrimonyNumber', e.target.value)}
+          placeholder="Código interno de patrimônio"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Componente para renderizar informações financeiras
+  const renderFinancialInfo = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="value">Valor de Compra</Label>
+        <Input
+          id="value"
+          value={formData.value > 0 ? formatCurrency(formData.value) : ''}
+          onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
+          placeholder="R$ 0,00"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="depreciatedValue">Valor Depreciado</Label>
+        <Input
+          id="depreciatedValue"
+          value={formData.depreciatedValue > 0 ? formatCurrency(formData.depreciatedValue) : ''}
+          onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
+          placeholder="R$ 0,00"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="store">Loja/Fornecedor</Label>
+        <Input
+          id="store"
+          value={formData.store}
+          onChange={(e) => updateField('store', e.target.value)}
+          placeholder="Nome da loja ou fornecedor"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="invoice">Nota Fiscal</Label>
+        <Input
+          id="invoice"
+          value={formData.invoice}
+          onChange={(e) => updateField('invoice', e.target.value)}
+          placeholder="Número da nota fiscal"
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Componente para renderizar datas
+  const renderDates = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="purchaseDate">Data de Compra</Label>
+        <Input
+          id="purchaseDate"
+          type="date"
+          value={formData.purchaseDate}
+          onChange={(e) => updateField('purchaseDate', e.target.value)}
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="receiveDate">Data de Recebimento</Label>
+        <Input
+          id="receiveDate"
+          type="date"
+          value={formData.receiveDate}
+          onChange={(e) => updateField('receiveDate', e.target.value)}
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="lastMaintenance">Última Manutenção</Label>
+        <Input
+          id="lastMaintenance"
+          type="date"
+          value={formData.lastMaintenance}
+          onChange={(e) => updateField('lastMaintenance', e.target.value)}
+          className="h-12"
+        />
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Steps para mobile
+  const steps = [
+    { title: "Informações Básicas", content: renderBasicInfo() },
+    { title: "Classificação", content: renderClassification() },
+    { title: "Identificação", content: renderIdentification() },
+    { title: "Informações Financeiras", content: renderFinancialInfo() },
+    { title: "Datas", content: renderDates() }
+  ];
+
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <ResponsiveDialogContent className="w-full max-w-4xl">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {equipment ? 'Editar Equipamento' : 'Adicionar Novo Equipamento'}
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Seção 1: Informações Básicas */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Informações Básicas</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  placeholder="Ex: Canon EOS R5, Microfone Shure..."
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="brand">Marca *</Label>
-                <Input
-                  id="brand"
-                  value={formData.brand}
-                  onChange={(e) => updateField('brand', e.target.value)}
-                  placeholder="Ex: Canon, Sony, Shure..."
-                  required
-                />
-              </div>
-            </div>
+        {isMobile ? (
+          <MobileStepperForm
+            steps={steps}
+            currentStep={currentStep}
+            onStepChange={setCurrentStep}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            submitText={equipment ? 'Atualizar' : 'Adicionar'}
+          />
+        ) : (
+          <MobileFriendlyForm onSubmit={handleSubmit}>
+            <MobileFriendlyFormSection title="Informações Básicas">
+              {renderBasicInfo()}
+            </MobileFriendlyFormSection>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                placeholder="Descrição detalhada do equipamento, características especiais, etc."
-                rows={3}
-              />
-            </div>
-          </div>
+            <MobileFriendlyFormSection title="Classificação">
+              {renderClassification()}
+            </MobileFriendlyFormSection>
 
-          {/* Seção 2: Classificação */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Classificação</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoria *</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => {
-                    updateField('category', value as EquipmentCategory);
-                    updateField('subcategory', ''); // Reset subcategory when category changes
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <MobileFriendlyFormSection title="Identificação">
+              {renderIdentification()}
+            </MobileFriendlyFormSection>
 
-              <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategoria</Label>
-                <Select 
-                  value={formData.subcategory || ''} 
-                  onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar subcategoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhuma</SelectItem>
-                    {getSubcategoriesForCategory(formData.category).map((subcategory) => (
-                      <SelectItem key={subcategory} value={subcategory}>
-                        {subcategory}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <MobileFriendlyFormSection title="Informações Financeiras">
+              {renderFinancialInfo()}
+            </MobileFriendlyFormSection>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">Status *</Label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(value) => updateField('status', value as EquipmentStatus)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <MobileFriendlyFormSection title="Datas">
+              {renderDates()}
+            </MobileFriendlyFormSection>
 
-              <div className="space-y-2">
-                <Label htmlFor="itemType">Tipo de Item *</Label>
-                <Select 
-                  value={formData.itemType} 
-                  onValueChange={(value: EquipmentItemType) => {
-                    updateField('itemType', value);
-                    if (value === 'main') {
-                      updateField('parentId', '');
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="main">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-primary rounded-full"></div>
-                        <span className="font-medium">Item Principal</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="accessory">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                        <span className="font-medium">Acessório</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {formData.itemType === 'main' && (
-                  <p className="text-sm text-muted-foreground">
-                    Este item pode ter acessórios associados a ele
-                  </p>
-                )}
-                {formData.itemType === 'accessory' && (
-                  <p className="text-sm text-muted-foreground">
-                    Este item será vinculado a um item principal
-                  </p>
-                )}
-              </div>
-
-              {/* Associação de Item Principal (apenas para acessórios) */}
-              {formData.itemType === 'accessory' && (
-                <div className="space-y-2 pt-4 border-t">
-                  <Label htmlFor="parentId">Item Principal</Label>
-                  {mainItems.length === 0 ? (
-                    <div className="p-4 bg-muted/50 rounded-lg text-center">
-                      <p className="text-muted-foreground">
-                        Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
-                      </p>
-                    </div>
-                  ) : (
-                    <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={parentSearchOpen}
-                          className="w-full justify-between"
-                        >
-                          {getSelectedParentName()}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput 
-                            placeholder="Pesquisar item principal..." 
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandItem
-                                value="none"
-                                onSelect={() => {
-                                  updateField('parentId', '');
-                                  setParentSearchOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
-                                  <span className="text-muted-foreground">Nenhum (acessório independente)</span>
-                                </div>
-                                <Check
-                                  className={cn(
-                                    "ml-auto h-4 w-4",
-                                    (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                              {mainItems.map((item) => (
-                                <CommandItem
-                                  key={item.id}
-                                  value={`${item.patrimonyNumber || 'S/N'} ${item.name} ${item.brand}`}
-                                  onSelect={() => {
-                                    updateField('parentId', item.id);
-                                    setParentSearchOpen(false);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <div className="w-3 h-3 bg-primary rounded-full"></div>
-                                    <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
-                                    <span className="text-muted-foreground">-</span>
-                                    <span className="truncate">{item.name}</span>
-                                    <span className="text-muted-foreground text-sm">({item.brand})</span>
-                                  </div>
-                                  <Check
-                                    className={cn(
-                                      "ml-auto h-4 w-4",
-                                      formData.parentId === item.id ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
-                    <p className="text-sm text-green-600 dark:text-green-400">
-                      ✓ Este acessório será vinculado ao item selecionado
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Nova Categoria/Subcategoria */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Adicionar Nova Categoria/Subcategoria</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCustomCategory(!showCustomCategory)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  {showCustomCategory ? 'Cancelar' : 'Nova Categoria'}
-                </Button>
-              </div>
-              
-              {showCustomCategory && (
-                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="newCategory">Categoria</Label>
-                      <Input
-                        id="newCategory"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        placeholder="Ex: storage, camera..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="newSubcategory">Subcategoria</Label>
-                      <Input
-                        id="newSubcategory"
-                        value={newSubcategoryName}
-                        onChange={(e) => setNewSubcategoryName(e.target.value)}
-                        placeholder="Ex: SSD/HD, Filtro..."
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={async () => {
-                      if (newCategoryName && newSubcategoryName) {
-                        try {
-                          await addCustomCategory(newCategoryName, newSubcategoryName);
-                          updateField('category', newCategoryName as EquipmentCategory);
-                          updateField('subcategory', newSubcategoryName);
-                          setNewCategoryName('');
-                          setNewSubcategoryName('');
-                          setShowCustomCategory(false);
-                          enhancedToast.success({
-                            title: 'Categoria adicionada',
-                            description: 'Nova categoria/subcategoria criada com sucesso!'
-                          });
-                        } catch (error) {
-                          enhancedToast.error({
-                            title: 'Erro',
-                            description: 'Erro ao criar nova categoria. Tente novamente.'
-                          });
-                        }
-                      }
-                    }}
-                    disabled={!newCategoryName || !newSubcategoryName}
-                  >
-                    Adicionar e Usar
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Seção 3: Identificação */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Identificação</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="serialNumber">Número de Série</Label>
-                <Input
-                  id="serialNumber"
-                  value={formData.serialNumber}
-                  onChange={(e) => updateField('serialNumber', e.target.value)}
-                  placeholder="Número de série do fabricante"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="patrimonyNumber">Número do Patrimônio</Label>
-                <Input
-                  id="patrimonyNumber"
-                  value={formData.patrimonyNumber}
-                  onChange={(e) => updateField('patrimonyNumber', e.target.value)}
-                  placeholder="Código interno de patrimônio"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Seção 4: Informações Financeiras */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Informações Financeiras</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="value">Valor de Compra</Label>
-                <Input
-                  id="value"
-                  value={formData.value > 0 ? formatCurrency(formData.value) : ''}
-                  onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
-                  placeholder="R$ 0,00"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="depreciatedValue">Valor Depreciado</Label>
-                <Input
-                  id="depreciatedValue"
-                  value={formData.depreciatedValue > 0 ? formatCurrency(formData.depreciatedValue) : ''}
-                  onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
-                  placeholder="R$ 0,00"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="store">Loja/Fornecedor</Label>
-                <Input
-                  id="store"
-                  value={formData.store}
-                  onChange={(e) => updateField('store', e.target.value)}
-                  placeholder="Nome da loja ou fornecedor"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="invoice">Nota Fiscal</Label>
-                <Input
-                  id="invoice"
-                  value={formData.invoice}
-                  onChange={(e) => updateField('invoice', e.target.value)}
-                  placeholder="Número da nota fiscal"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Seção 5: Datas */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Datas</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="purchaseDate">Data de Compra</Label>
-                <Input
-                  id="purchaseDate"
-                  type="date"
-                  value={formData.purchaseDate}
-                  onChange={(e) => updateField('purchaseDate', e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="receiveDate">Data de Recebimento</Label>
-                <Input
-                  id="receiveDate"
-                  type="date"
-                  value={formData.receiveDate}
-                  onChange={(e) => updateField('receiveDate', e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="lastMaintenance">Última Manutenção</Label>
-                <Input
-                  id="lastMaintenance"
-                  type="date"
-                  value={formData.lastMaintenance}
-                  onChange={(e) => updateField('lastMaintenance', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          
-          <ResponsiveDialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {equipment ? 'Atualizar' : 'Adicionar'}
-            </Button>
-          </ResponsiveDialogFooter>
-        </form>
+            <MobileFriendlyFormActions>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {equipment ? 'Atualizar' : 'Adicionar'}
+              </Button>
+            </MobileFriendlyFormActions>
+          </MobileFriendlyForm>
+        )}
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

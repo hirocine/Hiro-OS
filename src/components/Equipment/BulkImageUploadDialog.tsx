@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -214,11 +214,11 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
-        <DialogHeader>
-          <DialogTitle>Upload de Imagens em Massa</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="w-full max-w-4xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Upload de Imagens em Massa</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
         {step === 'select' && (
           <ImageUploadArea
@@ -346,31 +346,31 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
           </div>
         )}
 
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           {step === 'select' && (
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="h-12">
               Cancelar
             </Button>
           )}
           
           {step === 'preview' && (
             <>
-              <Button variant="outline" onClick={() => setStep('select')}>
+              <Button variant="outline" onClick={() => setStep('select')} className="h-12">
                 Voltar
               </Button>
-              <Button onClick={processImages} disabled={images.length === 0}>
+              <Button onClick={processImages} disabled={images.length === 0} className="h-12">
                 Processar {images.length} Imagens
               </Button>
             </>
           )}
           
           {step === 'review' && (
-            <Button onClick={handleComplete}>
+            <Button onClick={handleComplete} className="h-12">
               Finalizar
             </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

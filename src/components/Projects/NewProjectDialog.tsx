@@ -11,6 +11,13 @@ import {
   ResponsiveDialogTitle, 
   ResponsiveDialogFooter 
 } from '@/components/ui/responsive-dialog';
+import { 
+  MobileFriendlyForm, 
+  MobileFriendlyFormSection, 
+  MobileFriendlyFormGrid, 
+  MobileFriendlyFormField,
+  MobileFriendlyFormActions
+} from '@/components/ui/mobile-friendly-form';
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -67,99 +74,116 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit }: NewProjectDia
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <ResponsiveDialogContent className="max-w-3xl">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Nova Retirada de Equipamentos</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="name">Nome do Projeto *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                required
-                placeholder="Ex: Documentário Natureza"
-              />
-            </div>
-            
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                rows={2}
-                placeholder="Breve descrição do projeto..."
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="responsibleName">Responsável *</Label>
-              <Input
-                id="responsibleName"
-                value={formData.responsibleName}
-                onChange={(e) => updateField('responsibleName', e.target.value)}
-                required
-                placeholder="Nome completo"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="responsibleEmail">Email do Responsável</Label>
-              <Input
-                id="responsibleEmail"
-                type="email"
-                value={formData.responsibleEmail}
-                onChange={(e) => updateField('responsibleEmail', e.target.value)}
-                placeholder="email@exemplo.com"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="department">Departamento</Label>
-              <Input
-                id="department"
-                value={formData.department}
-                onChange={(e) => updateField('department', e.target.value)}
-                placeholder="Ex: Produção, Direção"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="expectedEndDate">Data Prevista de Devolução *</Label>
-              <Input
-                id="expectedEndDate"
-                type="date"
-                value={formData.expectedEndDate}
-                onChange={(e) => updateField('expectedEndDate', e.target.value)}
-                required
-              />
-            </div>
-          </div>
+        <MobileFriendlyForm onSubmit={handleSubmit}>
+          <MobileFriendlyFormSection title="Informações do Projeto">
+            <MobileFriendlyFormGrid>
+              <MobileFriendlyFormField span={2}>
+                <Label htmlFor="name">Nome do Projeto *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  required
+                  placeholder="Ex: Documentário Natureza"
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+              
+              <MobileFriendlyFormField span={2}>
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  rows={2}
+                  placeholder="Breve descrição do projeto..."
+                  className="resize-none"
+                />
+              </MobileFriendlyFormField>
+            </MobileFriendlyFormGrid>
+          </MobileFriendlyFormSection>
+
+          <MobileFriendlyFormSection title="Responsável">
+            <MobileFriendlyFormGrid>
+              <MobileFriendlyFormField>
+                <Label htmlFor="responsibleName">Nome Completo *</Label>
+                <Input
+                  id="responsibleName"
+                  value={formData.responsibleName}
+                  onChange={(e) => updateField('responsibleName', e.target.value)}
+                  required
+                  placeholder="Nome completo"
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+              
+              <MobileFriendlyFormField>
+                <Label htmlFor="responsibleEmail">Email</Label>
+                <Input
+                  id="responsibleEmail"
+                  type="email"
+                  value={formData.responsibleEmail}
+                  onChange={(e) => updateField('responsibleEmail', e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+              
+              <MobileFriendlyFormField>
+                <Label htmlFor="department">Departamento</Label>
+                <Input
+                  id="department"
+                  value={formData.department}
+                  onChange={(e) => updateField('department', e.target.value)}
+                  placeholder="Ex: Produção, Direção"
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+              
+              <MobileFriendlyFormField>
+                <Label htmlFor="expectedEndDate">Data Prevista de Devolução *</Label>
+                <Input
+                  id="expectedEndDate"
+                  type="date"
+                  value={formData.expectedEndDate}
+                  onChange={(e) => updateField('expectedEndDate', e.target.value)}
+                  required
+                  className="h-12"
+                />
+              </MobileFriendlyFormField>
+            </MobileFriendlyFormGrid>
+          </MobileFriendlyFormSection>
           
-          <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => updateField('notes', e.target.value)}
-              rows={3}
-              placeholder="Informações adicionais sobre o projeto..."
-            />
-          </div>
+          <MobileFriendlyFormSection title="Observações">
+            <MobileFriendlyFormGrid>
+              <MobileFriendlyFormField span={2}>
+                <Label htmlFor="notes">Informações Adicionais</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => updateField('notes', e.target.value)}
+                  rows={3}
+                  placeholder="Informações adicionais sobre o projeto..."
+                  className="resize-none"
+                />
+              </MobileFriendlyFormField>
+            </MobileFriendlyFormGrid>
+          </MobileFriendlyFormSection>
           
-          <ResponsiveDialogFooter>
+          <MobileFriendlyFormActions>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit">
               Criar Projeto
             </Button>
-          </ResponsiveDialogFooter>
-        </form>
+          </MobileFriendlyFormActions>
+        </MobileFriendlyForm>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );
