@@ -41,7 +41,7 @@ export function Header() {
         : "fixed top-0 left-0 right-0 z-50 h-16" // Web: comportamento normal
     )}>
       <div className="flex items-center space-x-2 lg:space-x-4">
-        <SidebarTrigger className="lg:hidden" />
+        <SidebarTrigger />
         {!isMobile && (
           <div>
             <h2 className="text-base lg:text-lg font-semibold">Sistema de Inventário</h2>
