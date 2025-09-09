@@ -5,17 +5,16 @@ import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } fro
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsPWA } from '@/hooks/useIsPWA';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -54,6 +53,7 @@ export function AppSidebar() {
   const { setOpenMobile } = useSidebar();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const isPWA = useIsPWA();
 
   // Auto-close sidebar on mobile when navigating to a new route
   useEffect(() => {
@@ -62,16 +62,18 @@ export function AppSidebar() {
     }
   }, [location.pathname, isMobile, setOpenMobile]);
 
+  // Determine collapsible behavior based on device and PWA status
+  const getCollapsibleBehavior = () => {
+    if (isMobile) return "offcanvas";
+    return "icon";
+  };
+
   return (
     <Sidebar 
-      collapsible={isMobile ? "offcanvas" : "icon"}
+      collapsible={getCollapsibleBehavior()}
       className="border-r border-border/40"
     >
-      <SidebarHeader className="h-16 border-b border-border/40 flex items-center px-4">
-        <SidebarTrigger className="ml-auto" />
-      </SidebarHeader>
-      
-      <SidebarContent className="px-3 pt-8 pb-4">
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-4">
             Navegação
