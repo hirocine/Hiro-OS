@@ -71,9 +71,9 @@ export function AppSidebar() {
         <SidebarTrigger className="ml-auto" />
       </SidebarHeader>
       
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-3 pt-8 pb-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-2">
+          <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-4">
             Navegação
           </SidebarGroupLabel>
           <SidebarGroupContent>
