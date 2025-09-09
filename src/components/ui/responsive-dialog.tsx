@@ -2,6 +2,7 @@ import * as React from "react";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
 import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
 import { useAutoScrollOnFocus } from "@/hooks/useAutoScrollOnFocus";
+import { useIsPWA } from "@/hooks/useIsPWA";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -74,40 +75,29 @@ export function ResponsiveDialog({ open, onOpenChange, children }: ResponsiveDia
 export function ResponsiveDialogContent({ className, children }: ResponsiveDialogContentProps) {
   const { shouldUseDrawer } = useResponsiveDialog();
   const { visualViewportHeight, isVisible: isKeyboardVisible } = useVirtualKeyboard();
+  const isPWA = useIsPWA();
   const contentRef = React.useRef<HTMLDivElement>(null);
   
   useAutoScrollOnFocus(contentRef);
 
-  // Detectar se está em PWA mode
-  const isPWA = React.useMemo(() => {
-    return window.matchMedia('(display-mode: standalone)').matches;
-  }, []);
-
   if (shouldUseDrawer) {
-    let adjustedHeight: string;
     let drawerStyle: React.CSSProperties = {};
 
     if (isKeyboardVisible) {
-      adjustedHeight = `${Math.max(visualViewportHeight * 0.8, 300)}px`;
+      const adjustedHeight = `${Math.max(visualViewportHeight * 0.8, 300)}px`;
       drawerStyle = { height: adjustedHeight, maxHeight: adjustedHeight };
-    } else if (isPWA) {
-      // No PWA, ajustar altura considerando header (4rem) + safe areas
-      adjustedHeight = 'calc(100vh - 4rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))';
-      drawerStyle = { 
-        height: adjustedHeight,
-        maxHeight: adjustedHeight
-      };
-    } else {
-      adjustedHeight = 'max(85vh, 400px)';
     }
+    // Para PWA, a altura é controlada diretamente no DrawerContent via CSS
       
     return (
       <DrawerContent 
         ref={contentRef}
-        className={cn(!isPWA && "max-h-[85vh]", className)}
+        className={cn("overflow-hidden", className)}
         style={drawerStyle}
       >
-        {children}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
       </DrawerContent>
     );
   }

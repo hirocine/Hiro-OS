@@ -2,6 +2,7 @@ import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
+import { useIsPWA } from "@/hooks/useIsPWA"
 
 const Drawer = ({
   shouldScaleBackground = true,
@@ -26,7 +27,7 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/80", className)}
+    className={cn("fixed inset-0 z-[55] bg-black/80", className)}
     {...props}
   />
 ))
@@ -36,10 +37,7 @@ const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  // Detectar PWA mode
-  const isPWA = React.useMemo(() => {
-    return window.matchMedia('(display-mode: standalone)').matches;
-  }, []);
+  const isPWA = useIsPWA();
 
   return (
     <DrawerPortal>
@@ -47,10 +45,10 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed inset-x-0 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          "fixed inset-x-0 flex flex-col rounded-t-[10px] border bg-background z-[50]",
           isPWA 
-            ? "top-16 z-40" // PWA: começa abaixo do header (z-index menor)
-            : "bottom-0 z-50 mt-24", // Web: comportamento normal
+            ? "top-[calc(4rem+env(safe-area-inset-top,0px))] h-[calc(100vh-4rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))]" // PWA: abaixo do header
+            : "bottom-0 h-auto mt-24", // Web: comportamento normal
           className
         )}
         {...props}

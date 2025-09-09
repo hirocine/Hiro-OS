@@ -271,28 +271,7 @@ html, body {
 
 /* PWA Safe Area Support */
 @media (display-mode: standalone) {
-  /* Header fica logo abaixo da status bar */
-  .fixed.top-0 {
-    top: env(safe-area-inset-top, 0px);
-  }
-  
-  /* Main ajusta padding para compensar header + safe area */
-  main.pt-16 {
-    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
-  }
-  
-  /* DrawerContent não deve vazar por cima da status bar */
-  [data-vaul-drawer-wrapper] [data-vaul-drawer] {
-    max-height: calc(85vh - env(safe-area-inset-top, 0px)) !important;
-    margin-top: env(safe-area-inset-top, 0px);
-  }
-  
-  /* DrawerContent com altura ajustada */
-  [data-vaul-drawer-wrapper] [data-vaul-drawer] > div {
-    padding-top: max(1rem, env(safe-area-inset-top, 0px));
-  }
-  
-  /* Safe area inferior */
+  /* Safe area inferior para o body */
   body {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }

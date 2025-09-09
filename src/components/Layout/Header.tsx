@@ -10,12 +10,15 @@ import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { getAvatarData } from '@/lib/avatarUtils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsPWA } from '@/hooks/useIsPWA';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isPWA = useIsPWA();
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -31,7 +34,12 @@ export function Header() {
   const avatarData = getAvatarData(user);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card shadow-card flex items-center justify-between px-4 lg:px-6">
+    <header className={cn(
+      "flex items-center justify-between border-b border-border bg-card shadow-card px-4 lg:px-6",
+      isPWA 
+        ? "h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]" // PWA: altura dinâmica + padding top
+        : "fixed top-0 left-0 right-0 z-50 h-16" // Web: comportamento normal
+    )}>
       <div className="flex items-center space-x-2 lg:space-x-4">
         <SidebarTrigger className="lg:hidden" />
         {!isMobile && (
@@ -54,7 +62,7 @@ export function Header() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56 z-[65]" align="end" forceMount>
             <div className="flex flex-col space-y-1 p-2">
               <p className="text-sm font-medium leading-none">
                 {avatarData.displayName || 'Usuário'}
