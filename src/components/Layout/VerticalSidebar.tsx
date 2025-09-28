@@ -82,9 +82,9 @@ export function VerticalSidebar() {
   };
 
   return (
-    <div className="w-20 bg-sidebar border-r border-sidebar-border flex flex-col min-h-screen shadow-card">
+    <div className="w-24 bg-sidebar border-r border-sidebar-border flex flex-col min-h-screen shadow-card">
       {/* Navigation Items */}
-      <nav className="flex-1 py-4 space-y-2">
+      <nav className="flex-1 py-6 space-y-1">
         {navigation.map((item) => (
           <NavLink
             key={item.name}
@@ -92,16 +92,18 @@ export function VerticalSidebar() {
             end={item.href === '/'}
             className={({ isActive: active }) =>
               cn(
-                'flex flex-col items-center px-3 py-3 mx-2 rounded-lg transition-all duration-200',
-                'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                'relative flex flex-col items-center px-2 py-4 mx-2 rounded-lg transition-all duration-200',
+                'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-105',
+                'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-sidebar',
                 active
-                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-elegant'
-                  : 'text-sidebar-foreground'
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-elegant border-l-4 border-accent font-semibold'
+                  : 'text-sidebar-foreground hover:font-medium'
               )
             }
+            aria-label={item.name}
           >
-            <item.icon className="h-6 w-6 mb-1" />
-            <span className="text-xs font-medium leading-tight text-center">
+            <item.icon className="h-7 w-7 mb-2" />
+            <span className="text-[10px] leading-tight text-center font-medium">
               {item.name}
             </span>
           </NavLink>
@@ -110,8 +112,12 @@ export function VerticalSidebar() {
         {/* Admin Section */}
         {isAdmin && (
           <>
-            <div className="px-2 pt-4 pb-2">
-              <div className="h-px bg-sidebar-border"></div>
+            <div className="px-3 pt-6 pb-4">
+              <div className="h-px bg-accent/30 relative">
+                <span className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-sidebar px-2 text-[8px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Admin
+                </span>
+              </div>
             </div>
             {adminNavigation.map((item) => (
               <NavLink
@@ -119,16 +125,18 @@ export function VerticalSidebar() {
                 to={item.href}
                 className={({ isActive: active }) =>
                   cn(
-                    'flex flex-col items-center px-3 py-3 mx-2 rounded-lg transition-all duration-200',
-                    'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                    'relative flex flex-col items-center px-2 py-4 mx-2 rounded-lg transition-all duration-200',
+                    'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-105',
+                    'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-sidebar',
                     active
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-elegant'
-                      : 'text-sidebar-foreground'
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-elegant border-l-4 border-accent font-semibold'
+                      : 'text-sidebar-foreground hover:font-medium'
                   )
                 }
+                aria-label={item.name}
               >
-                <item.icon className="h-6 w-6 mb-1" />
-                <span className="text-xs font-medium leading-tight text-center">
+                <item.icon className="h-7 w-7 mb-2" />
+                <span className="text-[10px] leading-tight text-center font-medium">
                   {item.name}
                 </span>
               </NavLink>
@@ -138,26 +146,38 @@ export function VerticalSidebar() {
       </nav>
 
       {/* User Avatar at Bottom */}
-      <div className="p-4">
+      <div className="p-3 pb-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={cn(
-              'w-full flex flex-col items-center p-2 rounded-lg transition-all duration-200',
-              'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-              'text-sidebar-foreground'
+              'w-full flex flex-col items-center p-3 rounded-xl transition-all duration-200',
+              'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-105',
+              'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-sidebar',
+              'text-sidebar-foreground group'
             )}>
-              <Avatar className="h-8 w-8 mb-1">
-                <AvatarImage src={avatarData.url || ''} />
-                <AvatarFallback className="text-xs">
-                  {avatarData.initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs font-medium leading-tight text-center truncate w-full">
+              <div className="relative">
+                <Avatar className="h-10 w-10 mb-2 ring-2 ring-sidebar-border group-hover:ring-accent transition-all duration-200">
+                  <AvatarImage src={avatarData.url || ''} />
+                  <AvatarFallback className="text-sm font-semibold">
+                    {avatarData.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-sidebar"></div>
+              </div>
+              <span className="text-[10px] font-medium leading-tight text-center truncate w-full max-w-[80px]">
                 {avatarData.displayName || user?.email?.split('@')[0] || 'User'}
               </span>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="right" className="w-56">
+          <DropdownMenuContent align="start" side="right" className="w-56 ml-2">
+            <div className="px-2 py-2 border-b border-border">
+              <p className="text-sm font-medium">
+                {avatarData.displayName || user?.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
             <DropdownMenuItem asChild>
               <NavLink to="/profile" className="w-full">
                 Perfil
