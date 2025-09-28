@@ -1,24 +1,22 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderOpen, BarChart3, Settings, Shield } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
-import { useAuth } from '@/hooks/useAuth';
-import { getAvatarData } from '@/lib/avatarUtils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { toast } from 'sonner';
+
+import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsPWA } from '@/hooks/useIsPWA';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 interface NavigationItem {
   name: string;
@@ -50,149 +48,87 @@ const navigation: NavigationItem[] = [
   },
 ];
 
-const adminNavigation: NavigationItem[] = [
-  {
-    name: 'Admin',
-    href: '/admin',
-    icon: Settings,
-    adminOnly: true,
-  },
-  {
-    name: 'Segurança',
-    href: '/security',
-    icon: Shield,
-    adminOnly: true,
-  },
-];
-
-interface AppSidebarProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-export function AppSidebar({ open = false, onOpenChange }: AppSidebarProps) {
+export function AppSidebar() {
   const { isAdmin } = useUserRole();
-  const { user, signOut } = useAuth();
-  
-  const avatarData = getAvatarData(user);
+  const { setOpenMobile } = useSidebar();
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  const isPWA = useIsPWA();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      onOpenChange?.(false);
-    } catch (error) {
-      toast.error('Erro ao sair da conta');
+  // Auto-close sidebar on mobile when navigating to a new route
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
     }
+  }, [location.pathname, isMobile, setOpenMobile]);
+
+  // Determine collapsible behavior based on device and PWA status
+  const getCollapsibleBehavior = () => {
+    if (isMobile) return "offcanvas";
+    return "icon";
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-80 p-0">
-        <SheetHeader className="p-6 border-b">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-              alt="HIRO Logo" 
-              className="h-8 w-auto"
-            />
-            <SheetTitle className="text-lg font-semibold">
-              Inventário
-            </SheetTitle>
-          </div>
-        </SheetHeader>
-
-        <div className="flex flex-col h-full">
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {navigation.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                end={item.href === '/'}
-                onClick={() => onOpenChange?.(false)}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200',
-                    'hover:bg-accent hover:text-accent-foreground',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-elegant'
-                      : 'text-foreground'
-                  )
+    <Sidebar 
+      collapsible={getCollapsibleBehavior()}
+      className="border-r border-border/40"
+    >
+      <SidebarContent className="px-3 py-4">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-4">
+            Navegação
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {navigation.map((item) => {
+                // Hide admin-only items for non-admin users
+                if (item.adminOnly && !isAdmin) {
+                  return null;
                 }
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-              </NavLink>
-            ))}
-            
-            {/* Admin Section */}
-            {isAdmin && (
-              <>
-                <div className="pt-4 pb-2">
-                  <div className="h-px bg-border"></div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-4">
-                    Administração
-                  </p>
-                </div>
-                {adminNavigation.map((item) => (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => onOpenChange?.(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200',
-                        'hover:bg-accent hover:text-accent-foreground',
-                        isActive
-                          ? 'bg-primary text-primary-foreground shadow-elegant'
-                          : 'text-foreground'
-                      )
-                    }
-                  >
-                    <item.icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </NavLink>
-                ))}
-              </>
-            )}
-          </nav>
-
-          {/* User Section */}
-          <div className="p-4 border-t">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatarData.url || ''} />
-                    <AvatarFallback>
-                      {avatarData.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-medium">
-                      {avatarData.displayName || user?.email?.split('@')[0] || 'User'}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user?.email}
-                    </p>
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem asChild>
-                  <NavLink to="/profile" className="w-full" onClick={() => onOpenChange?.(false)}>
-                    Perfil
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+                
+                return (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton asChild className="h-10">
+                      <NavLink
+                        to={item.href}
+                        end={item.href === '/'}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
+                        )}
+                      >
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="truncate">{item.name}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+              
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="h-10">
+                    <NavLink
+                      to="/admin"
+                      className={({ isActive }) => cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
+                      )}
+                    >
+                      <Shield className="w-5 h-5 flex-shrink-0" />
+                      <span className="truncate">Administração</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }
