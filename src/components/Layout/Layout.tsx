@@ -66,7 +66,7 @@ export function Layout() {
           <InstallPrompt />
           <main className={cn(
             "flex-1 pt-16",
-            !isMobile && "pl-24"
+            !isMobile && "pl-16"
           )}>
             <Outlet />
           </main>

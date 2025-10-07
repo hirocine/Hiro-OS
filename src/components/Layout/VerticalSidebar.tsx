@@ -44,7 +44,7 @@ export function VerticalSidebar() {
     <aside
       className={cn(
         "hidden lg:flex flex-col items-center border-r border-border bg-card shadow-sm",
-        "w-24 fixed left-0 bottom-0",
+        "w-16 fixed left-0 bottom-0",
         isPWA 
           ? "top-[calc(4rem+env(safe-area-inset-top,0px))]" // PWA: abaixo do header dinâmico
           : "top-16" // Web: abaixo do header fixo
@@ -62,7 +62,7 @@ export function VerticalSidebar() {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-3 px-2 w-full transition-all duration-200",
+                "flex flex-col items-center justify-center gap-1 py-2.5 px-2 w-full transition-all duration-200",
                 "hover:bg-accent/50 relative group",
                 active && "bg-accent text-primary font-medium"
               )}
@@ -70,8 +70,8 @@ export function VerticalSidebar() {
               {active && (
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
               )}
-              <Icon className="h-7 w-7 transition-transform group-hover:scale-110" />
-              <span className="text-[10px] text-center leading-tight">
+              <Icon className="h-5 w-5 transition-transform group-hover:scale-110" />
+              <span className="text-xs text-center leading-tight">
                 {item.name}
               </span>
             </NavLink>
@@ -93,7 +93,7 @@ export function VerticalSidebar() {
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 py-3 px-2 w-full transition-all duration-200",
+                    "flex flex-col items-center justify-center gap-1 py-2.5 px-2 w-full transition-all duration-200",
                     "hover:bg-destructive/10 relative group",
                     active && "bg-destructive/20 text-destructive font-medium"
                   )}
@@ -101,8 +101,8 @@ export function VerticalSidebar() {
                   {active && (
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-destructive rounded-r-full" />
                   )}
-                  <Icon className="h-7 w-7 transition-transform group-hover:scale-110" />
-                  <span className="text-[10px] text-center leading-tight">
+                  <Icon className="h-5 w-5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs text-center leading-tight">
                     {item.name}
                   </span>
                 </NavLink>
@@ -118,13 +118,13 @@ export function VerticalSidebar() {
         className="w-full py-4 flex flex-col items-center gap-2 border-t border-border hover:bg-accent/30 transition-colors group"
       >
         <div className="relative">
-          <Avatar className="h-10 w-10 ring-2 ring-border group-hover:ring-primary transition-all">
+          <Avatar className="h-8 w-8 ring-2 ring-border group-hover:ring-primary transition-all">
             <AvatarImage src={avatarData.url || undefined} className="object-cover" />
             <AvatarFallback className="text-xs">{avatarData.initials}</AvatarFallback>
           </Avatar>
-          <div className="absolute bottom-0 right-0 h-3 w-3 bg-success rounded-full border-2 border-card" />
+          <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-success rounded-full border-2 border-card" />
         </div>
-        <span className="text-[10px] text-center leading-tight px-1 line-clamp-1">
+        <span className="text-xs text-center leading-tight px-1 line-clamp-1">
           {avatarData.displayName || 'Perfil'}
         </span>
       </NavLink>
