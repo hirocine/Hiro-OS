@@ -142,16 +142,20 @@ export function DesktopSidebar() {
       {/* Ferramentas - Fixas no fundo */}
       <div className="border-t border-border/50 px-2 py-2">
         <div className="space-y-1">
-          <NotificationPanel />
+          <div className="flex items-center justify-center">
+            <NotificationPanel />
+          </div>
           
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ThemeSwitcher />
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Tema</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center justify-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ThemeSwitcher />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Tema</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
 
