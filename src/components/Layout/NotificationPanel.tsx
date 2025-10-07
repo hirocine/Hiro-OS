@@ -125,7 +125,7 @@ export function NotificationPanel() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative hover:bg-muted">
+        <Button variant="ghost" size="icon" className="relative text-foreground hover:bg-muted hover:text-foreground">
           <Bell className="h-4 w-4" />
           {hasUnread && stats.unread > 0 && (
             <Badge 
