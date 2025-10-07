@@ -126,6 +126,7 @@ export function MobileFriendlyFormGrid({
 
 /**
  * Ações do formulário (botões) com layout responsivo
+ * Touch targets mínimos de 48x48px
  */
 export function MobileFriendlyFormActions({ 
   children, 
@@ -149,7 +150,7 @@ export function MobileFriendlyFormActions({
             ...child.props,
             className: cn(
               child.props.className,
-              isMobile ? "w-full h-12" : ""
+              isMobile ? "w-full min-h-[48px]" : "min-h-[44px]"
             )
           } as any);
         }

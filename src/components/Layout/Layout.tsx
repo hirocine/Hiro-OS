@@ -1,74 +1,69 @@
 import { Outlet } from 'react-router-dom';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
+import { VerticalSidebar } from './VerticalSidebar';
 import { Header } from './Header';
-import { InstallPrompt } from '@/components/PWA/InstallPrompt';
-import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
 import { UpdateNotification } from '@/components/PWA/UpdateNotification';
+import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
+import { InstallPrompt } from '@/components/PWA/InstallPrompt';
 import { useIsPWA } from '@/hooks/useIsPWA';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 export function Layout() {
   const isPWA = useIsPWA();
+  const isMobile = useIsMobile();
 
+  // Layout PWA
   if (isPWA) {
-    // Layout específico para PWA
     return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "16rem",
-          "--sidebar-width-icon": "4rem",
-          "--sidebar-width-mobile": "18rem",
-        } as React.CSSProperties}
-      >
-        {/* Header fixo no topo com z-index máximo */}
-        <div className="fixed inset-x-0 top-0 z-[60]">
+      <SidebarProvider>
+        <div className="min-h-screen flex flex-col w-full bg-background">
           <Header />
-        </div>
-        
-        {/* Indicadores PWA */}
-        <OfflineIndicator />
-        <UpdateNotification />
-        
-        {/* Container principal */}
-        <div className={cn(
-          "min-h-screen flex w-full max-w-screen overflow-hidden",
-          "pt-[calc(4rem+env(safe-area-inset-top,0px))]" // Espaço para o header + safe area
-        )}>
-          <AppSidebar />
-          <SidebarInset className="flex-1 min-w-0">
-            <main className="flex-1 overflow-hidden overflow-y-auto min-w-0">
+          <OfflineIndicator />
+          <UpdateNotification />
+          <InstallPrompt />
+
+          <div className="flex flex-1 w-full">
+            {!isMobile && <VerticalSidebar />}
+            {isMobile && <AppSidebar />}
+            
+            <main 
+              className={cn(
+                "flex-1 w-full",
+                isMobile 
+                  ? "pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
+                  : "pt-[calc(4rem+env(safe-area-inset-top,0px))] pl-24 pb-[env(safe-area-inset-bottom,1rem)]"
+              )}
+            >
               <Outlet />
             </main>
-          </SidebarInset>
+          </div>
         </div>
-        
-        <InstallPrompt />
       </SidebarProvider>
     );
   }
 
-  // Layout padrão para web
+  // Layout Web padrão
   return (
     <SidebarProvider
       style={{
         "--sidebar-width": "16rem",
-        "--sidebar-width-icon": "4rem",
-        "--sidebar-width-mobile": "18rem",
+        "--sidebar-width-mobile": "20rem",
       } as React.CSSProperties}
     >
-      <div className="min-h-screen flex w-full max-w-screen overflow-hidden">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1 min-w-0">
+        <div className="flex flex-col flex-1">
           <Header />
           <OfflineIndicator />
           <UpdateNotification />
-          <main className="flex-1 overflow-hidden overflow-y-auto pt-16 min-w-0">
+          <InstallPrompt />
+          <main className="flex-1 pt-16">
             <Outlet />
           </main>
-        </SidebarInset>
+        </div>
       </div>
-      <InstallPrompt />
     </SidebarProvider>
   );
 }

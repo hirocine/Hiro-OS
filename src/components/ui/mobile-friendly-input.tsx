@@ -59,6 +59,7 @@ export const MobileFriendlyInput = React.forwardRef<
         id={inputId}
         onFocus={handleFocus}
         className={cn(
+          "min-h-[44px]",
           isMobile ? "h-12 text-base" : "h-10 text-sm",
           error && "border-destructive focus:ring-destructive",
           className

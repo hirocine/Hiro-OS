@@ -3,6 +3,7 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
 import { useIsPWA } from "@/hooks/useIsPWA"
+import { Z_INDEX } from "@/lib/z-index"
 
 const Drawer = ({
   shouldScaleBackground = true,

@@ -12,6 +12,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { cn } from '@/lib/utils';
+import { Z_INDEX } from '@/lib/z-index';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -34,14 +35,17 @@ export function Header() {
   const avatarData = getAvatarData(user);
 
   return (
-    <header className={cn(
-      "flex items-center justify-between border-b border-border bg-card shadow-card px-4 lg:px-6",
-      isPWA 
-        ? "h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]" // PWA: altura dinâmica + padding top
-        : "fixed top-0 left-0 right-0 z-50 h-16" // Web: comportamento normal
-    )}>
+    <header 
+      className={cn(
+        "flex items-center justify-between border-b border-border bg-card shadow-card px-4 lg:px-6 fixed top-0 left-0 right-0",
+        isPWA 
+          ? "h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]"
+          : "h-16"
+      )}
+      style={{ zIndex: Z_INDEX.header }}
+    >
       <div className="flex items-center space-x-2 lg:space-x-4">
-        <SidebarTrigger />
+        {isMobile && <SidebarTrigger />}
         {!isMobile && (
           <div>
             <h2 className="text-base lg:text-lg font-semibold">Sistema de Inventário</h2>
@@ -62,7 +66,7 @@ export function Header() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 z-[65]" align="end" forceMount>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
             <div className="flex flex-col space-y-1 p-2">
               <p className="text-sm font-medium leading-none">
                 {avatarData.displayName || 'Usuário'}

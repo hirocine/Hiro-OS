@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useVirtualKeyboard } from './useVirtualKeyboard';
 
 /**
- * Hook que implementa scroll automático quando um input recebe foco
+ * Hook aprimorado que implementa scroll automático quando um input recebe foco
+ * Considera safe-areas, dialogs e drawers
  */
 export function useAutoScrollOnFocus(containerRef?: React.RefObject<HTMLElement>) {
   const { scrollToField, isVisible } = useVirtualKeyboard();
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const handleFocusIn = (event: FocusEvent) => {
@@ -24,13 +26,23 @@ export function useAutoScrollOnFocus(containerRef?: React.RefObject<HTMLElement>
           }
         }
         
-        scrollToField(target);
+        // Debounce para evitar scroll excessivo
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        
+        timeoutRef.current = setTimeout(() => {
+          scrollToField(target);
+        }, 100);
       }
     };
 
     document.addEventListener('focusin', handleFocusIn);
 
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       document.removeEventListener('focusin', handleFocusIn);
     };
   }, [scrollToField, containerRef]);

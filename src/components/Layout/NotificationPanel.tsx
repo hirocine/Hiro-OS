@@ -13,6 +13,7 @@ import { NotificationType } from '@/types/notification';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Z_INDEX } from '@/lib/z-index';
 
 const TYPE_LABELS: Record<NotificationType, string> = {
   project: 'Projeto',
@@ -136,7 +137,11 @@ export function NotificationPanel() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-0" align="end">
+      <PopoverContent 
+        className="w-96 p-0" 
+        align="end"
+        style={{ zIndex: Z_INDEX.dropdown_menu }}
+      >
         <Card className="border-0 shadow-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Notificações</CardTitle>
@@ -221,7 +226,7 @@ export function NotificationPanel() {
                 Carregando notificações...
               </div>
             ) : (
-              <ScrollArea className="max-h-96">
+              <ScrollArea className="max-h-[60vh]">
                 {unreadNotifications.length === 0 && readNotifications.length === 0 ? (
                   <div className="p-6 text-center text-sm text-muted-foreground">
                     <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />

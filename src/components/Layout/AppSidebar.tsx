@@ -1,134 +1,97 @@
-
+import { Home, Package, FolderKanban, FileText, Settings } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
-import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
+import { useEffect } from 'react';
+import { Z_INDEX } from '@/lib/z-index';
 
 interface NavigationItem {
   name: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: typeof Home;
   adminOnly?: boolean;
 }
 
 const navigation: NavigationItem[] = [
-  {
-    name: 'Dashboard',
-    href: '/',
-    icon: LayoutDashboard,
-  },
-  {
-    name: 'Inventário',
-    href: '/equipment',
-    icon: Package,
-  },
-  {
-    name: 'Projetos',
-    href: '/projects',
-    icon: FolderOpen,
-  },
-  {
-    name: 'Relatórios',
-    href: '/reports',
-    icon: BarChart3,
-  },
+  { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Inventário', href: '/equipment', icon: Package },
+  { name: 'Projetos', href: '/projects', icon: FolderKanban },
+  { name: 'Relatórios', href: '/reports', icon: FileText },
+];
+
+const adminNavigation: NavigationItem[] = [
+  { name: 'Admin', href: '/admin', icon: Settings, adminOnly: true },
 ];
 
 export function AppSidebar() {
   const { isAdmin } = useUserRole();
-  const { setOpenMobile } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const location = useLocation();
-  const isMobile = useIsMobile();
   const isPWA = useIsPWA();
 
-  // Auto-close sidebar on mobile when navigating to a new route
   useEffect(() => {
-    if (isMobile) {
-      setOpenMobile(false);
+    if (open) {
+      setOpen(false);
     }
-  }, [location.pathname, isMobile, setOpenMobile]);
+  }, [location.pathname, setOpen]);
 
-  // Determine collapsible behavior based on device and PWA status
-  const getCollapsibleBehavior = () => {
-    if (isMobile) return "offcanvas";
-    return "icon";
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <Sidebar 
-      collapsible={getCollapsibleBehavior()}
-      className="border-r border-border/40"
-    >
-      <SidebarContent className="px-3 py-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs text-muted-foreground/80 px-3 mb-4">
-            Navegação
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetContent 
+        side="left" 
+        className={cn("w-80 p-0", isPWA && "pt-[env(safe-area-inset-top,0px)]")}
+        style={{ zIndex: Z_INDEX.sheet }}
+      >
+        <SheetHeader className="px-6 pt-6 pb-4 border-b">
+          <SheetTitle>Menu de Navegação</SheetTitle>
+        </SheetHeader>
+
+        <div className="flex flex-col gap-6 p-6">
+          <div>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Menu Principal
+            </h3>
+            <nav className="space-y-1">
               {navigation.map((item) => {
-                // Hide admin-only items for non-admin users
-                if (item.adminOnly && !isAdmin) {
-                  return null;
-                }
-                
+                const Icon = item.icon;
+                const active = isActive(item.href);
                 return (
-                  <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild className="h-10">
-                      <NavLink
-                        to={item.href}
-                        end={item.href === '/'}
-                        className={({ isActive }) => cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                          "hover:bg-accent hover:text-accent-foreground",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
-                        )}
-                      >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="truncate">{item.name}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <NavLink key={item.name} to={item.href} className={cn("flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground", active && "bg-accent text-primary font-medium")}>
+                    <Icon className="h-5 w-5" />
+                    <span className="text-sm">{item.name}</span>
+                  </NavLink>
                 );
               })}
-              
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="h-10">
-                    <NavLink
-                      to="/admin"
-                      className={({ isActive }) => cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        isActive && "bg-primary/10 text-primary font-medium border border-primary/20"
-                      )}
-                    >
-                      <Shield className="w-5 h-5 flex-shrink-0" />
-                      <span className="truncate">Administração</span>
+            </nav>
+          </div>
+
+          {isAdmin && (
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Administração</h3>
+              <nav className="space-y-1">
+                {adminNavigation.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <NavLink key={item.name} to={item.href} className={cn("flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors hover:bg-destructive/10 hover:text-destructive", active && "bg-destructive/20 text-destructive font-medium")}>
+                      <Icon className="h-5 w-5" />
+                      <span className="text-sm">{item.name}</span>
                     </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
