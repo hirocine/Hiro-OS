@@ -144,7 +144,7 @@ export function DesktopSidebar() {
         <div className="space-y-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-all duration-200 cursor-pointer relative group">
                 <NotificationPanel />
               </div>
             </TooltipTrigger>
@@ -155,7 +155,7 @@ export function DesktopSidebar() {
           
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-colors">
+              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-all duration-200 relative group">
                 <ThemeSwitcher />
               </div>
             </TooltipTrigger>
