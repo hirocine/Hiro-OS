@@ -40,8 +40,8 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-2 cursor-pointer transition-colors">
-              <div className="relative">
-                <Avatar className="h-10 w-10 shrink-0 aspect-square ring-2 ring-border">
+              <div className="relative w-10 h-10 shrink-0">
+                <Avatar className="ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                   <AvatarFallback className="text-sm font-medium">{avatarData.initials}</AvatarFallback>
                 </Avatar>
@@ -85,8 +85,8 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center justify-center w-full hover:bg-accent/50 rounded-lg p-2 cursor-pointer transition-colors">
-            <div className="relative">
-              <Avatar className="h-10 w-10 shrink-0 aspect-square ring-2 ring-border">
+            <div className="relative w-10 h-10 shrink-0">
+              <Avatar className="ring-2 ring-border">
                 <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                 <AvatarFallback className="text-sm font-medium">{avatarData.initials}</AvatarFallback>
               </Avatar>
