@@ -53,13 +53,21 @@ export function Layout() {
       } as React.CSSProperties}
     >
       <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
+        {/* Desktop: Sidebar vertical fixa */}
+        {!isMobile && <VerticalSidebar />}
+        
+        {/* Mobile: Sheet overlay */}
+        {isMobile && <AppSidebar />}
+        
         <div className="flex flex-col flex-1">
           <Header />
           <OfflineIndicator />
           <UpdateNotification />
           <InstallPrompt />
-          <main className="flex-1 pt-16">
+          <main className={cn(
+            "flex-1 pt-16",
+            !isMobile && "pl-24"
+          )}>
             <Outlet />
           </main>
         </div>

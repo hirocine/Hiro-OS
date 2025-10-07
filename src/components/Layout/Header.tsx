@@ -45,7 +45,7 @@ export function Header() {
       style={{ zIndex: Z_INDEX.header }}
     >
       <div className="flex items-center space-x-2 lg:space-x-4">
-        {isMobile && <SidebarTrigger />}
+        {isMobile && <SidebarTrigger className="relative z-10" />}
         {!isMobile && (
           <div>
             <h2 className="text-base lg:text-lg font-semibold">Sistema de Inventário</h2>

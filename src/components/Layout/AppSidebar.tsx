@@ -48,7 +48,6 @@ export function AppSidebar() {
       <SheetContent 
         side="left" 
         className={cn("w-80 p-0", isPWA && "pt-[env(safe-area-inset-top,0px)]")}
-        style={{ zIndex: Z_INDEX.sheet }}
       >
         <SheetHeader className="px-6 pt-6 pb-4 border-b">
           <SheetTitle>Menu de Navegação</SheetTitle>
