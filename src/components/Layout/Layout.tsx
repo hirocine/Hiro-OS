@@ -1,76 +1,59 @@
 import { Outlet } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from './AppSidebar';
-import { VerticalSidebar } from './VerticalSidebar';
-import { Header } from './Header';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { DesktopSidebar } from './DesktopSidebar';
+import { MobileSidebar } from './MobileSidebar';
 import { UpdateNotification } from '@/components/PWA/UpdateNotification';
 import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
 import { InstallPrompt } from '@/components/PWA/InstallPrompt';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function Layout() {
   const isPWA = useIsPWA();
   const isMobile = useIsMobile();
 
-  // Layout PWA
-  if (isPWA) {
-    return (
-      <SidebarProvider>
-        <div className="min-h-screen flex flex-col w-full bg-background">
-          <Header />
-          <OfflineIndicator />
-          <UpdateNotification />
-          <InstallPrompt />
-
-          <div className="flex flex-1 w-full">
-            {!isMobile && <VerticalSidebar />}
-            {isMobile && <AppSidebar />}
-            
-            <main 
-              className={cn(
-                "flex-1 w-full",
-                isMobile 
-                  ? "pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
-                  : "pt-[calc(4rem+env(safe-area-inset-top,0px))] pl-24 pb-[env(safe-area-inset-bottom,1rem)]"
-              )}
-            >
-              <Outlet />
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
-    );
-  }
-
-  // Layout Web padrão
   return (
-    <SidebarProvider
-      style={{
-        "--sidebar-width": "16rem",
-        "--sidebar-width-mobile": "20rem",
-      } as React.CSSProperties}
-    >
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Desktop: Sidebar vertical fixa */}
-        {!isMobile && <VerticalSidebar />}
+        {/* Sidebar - Desktop sempre visível, Mobile como Sheet */}
+        {!isMobile && <DesktopSidebar />}
+        {isMobile && <MobileSidebar />}
         
-        {/* Mobile: Sheet overlay */}
-        {isMobile && <AppSidebar />}
+        {/* PWA Global Components */}
+        <OfflineIndicator />
+        <UpdateNotification />
+        <InstallPrompt />
         
-        <div className="flex flex-col flex-1">
-          <Header />
-          <OfflineIndicator />
-          <UpdateNotification />
-          <InstallPrompt />
-          <main className={cn(
-            "flex-1 pt-16",
-            !isMobile && "pl-16"
-          )}>
-            <Outlet />
-          </main>
-        </div>
+        {/* Main Content Area */}
+        <main 
+          className={cn(
+            "flex-1 w-full min-h-screen",
+            isMobile 
+              ? isPWA 
+                ? "pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,1rem)]"
+                : "pt-0 pb-4"
+              : "pl-60" // Desktop: padding-left para sidebar 240px
+          )}
+        >
+          {/* Mobile: Botão flutuante para abrir sidebar */}
+          {isMobile && (
+            <div className={cn(
+              "fixed top-4 left-4 z-40",
+              isPWA && "top-[calc(1rem+env(safe-area-inset-top,0px))]"
+            )}>
+              <SidebarTrigger asChild>
+                <Button size="icon" variant="outline" className="h-10 w-10 rounded-full shadow-lg">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SidebarTrigger>
+            </div>
+          )}
+          
+          <Outlet />
+        </main>
       </div>
     </SidebarProvider>
   );
