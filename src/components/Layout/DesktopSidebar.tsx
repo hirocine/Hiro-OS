@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NavigationItem {
   name: string;
@@ -37,27 +38,24 @@ export function DesktopSidebar() {
   };
 
   return (
-    <aside
-      className={cn(
-        "hidden lg:flex flex-col border-r border-border bg-card shadow-lg",
-        "w-60 fixed left-0 bottom-0",
-        isPWA 
-          ? "top-[env(safe-area-inset-top,0px)]"
-          : "top-0"
-      )}
-      style={{ zIndex: Z_INDEX.sidebar }}
-    >
-      {/* Logo e Título */}
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col border-r border-border bg-card shadow-lg",
+          "w-16 fixed left-0 bottom-0",
+          isPWA 
+            ? "top-[env(safe-area-inset-top,0px)]"
+            : "top-0"
+        )}
+        style={{ zIndex: Z_INDEX.sidebar }}
+      >
+      {/* Logo */}
       <div className={cn(
-        "flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 sticky top-0 z-10",
-        isPWA ? "px-6 py-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]" : "px-6 py-5"
+        "flex items-center justify-center border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 sticky top-0 z-10",
+        isPWA ? "py-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]" : "py-5"
       )}>
         <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary text-primary-foreground shadow-md">
           <Package className="h-6 w-6" />
-        </div>
-        <div>
-          <h1 className="text-base font-bold leading-none">Sistema de</h1>
-          <h2 className="text-base font-bold text-primary leading-none mt-0.5">Inventário</h2>
         </div>
       </div>
 
@@ -65,34 +63,36 @@ export function DesktopSidebar() {
       <ScrollArea className="flex-1">
         <div className="py-4">
           {/* Navegação Principal */}
-          <div className="px-3 mb-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-3">
-              Navegação
-            </h3>
+          <div className="px-2 mb-4">
             <nav className="space-y-1">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
                 return (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 relative group",
-                      active 
-                        ? "bg-primary/10 text-primary font-medium shadow-sm" 
-                        : "hover:bg-accent/50 text-foreground"
-                    )}
-                  >
-                    {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />
-                    )}
-                    <Icon className={cn(
-                      "h-5 w-5 transition-transform group-hover:scale-110",
-                      active && "text-primary"
-                    )} />
-                    <span className="text-sm">{item.name}</span>
-                  </NavLink>
+                  <Tooltip key={item.name}>
+                    <TooltipTrigger asChild>
+                      <NavLink
+                        to={item.href}
+                        className={cn(
+                          "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
+                          active 
+                            ? "bg-primary/10 text-primary font-medium shadow-sm" 
+                            : "hover:bg-accent/50 text-foreground"
+                        )}
+                      >
+                        {active && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />
+                        )}
+                        <Icon className={cn(
+                          "h-5 w-5 transition-transform group-hover:scale-110",
+                          active && "text-primary"
+                        )} />
+                      </NavLink>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{item.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 );
               })}
             </nav>
@@ -100,34 +100,36 @@ export function DesktopSidebar() {
 
           {/* Seção Admin */}
           {isAdmin && (
-            <div className="px-3 mb-4">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-3">
-                Administração
-              </h3>
+            <div className="px-2 mb-4">
               <nav className="space-y-1">
                 {adminNavigation.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
                   return (
-                    <NavLink
-                      key={item.name}
-                      to={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 relative group",
-                        active 
-                          ? "bg-destructive/10 text-destructive font-medium shadow-sm" 
-                          : "hover:bg-destructive/5 text-foreground"
-                      )}
-                    >
-                      {active && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-destructive rounded-r-full" />
-                      )}
-                      <Icon className={cn(
-                        "h-5 w-5 transition-transform group-hover:scale-110",
-                        active && "text-destructive"
-                      )} />
-                      <span className="text-sm">{item.name}</span>
-                    </NavLink>
+                    <Tooltip key={item.name}>
+                      <TooltipTrigger asChild>
+                        <NavLink
+                          to={item.href}
+                          className={cn(
+                            "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
+                            active 
+                              ? "bg-destructive/10 text-destructive font-medium shadow-sm" 
+                              : "hover:bg-destructive/5 text-foreground"
+                          )}
+                        >
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-destructive rounded-r-full" />
+                          )}
+                          <Icon className={cn(
+                            "h-5 w-5 transition-transform group-hover:scale-110",
+                            active && "text-destructive"
+                          )} />
+                        </NavLink>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>{item.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </nav>
@@ -142,5 +144,6 @@ export function DesktopSidebar() {
       {/* User Profile - Sticky Bottom */}
       <SidebarUserProfile />
     </aside>
+    </TooltipProvider>
   );
 }

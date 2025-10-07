@@ -35,7 +35,7 @@ export function Layout() {
               ? isPWA 
                 ? "pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,1rem)]"
                 : "pt-0 pb-4"
-              : "pl-60" // Desktop: padding-left para sidebar 240px
+              : "pl-16" // Desktop: padding-left para sidebar 64px
           )}
         >
           {/* Mobile: Botão flutuante para abrir sidebar */}
