@@ -44,7 +44,7 @@ export function Layout() {
               "fixed top-4 left-4 z-40",
               isPWA && "top-[calc(1rem+env(safe-area-inset-top,0px))]"
             )}>
-              <SidebarTrigger asChild>
+              <SidebarTrigger>
                 <Button size="icon" variant="outline" className="h-10 w-10 rounded-full shadow-lg">
                   <Menu className="h-5 w-5" />
                 </Button>

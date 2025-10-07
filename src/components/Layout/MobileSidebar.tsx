@@ -10,6 +10,7 @@ import { useIsPWA } from '@/hooks/useIsPWA';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
   name: string;
@@ -61,9 +62,11 @@ export function MobileSidebar() {
           isPWA ? "px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))]" : "px-4 py-4"
         )}>
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground shadow-md">
-              <Package className="h-5 w-5" />
-            </div>
+            <img 
+              src={hiroLogo} 
+              alt="HIRO Logo" 
+              className="h-9 w-9 rounded-lg object-cover"
+            />
             <div>
               <h1 className="text-sm font-bold leading-none">Sistema de</h1>
               <h2 className="text-sm font-bold text-primary leading-none mt-0.5">Inventário</h2>
