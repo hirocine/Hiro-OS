@@ -32,15 +32,15 @@ const adminNavigation: NavigationItem[] = [
 
 export function MobileSidebar() {
   const { isAdmin } = useUserRole();
-  const { open, setOpen } = useSidebar();
+  const { openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const isPWA = useIsPWA();
 
   useEffect(() => {
-    if (open) {
-      setOpen(false);
+    if (openMobile) {
+      setOpenMobile(false);
     }
-  }, [location.pathname, setOpen]);
+  }, [location.pathname, setOpenMobile]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -48,7 +48,7 @@ export function MobileSidebar() {
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={openMobile} onOpenChange={setOpenMobile}>
       <SheetContent 
         side="left" 
         className={cn(
@@ -75,7 +75,7 @@ export function MobileSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setOpen(false)}
+            onClick={() => setOpenMobile(false)}
             className="h-8 w-8"
           >
             <X className="h-5 w-5" />
