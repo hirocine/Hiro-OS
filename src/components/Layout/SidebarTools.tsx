@@ -11,18 +11,18 @@ export function SidebarTools({ isMobile = false }: SidebarToolsProps) {
     <>
       <Separator className="my-2" />
       <div className="px-3 py-2">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">
           Ferramentas
         </h3>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-accent/50 transition-colors">
-            <span className="text-sm">Notificações</span>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer">
             <NotificationPanel />
+            <span className="text-[10px] text-muted-foreground mt-1.5">Notificações</span>
           </div>
           
-          <div className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-accent/50 transition-colors">
-            <span className="text-sm">Tema</span>
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors">
             <ThemeSwitcher />
+            <span className="text-[10px] text-muted-foreground mt-1.5">Tema</span>
           </div>
         </div>
       </div>
