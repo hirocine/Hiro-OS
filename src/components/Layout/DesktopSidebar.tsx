@@ -1,8 +1,9 @@
 import { Home, Package, FolderKanban, FileText, Settings } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
-import { SidebarTools } from './SidebarTools';
 import { SidebarUserProfile } from './SidebarUserProfile';
+import { NotificationPanel } from './NotificationPanel';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
@@ -135,11 +136,35 @@ export function DesktopSidebar() {
               </nav>
             </div>
           )}
-
-          {/* Ferramentas */}
-          <SidebarTools />
         </div>
       </ScrollArea>
+
+      {/* Ferramentas - Fixas no fundo */}
+      <div className="border-t border-border/50 px-2 py-2">
+        <div className="space-y-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-colors cursor-pointer">
+                <NotificationPanel />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Notificações</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-colors">
+                <ThemeSwitcher />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Tema</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
 
       {/* User Profile - Sticky Bottom */}
       <SidebarUserProfile />
