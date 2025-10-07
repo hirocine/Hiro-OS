@@ -9,6 +9,7 @@ import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
   name: string;
@@ -52,12 +53,14 @@ export function DesktopSidebar() {
       >
       {/* Logo */}
       <div className={cn(
-        "flex items-center justify-center border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 sticky top-0 z-10",
+        "flex items-center justify-center border-b border-border sticky top-0 z-10",
         isPWA ? "py-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]" : "py-5"
       )}>
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary text-primary-foreground shadow-md">
-          <Package className="h-6 w-6" />
-        </div>
+        <img 
+          src={hiroLogo} 
+          alt="HIRO Logo" 
+          className="h-10 w-10 rounded-lg object-cover"
+        />
       </div>
 
       {/* Navegação com ScrollArea */}

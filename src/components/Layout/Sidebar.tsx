@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
+import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
   name: string;
@@ -56,7 +57,7 @@ export function Sidebar() {
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <img 
-            src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
+            src={hiroLogo} 
             alt="HIRO Logo" 
             className="h-8 w-auto"
           />
