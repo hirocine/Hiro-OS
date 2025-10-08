@@ -33,9 +33,10 @@ interface SSDKanbanBoardProps {
 
 interface SortableCardProps {
   ssd: Equipment;
+  kanbanStatus: SSDStatus;
 }
 
-const SortableCard = ({ ssd }: SortableCardProps) => {
+const SortableCard = ({ ssd, kanbanStatus }: SortableCardProps) => {
   const {
     attributes,
     listeners,
@@ -65,7 +66,7 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
       {...attributes} 
       {...listeners}
     >
-      <SSDCard ssd={ssd} isDragging={isDragging} />
+      <SSDCard ssd={ssd} isDragging={isDragging} kanbanStatus={kanbanStatus} />
     </div>
   );
 };
@@ -119,7 +120,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
               </div>
             ) : (
               ssds.map((ssd) => (
-                <SortableCard key={ssd.id} ssd={ssd} />
+                <SortableCard key={ssd.id} ssd={ssd} kanbanStatus={status} />
               ))
             )}
           </div>
@@ -228,6 +229,11 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
         (ssd) => ssd.id === activeId
       )
     : null;
+  
+  const activeStatus: SSDStatus | undefined = activeSSD
+    ? (ssdsByStatus.available.some(s => s.id === activeId) ? 'available' :
+       ssdsByStatus.in_use.some(s => s.id === activeId) ? 'in_use' : 'loaned')
+    : undefined;
 
   return (
     <DndContext
@@ -257,14 +263,14 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
         />
       </div>
       <DragOverlay zIndex={2000}>
-        {activeSSD ? (
+        {activeSSD && activeStatus ? (
           <div className="
             shadow-elegant pointer-events-none z-[9999] transform-gpu
             animate-scale-in rotate-2 scale-105
             transition-all duration-200 ease-out
             motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
           ">
-            <SSDCard ssd={activeSSD} isDragging={false} />
+            <SSDCard ssd={activeSSD} isDragging={false} kanbanStatus={activeStatus} />
           </div>
         ) : null}
       </DragOverlay>

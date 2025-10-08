@@ -3,17 +3,39 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import { SSDStatus } from '@/hooks/useSSDs';
 
 interface SSDCardProps {
   ssd: Equipment;
   isDragging?: boolean;
+  kanbanStatus?: SSDStatus;
 }
 
-export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
+const getKanbanStatusVariant = (status: SSDStatus) => {
+  switch (status) {
+    case 'available':
+      return 'success';
+    case 'in_use':
+      return 'secondary';
+    case 'loaned':
+      return 'warning';
+  }
+};
+
+const getKanbanStatusLabel = (status: SSDStatus) => {
+  switch (status) {
+    case 'available':
+      return 'Disponível';
+    case 'in_use':
+      return 'Em Uso';
+    case 'loaned':
+      return 'Emprestado';
+  }
+};
+
+export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
   const isSSD = ssd.subcategory?.toLowerCase().includes('ssd');
   const isHD = ssd.subcategory?.toLowerCase().includes('hd');
-  const { getStatusVariant, getStatusLabel } = useEquipmentCard();
   
   return (
     <Card className={cn(
@@ -44,12 +66,14 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
                     {ssd.capacity} TB
                   </Badge>
                 )}
-                <Badge 
-                  variant={getStatusVariant(ssd.status)}
-                  className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
-                >
-                  {getStatusLabel(ssd.status)}
-                </Badge>
+                {kanbanStatus && (
+                  <Badge 
+                    variant={getKanbanStatusVariant(kanbanStatus)}
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                  >
+                    {getKanbanStatusLabel(kanbanStatus)}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
