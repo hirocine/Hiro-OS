@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEquipmentCard } from '@/hooks/useEquipmentCard';
 
 interface SSDCardProps {
   ssd: Equipment;
@@ -12,6 +13,7 @@ interface SSDCardProps {
 export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
   const isSSD = ssd.subcategory?.toLowerCase().includes('ssd');
   const isHD = ssd.subcategory?.toLowerCase().includes('hd');
+  const { getStatusVariant, getStatusLabel } = useEquipmentCard();
   
   return (
     <Card className={cn(
@@ -33,16 +35,22 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
                   {ssd.name}
                 </h4>
               </div>
-              {ssd.capacity && (
-                <div className="mt-1">
+              <div className="flex items-center gap-1.5 mt-1">
+                {ssd.capacity && (
                   <Badge 
                     variant="default" 
                     className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
                   >
                     {ssd.capacity} TB
                   </Badge>
-                </div>
-              )}
+                )}
+                <Badge 
+                  variant={getStatusVariant(ssd.status)}
+                  className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                >
+                  {getStatusLabel(ssd.status)}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
