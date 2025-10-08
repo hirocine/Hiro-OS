@@ -85,6 +85,7 @@ export function useEquipment(): UseEquipmentReturn {
         currentLoanId: item.current_loan_id || undefined,
         currentBorrower: item.current_borrower || undefined,
         lastLoanDate: item.last_loan_date || undefined,
+        capacity: item.capacity ? Number(item.capacity) : undefined,
       }));
       
       logger.apiResponse('fetchEquipment', 'success', null, { count: equipmentData.length });
@@ -308,7 +309,8 @@ export function useEquipment(): UseEquipmentReturn {
         depreciated_value: newEquipment.depreciatedValue || null,
         receive_date: newEquipment.receiveDate || null,
         store: newEquipment.store || null,
-        invoice: newEquipment.invoice || null
+        invoice: newEquipment.invoice || null,
+        capacity: newEquipment.capacity || null
       };
 
       const { data, error } = await supabase
@@ -349,7 +351,8 @@ export function useEquipment(): UseEquipmentReturn {
         invoice: data.invoice,
         currentLoanId: data.current_loan_id,
         currentBorrower: data.current_borrower,
-        lastLoanDate: data.last_loan_date
+        lastLoanDate: data.last_loan_date,
+        capacity: data.capacity ? Number(data.capacity) : undefined
       };
       
       setEquipment(prev => [...prev, equipmentData]);
@@ -389,7 +392,8 @@ export function useEquipment(): UseEquipmentReturn {
         invoice: updates.invoice,
         current_loan_id: updates.currentLoanId,
         current_borrower: updates.currentBorrower,
-        last_loan_date: updates.lastLoanDate
+        last_loan_date: updates.lastLoanDate,
+        capacity: updates.capacity
       };
 
       // Remove undefined values
