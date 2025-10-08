@@ -61,7 +61,7 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
                 {ssd.patrimonyNumber && (
                   <Badge 
                     variant="outline" 
-                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-5"
                   >
                     #{ssd.patrimonyNumber}
                   </Badge>
@@ -69,7 +69,7 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
                 {ssd.capacity && (
                   <Badge 
                     variant="default" 
-                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-5"
                   >
                     {ssd.capacity} TB
                   </Badge>
@@ -77,7 +77,7 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
                 {kanbanStatus && (
                   <Badge 
                     variant={getKanbanStatusVariant(kanbanStatus)}
-                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-5"
                   >
                     {getKanbanStatusLabel(kanbanStatus)}
                   </Badge>
