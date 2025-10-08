@@ -2,7 +2,7 @@ import { Equipment } from '@/types/equipment';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCapacity } from '@/lib/utils';
 import { SSDStatus } from '@/hooks/useSSDs';
 
 interface SSDCardProps {
@@ -71,7 +71,7 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
                     variant="default" 
                     className="shrink-0 text-[10px]"
                   >
-                    {ssd.capacity} TB
+                    {formatCapacity(ssd.capacity)}
                   </Badge>
                 )}
                 {kanbanStatus && (

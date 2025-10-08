@@ -537,15 +537,15 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
       {/* Campo de Capacidade - para dispositivos de armazenamento */}
       {formData.category === 'storage' && (
         <MobileFriendlyFormField>
-          <Label htmlFor="capacity">Capacidade (TB)</Label>
+          <Label htmlFor="capacity">Capacidade (GB)</Label>
           <Input
             id="capacity"
             type="number"
-            step="0.1"
+            step="1"
             min="0"
             value={formData.capacity || ''}
             onChange={(e) => updateField('capacity', parseFloat(e.target.value) || 0)}
-            placeholder="Ex: 1, 2, 4... (opcional)"
+            placeholder="Ex: 256, 500, 1000..."
             className="h-12"
           />
         </MobileFriendlyFormField>

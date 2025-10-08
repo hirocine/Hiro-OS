@@ -12,6 +12,18 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+export function formatCapacity(capacityInGB?: number): string {
+  if (!capacityInGB || capacityInGB <= 0) return '-';
+  
+  if (capacityInGB >= 1000) {
+    const tb = capacityInGB / 1000;
+    // Se for número inteiro, exibe sem casas decimais
+    return tb % 1 === 0 ? `${tb} TB` : `${tb.toFixed(1)} TB`;
+  }
+  
+  return `${capacityInGB} GB`;
+}
+
 export function naturalSort(a: string, b: string): number {
   // Split strings into chunks of numbers and non-numbers
   const chunkify = (str: string) => {
