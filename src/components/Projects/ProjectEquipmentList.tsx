@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, AlertTriangle } from "lucide-react";
+import { Package, AlertTriangle, HardDrive } from "lucide-react";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EquipmentDetailsDialog } from '@/components/Equipment/EquipmentDetailsDialog';
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectEquipmentListProps {
   projectId: string;
@@ -112,6 +113,13 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
 
   const sortedCategories = Object.keys(equipmentByCategory).sort();
 
+  // Helper to check if equipment is SSD/HD
+  const isStorageDevice = (item: any) => {
+    return item.category === 'storage' && 
+           (item.subcategory?.toLowerCase().includes('ssd') || 
+            item.subcategory?.toLowerCase().includes('hd'));
+  };
+
   return (
     <div className="space-y-4">
       {sortedCategories.map((category) => (
@@ -133,13 +141,30 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h4 className="font-medium truncate">{item.name}</h4>
                         <Badge variant={getStatusVariant(item.loanInfo.status)}>
                           {getStatusLabel(item.loanInfo.status)}
                         </Badge>
                         {item.loanInfo.status === 'overdue' && (
                           <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                        )}
+                        
+                        {/* Indicador especial para SSDs/HDs */}
+                        {isStorageDevice(item) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="outline" className="text-xs gap-1 border-primary/50">
+                                  <HardDrive className="h-3 w-3" />
+                                  <span>Kanban</span>
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Status gerenciado na página de Controle de SSDs</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                        </div>
                        
@@ -151,6 +176,13 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                              <span>• Patrimônio: {item.patrimonyNumber}</span>
                            )}
                          </div>
+                         
+                         {/* Para SSDs/HDs, mostrar mensagem informativa */}
+                         {isStorageDevice(item) && (
+                           <p className="text-xs italic text-muted-foreground mt-1">
+                             Use a página de Controle de SSDs para gerenciar o status
+                           </p>
+                         )}
                        </div>
                     </div>
                     

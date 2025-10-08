@@ -204,14 +204,36 @@ export function AddEquipmentToProjectDialog({
       await Promise.all(loanPromises);
 
       if (successCount > 0) {
-        toast({
-          title: "Sucesso",
-          description: `${successCount} equipamento(s) adicionado(s) ao projeto`,
+        // Verificar quantos SSDs/HDs foram selecionados
+        const storageDevices = Array.from(selectedEquipment).filter(id => {
+          const equipment = allEquipment.find(e => e.id === id);
+          return equipment?.category === 'storage' && 
+                 (equipment?.subcategory?.toLowerCase().includes('ssd') || 
+                  equipment?.subcategory?.toLowerCase().includes('hd'));
         });
+        
+        // Mensagem diferenciada para SSDs/HDs
+        if (storageDevices.length > 0 && storageDevices.length === successCount) {
+          toast({
+            title: "SSDs/HDs adicionados ao projeto",
+            description: `${successCount} SSD(s)/HD(s) registrado(s) no projeto. O status é gerenciado na página de Controle de SSDs.`,
+          });
+        } else if (storageDevices.length > 0) {
+          toast({
+            title: "Equipamentos adicionados",
+            description: `${successCount} equipamento(s) adicionado(s). SSDs/HDs têm status gerenciado na página de Controle de SSDs.`,
+          });
+        } else {
+          toast({
+            title: "Sucesso",
+            description: `${successCount} equipamento(s) adicionado(s) ao projeto`,
+          });
+        }
+        
         logger.info('Loans created successfully', {
           module: 'project-equipment',
           action: 'loans_completed',
-          data: { successCount }
+          data: { successCount, storageDevicesCount: storageDevices.length }
         });
         
         // Reset form and close dialog

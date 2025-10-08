@@ -802,6 +802,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_storage_device: {
+        Args: { _equipment_id: string }
+        Returns: boolean
+      }
       log_audit_entry: {
         Args: {
           _action: string

@@ -117,18 +117,32 @@ export const useSSDs = () => {
   }, []);
 
   const ssdsByStatus = useMemo<SSDsByStatus>(() => {
-    const categorized = ssds.reduce((acc, ssd) => {
-      const status = ssd.simplifiedStatus === 'available' ? 'available' : 
-                     ssd.currentLoanId ? 'loaned' : 'in_use';
-      acc[status].push(ssd);
-      return acc;
-    }, {
-      available: [] as Equipment[],
-      in_use: [] as Equipment[],
-      loaned: [] as Equipment[]
+    // Para SSDs/HDs, o status é baseado EXCLUSIVAMENTE no Kanban (display_order)
+    // NÃO consideramos currentLoanId ou simplifiedStatus, pois eles vêm de Projetos
+    const result: SSDsByStatus = {
+      available: [],
+      in_use: [],
+      loaned: [],
+    };
+
+    ssds.forEach(ssd => {
+      // Determinar status baseado na posição do Kanban (display_order)
+      // Valores menores = Available, médios = In Use, maiores = Loaned
+      if (ssd.displayOrder !== undefined) {
+        if (ssd.displayOrder < 1000) {
+          result.available.push(ssd);
+        } else if (ssd.displayOrder < 2000) {
+          result.in_use.push(ssd);
+        } else {
+          result.loaned.push(ssd);
+        }
+      } else {
+        // Se não tem displayOrder, vai para Available por padrão
+        result.available.push(ssd);
+      }
     });
 
-    // Sort each category by display_order (nulls last) then by name
+    // Ordenar cada array por displayOrder primeiro, depois por nome
     const sortByOrder = (a: Equipment, b: Equipment) => {
       if (a.displayOrder === undefined && b.displayOrder === undefined) return a.name.localeCompare(b.name);
       if (a.displayOrder === undefined) return 1;
@@ -136,11 +150,11 @@ export const useSSDs = () => {
       return a.displayOrder - b.displayOrder;
     };
 
-    categorized.available.sort(sortByOrder);
-    categorized.in_use.sort(sortByOrder);
-    categorized.loaned.sort(sortByOrder);
+    result.available.sort(sortByOrder);
+    result.in_use.sort(sortByOrder);
+    result.loaned.sort(sortByOrder);
 
-    return categorized;
+    return result;
   }, [ssds]);
 
   const updateSSDStatus = async (ssdId: string, newStatus: SSDStatus) => {
@@ -148,62 +162,35 @@ export const useSSDs = () => {
     const previousSSDs = [...ssds];
     
     try {
+      // Para SSDs, o status é determinado APENAS pela posição no Kanban (display_order)
+      // Não modificamos simplified_status ou current_loan_id pois eles são gerenciados por Projetos
+      
+      // Determinar o novo display_order baseado no status
+      let newDisplayOrder: number;
+      if (newStatus === 'available') {
+        newDisplayOrder = 0; // Início da primeira coluna
+      } else if (newStatus === 'in_use') {
+        newDisplayOrder = 1000; // Início da segunda coluna
+      } else { // loaned
+        newDisplayOrder = 2000; // Início da terceira coluna
+      }
+      
       // Optimistic update - update local state immediately
       setSSDs(prevSSDs => 
-        prevSSDs.map(ssd => {
-          if (ssd.id !== ssdId) return ssd;
-          
-          // Update the SSD status optimistically
-          const updatedSSD = { ...ssd };
-          if (newStatus === 'available') {
-            updatedSSD.simplifiedStatus = 'available';
-            updatedSSD.currentLoanId = undefined;
-            updatedSSD.currentBorrower = undefined;
-            updatedSSD.lastLoanDate = undefined;
-          } else if (newStatus === 'in_use') {
-            updatedSSD.simplifiedStatus = 'in_project';
-            updatedSSD.currentLoanId = undefined;
-            updatedSSD.currentBorrower = undefined;
-            updatedSSD.lastLoanDate = undefined;
-          } else if (newStatus === 'loaned') {
-            updatedSSD.simplifiedStatus = 'in_project';
-            updatedSSD.currentLoanId = updatedSSD.currentLoanId || ((typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-            updatedSSD.currentBorrower = updatedSSD.currentBorrower || 'Empréstimo manual';
-            updatedSSD.lastLoanDate = new Date().toISOString().slice(0, 10);
-          }
-          return updatedSSD;
-        })
+        prevSSDs.map(ssd => 
+          ssd.id === ssdId 
+            ? { ...ssd, displayOrder: newDisplayOrder }
+            : ssd
+        )
       );
-      
-      // Prepare database updates
-      const updates: any = {};
-      if (newStatus === 'available') {
-        updates.simplified_status = 'available';
-        updates.current_loan_id = null;
-        updates.current_borrower = null;
-        updates.last_loan_date = null;
-      } else if (newStatus === 'in_use') {
-        updates.simplified_status = 'in_project';
-        updates.current_loan_id = null;
-        updates.current_borrower = null;
-        updates.last_loan_date = null;
-      } else if (newStatus === 'loaned') {
-        updates.simplified_status = 'in_project';
-        updates.current_loan_id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto
-          ? crypto.randomUUID()
-          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        updates.current_borrower = 'Empréstimo manual';
-        updates.last_loan_date = new Date().toISOString().slice(0, 10);
-      }
 
+      // Update only display_order in database
       const { error } = await supabase
         .from('equipments')
-        .update(updates)
+        .update({ display_order: newDisplayOrder })
         .eq('id', ssdId);
 
       if (error) throw error;
-
-      // No need to manually refetch - realtime subscription will handle it
       
       toast({
         title: "Status atualizado",
@@ -227,47 +214,25 @@ export const useSSDs = () => {
 
     const previousSSDs = [...ssds];
 
-    // Determine new simplified_status and currentLoanId based on SSDStatus
-    let newSimplifiedStatus: 'available' | 'in_project' = 'available';
-    let newCurrentLoanId: string | null = null;
-    let newCurrentBorrower: string | null = null;
-
-    if (newStatus === 'available') {
-      newSimplifiedStatus = 'available';
-      newCurrentLoanId = null;
-      newCurrentBorrower = null;
-    } else if (newStatus === 'in_use') {
-      newSimplifiedStatus = 'in_project';
-      newCurrentLoanId = null;
-      newCurrentBorrower = null;
-    } else if (newStatus === 'loaned') {
-      newSimplifiedStatus = 'in_project';
-      newCurrentLoanId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-      newCurrentBorrower = 'Empréstimo manual';
-    }
+    // Para SSDs, não modificamos simplified_status ou currentLoanId
+    // Apenas atualizamos display_order baseado na posição no Kanban
+    
+    // Determinar base display_order para cada coluna
+    const baseDisplayOrder = newStatus === 'available' ? 0 : newStatus === 'in_use' ? 1000 : 2000;
 
     // Get target column SSDs (before any changes)
     const targetColumnKey = newStatus;
     const targetColumnSsds = [...ssdsByStatus[targetColumnKey]];
     
     // Find which column the SSD is currently in
-    const oldStatus: SSDStatus = ssdToUpdate.currentLoanId 
-      ? 'loaned' 
-      : ssdToUpdate.simplifiedStatus === 'in_project' 
-        ? 'in_use' 
-        : 'available';
+    const oldStatus: SSDStatus = 
+      (ssdToUpdate.displayOrder || 0) < 1000 ? 'available' :
+      (ssdToUpdate.displayOrder || 0) < 2000 ? 'in_use' : 'loaned';
     
     let reorderedSsds: Equipment[];
     if (oldStatus !== newStatus) {
       // Moving to different column - insert at target position
-      const updatedSsd = { 
-        ...ssdToUpdate, 
-        simplifiedStatus: newSimplifiedStatus, 
-        currentLoanId: newCurrentLoanId,
-        currentBorrower: newCurrentBorrower
-      };
+      const updatedSsd = { ...ssdToUpdate };
       reorderedSsds = [...targetColumnSsds];
       reorderedSsds.splice(targetIndex, 0, updatedSsd);
     } else {
@@ -279,12 +244,7 @@ export const useSSDs = () => {
     // Recalculate display_order for all SSDs in target column
     const updates = reorderedSsds.map((ssd, index) => ({
       id: ssd.id,
-      display_order: index,
-      ...(ssd.id === ssdId && {
-        simplified_status: newSimplifiedStatus,
-        current_loan_id: newCurrentLoanId,
-        current_borrower: newCurrentBorrower
-      })
+      display_order: baseDisplayOrder + index
     }));
 
     // Optimistic update
@@ -295,10 +255,7 @@ export const useSSDs = () => {
         if (index !== -1) {
           newSsds[index] = {
             ...newSsds[index],
-            displayOrder: update.display_order,
-            ...(update.simplified_status && { simplifiedStatus: update.simplified_status }),
-            ...(update.current_loan_id !== undefined && { currentLoanId: update.current_loan_id || undefined }),
-            ...(update.current_borrower !== undefined && { currentBorrower: update.current_borrower || undefined })
+            displayOrder: update.display_order
           };
         }
       });
@@ -306,25 +263,11 @@ export const useSSDs = () => {
     });
 
     try {
-      // Batch update all affected SSDs
+      // Batch update all affected SSDs - only display_order
       for (const update of updates) {
-        const updateData: any = {
-          display_order: update.display_order
-        };
-        
-        if (update.simplified_status) {
-          updateData.simplified_status = update.simplified_status;
-        }
-        if (update.current_loan_id !== undefined) {
-          updateData.current_loan_id = update.current_loan_id;
-        }
-        if (update.current_borrower !== undefined) {
-          updateData.current_borrower = update.current_borrower;
-        }
-        
         const { error } = await supabase
           .from('equipments')
-          .update(updateData)
+          .update({ display_order: update.display_order })
           .eq('id', update.id);
 
         if (error) throw error;
