@@ -15,7 +15,7 @@ function LayoutContent() {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <>
       {/* Sidebar - Desktop sempre visível, Mobile como Sheet */}
       {!isMobile && <DesktopSidebar />}
       {isMobile && <MobileSidebar />}
@@ -31,7 +31,7 @@ function LayoutContent() {
       {/* Main Content Area */}
       <main 
         className={cn(
-          "flex-1 w-full min-h-screen",
+          "flex-1 w-full min-h-screen bg-background",
           isMobile 
             ? isPWA 
               ? "pt-[calc(7rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
@@ -41,14 +41,16 @@ function LayoutContent() {
       >
         <Outlet />
       </main>
-    </div>
+    </>
   );
 }
 
 export function Layout() {
   return (
     <SidebarProvider>
-      <LayoutContent />
+      <div className="min-h-screen flex w-full">
+        <LayoutContent />
+      </div>
     </SidebarProvider>
   );
 }
