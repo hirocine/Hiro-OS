@@ -34,8 +34,7 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
                 </h4>
               </div>
               {ssd.capacity && (
-                <div className="flex items-center gap-1 mt-1">
-                  <span className="text-xs text-muted-foreground">Capacidade:</span>
+                <div className="mt-1">
                   <Badge 
                     variant="default" 
                     className="shrink-0 text-xs"
