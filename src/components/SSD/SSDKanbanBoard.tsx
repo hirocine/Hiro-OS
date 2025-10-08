@@ -94,7 +94,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
           "relative z-0 bg-muted/50 rounded-lg p-4 overflow-visible",
           "transition-all duration-300 ease-in-out motion-reduce:transition-none",
           "will-change-transform",
-          isOver && 'bg-primary/10 scale-[1.01] shadow-md animate-pulse'
+          isOver && 'bg-primary/10 scale-[1.01] shadow-md'
         )}
       >
         <div className="flex items-center justify-between mb-4">
