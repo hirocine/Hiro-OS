@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,10 @@ export const ProjectAllocationList = ({
   onChange
 }: ProjectAllocationListProps) => {
   const [localAllocations, setLocalAllocations] = useState<ProjectAllocation[]>(allocations);
+
+  useEffect(() => {
+    setLocalAllocations(allocations);
+  }, [allocations]);
 
   const totalAllocated = localAllocations.reduce((sum, alloc) => sum + (alloc.allocated_gb || 0), 0);
   const freeSpace = totalCapacity - totalAllocated;
@@ -51,7 +55,9 @@ export const ProjectAllocationList = ({
     const newAllocations = [...localAllocations];
     newAllocations[index] = {
       ...newAllocations[index],
-      [field]: field === 'allocated_gb' ? parseFloat(value as string) || 0 : value
+      [field]: field === 'allocated_gb' 
+        ? (value === '' ? 0 : parseFloat(value as string) || 0)
+        : value
     };
     setLocalAllocations(newAllocations);
     onChange(newAllocations);
@@ -73,7 +79,7 @@ export const ProjectAllocationList = ({
       ) : (
         <div className="space-y-3">
           {localAllocations.map((allocation, index) => (
-            <div key={index} className="flex gap-2 items-end">
+            <div key={allocation.id || `temp-${index}`} className="flex gap-2 items-end">
               <div className="flex-1">
                 <Label htmlFor={`project-name-${index}`} className="text-xs">
                   Nome do Projeto
