@@ -118,9 +118,22 @@ export const useSSDs = () => {
 
   const updateSSDStatus = async (ssdId: string, newStatus: SSDStatus) => {
     try {
-      const updates: Partial<Equipment> = {
-        simplifiedStatus: newStatus === 'available' ? 'available' : 'in_project'
-      };
+      // Usar snake_case para os nomes das colunas do banco
+      const updates: any = {};
+      
+      if (newStatus === 'available') {
+        updates.simplified_status = 'available';
+        updates.current_loan_id = null;
+        updates.current_borrower = null;
+      } else if (newStatus === 'in_use') {
+        updates.simplified_status = 'in_project';
+        updates.current_loan_id = null;
+        updates.current_borrower = null;
+      } else if (newStatus === 'loaned') {
+        // Para emprestado, apenas marca como in_project
+        // Mantém current_loan_id se existir
+        updates.simplified_status = 'in_project';
+      }
 
       const { error } = await supabase
         .from('equipments')
