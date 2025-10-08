@@ -27,15 +27,6 @@ export function TopBar() {
       >
         <Menu className="h-5 w-5" />
       </Button>
-
-      {/* Logo ou título do app */}
-      <div className="flex items-center gap-2">
-        <img 
-          src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
-          alt="Hiro Logo" 
-          className="h-8 w-auto"
-        />
-      </div>
     </header>
   );
 }
