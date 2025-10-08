@@ -1,4 +1,4 @@
-import { Home, Package, FolderKanban, FileText, Settings, X } from 'lucide-react';
+import { Home, Package, FolderKanban, FileText, Settings, X, HardDrive } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -22,6 +22,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Inventário', href: '/equipment', icon: Package },
+  { name: 'SSDs', href: '/ssds', icon: HardDrive },
   { name: 'Projetos', href: '/projects', icon: FolderKanban },
   { name: 'Relatórios', href: '/reports', icon: FileText },
 ];
