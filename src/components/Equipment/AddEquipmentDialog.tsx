@@ -113,10 +113,14 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     setIsSubmitting(true);
     
     try {
-      // Sanitize parentId - convert empty string to null for proper UUID handling
+      // Sanitize data - convert empty strings and zero values to undefined for proper DB handling
       const sanitizedData = {
         ...formData,
-        parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : undefined
+        parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : undefined,
+        subcategory: formData.subcategory?.trim() || undefined,
+        capacity: formData.capacity && formData.capacity > 0 ? formData.capacity : undefined,
+        value: formData.value && formData.value > 0 ? formData.value : undefined,
+        depreciatedValue: formData.depreciatedValue && formData.depreciatedValue > 0 ? formData.depreciatedValue : undefined
       };
       
       const result = await onSubmit(sanitizedData);
@@ -247,7 +251,6 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           value={formData.category} 
           onValueChange={(value) => {
             updateField('category', value as EquipmentCategory);
-            updateField('subcategory', ''); // Reset subcategory when category changes
           }}
         >
           <SelectTrigger className="h-12">
@@ -531,11 +534,8 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
         />
       </MobileFriendlyFormField>
 
-      {/* Campo de Capacidade - apenas para SSDs e HDs */}
-      {formData.category === 'storage' && 
-       formData.subcategory && 
-       (formData.subcategory.toLowerCase().includes('ssd') || 
-        formData.subcategory.toLowerCase().includes('hd')) && (
+      {/* Campo de Capacidade - para dispositivos de armazenamento */}
+      {formData.category === 'storage' && (
         <MobileFriendlyFormField>
           <Label htmlFor="capacity">Capacidade (TB)</Label>
           <Input
@@ -545,7 +545,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             min="0"
             value={formData.capacity || ''}
             onChange={(e) => updateField('capacity', parseFloat(e.target.value) || 0)}
-            placeholder="Ex: 1, 2, 4..."
+            placeholder="Ex: 1, 2, 4... (opcional)"
             className="h-12"
           />
         </MobileFriendlyFormField>
