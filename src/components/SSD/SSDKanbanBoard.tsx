@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
   useDroppable,
+  closestCenter,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -65,6 +66,11 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
     id: `column-${status}`,
   });
 
+  // Add placeholder item when column is empty to ensure valid drop area
+  const items = ssds.length === 0 
+    ? [`placeholder-${status}`] 
+    : ssds.map(s => s.id);
+
   return (
     <div className="flex-1 min-w-[280px]">
       <div 
@@ -80,11 +86,20 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
             {count}
           </span>
         </div>
-        <SortableContext items={ssds.map(s => s.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="space-y-2 min-h-[200px]">
-            {ssds.map((ssd) => (
-              <SortableCard key={ssd.id} ssd={ssd} />
-            ))}
+            {ssds.length === 0 ? (
+              <div 
+                id={`placeholder-${status}`}
+                className="h-full min-h-[200px] flex items-center justify-center text-muted-foreground/50 text-sm"
+              >
+                Arraste itens aqui
+              </div>
+            ) : (
+              ssds.map((ssd) => (
+                <SortableCard key={ssd.id} ssd={ssd} />
+              ))
+            )}
           </div>
         </SortableContext>
       </div>
@@ -150,6 +165,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
