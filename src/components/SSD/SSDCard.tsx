@@ -41,9 +41,6 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground truncate">
-                {ssd.brand}
-              </p>
             </div>
           </div>
           {ssd.capacity && (
