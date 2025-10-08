@@ -59,7 +59,7 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
       style={style} 
       className={cn(
         "will-change-transform",
-        isDragging && "opacity-30 scale-105",
+        isDragging && "opacity-0",
         "transition-opacity duration-200 ease-out motion-reduce:transition-none"
       )}
       {...attributes} 
