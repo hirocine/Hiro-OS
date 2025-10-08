@@ -21,7 +21,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Inventário', href: '/equipment', icon: Package },
-  { name: 'SSDs', href: '/ssds', icon: HardDrive },
+  { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Projetos', href: '/projects', icon: FolderKanban },
   { name: 'Relatórios', href: '/reports', icon: FileText },
 ];

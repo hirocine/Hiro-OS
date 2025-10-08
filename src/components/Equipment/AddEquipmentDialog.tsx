@@ -58,6 +58,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
     receiveDate: '',
     store: '',
     invoice: '',
+    capacity: undefined,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,6 +93,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
         receiveDate: '',
         store: '',
         invoice: '',
+        capacity: undefined,
       });
     }
   }, [equipment]);
@@ -149,6 +151,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             receiveDate: '',
             store: '',
             invoice: '',
+            capacity: undefined,
           });
         }
       }
@@ -527,6 +530,26 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
           className="h-12"
         />
       </MobileFriendlyFormField>
+
+      {/* Campo de Capacidade - apenas para SSDs e HDs */}
+      {formData.category === 'storage' && 
+       formData.subcategory && 
+       (formData.subcategory.toLowerCase().includes('ssd') || 
+        formData.subcategory.toLowerCase().includes('hd')) && (
+        <MobileFriendlyFormField>
+          <Label htmlFor="capacity">Capacidade (TB)</Label>
+          <Input
+            id="capacity"
+            type="number"
+            step="0.1"
+            min="0"
+            value={formData.capacity || ''}
+            onChange={(e) => updateField('capacity', parseFloat(e.target.value) || 0)}
+            placeholder="Ex: 1, 2, 4..."
+            className="h-12"
+          />
+        </MobileFriendlyFormField>
+      )}
     </MobileFriendlyFormGrid>
   );
 

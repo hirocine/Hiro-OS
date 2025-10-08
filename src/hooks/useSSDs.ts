@@ -23,7 +23,7 @@ export const useSSDs = () => {
         .from('equipments')
         .select('*')
         .eq('category', 'storage')
-        .eq('subcategory', 'ssd')
+        .in('subcategory', ['SSD', 'HD', 'ssd', 'hd', 'HD Externo', 'SSD Externo'])
         .order('name');
 
       if (error) throw error;

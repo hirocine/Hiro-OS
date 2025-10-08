@@ -12,8 +12,8 @@ const SSDs = () => {
     return (
       <div className="container mx-auto p-6">
         <PageHeader
-          title="Controle de SSDs"
-          subtitle="Gerencie seus SSDs de forma visual"
+          title="Controle de SSDs e HDs"
+          subtitle="Gerencie seus SSDs e HDs de forma visual"
         />
         <div className="flex gap-4 mt-6">
           {[1, 2, 3].map((i) => (
@@ -29,8 +29,8 @@ const SSDs = () => {
   return (
     <div className="container mx-auto p-6">
       <PageHeader
-        title="Controle de SSDs"
-        subtitle="Gerencie seus SSDs de forma visual"
+        title="Controle de SSDs e HDs"
+        subtitle="Gerencie seus SSDs e HDs de forma visual"
         actions={
           <Button>
             <Plus className="mr-2 h-4 w-4" />
