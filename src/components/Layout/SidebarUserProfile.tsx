@@ -41,11 +41,11 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-3 cursor-pointer transition-colors">
               <div className="relative w-12 h-12 shrink-0">
-                <Avatar className="ring-2 ring-border">
+                <Avatar className="w-full h-full ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                   <AvatarFallback className="text-sm font-medium">{avatarData.initials}</AvatarFallback>
                 </Avatar>
-                <div className="absolute bottom-0 right-0 h-3 w-3 bg-success rounded-full border-2 border-card" />
+                <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-success rounded-full border-2 border-card" />
               </div>
               
               <div className="flex-1 min-w-0 text-left">
@@ -86,11 +86,11 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
         <DropdownMenuTrigger asChild>
           <button className="flex items-center justify-center w-full hover:bg-accent/50 rounded-lg p-2 cursor-pointer transition-colors">
             <div className="relative w-10 h-10 shrink-0">
-              <Avatar className="ring-2 ring-border">
+              <Avatar className="w-full h-full ring-2 ring-border">
                 <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                 <AvatarFallback className="text-sm font-medium">{avatarData.initials}</AvatarFallback>
               </Avatar>
-              <div className="absolute bottom-0 right-0 h-3 w-3 bg-success rounded-full border-2 border-card" />
+              <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-success rounded-full border-2 border-card" />
             </div>
           </button>
         </DropdownMenuTrigger>
