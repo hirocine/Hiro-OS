@@ -11,6 +11,13 @@ export interface User {
   role: 'admin' | 'user';
   is_active: boolean;
   avatar_url: string | null;
+  user_metadata?: {
+    avatar_url?: string;
+    picture?: string;
+    full_name?: string;
+    name?: string;
+    provider?: string;
+  };
 }
 
 export function useUsers() {
@@ -29,7 +36,10 @@ export function useUsers() {
         throw error;
       }
 
-      setUsers(data || []);
+      setUsers((data || []).map(user => ({
+        ...user,
+        user_metadata: user.user_metadata as User['user_metadata']
+      })));
     } catch (err) {
       logger.error('Failed to fetch users', {
         module: 'users',

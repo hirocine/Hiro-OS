@@ -786,6 +786,7 @@ export type Database = {
           last_sign_in_at: string
           position: string
           role: Database["public"]["Enums"]["app_role"]
+          user_metadata: Json
         }[]
       }
       has_role: {

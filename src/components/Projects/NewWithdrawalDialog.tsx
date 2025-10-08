@@ -9,7 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarData } from "@/lib/avatarUtils";
 import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -817,16 +818,22 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((user) => {
-                      const initials = user.display_name
-                        ? user.display_name.split(' ').map(n => n[0]).join('').toUpperCase()
-                        : user.email?.substring(0, 2).toUpperCase() || 'U';
+                      const avatarData = getAvatarData(
+                        { 
+                          app_metadata: { provider: user.user_metadata?.provider || 'email' },
+                          user_metadata: user.user_metadata || {},
+                          email: user.email
+                        } as any,
+                        user.avatar_url,
+                        user.display_name
+                      );
                       
                       return (
                         <SelectItem key={user.id} value={user.id}>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.avatar_url || undefined} alt={user.display_name || user.email} />
-                              <AvatarFallback>{initials}</AvatarFallback>
+                              <AvatarImage src={avatarData.url || undefined} alt={user.display_name || user.email} />
+                              <AvatarFallback>{avatarData.initials}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
                               <span className="font-medium">
