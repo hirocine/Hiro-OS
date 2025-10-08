@@ -4,6 +4,7 @@ import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from
 import { useEquipment } from '@/hooks/useEquipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseEquipmentFormProps {
   equipmentId?: string;
@@ -42,6 +43,8 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Carregar dados do equipamento se for edição
   useEffect(() => {
@@ -51,6 +54,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       
       if (equipment) {
         setFormData(equipment);
+        setImageUrl(equipment.image);
       } else {
         enhancedToast.error({
           title: 'Equipamento não encontrado',
@@ -154,6 +158,71 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     return selectedItem ? `${selectedItem.patrimonyNumber || 'S/N'} - ${selectedItem.name}` : 'Item não encontrado';
   }, [formData.parentId, allEquipment]);
 
+  const handleImageUpload = async (file: File) => {
+    // Validar formato
+    const validFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validFormats.includes(file.type)) {
+      enhancedToast.error({
+        title: 'Formato inválido',
+        description: 'Por favor, selecione uma imagem JPG, PNG ou WEBP.'
+      });
+      return;
+    }
+
+    // Validar tamanho (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      enhancedToast.error({
+        title: 'Arquivo muito grande',
+        description: 'O tamanho máximo permitido é 10MB.'
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('equipment-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('equipment-images')
+        .getPublicUrl(filePath);
+
+      setImageUrl(publicUrl);
+      updateField('image', publicUrl);
+      
+      enhancedToast.success({
+        title: 'Imagem carregada',
+        description: 'A foto foi adicionada com sucesso.'
+      });
+    } catch (error) {
+      logger.error('Error uploading image', {
+        module: 'equipment-form',
+        action: 'upload_image',
+        error
+      });
+      enhancedToast.error({
+        title: 'Erro ao carregar imagem',
+        description: 'Ocorreu um erro ao fazer upload da foto. Tente novamente.'
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleImageRemove = () => {
+    setImageUrl(undefined);
+    updateField('image', '');
+  };
+
   return {
     formData,
     isSubmitting,
@@ -175,6 +244,10 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     parseCurrencyInput,
     getMainItems,
     getSelectedParentName,
+    imageUrl,
+    isUploadingImage,
+    handleImageUpload,
+    handleImageRemove,
     isEditMode: !!equipmentId
   };
 }

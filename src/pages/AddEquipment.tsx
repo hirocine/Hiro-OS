@@ -31,6 +31,10 @@ export default function AddEquipment() {
     parseCurrencyInput,
     getMainItems,
     getSelectedParentName,
+    imageUrl,
+    isUploadingImage,
+    handleImageUpload,
+    handleImageRemove,
     isEditMode
   } = useEquipmentForm({ equipmentId: id });
 
@@ -103,6 +107,10 @@ export default function AddEquipment() {
             formatCurrency={formatCurrency}
             parseCurrencyInput={parseCurrencyInput}
             getSelectedParentName={getSelectedParentName}
+            imageUrl={imageUrl}
+            isUploadingImage={isUploadingImage}
+            onImageUpload={handleImageUpload}
+            onImageRemove={handleImageRemove}
           />
         </CardContent>
       </Card>
