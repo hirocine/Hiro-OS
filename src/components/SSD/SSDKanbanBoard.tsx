@@ -152,34 +152,43 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
   };
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
-    if (!over) {
-      setActiveId(null);
-      return;
-    }
+    setActiveId(null);
+
+    if (!over) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Find which column the active SSD is currently in
-    let activeStatus: SSDStatus | null = null;
-    if (ssdsByStatus.available.some(s => s.id === activeId)) activeStatus = 'available';
-    else if (ssdsByStatus.in_use.some(s => s.id === activeId)) activeStatus = 'in_use';
-    else if (ssdsByStatus.loaned.some(s => s.id === activeId)) activeStatus = 'loaned';
+    console.log('🎯 Drag ended:', { activeId, overId });
 
-    // Determinar o novo status baseado na coluna de destino
+    // Find which column the active SSD is currently in
+    let currentStatus: SSDStatus | null = null;
+    if (ssdsByStatus.available.some(s => s.id === activeId)) currentStatus = 'available';
+    else if (ssdsByStatus.in_use.some(s => s.id === activeId)) currentStatus = 'in_use';
+    else if (ssdsByStatus.loaned.some(s => s.id === activeId)) currentStatus = 'loaned';
+
+    if (!currentStatus) {
+      console.log('❌ Dragged SSD not found in any column');
+      return;
+    }
+
+    console.log('📍 Current status:', currentStatus);
+
+    // Determine the target status and index
     let newStatus: SSDStatus | null = null;
     let targetIndex = -1;
     
-    // Verificar se foi solto diretamente sobre uma coluna ou placeholder
+    // Check if dropped directly on a column or placeholder
     if (overId.startsWith('column-')) {
       newStatus = overId.replace('column-', '') as SSDStatus;
-      targetIndex = ssdsByStatus[newStatus].length; // Add to end
+      targetIndex = ssdsByStatus[newStatus].length;
+      console.log('🎯 Dropped on column header:', { newStatus, targetIndex });
     } else if (overId.startsWith('placeholder-')) {
       newStatus = overId.replace('placeholder-', '') as SSDStatus;
-      targetIndex = 0; // Add to beginning of empty column
+      targetIndex = 0;
+      console.log('🎯 Dropped on placeholder:', { newStatus, targetIndex });
     } else {
-      // Foi solto sobre outro SSD, determinar a coluna e posição
+      // Dropped on another SSD - find which column it belongs to
       if (ssdsByStatus.available.some(s => s.id === overId)) {
         newStatus = 'available';
         targetIndex = ssdsByStatus.available.findIndex(s => s.id === overId);
@@ -190,26 +199,28 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
         newStatus = 'loaned';
         targetIndex = ssdsByStatus.loaned.findIndex(s => s.id === overId);
       }
+      console.log('🎯 Dropped on SSD:', { newStatus, targetIndex });
     }
 
-    if (newStatus && targetIndex >= 0) {
-      // Check if we're just reordering or changing status + reordering
-      if (activeStatus === newStatus) {
-        // Reordering within same column
-        const currentIndex = ssdsByStatus[newStatus].findIndex(s => s.id === activeId);
-        if (currentIndex !== targetIndex) {
-          onReorder(activeId, newStatus, targetIndex);
-        }
-      } else {
-        // Moving to different column with specific position
-        onReorder(activeId, newStatus, targetIndex);
-      }
-    } else if (newStatus) {
-      // Fallback to simple status change without reordering
+    if (!newStatus || targetIndex < 0) {
+      console.log('❌ Could not determine target column');
+      return;
+    }
+
+    // Handle status change (moved to different column)
+    if (currentStatus !== newStatus) {
+      console.log('✅ Status change detected:', { from: currentStatus, to: newStatus });
       onStatusChange(activeId, newStatus);
+    } else {
+      // Handle reordering within same column
+      const currentIndex = ssdsByStatus[currentStatus].findIndex(s => s.id === activeId);
+      if (currentIndex !== targetIndex) {
+        console.log('✅ Reordering in same column:', { from: currentIndex, to: targetIndex });
+        onReorder(activeId, currentStatus, targetIndex);
+      } else {
+        console.log('ℹ️ No change needed');
+      }
     }
-
-    setActiveId(null);
   };
 
   const activeSSD = activeId
