@@ -88,7 +88,7 @@ export function DesktopSidebar() {
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />
                         )}
                         <Icon className={cn(
-                          "h-5 w-5 transition-transform group-hover:scale-110",
+                          "h-5 w-5 transition-transform duration-200 group-hover:scale-110",
                           active && "text-primary"
                         )} />
                       </NavLink>
@@ -125,7 +125,7 @@ export function DesktopSidebar() {
                             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-destructive rounded-r-full" />
                           )}
                           <Icon className={cn(
-                            "h-5 w-5 transition-transform group-hover:scale-110",
+                            "h-5 w-5 transition-transform duration-200 group-hover:scale-110",
                             active && "text-destructive"
                           )} />
                         </NavLink>

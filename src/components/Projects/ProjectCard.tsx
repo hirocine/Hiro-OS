@@ -73,7 +73,7 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
   return (
     <Card 
       className={cn(
-        "hover:shadow-elegant transition-all duration-300 border-l-4",
+        "hover:shadow-elegant transition-all duration-200 border-l-4",
         `border-l-${stepColors[project.step]}`
       )}
     >
