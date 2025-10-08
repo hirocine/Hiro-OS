@@ -11,6 +11,24 @@ export interface SSDsByStatus {
   loaned: Equipment[];
 }
 
+// Helper function to detect if an item is a drive (SSD/HD)
+const isDrive = (item: any): boolean => {
+  const searchText = `${item.subcategory || ''} ${item.name || ''} ${item.custom_category || ''}`.toLowerCase();
+  
+  // Must contain ssd or hd
+  const hasDrive = searchText.includes('ssd') || searchText.includes('hd') || searchText.includes('hard');
+  
+  // Exclude cards, readers, and false positives like "full hd"
+  const isExcluded = searchText.includes('card') || 
+                     searchText.includes('cartão') || 
+                     searchText.includes('reader') || 
+                     searchText.includes('leitor') ||
+                     searchText.includes('full hd') ||
+                     searchText.includes('fullhd');
+  
+  return hasDrive && !isExcluded;
+};
+
 export const useSSDs = () => {
   const [ssds, setSSDs] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,13 +41,15 @@ export const useSSDs = () => {
         .from('equipments')
         .select('*')
         .eq('category', 'storage')
-        .in('subcategory', ['SSD', 'HD', 'ssd', 'hd', 'HD Externo', 'SSD Externo'])
         .order('name');
 
       if (error) throw error;
       
+      // Filter client-side for drives only
+      const driveData = (data || []).filter(isDrive);
+      
       // Transform data to match Equipment interface
-      const transformedData = (data || []).map(item => ({
+      const transformedData = driveData.map(item => ({
         ...item,
         itemType: item.item_type as 'main' | 'accessory',
         simplifiedStatus: item.simplified_status as 'available' | 'in_project',
@@ -60,6 +80,27 @@ export const useSSDs = () => {
 
   useEffect(() => {
     fetchSSDs();
+    
+    // Subscribe to realtime changes for storage equipment
+    const channel = supabase
+      .channel('storage-equipment-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'equipments',
+          filter: 'category=eq.storage'
+        },
+        () => {
+          fetchSSDs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const ssdsByStatus = useMemo<SSDsByStatus>(() => {
