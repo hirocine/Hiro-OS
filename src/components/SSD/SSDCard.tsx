@@ -16,9 +16,9 @@ const getKanbanStatusVariant = (status: SSDStatus) => {
     case 'available':
       return 'success';
     case 'in_use':
-      return 'secondary';
+      return 'step-pickup';
     case 'loaned':
-      return 'warning';
+      return 'destructive';
   }
 };
 
