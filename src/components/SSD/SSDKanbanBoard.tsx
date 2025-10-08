@@ -12,6 +12,9 @@ import {
   useSensors,
   useDroppable,
   closestCenter,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -116,10 +119,17 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
     })
   );
 
+  const hybridCollision: CollisionDetection = (args) => {
+    const pointer = pointerWithin(args);
+    if (pointer.length > 0) return pointer;
+    const rects = rectIntersection(args);
+    if (rects.length > 0) return rects;
+    return closestCenter(args);
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
@@ -166,7 +176,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={hybridCollision}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >

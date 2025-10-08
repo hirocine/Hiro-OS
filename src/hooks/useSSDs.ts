@@ -142,12 +142,17 @@ export const useSSDs = () => {
             updatedSSD.simplifiedStatus = 'available';
             updatedSSD.currentLoanId = undefined;
             updatedSSD.currentBorrower = undefined;
+            updatedSSD.lastLoanDate = undefined;
           } else if (newStatus === 'in_use') {
             updatedSSD.simplifiedStatus = 'in_project';
             updatedSSD.currentLoanId = undefined;
             updatedSSD.currentBorrower = undefined;
+            updatedSSD.lastLoanDate = undefined;
           } else if (newStatus === 'loaned') {
             updatedSSD.simplifiedStatus = 'in_project';
+            updatedSSD.currentLoanId = updatedSSD.currentLoanId || ((typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+            updatedSSD.currentBorrower = updatedSSD.currentBorrower || 'Empréstimo manual';
+            updatedSSD.lastLoanDate = new Date().toISOString().slice(0, 10);
           }
           return updatedSSD;
         })
@@ -159,12 +164,19 @@ export const useSSDs = () => {
         updates.simplified_status = 'available';
         updates.current_loan_id = null;
         updates.current_borrower = null;
+        updates.last_loan_date = null;
       } else if (newStatus === 'in_use') {
         updates.simplified_status = 'in_project';
         updates.current_loan_id = null;
         updates.current_borrower = null;
+        updates.last_loan_date = null;
       } else if (newStatus === 'loaned') {
         updates.simplified_status = 'in_project';
+        updates.current_loan_id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+        updates.current_borrower = 'Empréstimo manual';
+        updates.last_loan_date = new Date().toISOString().slice(0, 10);
       }
 
       const { error } = await supabase
