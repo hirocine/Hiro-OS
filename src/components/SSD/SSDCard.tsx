@@ -25,7 +25,7 @@ const getKanbanStatusVariant = (status: SSDStatus) => {
 const getKanbanStatusLabel = (status: SSDStatus) => {
   switch (status) {
     case 'available':
-      return 'Disponível';
+      return 'Livre';
     case 'in_use':
       return 'Em uso (Interno)';
     case 'loaned':
