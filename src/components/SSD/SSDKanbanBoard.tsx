@@ -15,6 +15,7 @@ import {
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@/lib/utils';
 
 interface SSDKanbanBoardProps {
   ssdsByStatus: {
@@ -41,7 +42,8 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition,
+    pointerEvents: isDragging ? ('none' as const) : ('auto' as const),
   };
 
   return (
@@ -67,9 +69,10 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
     <div className="flex-1 min-w-[280px]">
       <div 
         ref={setNodeRef}
-        className={`bg-muted/50 rounded-lg p-4 transition-colors ${
-          isOver ? 'bg-primary/10 ring-2 ring-primary' : ''
-        }`}
+        className={cn(
+          "bg-muted/50 rounded-lg p-4 transition-colors duration-200",
+          isOver && 'bg-primary/10 ring-2 ring-primary will-change-[background-color]'
+        )}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm">{title}</h3>
@@ -171,7 +174,11 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
         />
       </div>
       <DragOverlay>
-        {activeSSD ? <SSDCard ssd={activeSSD} /> : null}
+        {activeSSD ? (
+          <div className="shadow-elegant rotate-3">
+            <SSDCard ssd={activeSSD} isDragging={false} />
+          </div>
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

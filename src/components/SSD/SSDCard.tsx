@@ -15,8 +15,10 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
   
   return (
     <Card className={cn(
-      "cursor-move transition-all hover:shadow-md",
-      isDragging && "opacity-50"
+      "cursor-move",
+      !isDragging && "transition-shadow duration-200 hover:shadow-md",
+      isDragging && "opacity-50 transition-none",
+      "motion-reduce:transition-none"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
