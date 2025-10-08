@@ -34,9 +34,11 @@ export const useSSDs = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchSSDs = async () => {
+  const fetchSSDs = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const { data, error } = await supabase
         .from('equipments')
         .select('*')
@@ -81,6 +83,9 @@ export const useSSDs = () => {
   useEffect(() => {
     fetchSSDs();
     
+    // Debounce timer for realtime updates
+    let debounceTimer: NodeJS.Timeout;
+    
     // Subscribe to realtime changes for storage equipment
     const channel = supabase
       .channel('storage-equipment-changes')
@@ -93,12 +98,17 @@ export const useSSDs = () => {
           filter: 'category=eq.storage'
         },
         () => {
-          fetchSSDs();
+          // Debounce realtime updates to avoid multiple rapid refetches
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            fetchSSDs(true); // Silent refetch
+          }, 300);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -117,10 +127,34 @@ export const useSSDs = () => {
   }, [ssds]);
 
   const updateSSDStatus = async (ssdId: string, newStatus: SSDStatus) => {
+    // Store previous state for rollback
+    const previousSSDs = [...ssds];
+    
     try {
-      // Usar snake_case para os nomes das colunas do banco
-      const updates: any = {};
+      // Optimistic update - update local state immediately
+      setSSDs(prevSSDs => 
+        prevSSDs.map(ssd => {
+          if (ssd.id !== ssdId) return ssd;
+          
+          // Update the SSD status optimistically
+          const updatedSSD = { ...ssd };
+          if (newStatus === 'available') {
+            updatedSSD.simplifiedStatus = 'available';
+            updatedSSD.currentLoanId = undefined;
+            updatedSSD.currentBorrower = undefined;
+          } else if (newStatus === 'in_use') {
+            updatedSSD.simplifiedStatus = 'in_project';
+            updatedSSD.currentLoanId = undefined;
+            updatedSSD.currentBorrower = undefined;
+          } else if (newStatus === 'loaned') {
+            updatedSSD.simplifiedStatus = 'in_project';
+          }
+          return updatedSSD;
+        })
+      );
       
+      // Prepare database updates
+      const updates: any = {};
       if (newStatus === 'available') {
         updates.simplified_status = 'available';
         updates.current_loan_id = null;
@@ -130,8 +164,6 @@ export const useSSDs = () => {
         updates.current_loan_id = null;
         updates.current_borrower = null;
       } else if (newStatus === 'loaned') {
-        // Para emprestado, apenas marca como in_project
-        // Mantém current_loan_id se existir
         updates.simplified_status = 'in_project';
       }
 
@@ -142,13 +174,16 @@ export const useSSDs = () => {
 
       if (error) throw error;
 
-      await fetchSSDs();
+      // No need to manually refetch - realtime subscription will handle it
       
       toast({
         title: "Status atualizado",
         description: "Status do SSD atualizado com sucesso."
       });
     } catch (error) {
+      // Rollback on error
+      setSSDs(previousSSDs);
+      
       toast({
         title: "Erro ao atualizar status",
         description: "Não foi possível atualizar o status do SSD.",
