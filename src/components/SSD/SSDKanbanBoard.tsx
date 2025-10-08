@@ -10,6 +10,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -58,9 +59,18 @@ interface KanbanColumnProps {
 }
 
 const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `column-${status}`,
+  });
+
   return (
     <div className="flex-1 min-w-[280px]">
-      <div className="bg-muted/50 rounded-lg p-4">
+      <div 
+        ref={setNodeRef}
+        className={`bg-muted/50 rounded-lg p-4 transition-colors ${
+          isOver ? 'bg-primary/10 ring-2 ring-primary' : ''
+        }`}
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm">{title}</h3>
           <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
@@ -104,19 +114,24 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Determinar o novo status baseado no container
+    // Determinar o novo status baseado na coluna de destino
     let newStatus: SSDStatus | null = null;
     
-    // Verificar em qual coluna o item foi solto
-    if (ssdsByStatus.available.some(s => s.id === overId)) {
-      newStatus = 'available';
-    } else if (ssdsByStatus.in_use.some(s => s.id === overId)) {
-      newStatus = 'in_use';
-    } else if (ssdsByStatus.loaned.some(s => s.id === overId)) {
-      newStatus = 'loaned';
+    // Verificar se foi solto diretamente sobre uma coluna
+    if (overId.startsWith('column-')) {
+      newStatus = overId.replace('column-', '') as SSDStatus;
+    } else {
+      // Foi solto sobre outro SSD, determinar a coluna pela posição do SSD
+      if (ssdsByStatus.available.some(s => s.id === overId)) {
+        newStatus = 'available';
+      } else if (ssdsByStatus.in_use.some(s => s.id === overId)) {
+        newStatus = 'in_use';
+      } else if (ssdsByStatus.loaned.some(s => s.id === overId)) {
+        newStatus = 'loaned';
+      }
     }
 
-    if (newStatus && activeId !== overId) {
+    if (newStatus) {
       onStatusChange(activeId, newStatus);
     }
 
