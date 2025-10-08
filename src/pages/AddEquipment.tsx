@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipmentForm } from '@/hooks/useEquipmentForm';
 import { EquipmentForm } from '@/components/Equipment/EquipmentForm';
+import { EquipmentImageUpload } from '@/components/Equipment/EquipmentImageUpload';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AddEquipment() {
@@ -60,6 +61,14 @@ export default function AddEquipment() {
       <PageHeader
         title={isEditMode ? 'Editar Equipamento' : 'Adicionar Equipamento'}
         subtitle={isEditMode ? 'Atualize as informações do equipamento' : 'Preencha os dados para adicionar um novo equipamento ao inventário'}
+        imageUpload={
+          <EquipmentImageUpload
+            imageUrl={imageUrl}
+            isUploading={isUploadingImage}
+            onUpload={handleImageUpload}
+            onRemove={handleImageRemove}
+          />
+        }
         actions={
           <Button
             variant="outline"
@@ -107,10 +116,6 @@ export default function AddEquipment() {
             formatCurrency={formatCurrency}
             parseCurrencyInput={parseCurrencyInput}
             getSelectedParentName={getSelectedParentName}
-            imageUrl={imageUrl}
-            isUploadingImage={isUploadingImage}
-            onImageUpload={handleImageUpload}
-            onImageRemove={handleImageRemove}
           />
         </CardContent>
       </Card>
