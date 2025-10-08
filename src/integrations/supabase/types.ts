@@ -775,6 +775,7 @@ export type Database = {
       get_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
+          avatar_url: string
           created_at: string
           department: string
           display_name: string

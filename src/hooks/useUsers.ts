@@ -10,6 +10,7 @@ export interface User {
   department: string | null;
   role: 'admin' | 'user';
   is_active: boolean;
+  avatar_url: string | null;
 }
 
 export function useUsers() {
