@@ -57,7 +57,15 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
                   {ssd.name}
                 </h4>
               </div>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {ssd.patrimonyNumber && (
+                  <Badge 
+                    variant="outline" 
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
+                  >
+                    #{ssd.patrimonyNumber}
+                  </Badge>
+                )}
                 {ssd.capacity && (
                   <Badge 
                     variant="default" 
