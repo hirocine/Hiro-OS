@@ -36,7 +36,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
   if (isMobile) {
     return (
-      <div className="border-t border-border bg-card/50 backdrop-blur-sm py-6 px-4">
+      <div className="bg-card/50 backdrop-blur-sm py-6 px-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-3 cursor-pointer transition-colors">
