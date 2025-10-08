@@ -47,7 +47,9 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? 'none' : transition,
+    transition: isDragging 
+      ? 'none' 
+      : 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease-out',
     pointerEvents: isDragging ? ('none' as const) : ('auto' as const),
   };
 
@@ -55,7 +57,11 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={cn(isDragging && "opacity-0")}
+      className={cn(
+        "will-change-transform",
+        isDragging && "opacity-30 scale-105",
+        "transition-all duration-300 ease-out motion-reduce:transition-none"
+      )}
       {...attributes} 
       {...listeners}
     >
@@ -85,8 +91,10 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
       <div 
         ref={setNodeRef}
         className={cn(
-          "relative z-0 bg-muted/50 rounded-lg p-4 transition-colors duration-200 overflow-visible",
-          isOver && 'bg-primary/10 will-change-[background-color]'
+          "relative z-0 bg-muted/50 rounded-lg p-4 overflow-visible",
+          "transition-all duration-300 ease-in-out motion-reduce:transition-none",
+          "will-change-transform",
+          isOver && 'bg-primary/10 scale-[1.01] shadow-md animate-pulse'
         )}
       >
         <div className="flex items-center justify-between mb-4">
@@ -121,7 +129,8 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10,
+        tolerance: 5,
       },
     })
   );
@@ -234,7 +243,12 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
       </div>
       <DragOverlay zIndex={2000}>
         {activeSSD ? (
-          <div className="shadow-elegant pointer-events-none z-[9999] transform-gpu">
+          <div className="
+            shadow-elegant pointer-events-none z-[9999] transform-gpu
+            animate-scale-in rotate-2 scale-105
+            transition-all duration-200 ease-out
+            motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
+          ">
             <SSDCard ssd={activeSSD} isDragging={false} />
           </div>
         ) : null}
