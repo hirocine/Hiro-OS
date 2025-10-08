@@ -87,7 +87,7 @@ export function EquipmentForm({
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Layout Desktop: Grid com Foto à esquerda e campos à direita */}
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 md:gap-8 items-start">
         {/* Coluna 1: Upload de Foto */}
         <div className="flex justify-center md:justify-start">
           <div className="relative">
@@ -152,7 +152,7 @@ export function EquipmentForm({
         </div>
 
         {/* Coluna 2: Nome e Marca */}
-        <div className="space-y-4">
+        <div className="space-y-4 md:pt-0">
           <div>
             <Label htmlFor="name" className="text-base font-semibold">
               Nome do Equipamento *
