@@ -15,11 +15,11 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
   
   return (
     <Card className={cn(
-      "cursor-move will-change-transform",
-      "transition-all duration-300 ease-out",
-      !isDragging && "hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-0.5",
+      "cursor-grab active:cursor-grabbing",
+      "transition-shadow duration-200 ease-out",
+      !isDragging && "hover:shadow-elegant",
       isDragging && "opacity-50",
-      "motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0"
+      "motion-reduce:transition-none"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">

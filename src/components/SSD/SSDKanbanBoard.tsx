@@ -60,7 +60,7 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
       className={cn(
         "will-change-transform",
         isDragging && "opacity-30 scale-105",
-        "transition-all duration-300 ease-out motion-reduce:transition-none"
+        "transition-opacity duration-200 ease-out motion-reduce:transition-none"
       )}
       {...attributes} 
       {...listeners}
@@ -129,8 +129,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10,
-        tolerance: 5,
+        distance: 8,
       },
     })
   );
