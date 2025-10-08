@@ -52,7 +52,7 @@ export function MobileSidebar() {
       <SheetContent 
         side="left" 
         className={cn(
-          "w-80 p-0 flex flex-col [&>button]:hidden",
+          "w-80 flex flex-col [&>button]:hidden",
           isPWA && "pt-[env(safe-area-inset-top,0px)]"
         )}
       >
