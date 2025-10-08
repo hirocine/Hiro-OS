@@ -36,11 +36,11 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
   if (isMobile) {
     return (
-      <div className="border-t border-border bg-card/50 backdrop-blur-sm p-4">
+      <div className="border-t border-border bg-card/50 backdrop-blur-sm py-6 px-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-2 cursor-pointer transition-colors">
-              <div className="relative w-10 h-10 shrink-0">
+            <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-3 cursor-pointer transition-colors">
+              <div className="relative w-12 h-12 shrink-0">
                 <Avatar className="ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                   <AvatarFallback className="text-sm font-medium">{avatarData.initials}</AvatarFallback>
