@@ -37,7 +37,7 @@ export const SSDCard = ({ ssd, isDragging }: SSDCardProps) => {
                 <div className="mt-1">
                   <Badge 
                     variant="default" 
-                    className="shrink-0 text-xs"
+                    className="shrink-0 text-[10px] px-1.5 py-0.5 h-auto"
                   >
                     {ssd.capacity} TB
                   </Badge>
