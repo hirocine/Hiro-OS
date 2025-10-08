@@ -33,6 +33,7 @@ export interface Equipment {
   lastLoanDate?: string;
   capacity?: number;
   displayOrder?: number;
+  internal_user_id?: string;
 }
 
 export interface EquipmentCategoryData {

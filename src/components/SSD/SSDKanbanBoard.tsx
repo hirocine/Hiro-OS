@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { SSDCard } from './SSDCard';
 import { SSDStatus } from '@/hooks/useSSDs';
+import { SSDDetailsDialog } from './SSDDetailsDialog';
 import {
   DndContext,
   DragEndEvent,
@@ -29,14 +30,16 @@ interface SSDKanbanBoardProps {
   };
   onStatusChange: (ssdId: string, newStatus: SSDStatus) => void;
   onReorder: (ssdId: string, newStatus: SSDStatus, targetIndex: number) => void;
+  onUpdate: () => void;
 }
 
 interface SortableCardProps {
   ssd: Equipment;
   kanbanStatus: SSDStatus;
+  onCardClick: (ssd: Equipment) => void;
 }
 
-const SortableCard = ({ ssd, kanbanStatus }: SortableCardProps) => {
+const SortableCard = ({ ssd, kanbanStatus, onCardClick }: SortableCardProps) => {
   const {
     attributes,
     listeners,
@@ -66,7 +69,12 @@ const SortableCard = ({ ssd, kanbanStatus }: SortableCardProps) => {
       {...attributes} 
       {...listeners}
     >
-      <SSDCard ssd={ssd} isDragging={isDragging} kanbanStatus={kanbanStatus} />
+      <SSDCard 
+        ssd={ssd} 
+        isDragging={isDragging} 
+        kanbanStatus={kanbanStatus}
+        onClick={() => onCardClick(ssd)}
+      />
     </div>
   );
 };
@@ -76,9 +84,10 @@ interface KanbanColumnProps {
   status: SSDStatus;
   ssds: Equipment[];
   count: number;
+  onCardClick: (ssd: Equipment) => void;
 }
 
-const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
+const KanbanColumn = ({ title, status, ssds, count, onCardClick }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${status}`,
   });
@@ -120,7 +129,12 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
               </div>
             ) : (
               ssds.map((ssd) => (
-                <SortableCard key={ssd.id} ssd={ssd} kanbanStatus={status} />
+                <SortableCard 
+                  key={ssd.id} 
+                  ssd={ssd} 
+                  kanbanStatus={status}
+                  onCardClick={onCardClick}
+                />
               ))
             )}
           </div>
@@ -130,8 +144,11 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
   );
 };
 
-export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDKanbanBoardProps) => {
+export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpdate }: SSDKanbanBoardProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedSSD, setSelectedSSD] = useState<Equipment | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -150,6 +167,15 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+  };
+
+  const handleCardClick = (ssd: Equipment) => {
+    setSelectedSSD(ssd);
+    setDialogOpen(true);
+  };
+
+  const handleDialogUpdate = () => {
+    onUpdate();
   };
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -236,44 +262,56 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
     : undefined;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={hybridCollision}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 isolate">
-        <KanbanColumn
-          title="Livres"
-          status="available"
-          ssds={ssdsByStatus.available}
-          count={ssdsByStatus.available.length}
-        />
-        <KanbanColumn
-          title="Em uso (Interno)"
-          status="in_use"
-          ssds={ssdsByStatus.in_use}
-          count={ssdsByStatus.in_use.length}
-        />
-        <KanbanColumn
-          title="Em uso (Externo)"
-          status="loaned"
-          ssds={ssdsByStatus.loaned}
-          count={ssdsByStatus.loaned.length}
-        />
-      </div>
-      <DragOverlay zIndex={2000}>
-        {activeSSD && activeStatus ? (
-          <div className="
-            shadow-elegant pointer-events-none z-[9999] transform-gpu
-            animate-scale-in rotate-2 scale-105
-            transition-all duration-200 ease-out
-            motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
-          ">
-            <SSDCard ssd={activeSSD} isDragging={false} kanbanStatus={activeStatus} />
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={hybridCollision}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 isolate">
+          <KanbanColumn
+            title="Livres"
+            status="available"
+            ssds={ssdsByStatus.available}
+            count={ssdsByStatus.available.length}
+            onCardClick={handleCardClick}
+          />
+          <KanbanColumn
+            title="Em uso (Interno)"
+            status="in_use"
+            ssds={ssdsByStatus.in_use}
+            count={ssdsByStatus.in_use.length}
+            onCardClick={handleCardClick}
+          />
+          <KanbanColumn
+            title="Em uso (Externo)"
+            status="loaned"
+            ssds={ssdsByStatus.loaned}
+            count={ssdsByStatus.loaned.length}
+            onCardClick={handleCardClick}
+          />
+        </div>
+        <DragOverlay zIndex={2000}>
+          {activeSSD && activeStatus ? (
+            <div className="
+              shadow-elegant pointer-events-none z-[9999] transform-gpu
+              animate-scale-in rotate-2 scale-105
+              transition-all duration-200 ease-out
+              motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
+            ">
+              <SSDCard ssd={activeSSD} isDragging={false} kanbanStatus={activeStatus} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      <SSDDetailsDialog
+        ssd={selectedSSD}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onUpdate={handleDialogUpdate}
+      />
+    </>
   );
 };

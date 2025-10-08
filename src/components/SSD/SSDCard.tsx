@@ -9,6 +9,7 @@ interface SSDCardProps {
   ssd: Equipment;
   isDragging?: boolean;
   kanbanStatus?: SSDStatus;
+  onClick?: () => void;
 }
 
 const getKanbanStatusVariant = (status: SSDStatus) => {
@@ -33,18 +34,20 @@ const getKanbanStatusLabel = (status: SSDStatus) => {
   }
 };
 
-export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
+export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps) => {
   const isSSD = ssd.subcategory?.toLowerCase().includes('ssd');
   const isHD = ssd.subcategory?.toLowerCase().includes('hd');
   
   return (
-    <Card className={cn(
-      "cursor-grab active:cursor-grabbing",
-      "transition-shadow duration-200 ease-out",
-      !isDragging && "hover:shadow-elegant",
-      isDragging && "opacity-50",
-      "motion-reduce:transition-none"
-    )}>
+    <Card 
+      className={cn(
+        "cursor-pointer transition-all duration-200 ease-out",
+        !isDragging && "hover:shadow-elegant hover:scale-[1.02]",
+        isDragging && "opacity-50",
+        "motion-reduce:transition-none"
+      )}
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">

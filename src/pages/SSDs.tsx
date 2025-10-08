@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 const SSDs = () => {
-  const { ssdsByStatus, loading, updateSSDStatus, updateSSDOrder } = useSSDs();
+  const { ssdsByStatus, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
 
   if (loading) {
     return (
@@ -44,6 +44,7 @@ const SSDs = () => {
           ssdsByStatus={ssdsByStatus}
           onStatusChange={updateSSDStatus}
           onReorder={updateSSDOrder}
+          onUpdate={refetch}
         />
       </div>
     </ResponsiveContainer>

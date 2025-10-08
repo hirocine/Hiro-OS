@@ -138,6 +138,7 @@ export type Database = {
           display_order: number | null
           id: string
           image: string | null
+          internal_user_id: string | null
           invoice: string | null
           item_type: string
           last_loan_date: string | null
@@ -168,6 +169,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           image?: string | null
+          internal_user_id?: string | null
           invoice?: string | null
           item_type?: string
           last_loan_date?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           image?: string | null
+          internal_user_id?: string | null
           invoice?: string | null
           item_type?: string
           last_loan_date?: string | null
@@ -553,6 +556,82 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      ssd_allocations: {
+        Row: {
+          allocated_gb: number
+          created_at: string
+          id: string
+          project_name: string
+          ssd_id: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_gb: number
+          created_at?: string
+          id?: string
+          project_name: string
+          ssd_id: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_gb?: number
+          created_at?: string
+          id?: string
+          project_name?: string
+          ssd_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssd_allocations_ssd_id_fkey"
+            columns: ["ssd_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ssd_external_loans: {
+        Row: {
+          actual_return_date: string | null
+          borrower_name: string
+          created_at: string
+          expected_return_date: string
+          id: string
+          loan_date: string
+          ssd_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_return_date?: string | null
+          borrower_name: string
+          created_at?: string
+          expected_return_date: string
+          id?: string
+          loan_date: string
+          ssd_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_return_date?: string | null
+          borrower_name?: string
+          created_at?: string
+          expected_return_date?: string
+          id?: string
+          loan_date?: string
+          ssd_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssd_external_loans_ssd_id_fkey"
+            columns: ["ssd_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_notification_status: {
         Row: {
