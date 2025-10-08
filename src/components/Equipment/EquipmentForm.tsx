@@ -84,92 +84,123 @@ export function EquipmentForm({
     }
   };
 
-  const renderImageUpload = () => (
-    <div className="space-y-4">
-      {imageUrl ? (
-        <div className="relative w-full max-w-md mx-auto">
-          <img 
-            src={imageUrl} 
-            alt="Foto do equipamento"
-            className="w-full h-64 object-cover rounded-lg border"
-          />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            onClick={onImageRemove}
-            className="absolute top-2 right-2"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+  const renderOverview = () => (
+    <div className="space-y-6">
+      {/* Layout Desktop: Grid com Foto à esquerda e campos à direita */}
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-start">
+        {/* Coluna 1: Upload de Foto */}
+        <div className="flex justify-center md:justify-start">
+          <div className="relative">
+            {imageUrl ? (
+              <div className="relative group">
+                <img 
+                  src={imageUrl} 
+                  alt="Foto do equipamento"
+                  className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-xl border-2 border-border shadow-sm"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={onImageRemove}
+                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                {/* Overlay de hover com ícone de editar */}
+                <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <label htmlFor="equipment-image-edit" className="cursor-pointer">
+                    <Image className="h-8 w-8 text-white" />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      id="equipment-image-edit"
+                      disabled={isUploadingImage}
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="equipment-image"
+                  disabled={isUploadingImage}
+                />
+                <label 
+                  htmlFor="equipment-image" 
+                  className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                >
+                  <Image className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-2" />
+                  <span className="text-xs font-medium text-center">Adicionar<br/>Foto</span>
+                </label>
+              </div>
+            )}
+            
+            {/* Loading overlay */}
+            {isUploadingImage && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="equipment-image"
-            disabled={isUploadingImage}
-          />
-          <label htmlFor="equipment-image" className="cursor-pointer">
-            <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-sm font-medium">Clique para adicionar foto</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              JPG, PNG ou WEBP (máx. 10MB)
-            </p>
-          </label>
+
+        {/* Coluna 2: Nome e Marca */}
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name" className="text-base font-semibold">
+              Nome do Equipamento *
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              placeholder="Ex: Canon EOS R5, MacBook Pro 16..."
+              required
+              className="h-12 mt-1.5 text-base"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="brand" className="text-base font-semibold">
+              Marca *
+            </Label>
+            <Input
+              id="brand"
+              value={formData.brand}
+              onChange={(e) => updateField('brand', e.target.value)}
+              placeholder="Ex: Canon, Sony, Apple..."
+              required
+              className="h-12 mt-1.5 text-base"
+            />
+          </div>
         </div>
-      )}
+      </div>
 
-      {isUploadingImage && (
-        <div className="flex items-center justify-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm text-muted-foreground">Fazendo upload...</span>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderBasicInfo = () => (
-    <MobileFriendlyFormGrid>
-      <MobileFriendlyFormField>
-        <Label htmlFor="name">Nome *</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => updateField('name', e.target.value)}
-          placeholder="Ex: Canon EOS R5, Microfone Shure..."
-          required
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="brand">Marca *</Label>
-        <Input
-          id="brand"
-          value={formData.brand}
-          onChange={(e) => updateField('brand', e.target.value)}
-          placeholder="Ex: Canon, Sony, Shure..."
-          required
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-
-      <MobileFriendlyFormField span={2}>
-        <Label htmlFor="description">Descrição</Label>
+      {/* Descrição - Largura completa abaixo */}
+      <div>
+        <Label htmlFor="description" className="text-base font-semibold">
+          Descrição
+        </Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => updateField('description', e.target.value)}
-          placeholder="Descrição detalhada do equipamento, características especiais, etc."
+          placeholder="Descreva as características principais, modelo específico, ano de fabricação, condições especiais..."
           rows={3}
-          className="resize-none"
+          className="resize-none mt-1.5"
         />
-      </MobileFriendlyFormField>
-    </MobileFriendlyFormGrid>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Uma boa descrição ajuda a identificar rapidamente o equipamento
+        </p>
+      </div>
+    </div>
   );
 
   const renderClassification = () => (
@@ -564,8 +595,7 @@ export function EquipmentForm({
   );
 
   const steps = [
-    { title: "Informações Básicas", content: renderBasicInfo() },
-    { title: "Foto do Equipamento", content: renderImageUpload() },
+    { title: "Visão Geral", content: renderOverview() },
     { title: "Classificação", content: renderClassification() },
     { title: "Identificação", content: renderIdentification() },
     { title: "Informações Financeiras", content: renderFinancialInfo() },
@@ -587,12 +617,8 @@ export function EquipmentForm({
 
   return (
     <MobileFriendlyForm onSubmit={onSubmit}>
-      <MobileFriendlyFormSection title="Informações Básicas">
-        {renderBasicInfo()}
-      </MobileFriendlyFormSection>
-
-      <MobileFriendlyFormSection title="Foto do Equipamento">
-        {renderImageUpload()}
+      <MobileFriendlyFormSection title="Visão Geral">
+        {renderOverview()}
       </MobileFriendlyFormSection>
 
       <MobileFriendlyFormSection title="Classificação">
