@@ -84,8 +84,8 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
       <div 
         ref={setNodeRef}
         className={cn(
-          "bg-muted/50 rounded-lg p-4 transition-colors duration-200 overflow-visible",
-          isOver && 'bg-primary/10 ring-2 ring-primary will-change-[background-color]'
+          "relative z-0 bg-muted/50 rounded-lg p-4 transition-colors duration-200 overflow-visible",
+          isOver && 'bg-primary/10 outline outline-2 outline-primary/50 outline-offset-2 will-change-[background-color]'
         )}
       >
         <div className="flex items-center justify-between mb-4">
@@ -186,7 +186,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 isolate">
         <KanbanColumn
           title="Livres"
           status="available"
@@ -206,9 +206,9 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
           count={ssdsByStatus.loaned.length}
         />
       </div>
-      <DragOverlay>
+      <DragOverlay zIndex={2000}>
         {activeSSD ? (
-          <div className="shadow-elegant rotate-3 z-50">
+          <div className="shadow-elegant pointer-events-none z-[9999] transform-gpu">
             <SSDCard ssd={activeSSD} isDragging={false} />
           </div>
         ) : null}
