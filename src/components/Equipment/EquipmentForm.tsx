@@ -14,10 +14,11 @@ import {
 import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { useCategories } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Loader2, Check, ChevronsUpDown, Plus, Image, X } from 'lucide-react';
+import { Loader2, Check, ChevronsUpDown, Plus, Image, X, ChevronDown } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
 
@@ -84,33 +85,268 @@ export function EquipmentForm({
     }
   };
 
-  const renderOverview = () => (
-    <div className="space-y-6">
-      {/* Layout Desktop: Grid com Foto à esquerda e campos à direita */}
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 md:gap-8 items-start">
-        {/* Coluna 1: Upload de Foto */}
+  // Seção 1: Identificação Rápida
+  const renderQuickIdentification = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="name" className="text-sm font-medium">
+          Nome do Equipamento *
+        </Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => updateField('name', e.target.value)}
+          placeholder="Ex: Canon EOS R5"
+          required
+          className="h-10 mt-1"
+        />
+      </MobileFriendlyFormField>
+      
+      <MobileFriendlyFormField>
+        <Label htmlFor="brand" className="text-sm font-medium">
+          Marca *
+        </Label>
+        <Input
+          id="brand"
+          value={formData.brand}
+          onChange={(e) => updateField('brand', e.target.value)}
+          placeholder="Ex: Canon, Sony"
+          required
+          className="h-10 mt-1"
+        />
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="category" className="text-sm font-medium">Categoria *</Label>
+        <Select 
+          value={formData.category} 
+          onValueChange={(value) => {
+            updateField('category', value as EquipmentCategory);
+          }}
+        >
+          <SelectTrigger className="h-10 mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(categoryLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="serialNumber" className="text-sm font-medium">Número de Série</Label>
+        <Input
+          id="serialNumber"
+          value={formData.serialNumber}
+          onChange={(e) => updateField('serialNumber', e.target.value)}
+          placeholder="SN do fabricante"
+          className="h-10 mt-1"
+        />
+      </MobileFriendlyFormField>
+    </MobileFriendlyFormGrid>
+  );
+
+  // Seção 2: Status e Classificação
+  const renderStatusAndType = () => (
+    <MobileFriendlyFormGrid>
+      <MobileFriendlyFormField>
+        <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+        <Select 
+          value={formData.status} 
+          onValueChange={(value) => updateField('status', value as EquipmentStatus)}
+        >
+          <SelectTrigger className="h-10 mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(statusLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="itemType" className="text-sm font-medium">Tipo de Item *</Label>
+        <Select 
+          value={formData.itemType} 
+          onValueChange={(value: EquipmentItemType) => {
+            updateField('itemType', value);
+            if (value === 'main') {
+              updateField('parentId', '');
+            }
+          }}
+        >
+          <SelectTrigger className="h-10 mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="main">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span>Item Principal</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="accessory">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+                <span>Acessório</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      <MobileFriendlyFormField>
+        <Label htmlFor="subcategory" className="text-sm font-medium">Subcategoria</Label>
+        <Select 
+          value={formData.subcategory || ''} 
+          onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
+        >
+          <SelectTrigger className="h-10 mt-1">
+            <SelectValue placeholder="Selecionar" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Nenhuma</SelectItem>
+            {getSubcategoriesForCategory(formData.category).map((subcategory) => (
+              <SelectItem key={subcategory} value={subcategory}>
+                {subcategory}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </MobileFriendlyFormField>
+
+      {formData.itemType === 'accessory' && mainItems.length > 0 && (
+        <MobileFriendlyFormField>
+          <Label htmlFor="parentId" className="text-sm font-medium">Item Principal</Label>
+          <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={parentSearchOpen}
+                className="w-full justify-between h-10 mt-1"
+              >
+                <span className="truncate">{getSelectedParentName()}</span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput 
+                  placeholder="Pesquisar..." 
+                  className="h-9"
+                />
+                <CommandList>
+                  <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="none"
+                      onSelect={() => {
+                        updateField('parentId', '');
+                        setParentSearchOpen(false);
+                      }}
+                    >
+                      <span className="text-muted-foreground text-sm">Nenhum</span>
+                      <Check
+                        className={cn(
+                          "ml-auto h-4 w-4",
+                          (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                    {mainItems.map((item) => (
+                      <CommandItem
+                        key={item.id}
+                        value={`${item.patrimonyNumber || 'S/N'} ${item.name}`}
+                        onSelect={() => {
+                          updateField('parentId', item.id);
+                          setParentSearchOpen(false);
+                        }}
+                      >
+                        <span className="text-sm font-medium">{item.patrimonyNumber || 'S/N'}</span>
+                        <span className="text-muted-foreground mx-1">-</span>
+                        <span className="truncate text-sm">{item.name}</span>
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4",
+                            formData.parentId === item.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </MobileFriendlyFormField>
+      )}
+
+      {formData.category === 'storage' && (
+        <MobileFriendlyFormField>
+          <Label htmlFor="capacity" className="text-sm font-medium">Capacidade (GB)</Label>
+          <Input
+            id="capacity"
+            type="number"
+            step="1"
+            min="0"
+            value={formData.capacity || ''}
+            onChange={(e) => updateField('capacity', parseFloat(e.target.value) || 0)}
+            placeholder="Ex: 256, 500..."
+            className="h-10 mt-1"
+          />
+        </MobileFriendlyFormField>
+      )}
+    </MobileFriendlyFormGrid>
+  );
+
+  // Seção 3: Detalhes Opcionais
+  const renderOptionalDetails = () => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
+        <div>
+          <Label htmlFor="description" className="text-sm font-medium">
+            Descrição
+          </Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => updateField('description', e.target.value)}
+            placeholder="Características principais, modelo, ano..."
+            rows={2}
+            className="resize-none mt-1"
+          />
+        </div>
+        
         <div className="flex justify-center md:justify-start">
           <div className="relative">
             {imageUrl ? (
               <div className="relative group">
                 <img 
                   src={imageUrl} 
-                  alt="Foto do equipamento"
-                  className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-xl border-2 border-border shadow-sm"
+                  alt="Foto"
+                  className="w-20 h-20 object-cover rounded-lg border-2 border-border"
                 />
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
                   onClick={onImageRemove}
-                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1 -right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                 </Button>
-                {/* Overlay de hover com ícone de editar */}
-                <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <label htmlFor="equipment-image-edit" className="cursor-pointer">
-                    <Image className="h-8 w-8 text-white" />
+                    <Image className="h-5 w-5 text-white" />
                     <input
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -134,472 +370,137 @@ export function EquipmentForm({
                 />
                 <label 
                   htmlFor="equipment-image" 
-                  className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                  className="flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
                 >
-                  <Image className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-2" />
-                  <span className="text-xs font-medium text-center">Adicionar<br/>Foto</span>
+                  <Image className="h-6 w-6 text-muted-foreground mb-1" />
+                  <span className="text-[10px] font-medium">Foto</span>
                 </label>
               </div>
             )}
             
-            {/* Loading overlay */}
             {isUploadingImage && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-lg">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
               </div>
             )}
           </div>
         </div>
-
-        {/* Coluna 2: Nome e Marca */}
-        <div className="space-y-4 md:pt-0">
-          <div>
-            <Label htmlFor="name" className="text-base font-semibold">
-              Nome do Equipamento *
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              placeholder="Ex: Canon EOS R5, MacBook Pro 16..."
-              required
-              className="h-12 mt-1.5 text-base"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="brand" className="text-base font-semibold">
-              Marca *
-            </Label>
-            <Input
-              id="brand"
-              value={formData.brand}
-              onChange={(e) => updateField('brand', e.target.value)}
-              placeholder="Ex: Canon, Sony, Apple..."
-              required
-              className="h-12 mt-1.5 text-base"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Descrição - Largura completa abaixo */}
-      <div>
-        <Label htmlFor="description" className="text-base font-semibold">
-          Descrição
-        </Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => updateField('description', e.target.value)}
-          placeholder="Descreva as características principais, modelo específico, ano de fabricação, condições especiais..."
-          rows={3}
-          className="resize-none mt-1.5"
-        />
-        <p className="text-xs text-muted-foreground mt-1.5">
-          Uma boa descrição ajuda a identificar rapidamente o equipamento
-        </p>
       </div>
     </div>
   );
 
-  const renderClassification = () => (
-    <MobileFriendlyFormGrid>
-      <MobileFriendlyFormField>
-        <Label htmlFor="category">Categoria *</Label>
-        <Select 
-          value={formData.category} 
-          onValueChange={(value) => {
-            updateField('category', value as EquipmentCategory);
-          }}
+  // Seção 4: Informações Administrativas (Collapsible)
+  const renderAdministrativeInfo = () => (
+    <Collapsible defaultOpen={isMobile}>
+      <CollapsibleTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-between h-10 mb-4"
         >
-          <SelectTrigger className="h-12">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </MobileFriendlyFormField>
+          <span className="text-sm font-medium">Informações Financeiras e Datas</span>
+          <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-4">
+        <MobileFriendlyFormGrid>
+          <MobileFriendlyFormField>
+            <Label htmlFor="patrimonyNumber" className="text-sm font-medium">Nº Patrimônio</Label>
+            <Input
+              id="patrimonyNumber"
+              value={formData.patrimonyNumber}
+              onChange={(e) => updateField('patrimonyNumber', e.target.value)}
+              placeholder="Código interno"
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
 
-      <MobileFriendlyFormField>
-        <Label htmlFor="subcategory">Subcategoria</Label>
-        <Select 
-          value={formData.subcategory || ''} 
-          onValueChange={(value) => updateField('subcategory', value === 'none' ? '' : value)}
-        >
-          <SelectTrigger className="h-12">
-            <SelectValue placeholder="Selecionar subcategoria" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Nenhuma</SelectItem>
-            {getSubcategoriesForCategory(formData.category).map((subcategory) => (
-              <SelectItem key={subcategory} value={subcategory}>
-                {subcategory}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </MobileFriendlyFormField>
+          <MobileFriendlyFormField>
+            <Label htmlFor="value" className="text-sm font-medium">Valor de Compra</Label>
+            <Input
+              id="value"
+              value={formData.value > 0 ? formatCurrency(formData.value) : ''}
+              onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
+              placeholder="R$ 0,00"
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+          
+          <MobileFriendlyFormField>
+            <Label htmlFor="depreciatedValue" className="text-sm font-medium">Valor Depreciado</Label>
+            <Input
+              id="depreciatedValue"
+              value={formData.depreciatedValue > 0 ? formatCurrency(formData.depreciatedValue) : ''}
+              onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
+              placeholder="R$ 0,00"
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+          
+          <MobileFriendlyFormField>
+            <Label htmlFor="store" className="text-sm font-medium">Loja/Fornecedor</Label>
+            <Input
+              id="store"
+              value={formData.store}
+              onChange={(e) => updateField('store', e.target.value)}
+              placeholder="Nome da loja"
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+          
+          <MobileFriendlyFormField>
+            <Label htmlFor="invoice" className="text-sm font-medium">Nota Fiscal</Label>
+            <Input
+              id="invoice"
+              value={formData.invoice}
+              onChange={(e) => updateField('invoice', e.target.value)}
+              placeholder="Número da NF"
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
 
-      <MobileFriendlyFormField>
-        <Label htmlFor="status">Status *</Label>
-        <Select 
-          value={formData.status} 
-          onValueChange={(value) => updateField('status', value as EquipmentStatus)}
-        >
-          <SelectTrigger className="h-12">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(statusLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </MobileFriendlyFormField>
-
-      <MobileFriendlyFormField>
-        <Label htmlFor="itemType">Tipo de Item *</Label>
-        <Select 
-          value={formData.itemType} 
-          onValueChange={(value: EquipmentItemType) => {
-            updateField('itemType', value);
-            if (value === 'main') {
-              updateField('parentId', '');
-            }
-          }}
-        >
-          <SelectTrigger className="h-12">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="main">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary rounded-full"></div>
-                <span className="font-medium">Item Principal</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="accessory">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                <span className="font-medium">Acessório</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        {formData.itemType === 'main' && (
-          <p className="text-sm text-muted-foreground mt-1">
-            Este item pode ter acessórios associados a ele
-          </p>
-        )}
-        {formData.itemType === 'accessory' && (
-          <p className="text-sm text-muted-foreground mt-1">
-            Este item será vinculado a um item principal
-          </p>
-        )}
-      </MobileFriendlyFormField>
-
-      {formData.itemType === 'accessory' && (
-        <MobileFriendlyFormField span={2}>
-          <Label htmlFor="parentId">Item Principal</Label>
-          {mainItems.length === 0 ? (
-            <div className="p-4 bg-muted/50 rounded-lg text-center">
-              <p className="text-muted-foreground text-sm">
-                Nenhum item principal disponível. Crie primeiro um item principal para poder associar acessórios.
-              </p>
-            </div>
-          ) : (
-            <Popover open={parentSearchOpen} onOpenChange={setParentSearchOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={parentSearchOpen}
-                  className="w-full justify-between h-12"
-                >
-                  {getSelectedParentName()}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput 
-                    placeholder="Pesquisar item principal..." 
-                    className="h-9"
-                  />
-                  <CommandList>
-                    <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="none"
-                        onSelect={() => {
-                          updateField('parentId', '');
-                          setParentSearchOpen(false);
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-muted-foreground/50 rounded-full"></div>
-                          <span className="text-muted-foreground">Nenhum (acessório independente)</span>
-                        </div>
-                        <Check
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            (!formData.parentId || formData.parentId === 'none') ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                      {mainItems.map((item) => (
-                        <CommandItem
-                          key={item.id}
-                          value={`${item.patrimonyNumber || 'S/N'} ${item.name} ${item.brand}`}
-                          onSelect={() => {
-                            updateField('parentId', item.id);
-                            setParentSearchOpen(false);
-                          }}
-                        >
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="w-3 h-3 bg-primary rounded-full"></div>
-                            <span className="font-medium">{item.patrimonyNumber || 'S/N'}</span>
-                            <span className="text-muted-foreground">-</span>
-                            <span className="truncate">{item.name}</span>
-                            <span className="text-muted-foreground text-sm">({item.brand})</span>
-                          </div>
-                          <Check
-                            className={cn(
-                              "ml-auto h-4 w-4",
-                              formData.parentId === item.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          )}
-          {formData.parentId && formData.parentId !== 'none' && mainItems.length > 0 && (
-            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-              ✓ Este acessório será vinculado ao item selecionado
-            </p>
-          )}
-        </MobileFriendlyFormField>
-      )}
-
-      <MobileFriendlyFormField span={2}>
-        <div className="flex items-center justify-between">
-          <Label>Adicionar Nova Categoria/Subcategoria</Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCustomCategory(!showCustomCategory)}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            {showCustomCategory ? 'Cancelar' : 'Nova Categoria'}
-          </Button>
-        </div>
-        
-        {showCustomCategory && (
-          <div className="p-4 bg-muted/50 rounded-lg space-y-3 mt-2">
-            <MobileFriendlyFormGrid>
-              <MobileFriendlyFormField>
-                <Label htmlFor="newCategory">Categoria</Label>
-                <Input
-                  id="newCategory"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Ex: storage, camera..."
-                  className="h-12"
-                />
-              </MobileFriendlyFormField>
-              <MobileFriendlyFormField>
-                <Label htmlFor="newSubcategory">Subcategoria</Label>
-                <Input
-                  id="newSubcategory"
-                  value={newSubcategoryName}
-                  onChange={(e) => setNewSubcategoryName(e.target.value)}
-                  placeholder="Ex: SSD/HD, Filtro..."
-                  className="h-12"
-                />
-              </MobileFriendlyFormField>
-            </MobileFriendlyFormGrid>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={async () => {
-                if (newCategoryName && newSubcategoryName) {
-                  try {
-                    await addCustomCategory(newCategoryName, newSubcategoryName);
-                    updateField('category', newCategoryName as EquipmentCategory);
-                    updateField('subcategory', newSubcategoryName);
-                    setNewCategoryName('');
-                    setNewSubcategoryName('');
-                    setShowCustomCategory(false);
-                    enhancedToast.success({
-                      title: 'Categoria adicionada',
-                      description: 'Nova categoria/subcategoria criada com sucesso!'
-                    });
-                  } catch (error) {
-                    enhancedToast.error({
-                      title: 'Erro',
-                      description: 'Erro ao criar nova categoria. Tente novamente.'
-                    });
-                  }
-                }
-              }}
-              disabled={!newCategoryName || !newSubcategoryName}
-              className="h-11"
-            >
-              Adicionar e Usar
-            </Button>
-          </div>
-        )}
-      </MobileFriendlyFormField>
-    </MobileFriendlyFormGrid>
-  );
-
-  const renderIdentification = () => (
-    <MobileFriendlyFormGrid>
-      <MobileFriendlyFormField>
-        <Label htmlFor="serialNumber">Número de Série</Label>
-        <Input
-          id="serialNumber"
-          value={formData.serialNumber}
-          onChange={(e) => updateField('serialNumber', e.target.value)}
-          placeholder="Número de série do fabricante"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="patrimonyNumber">Número do Patrimônio</Label>
-        <Input
-          id="patrimonyNumber"
-          value={formData.patrimonyNumber}
-          onChange={(e) => updateField('patrimonyNumber', e.target.value)}
-          placeholder="Código interno de patrimônio"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-
-      {formData.category === 'storage' && (
-        <MobileFriendlyFormField>
-          <Label htmlFor="capacity">Capacidade (GB)</Label>
-          <Input
-            id="capacity"
-            type="number"
-            step="1"
-            min="0"
-            value={formData.capacity || ''}
-            onChange={(e) => updateField('capacity', parseFloat(e.target.value) || 0)}
-            placeholder="Ex: 256, 500, 1000..."
-            className="h-12"
-          />
-        </MobileFriendlyFormField>
-      )}
-    </MobileFriendlyFormGrid>
-  );
-
-  const renderFinancialInfo = () => (
-    <MobileFriendlyFormGrid>
-      <MobileFriendlyFormField>
-        <Label htmlFor="value">Valor de Compra</Label>
-        <Input
-          id="value"
-          value={formData.value > 0 ? formatCurrency(formData.value) : ''}
-          onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
-          placeholder="R$ 0,00"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="depreciatedValue">Valor Depreciado</Label>
-        <Input
-          id="depreciatedValue"
-          value={formData.depreciatedValue > 0 ? formatCurrency(formData.depreciatedValue) : ''}
-          onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
-          placeholder="R$ 0,00"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="store">Loja/Fornecedor</Label>
-        <Input
-          id="store"
-          value={formData.store}
-          onChange={(e) => updateField('store', e.target.value)}
-          placeholder="Nome da loja ou fornecedor"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="invoice">Nota Fiscal</Label>
-        <Input
-          id="invoice"
-          value={formData.invoice}
-          onChange={(e) => updateField('invoice', e.target.value)}
-          placeholder="Número da nota fiscal"
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-    </MobileFriendlyFormGrid>
-  );
-
-  const renderDates = () => (
-    <MobileFriendlyFormGrid>
-      <MobileFriendlyFormField>
-        <Label htmlFor="purchaseDate">Data de Compra</Label>
-        <Input
-          id="purchaseDate"
-          type="date"
-          value={formData.purchaseDate}
-          onChange={(e) => updateField('purchaseDate', e.target.value)}
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="receiveDate">Data de Recebimento</Label>
-        <Input
-          id="receiveDate"
-          type="date"
-          value={formData.receiveDate}
-          onChange={(e) => updateField('receiveDate', e.target.value)}
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-      
-      <MobileFriendlyFormField>
-        <Label htmlFor="lastMaintenance">Última Manutenção</Label>
-        <Input
-          id="lastMaintenance"
-          type="date"
-          value={formData.lastMaintenance}
-          onChange={(e) => updateField('lastMaintenance', e.target.value)}
-          className="h-12"
-        />
-      </MobileFriendlyFormField>
-    </MobileFriendlyFormGrid>
+          <MobileFriendlyFormField>
+            <Label htmlFor="purchaseDate" className="text-sm font-medium">Data de Compra</Label>
+            <Input
+              id="purchaseDate"
+              type="date"
+              value={formData.purchaseDate}
+              onChange={(e) => updateField('purchaseDate', e.target.value)}
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+          
+          <MobileFriendlyFormField>
+            <Label htmlFor="receiveDate" className="text-sm font-medium">Data de Recebimento</Label>
+            <Input
+              id="receiveDate"
+              type="date"
+              value={formData.receiveDate}
+              onChange={(e) => updateField('receiveDate', e.target.value)}
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+          
+          <MobileFriendlyFormField>
+            <Label htmlFor="lastMaintenance" className="text-sm font-medium">Última Manutenção</Label>
+            <Input
+              id="lastMaintenance"
+              type="date"
+              value={formData.lastMaintenance}
+              onChange={(e) => updateField('lastMaintenance', e.target.value)}
+              className="h-10"
+            />
+          </MobileFriendlyFormField>
+        </MobileFriendlyFormGrid>
+      </CollapsibleContent>
+    </Collapsible>
   );
 
   const steps = [
-    { title: "Visão Geral", content: renderOverview() },
-    { title: "Classificação", content: renderClassification() },
-    { title: "Identificação", content: renderIdentification() },
-    { title: "Informações Financeiras", content: renderFinancialInfo() },
-    { title: "Datas", content: renderDates() }
+    { title: "Identificação", content: renderQuickIdentification() },
+    { title: "Status e Tipo", content: renderStatusAndType() },
+    { title: "Detalhes", content: renderOptionalDetails() },
+    { title: "Informações Financeiras", content: renderAdministrativeInfo() }
   ];
 
   if (isMobile) {
@@ -617,24 +518,20 @@ export function EquipmentForm({
 
   return (
     <MobileFriendlyForm onSubmit={onSubmit}>
-      <MobileFriendlyFormSection title="Visão Geral">
-        {renderOverview()}
+      <MobileFriendlyFormSection title="Identificação Rápida">
+        {renderQuickIdentification()}
       </MobileFriendlyFormSection>
 
-      <MobileFriendlyFormSection title="Classificação">
-        {renderClassification()}
+      <MobileFriendlyFormSection title="Status e Classificação">
+        {renderStatusAndType()}
       </MobileFriendlyFormSection>
 
-      <MobileFriendlyFormSection title="Identificação">
-        {renderIdentification()}
+      <MobileFriendlyFormSection title="Detalhes Opcionais">
+        {renderOptionalDetails()}
       </MobileFriendlyFormSection>
 
-      <MobileFriendlyFormSection title="Informações Financeiras">
-        {renderFinancialInfo()}
-      </MobileFriendlyFormSection>
-
-      <MobileFriendlyFormSection title="Datas">
-        {renderDates()}
+      <MobileFriendlyFormSection title="Informações Administrativas">
+        {renderAdministrativeInfo()}
       </MobileFriendlyFormSection>
 
       <MobileFriendlyFormActions>
@@ -643,10 +540,11 @@ export function EquipmentForm({
           variant="outline" 
           onClick={onCancel}
           disabled={isSubmitting}
+          className="h-10"
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="h-10">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isEditMode ? 'Atualizar' : 'Adicionar'}
         </Button>
