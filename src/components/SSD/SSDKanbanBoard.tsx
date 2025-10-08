@@ -51,7 +51,13 @@ const SortableCard = ({ ssd }: SortableCardProps) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={cn(isDragging && "opacity-0")}
+      {...attributes} 
+      {...listeners}
+    >
       <SSDCard ssd={ssd} isDragging={isDragging} />
     </div>
   );
@@ -74,11 +80,11 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
   // (removido items)
   
   return (
-    <div className="flex-1 min-w-[280px]">
+    <div className="flex-1 min-w-[280px] overflow-visible">
       <div 
         ref={setNodeRef}
         className={cn(
-          "bg-muted/50 rounded-lg p-4 transition-colors duration-200",
+          "bg-muted/50 rounded-lg p-4 transition-colors duration-200 overflow-visible",
           isOver && 'bg-primary/10 ring-2 ring-primary will-change-[background-color]'
         )}
       >
@@ -202,7 +208,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
       </div>
       <DragOverlay>
         {activeSSD ? (
-          <div className="shadow-elegant rotate-3">
+          <div className="shadow-elegant rotate-3 z-50">
             <SSDCard ssd={activeSSD} isDragging={false} />
           </div>
         ) : null}
