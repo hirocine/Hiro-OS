@@ -58,7 +58,7 @@ export function MobileSidebar() {
       >
         {/* Header com Logo */}
         <SheetHeader className={cn(
-          "flex-row items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 px-4 py-4",
+          "flex-row items-center justify-between border-b border-border px-4 py-4",
           isPWA && "pt-[calc(1rem+env(safe-area-inset-top,0px))]"
         )}>
           <div className="flex items-center gap-3">
