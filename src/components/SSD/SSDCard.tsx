@@ -40,10 +40,10 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus }: SSDCardProps) => {
   return (
     <Card className={cn(
       "cursor-grab active:cursor-grabbing",
-      "transition-shadow duration-200 ease-out",
-      !isDragging && "hover:shadow-elegant",
+      "transition-all duration-200 ease-out",
+      !isDragging && "hover:shadow-elegant hover:scale-[1.02]",
       isDragging && "opacity-50",
-      "motion-reduce:transition-none"
+      "motion-reduce:transition-none motion-reduce:hover:scale-100"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">

@@ -88,7 +88,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
   // (removido items)
   
   return (
-    <div className="flex-1 min-w-[280px] overflow-visible">
+    <div className="flex-1 min-w-[280px] overflow-visible animate-fade-in">
       <div 
         ref={setNodeRef}
         className={cn(
@@ -243,24 +243,30 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 isolate">
-        <KanbanColumn
-          title="Livres"
-          status="available"
-          ssds={ssdsByStatus.available}
-          count={ssdsByStatus.available.length}
-        />
-        <KanbanColumn
-          title="Em Uso"
-          status="in_use"
-          ssds={ssdsByStatus.in_use}
-          count={ssdsByStatus.in_use.length}
-        />
-        <KanbanColumn
-          title="Emprestado"
-          status="loaned"
-          ssds={ssdsByStatus.loaned}
-          count={ssdsByStatus.loaned.length}
-        />
+        <div style={{ animationDelay: '0ms' }}>
+          <KanbanColumn
+            title="Livres"
+            status="available"
+            ssds={ssdsByStatus.available}
+            count={ssdsByStatus.available.length}
+          />
+        </div>
+        <div style={{ animationDelay: '100ms' }}>
+          <KanbanColumn
+            title="Em Uso"
+            status="in_use"
+            ssds={ssdsByStatus.in_use}
+            count={ssdsByStatus.in_use.length}
+          />
+        </div>
+        <div style={{ animationDelay: '200ms' }}>
+          <KanbanColumn
+            title="Emprestado"
+            status="loaned"
+            ssds={ssdsByStatus.loaned}
+            count={ssdsByStatus.loaned.length}
+          />
+        </div>
       </div>
       <DragOverlay zIndex={2000}>
         {activeSSD && activeStatus ? (
