@@ -52,14 +52,14 @@ export function MobileSidebar() {
       <SheetContent 
         side="left" 
         className={cn(
-          "w-80 flex flex-col [&>button]:hidden",
+          "w-80 flex flex-col p-0 [&>button]:hidden",
           isPWA && "pt-[env(safe-area-inset-top,0px)]"
         )}
       >
         {/* Header com Logo */}
         <SheetHeader className={cn(
-          "h-28 flex-row items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-primary/10",
-          isPWA ? "px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))]" : "px-4 py-4"
+          "flex-row items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 px-4 py-4",
+          isPWA && "pt-[calc(1rem+env(safe-area-inset-top,0px))]"
         )}>
           <div className="flex items-center gap-3">
             <img 
@@ -163,7 +163,9 @@ export function MobileSidebar() {
         </ScrollArea>
 
         {/* User Profile - Sticky Bottom */}
-        <SidebarUserProfile isMobile />
+        <div className="px-4 py-4 border-t border-border">
+          <SidebarUserProfile isMobile />
+        </div>
       </SheetContent>
     </Sheet>
   );
