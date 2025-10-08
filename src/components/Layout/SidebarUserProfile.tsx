@@ -36,10 +36,9 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
   if (isMobile) {
     return (
-      <div className="bg-card/50 backdrop-blur-sm py-6 px-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-3 cursor-pointer transition-colors">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-3 w-full hover:bg-accent/50 rounded-lg p-3 cursor-pointer transition-colors">
               <div className="relative w-12 h-12 shrink-0">
                 <Avatar className="w-full h-full ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
@@ -74,9 +73,8 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
               <LogOut className="mr-2 h-4 w-4" />
               Sair
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
 
