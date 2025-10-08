@@ -27,9 +27,9 @@ const getKanbanStatusLabel = (status: SSDStatus) => {
     case 'available':
       return 'Disponível';
     case 'in_use':
-      return 'Em Uso';
+      return 'Em uso (Interno)';
     case 'loaned':
-      return 'Emprestado';
+      return 'Em uso (Externo)';
   }
 };
 
