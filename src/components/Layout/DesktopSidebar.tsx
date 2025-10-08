@@ -9,6 +9,7 @@ import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -105,6 +106,10 @@ export function DesktopSidebar() {
 
           {/* Seção Admin */}
           {isAdmin && (
+            <>
+              <div className="px-2 mb-4">
+                <Separator className="mb-4" />
+              </div>
             <div className="px-2 mb-4">
               <nav className="space-y-1">
                 {adminNavigation.map((item) => {
@@ -139,6 +144,7 @@ export function DesktopSidebar() {
                 })}
               </nav>
             </div>
+            </>
           )}
         </div>
       </ScrollArea>

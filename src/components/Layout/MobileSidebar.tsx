@@ -10,6 +10,7 @@ import { useIsPWA } from '@/hooks/useIsPWA';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -122,6 +123,10 @@ export function MobileSidebar() {
 
             {/* Seção Admin */}
             {isAdmin && (
+              <>
+                <div className="px-4 mb-4">
+                  <Separator className="mb-4" />
+                </div>
               <div className="px-4 mb-4">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">
                   Administração
@@ -154,6 +159,7 @@ export function MobileSidebar() {
                   })}
                 </nav>
               </div>
+              </>
             )}
 
             {/* Ferramentas */}
