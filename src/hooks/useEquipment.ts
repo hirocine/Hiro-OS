@@ -75,6 +75,7 @@ export function useEquipment(): UseEquipmentReturn {
         subcategory: item.subcategory || undefined,
         customCategory: item.custom_category || undefined,
         status: item.status === 'maintenance' ? 'maintenance' : 'available',
+        simplifiedStatus: (item.simplified_status || 'available') as 'available' | 'in_project',
         itemType: (item.item_type || 'main') as Equipment['itemType'],
         parentId: item.parent_id || undefined,
         hasAccessories: false,
@@ -314,7 +315,7 @@ export function useEquipment(): UseEquipmentReturn {
   const stats: DashboardStats = useMemo(() => {
     const total = enrichedEquipment.length;
     const available = enrichedEquipment.filter(item => item.status === 'available').length;
-    const inUse = 0; // Equipment can be in multiple projects, so no "in use" exclusive status
+    const inUse = enrichedEquipment.filter(item => item.simplifiedStatus === 'in_project').length;
     const maintenance = enrichedEquipment.filter(item => item.status === 'maintenance').length;
     const mainItems = enrichedEquipment.filter(item => item.itemType === 'main').length;
     const accessories = enrichedEquipment.filter(item => item.itemType === 'accessory').length;

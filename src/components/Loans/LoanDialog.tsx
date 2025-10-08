@@ -27,9 +27,9 @@ interface LoanDialogProps {
 export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, onSubmit }: LoanDialogProps) {
   const [formData, setFormData] = useState({
     borrowerName: currentLoan?.borrowerName || '',
-    borrowerEmail: currentLoan?.borrowerEmail || '',
-    borrowerPhone: currentLoan?.borrowerPhone || '',
-    department: currentLoan?.department || '',
+    borrowerEmail: '',
+    borrowerPhone: '',
+    department: '',
     project: currentLoan?.project || '',
     expectedReturnDate: '',
     notes: currentLoan?.notes || '',
@@ -45,16 +45,19 @@ export function LoanDialog({ open, onOpenChange, equipment, mode, currentLoan, o
         equipmentId: equipment.id,
         equipmentName: equipment.name,
         borrowerName: formData.borrowerName,
-        borrowerEmail: formData.borrowerEmail,
-        borrowerPhone: formData.borrowerPhone,
-        department: formData.department,
         project: formData.project,
         loanDate: new Date().toISOString().split('T')[0],
         expectedReturnDate: formData.expectedReturnDate,
         status: 'active',
         notes: formData.notes
       };
-      onSubmit(loanData);
+      // Contact info will be handled separately via borrower_contacts table
+      const contactInfo = {
+        borrowerEmail: formData.borrowerEmail,
+        borrowerPhone: formData.borrowerPhone,
+        department: formData.department
+      };
+      onSubmit({ ...loanData, _contactInfo: contactInfo });
     } else {
       const returnData = {
         returnCondition: formData.returnCondition,

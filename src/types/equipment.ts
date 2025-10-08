@@ -12,6 +12,7 @@ export interface Equipment {
   subcategory?: string;
   customCategory?: string;
   status: EquipmentStatus;
+  simplifiedStatus?: 'available' | 'in_project';
   itemType: EquipmentItemType;
   parentId?: string;
   hasAccessories?: boolean;

@@ -3,9 +3,6 @@ export interface Loan {
   equipmentId: string;
   equipmentName: string;
   borrowerName: string;
-  borrowerEmail?: string;
-  borrowerPhone?: string;
-  department?: string;
   project?: string;
   loanDate: string;
   expectedReturnDate: string;
@@ -14,6 +11,13 @@ export interface Loan {
   notes?: string;
   returnCondition?: 'excellent' | 'good' | 'fair' | 'damaged';
   returnNotes?: string;
+}
+
+export interface LoanContactInfo {
+  loanId: string;
+  borrowerEmail?: string;
+  borrowerPhone?: string;
+  department?: string;
 }
 
 export interface LoanFilters {

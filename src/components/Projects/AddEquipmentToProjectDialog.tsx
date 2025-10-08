@@ -175,9 +175,6 @@ export function AddEquipmentToProjectDialog({
             equipmentId: equipment.id,
             equipmentName: equipment.name,
             borrowerName: borrowerName.trim(),
-            borrowerEmail: borrowerEmail.trim() || undefined,
-            borrowerPhone: borrowerPhone.trim() || undefined,
-            department: project.department || undefined,
             project: project.name, // Use project name for linking
             loanDate: format(new Date(), 'yyyy-MM-dd'),
             expectedReturnDate: format(expectedReturnDate, 'yyyy-MM-dd'),
