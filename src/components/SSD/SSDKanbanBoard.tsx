@@ -85,7 +85,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
         ref={setNodeRef}
         className={cn(
           "relative z-0 bg-muted/50 rounded-lg p-4 transition-colors duration-200 overflow-visible",
-          isOver && 'bg-primary/10 outline outline-2 outline-primary/50 outline-offset-2 will-change-[background-color]'
+          isOver && 'bg-primary/10 will-change-[background-color]'
         )}
       >
         <div className="flex items-center justify-between mb-4">
