@@ -34,8 +34,8 @@ function LayoutContent() {
           "flex-1 w-full min-h-screen",
           isMobile 
             ? isPWA 
-              ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
-              : "pt-14 pb-4"
+              ? "pt-[calc(7rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
+              : "pt-28 pb-4"
             : "pl-16" // Desktop: padding-left para sidebar 64px
         )}
       >
