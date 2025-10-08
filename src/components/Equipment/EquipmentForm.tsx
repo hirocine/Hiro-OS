@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { categoryLabels, statusLabels } from '@/data/mockData';
 import { useCategories } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Loader2, Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { Loader2, Check, ChevronsUpDown, Plus, Image, X } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +42,10 @@ interface EquipmentFormProps {
   formatCurrency: (value: number | string) => string;
   parseCurrencyInput: (value: string) => number;
   getSelectedParentName: () => string;
+  imageUrl?: string;
+  isUploadingImage: boolean;
+  onImageUpload: (file: File) => Promise<void>;
+  onImageRemove: () => void;
 }
 
 export function EquipmentForm({
@@ -64,10 +68,69 @@ export function EquipmentForm({
   setCurrentStep,
   formatCurrency,
   parseCurrencyInput,
-  getSelectedParentName
+  getSelectedParentName,
+  imageUrl,
+  isUploadingImage,
+  onImageUpload,
+  onImageRemove
 }: EquipmentFormProps) {
   const { getSubcategoriesForCategory, addCustomCategory } = useCategories();
   const isMobile = useIsMobile();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImageUpload(file);
+    }
+  };
+
+  const renderImageUpload = () => (
+    <div className="space-y-4">
+      {imageUrl ? (
+        <div className="relative w-full max-w-md mx-auto">
+          <img 
+            src={imageUrl} 
+            alt="Foto do equipamento"
+            className="w-full h-64 object-cover rounded-lg border"
+          />
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            onClick={onImageRemove}
+            className="absolute top-2 right-2"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+          <input
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            onChange={handleFileSelect}
+            className="hidden"
+            id="equipment-image"
+            disabled={isUploadingImage}
+          />
+          <label htmlFor="equipment-image" className="cursor-pointer">
+            <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-sm font-medium">Clique para adicionar foto</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              JPG, PNG ou WEBP (máx. 10MB)
+            </p>
+          </label>
+        </div>
+      )}
+
+      {isUploadingImage && (
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm text-muted-foreground">Fazendo upload...</span>
+        </div>
+      )}
+    </div>
+  );
 
   const renderBasicInfo = () => (
     <MobileFriendlyFormGrid>
@@ -502,6 +565,7 @@ export function EquipmentForm({
 
   const steps = [
     { title: "Informações Básicas", content: renderBasicInfo() },
+    { title: "Foto do Equipamento", content: renderImageUpload() },
     { title: "Classificação", content: renderClassification() },
     { title: "Identificação", content: renderIdentification() },
     { title: "Informações Financeiras", content: renderFinancialInfo() },
@@ -525,6 +589,10 @@ export function EquipmentForm({
     <MobileFriendlyForm onSubmit={onSubmit}>
       <MobileFriendlyFormSection title="Informações Básicas">
         {renderBasicInfo()}
+      </MobileFriendlyFormSection>
+
+      <MobileFriendlyFormSection title="Foto do Equipamento">
+        {renderImageUpload()}
       </MobileFriendlyFormSection>
 
       <MobileFriendlyFormSection title="Classificação">
