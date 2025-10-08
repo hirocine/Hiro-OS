@@ -66,11 +66,10 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
     id: `column-${status}`,
   });
 
-  // Add placeholder item when column is empty to ensure valid drop area
-  const items = ssds.length === 0 
-    ? [`placeholder-${status}`] 
-    : ssds.map(s => s.id);
-
+  // Placeholder visual only; coluna é a área drop válida
+  // Mantemos SortableContext apenas com IDs reais
+  // (removido items)
+  
   return (
     <div className="flex-1 min-w-[280px]">
       <div 
@@ -86,7 +85,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
             {count}
           </span>
         </div>
-        <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        <SortableContext items={ssds.map(s => s.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2 min-h-[200px]">
             {ssds.length === 0 ? (
               <div 
@@ -135,9 +134,11 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
     // Determinar o novo status baseado na coluna de destino
     let newStatus: SSDStatus | null = null;
     
-    // Verificar se foi solto diretamente sobre uma coluna
+    // Verificar se foi solto diretamente sobre uma coluna ou placeholder
     if (overId.startsWith('column-')) {
       newStatus = overId.replace('column-', '') as SSDStatus;
+    } else if (overId.startsWith('placeholder-')) {
+      newStatus = overId.replace('placeholder-', '') as SSDStatus;
     } else {
       // Foi solto sobre outro SSD, determinar a coluna pela posição do SSD
       if (ssdsByStatus.available.some(s => s.id === overId)) {
