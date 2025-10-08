@@ -835,7 +835,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                               <AvatarImage src={avatarData.url || undefined} alt={user.display_name || user.email} />
                               <AvatarFallback>{avatarData.initials}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col items-start">
                               <span className="font-medium">
                                 {user.display_name || user.email}
                               </span>
