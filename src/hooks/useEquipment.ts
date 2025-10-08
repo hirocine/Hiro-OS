@@ -38,7 +38,6 @@ export function useEquipment(): UseEquipmentReturn {
 
   // Fetch equipment from Supabase
   useEffect(() => {
-    console.log('🚀 [useEquipment] useEffect executado - iniciando fetch');
     fetchEquipment();
   }, []);
 
@@ -54,15 +53,7 @@ export function useEquipment(): UseEquipmentReturn {
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('📡 [useEquipment] Resposta do Supabase:', { 
-        hasData: !!data, 
-        dataLength: data?.length || 0, 
-        hasError: !!error, 
-        error: error?.message 
-      });
-
       if (error) {
-        console.error('❌ [useEquipment] Erro na busca:', error);
         throw createDatabaseError('Erro ao buscar equipamentos', error.message);
       }
 
@@ -96,26 +87,14 @@ export function useEquipment(): UseEquipmentReturn {
         lastLoanDate: item.last_loan_date || undefined,
       }));
       
-      console.log('✅ [useEquipment] Dados transformados:', { 
-        equipmentDataLength: equipmentData.length,
-        firstItem: equipmentData[0]?.name || 'Nenhum item',
-        sampleIds: equipmentData.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
-      });
-      
       logger.apiResponse('fetchEquipment', 'success', null, { count: equipmentData.length });
       return equipmentData;
     });
 
     if (result.error) {
-      console.error('❌ [useEquipment] Erro no resultado:', result.error.message);
       logger.error('Falha ao buscar equipamentos', { error: result.error.message });
       setError(result.error.message);
     } else {
-      console.log('🎯 [useEquipment] Setando equipamentos no estado:', { 
-        length: result.data?.length || 0,
-        hasData: !!(result.data && result.data.length > 0),
-        sampleData: result.data?.slice(0, 3).map(item => ({ id: item.id, name: item.name })) || []
-      });
       setEquipment(result.data || []);
     }
     
@@ -193,57 +172,24 @@ export function useEquipment(): UseEquipmentReturn {
   };
 
   const filteredEquipment = useMemo(() => {
-    console.log('🎯 [useEquipment] Iniciando filteredEquipment:', { 
-      enrichedLength: enrichedEquipment.length,
-      activeFilters: filters,
-      hasFilters: Object.keys(filters).length > 0,
-      sampleEnriched: enrichedEquipment.slice(0, 2).map(item => ({ 
-        id: item.id, 
-        name: item.name, 
-        category: item.category,
-        status: item.status,
-        itemType: item.itemType 
-      }))
-    });
-    
     let filtered = enrichedEquipment.filter((item) => {
       // Apply category filter
       if (filters.category && item.category !== filters.category) {
-        console.log('❌ [useEquipment] Item filtrado por categoria:', { 
-          itemId: item.id, 
-          itemCategory: item.category, 
-          filterCategory: filters.category 
-        });
         return false;
       }
       
       // Apply status filter
       if (filters.status && item.status !== filters.status) {
-        console.log('❌ [useEquipment] Item filtrado por status:', { 
-          itemId: item.id, 
-          itemStatus: item.status, 
-          filterStatus: filters.status 
-        });
         return false;
       }
       
       // Apply item type filter
       if (filters.itemType && item.itemType !== filters.itemType) {
-        console.log('❌ [useEquipment] Item filtrado por tipo:', { 
-          itemId: item.id, 
-          itemType: item.itemType, 
-          filterType: filters.itemType 
-        });
         return false;
       }
       
       // Apply brand filter
       if (filters.brand && item.brand.toLowerCase() !== filters.brand.toLowerCase()) {
-        console.log('❌ [useEquipment] Item filtrado por marca:', { 
-          itemId: item.id, 
-          itemBrand: item.brand, 
-          filterBrand: filters.brand 
-        });
         return false;
       }
       
@@ -257,11 +203,6 @@ export function useEquipment(): UseEquipmentReturn {
           item.description?.toLowerCase().includes(searchTerm)
         );
         if (!matchesSearch) {
-          console.log('❌ [useEquipment] Item filtrado por busca:', { 
-            itemId: item.id, 
-            searchTerm, 
-            itemName: item.name 
-          });
           return false;
         }
       }
@@ -273,13 +214,6 @@ export function useEquipment(): UseEquipmentReturn {
     if (filters.sortBy && filters.sortOrder) {
       filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
     }
-
-    console.log('📋 [useEquipment] Equipamentos filtrados FINAL:', { 
-      enrichedLength: enrichedEquipment.length,
-      filteredLength: filtered.length,
-      activeFilters: filters,
-      sampleItems: filtered.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
-    });
 
     return filtered;
   }, [enrichedEquipment, filters]);

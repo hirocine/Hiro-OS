@@ -29,16 +29,6 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onConvertToAccessory,
   accessoryCount = 0,
 }: EquipmentMobileCardProps) {
-  // Debug log temporário
-  console.log('🔍 [EquipmentMobileCard] Equipment recebido:', {
-    id: equipment?.id,
-    name: equipment?.name,
-    brand: equipment?.brand,
-    category: equipment?.category,
-    status: equipment?.status,
-    fullEquipment: equipment
-  });
-
   const {
     getStatusVariant,
     getStatusLabel,

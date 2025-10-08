@@ -52,15 +52,6 @@ export default function EquipmentPage() {
     handleSort,
   } = useEquipment();
 
-  console.log('🏠 [EquipmentPage] Renderizando com dados:', {
-    filteredEquipmentLength: filteredEquipment.length,
-    allEquipmentLength: allEquipment.length,
-    loading,
-    hasStats: !!stats,
-    statsTotal: stats?.total || 0
-  });
-
-
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   

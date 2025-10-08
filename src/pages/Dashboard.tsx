@@ -5,6 +5,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
+import { useMemo } from 'react';
 
 export default function Dashboard() {
   const { stats, allEquipment } = useEquipment();
@@ -12,23 +13,32 @@ export default function Dashboard() {
   // Initialize notifications
   useNotifications();
 
-  // Calculate financial stats
-  const totalInventoryValue = allEquipment.reduce((sum, item) => sum + (item.value || 0), 0);
-  const totalDepreciatedValue = allEquipment.reduce((sum, item) => sum + (item.depreciatedValue || item.value || 0), 0);
+  // Calculate financial stats with useMemo for performance
+  const totalInventoryValue = useMemo(() => 
+    allEquipment.reduce((sum, item) => sum + (item.value || 0), 0),
+    [allEquipment]
+  );
 
-  // Calculate equipment by age
-  const today = new Date();
-  const equipmentByAge = allEquipment.reduce((acc, item) => {
-    if (item.purchaseDate) {
-      const purchaseDate = new Date(item.purchaseDate);
-      const ageInYears = (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
-      
-      if (ageInYears >= 3) acc.over3Years++;
-      else if (ageInYears >= 2) acc.over2Years++;
-      else if (ageInYears >= 1) acc.over1Year++;
-    }
-    return acc;
-  }, { over1Year: 0, over2Years: 0, over3Years: 0 });
+  const totalDepreciatedValue = useMemo(() => 
+    allEquipment.reduce((sum, item) => sum + (item.depreciatedValue || item.value || 0), 0),
+    [allEquipment]
+  );
+
+  // Calculate equipment by age with useMemo
+  const equipmentByAge = useMemo(() => {
+    const today = new Date();
+    return allEquipment.reduce((acc, item) => {
+      if (item.purchaseDate) {
+        const purchaseDate = new Date(item.purchaseDate);
+        const ageInYears = (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+        
+        if (ageInYears >= 3) acc.over3Years++;
+        else if (ageInYears >= 2) acc.over2Years++;
+        else if (ageInYears >= 1) acc.over1Year++;
+      }
+      return acc;
+    }, { over1Year: 0, over2Years: 0, over3Years: 0 });
+  }, [allEquipment]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
