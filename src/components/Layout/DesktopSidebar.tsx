@@ -81,7 +81,7 @@ export function DesktopSidebar() {
                           "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
                           active 
                             ? "bg-primary/10 text-primary font-medium shadow-sm" 
-                            : "hover:bg-accent/50 text-foreground"
+                            : "hover:bg-muted text-foreground"
                         )}
                       >
                         {active && (
