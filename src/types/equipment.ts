@@ -32,6 +32,7 @@ export interface Equipment {
   currentBorrower?: string;
   lastLoanDate?: string;
   capacity?: number;
+  displayOrder?: number;
 }
 
 export interface EquipmentCategoryData {

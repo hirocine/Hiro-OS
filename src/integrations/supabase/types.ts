@@ -135,6 +135,7 @@ export type Database = {
           custom_category: string | null
           depreciated_value: number | null
           description: string | null
+          display_order: number | null
           id: string
           image: string | null
           invoice: string | null
@@ -164,6 +165,7 @@ export type Database = {
           custom_category?: string | null
           depreciated_value?: number | null
           description?: string | null
+          display_order?: number | null
           id?: string
           image?: string | null
           invoice?: string | null
@@ -193,6 +195,7 @@ export type Database = {
           custom_category?: string | null
           depreciated_value?: number | null
           description?: string | null
+          display_order?: number | null
           id?: string
           image?: string | null
           invoice?: string | null

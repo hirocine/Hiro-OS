@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { useToast } from '@/hooks/use-toast';
+import { arrayMove } from '@dnd-kit/sortable';
 
 export type SSDStatus = 'available' | 'in_use' | 'loaned';
 
@@ -41,11 +42,12 @@ export const useSSDs = () => {
       }
       const { data, error } = await supabase
         .from('equipments')
-        .select('*')
-        .eq('category', 'storage')
-        .order('name');
+      .select('*')
+      .eq('category', 'storage')
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .order('name');
 
-      if (error) throw error;
+    if (error) throw error;
       
       // Filter client-side for drives only
       const driveData = (data || []).filter(isDrive);
@@ -65,7 +67,8 @@ export const useSSDs = () => {
         depreciatedValue: item.depreciated_value,
         receiveDate: item.receive_date,
         customCategory: item.custom_category,
-        parentId: item.parent_id
+        parentId: item.parent_id,
+        displayOrder: item.display_order
       }));
       
       setSSDs(transformedData as Equipment[]);
@@ -114,7 +117,7 @@ export const useSSDs = () => {
   }, []);
 
   const ssdsByStatus = useMemo<SSDsByStatus>(() => {
-    return ssds.reduce((acc, ssd) => {
+    const categorized = ssds.reduce((acc, ssd) => {
       const status = ssd.simplifiedStatus === 'available' ? 'available' : 
                      ssd.currentLoanId ? 'loaned' : 'in_use';
       acc[status].push(ssd);
@@ -124,6 +127,20 @@ export const useSSDs = () => {
       in_use: [] as Equipment[],
       loaned: [] as Equipment[]
     });
+
+    // Sort each category by display_order (nulls last) then by name
+    const sortByOrder = (a: Equipment, b: Equipment) => {
+      if (a.displayOrder === undefined && b.displayOrder === undefined) return a.name.localeCompare(b.name);
+      if (a.displayOrder === undefined) return 1;
+      if (b.displayOrder === undefined) return -1;
+      return a.displayOrder - b.displayOrder;
+    };
+
+    categorized.available.sort(sortByOrder);
+    categorized.in_use.sort(sortByOrder);
+    categorized.loaned.sort(sortByOrder);
+
+    return categorized;
   }, [ssds]);
 
   const updateSSDStatus = async (ssdId: string, newStatus: SSDStatus) => {
@@ -204,11 +221,137 @@ export const useSSDs = () => {
     }
   };
 
+  const updateSSDOrder = async (ssdId: string, newStatus: SSDStatus, targetIndex: number) => {
+    const ssdToUpdate = ssds.find(s => s.id === ssdId);
+    if (!ssdToUpdate) return;
+
+    const previousSSDs = [...ssds];
+
+    // Determine new simplified_status and currentLoanId based on SSDStatus
+    let newSimplifiedStatus: 'available' | 'in_project' = 'available';
+    let newCurrentLoanId: string | null = null;
+    let newCurrentBorrower: string | null = null;
+
+    if (newStatus === 'available') {
+      newSimplifiedStatus = 'available';
+      newCurrentLoanId = null;
+      newCurrentBorrower = null;
+    } else if (newStatus === 'in_use') {
+      newSimplifiedStatus = 'in_project';
+      newCurrentLoanId = null;
+      newCurrentBorrower = null;
+    } else if (newStatus === 'loaned') {
+      newSimplifiedStatus = 'in_project';
+      newCurrentLoanId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+      newCurrentBorrower = 'Empréstimo manual';
+    }
+
+    // Get target column SSDs (before any changes)
+    const targetColumnKey = newStatus;
+    const targetColumnSsds = [...ssdsByStatus[targetColumnKey]];
+    
+    // Find which column the SSD is currently in
+    const oldStatus: SSDStatus = ssdToUpdate.currentLoanId 
+      ? 'loaned' 
+      : ssdToUpdate.simplifiedStatus === 'in_project' 
+        ? 'in_use' 
+        : 'available';
+    
+    let reorderedSsds: Equipment[];
+    if (oldStatus !== newStatus) {
+      // Moving to different column - insert at target position
+      const updatedSsd = { 
+        ...ssdToUpdate, 
+        simplifiedStatus: newSimplifiedStatus, 
+        currentLoanId: newCurrentLoanId,
+        currentBorrower: newCurrentBorrower
+      };
+      reorderedSsds = [...targetColumnSsds];
+      reorderedSsds.splice(targetIndex, 0, updatedSsd);
+    } else {
+      // Reordering within same column
+      const currentIndex = targetColumnSsds.findIndex(s => s.id === ssdId);
+      reorderedSsds = arrayMove(targetColumnSsds, currentIndex, targetIndex);
+    }
+
+    // Recalculate display_order for all SSDs in target column
+    const updates = reorderedSsds.map((ssd, index) => ({
+      id: ssd.id,
+      display_order: index,
+      ...(ssd.id === ssdId && {
+        simplified_status: newSimplifiedStatus,
+        current_loan_id: newCurrentLoanId,
+        current_borrower: newCurrentBorrower
+      })
+    }));
+
+    // Optimistic update
+    setSSDs(prev => {
+      const newSsds = [...prev];
+      updates.forEach(update => {
+        const index = newSsds.findIndex(s => s.id === update.id);
+        if (index !== -1) {
+          newSsds[index] = {
+            ...newSsds[index],
+            displayOrder: update.display_order,
+            ...(update.simplified_status && { simplifiedStatus: update.simplified_status }),
+            ...(update.current_loan_id !== undefined && { currentLoanId: update.current_loan_id || undefined }),
+            ...(update.current_borrower !== undefined && { currentBorrower: update.current_borrower || undefined })
+          };
+        }
+      });
+      return newSsds;
+    });
+
+    try {
+      // Batch update all affected SSDs
+      for (const update of updates) {
+        const updateData: any = {
+          display_order: update.display_order
+        };
+        
+        if (update.simplified_status) {
+          updateData.simplified_status = update.simplified_status;
+        }
+        if (update.current_loan_id !== undefined) {
+          updateData.current_loan_id = update.current_loan_id;
+        }
+        if (update.current_borrower !== undefined) {
+          updateData.current_borrower = update.current_borrower;
+        }
+        
+        const { error } = await supabase
+          .from('equipments')
+          .update(updateData)
+          .eq('id', update.id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Ordem atualizada",
+        description: "A ordem dos SSDs foi atualizada com sucesso."
+      });
+    } catch (error) {
+      // Rollback on error
+      setSSDs(previousSSDs);
+      
+      toast({
+        title: "Erro ao atualizar ordem",
+        description: "Não foi possível atualizar a ordem dos SSDs.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return {
     ssds,
     ssdsByStatus,
     loading,
     updateSSDStatus,
+    updateSSDOrder,
     refetch: fetchSSDs
   };
 };

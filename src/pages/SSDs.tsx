@@ -6,7 +6,7 @@ import { useSSDs } from '@/hooks/useSSDs';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const SSDs = () => {
-  const { ssdsByStatus, loading, updateSSDStatus } = useSSDs();
+  const { ssdsByStatus, loading, updateSSDStatus, updateSSDOrder } = useSSDs();
 
   if (loading) {
     return (
@@ -42,6 +42,7 @@ const SSDs = () => {
         <SSDKanbanBoard
           ssdsByStatus={ssdsByStatus}
           onStatusChange={updateSSDStatus}
+          onReorder={updateSSDOrder}
         />
       </div>
     </div>

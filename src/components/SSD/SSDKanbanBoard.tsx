@@ -28,6 +28,7 @@ interface SSDKanbanBoardProps {
     loaned: Equipment[];
   };
   onStatusChange: (ssdId: string, newStatus: SSDStatus) => void;
+  onReorder: (ssdId: string, newStatus: SSDStatus, targetIndex: number) => void;
 }
 
 interface SortableCardProps {
@@ -115,7 +116,7 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
   );
 };
 
-export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardProps) => {
+export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDKanbanBoardProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -147,26 +148,51 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange }: SSDKanbanBoardP
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    // Find which column the active SSD is currently in
+    let activeStatus: SSDStatus | null = null;
+    if (ssdsByStatus.available.some(s => s.id === activeId)) activeStatus = 'available';
+    else if (ssdsByStatus.in_use.some(s => s.id === activeId)) activeStatus = 'in_use';
+    else if (ssdsByStatus.loaned.some(s => s.id === activeId)) activeStatus = 'loaned';
+
     // Determinar o novo status baseado na coluna de destino
     let newStatus: SSDStatus | null = null;
+    let targetIndex = -1;
     
     // Verificar se foi solto diretamente sobre uma coluna ou placeholder
     if (overId.startsWith('column-')) {
       newStatus = overId.replace('column-', '') as SSDStatus;
+      targetIndex = ssdsByStatus[newStatus].length; // Add to end
     } else if (overId.startsWith('placeholder-')) {
       newStatus = overId.replace('placeholder-', '') as SSDStatus;
+      targetIndex = 0; // Add to beginning of empty column
     } else {
-      // Foi solto sobre outro SSD, determinar a coluna pela posição do SSD
+      // Foi solto sobre outro SSD, determinar a coluna e posição
       if (ssdsByStatus.available.some(s => s.id === overId)) {
         newStatus = 'available';
+        targetIndex = ssdsByStatus.available.findIndex(s => s.id === overId);
       } else if (ssdsByStatus.in_use.some(s => s.id === overId)) {
         newStatus = 'in_use';
+        targetIndex = ssdsByStatus.in_use.findIndex(s => s.id === overId);
       } else if (ssdsByStatus.loaned.some(s => s.id === overId)) {
         newStatus = 'loaned';
+        targetIndex = ssdsByStatus.loaned.findIndex(s => s.id === overId);
       }
     }
 
-    if (newStatus) {
+    if (newStatus && targetIndex >= 0) {
+      // Check if we're just reordering or changing status + reordering
+      if (activeStatus === newStatus) {
+        // Reordering within same column
+        const currentIndex = ssdsByStatus[newStatus].findIndex(s => s.id === activeId);
+        if (currentIndex !== targetIndex) {
+          onReorder(activeId, newStatus, targetIndex);
+        }
+      } else {
+        // Moving to different column with specific position
+        onReorder(activeId, newStatus, targetIndex);
+      }
+    } else if (newStatus) {
+      // Fallback to simple status change without reordering
       onStatusChange(activeId, newStatus);
     }
 
