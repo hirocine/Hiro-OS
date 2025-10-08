@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import SecurityAdmin from "./pages/SecurityAdmin";
+import SSDs from "./pages/SSDs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           }>
             <Route index element={<Dashboard />} />
             <Route path="equipment" element={<Equipment />} />
+            <Route path="ssds" element={<SSDs />} />
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetails />} />
             <Route path="projects/:id/separation" element={<ProjectSeparation />} />

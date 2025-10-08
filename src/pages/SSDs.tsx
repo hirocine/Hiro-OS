@@ -1,0 +1,51 @@
+import { PageHeader } from '@/components/ui/page-header';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
+import { useSSDs } from '@/hooks/useSSDs';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const SSDs = () => {
+  const { ssdsByStatus, loading, updateSSDStatus } = useSSDs();
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <PageHeader
+          title="Controle de SSDs"
+          subtitle="Gerencie seus SSDs de forma visual"
+        />
+        <div className="flex gap-4 mt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex-1">
+              <Skeleton className="h-[400px] w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-6">
+      <PageHeader
+        title="Controle de SSDs"
+        subtitle="Gerencie seus SSDs de forma visual"
+        actions={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar SSD
+          </Button>
+        }
+      />
+      <div className="mt-6">
+        <SSDKanbanBoard
+          ssdsByStatus={ssdsByStatus}
+          onStatusChange={updateSSDStatus}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default SSDs;
