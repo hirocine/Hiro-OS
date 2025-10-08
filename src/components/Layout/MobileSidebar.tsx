@@ -67,9 +67,9 @@ export function MobileSidebar() {
               alt="HIRO Logo" 
               className="h-9 w-9 rounded-lg object-cover"
             />
-            <div>
-              <h1 className="text-sm font-bold leading-none">Sistema de</h1>
-              <h2 className="text-sm font-bold text-primary leading-none mt-0.5">Inventário</h2>
+            <div className="text-left">
+              <h1 className="text-sm font-bold leading-none text-left">Sistema de</h1>
+              <h2 className="text-sm font-bold text-primary leading-none mt-0.5 text-left">Inventário</h2>
             </div>
           </div>
           <Button
