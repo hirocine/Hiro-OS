@@ -163,7 +163,7 @@ export function MobileSidebar() {
         </ScrollArea>
 
         {/* User Profile - Sticky Bottom */}
-        <div className="px-4 py-4 border-t border-border">
+        <div className="px-4 py-6 border-t border-border flex items-center">
           <SidebarUserProfile isMobile />
         </div>
       </SheetContent>
