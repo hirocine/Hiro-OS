@@ -98,7 +98,12 @@ const KanbanColumn = ({ title, status, ssds, count }: KanbanColumnProps) => {
         )}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-sm">{title}</h3>
+          <h3 className={cn(
+            "font-semibold text-sm",
+            status === 'available' && "text-green-600 dark:text-green-400",
+            status === 'in_use' && "text-orange-600 dark:text-orange-400",
+            status === 'loaned' && "text-red-600 dark:text-red-400"
+          )}>{title}</h3>
           <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
             {count}
           </span>
