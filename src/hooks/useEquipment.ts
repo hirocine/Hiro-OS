@@ -101,7 +101,7 @@ export function useEquipment(): UseEquipmentReturn {
         sampleIds: equipmentData.slice(0, 3).map(item => ({ id: item.id, name: item.name }))
       });
       
-      logger.apiResponse('fetchEquipment', 'success', null, 'success');
+      logger.apiResponse('fetchEquipment', 'success', null, { count: equipmentData.length });
       return equipmentData;
     });
 
@@ -116,13 +116,6 @@ export function useEquipment(): UseEquipmentReturn {
         sampleData: result.data?.slice(0, 3).map(item => ({ id: item.id, name: item.name })) || []
       });
       setEquipment(result.data || []);
-      
-      // Log após setEquipment para verificar se o estado foi atualizado
-      setTimeout(() => {
-        console.log('🔄 [useEquipment] Estado após setEquipment:', { 
-          equipmentStateLength: equipment.length 
-        });
-      }, 100);
     }
     
     setLoading(false);
