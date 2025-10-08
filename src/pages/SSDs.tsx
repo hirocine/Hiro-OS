@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
 import { useSSDs } from '@/hooks/useSSDs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 const SSDs = () => {
   const { ssdsByStatus, loading, updateSSDStatus, updateSSDOrder } = useSSDs();
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <ResponsiveContainer maxWidth="7xl">
         <PageHeader
           title="Controle de SSDs e HDs"
           subtitle="Gerencie seus SSDs e HDs de forma visual"
@@ -22,12 +23,12 @@ const SSDs = () => {
             </div>
           ))}
         </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Controle de SSDs e HDs"
         subtitle="Gerencie seus SSDs e HDs de forma visual"
@@ -45,7 +46,7 @@ const SSDs = () => {
           onReorder={updateSSDOrder}
         />
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 };
 
