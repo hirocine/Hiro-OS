@@ -7,6 +7,7 @@ import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Equipment from "./pages/Equipment";
+import AddEquipment from "./pages/AddEquipment";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import ProjectSeparation from "./pages/ProjectSeparation";
@@ -36,6 +37,8 @@ const App = () => (
           }>
             <Route index element={<Dashboard />} />
             <Route path="equipment" element={<Equipment />} />
+            <Route path="equipment/new" element={<AddEquipment />} />
+            <Route path="equipment/edit/:id" element={<AddEquipment />} />
             <Route path="ssds" element={<SSDs />} />
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetails />} />

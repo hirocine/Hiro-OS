@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { usePageLayout } from '@/hooks/usePageLayout';
 import { useEquipment } from '@/hooks/useEquipment';
-import { AddEquipmentDialog } from '@/components/Equipment/AddEquipmentDialog';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
@@ -35,6 +35,7 @@ import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
 type ViewMode = 'table' | 'grid' | 'cards';
 
 export default function EquipmentPage() {
+  const navigate = useNavigate();
   const {
     equipment: filteredEquipment,
     allEquipment,
@@ -52,11 +53,9 @@ export default function EquipmentPage() {
     handleSort,
   } = useEquipment();
 
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
   
   // Loading states for individual actions
@@ -141,64 +140,8 @@ export default function EquipmentPage() {
     setLastFiltersHash(filtersHash);
   }, [filters, currentPage, itemsPerPage, filteredEquipment.length, equipmentHierarchy.length, effectiveViewMode, lastFiltersHash]);
 
-  const handleAdd = useCallback(async (equipmentData: Omit<Equipment, 'id'>) => {
-    try {
-      await addEquipment(equipmentData);
-      setIsAddDialogOpen(false);
-      enhancedToast.success({
-        title: 'Equipamento adicionado!',
-        description: `${equipmentData.name} foi adicionado ao inventário.`
-      });
-      return { success: true };
-    } catch (error) {
-      logger.error('Error adding equipment in page', {
-        module: 'equipment-page',
-        action: 'add_equipment',
-        error,
-        data: { equipmentName: equipmentData.name }
-      });
-      enhancedToast.error({
-        title: 'Erro ao adicionar equipamento',
-        description: 'Tente novamente ou contate o suporte.'
-      });
-      return { success: false };
-    }
-  }, [addEquipment]);
-
   const handleEdit = (equipment: Equipment) => {
-    setEditingEquipment(equipment);
-    setIsAddDialogOpen(true);
-  };
-
-  const handleUpdate = async (equipmentData: Omit<Equipment, 'id'>) => {
-    if (editingEquipment) {
-      try {
-        setLoadingStates(prev => ({ ...prev, updating: editingEquipment.id }));
-        await updateEquipment(editingEquipment.id, equipmentData);
-        setEditingEquipment(null);
-        setIsAddDialogOpen(false);
-        enhancedToast.success({
-          title: 'Equipamento atualizado!',
-          description: `${equipmentData.name} foi atualizado com sucesso.`
-        });
-        return { success: true };
-      } catch (error) {
-        logger.error('Error updating equipment in page', {
-          module: 'equipment-page',
-          action: 'update_equipment',
-          error,
-          data: { equipmentId: editingEquipment.id, equipmentName: editingEquipment.name }
-        });
-        enhancedToast.error({
-          title: 'Erro ao atualizar equipamento',
-          description: 'Tente novamente ou contate o suporte.'
-        });
-        return { success: false };
-      } finally {
-        setLoadingStates(prev => ({ ...prev, updating: null }));
-      }
-    }
-    return { success: false };
+    navigate(`/equipment/edit/${equipment.id}`);
   };
 
   const handleDelete = (equipment: Equipment) => {
@@ -310,11 +253,6 @@ export default function EquipmentPage() {
     setIsConvertDialogOpen(true);
   };
 
-  const handleDialogClose = () => {
-    setIsAddDialogOpen(false);
-    setEditingEquipment(null);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Smooth scroll to top with better UX
@@ -366,7 +304,7 @@ export default function EquipmentPage() {
           description="Adicione equipamentos para começar a gerenciar seu inventário."
           action={{
             label: "Adicionar Equipamento",
-            onClick: () => setIsAddDialogOpen(true)
+            onClick: () => navigate('/equipment/new')
           }}
         />
       );
@@ -414,7 +352,7 @@ export default function EquipmentPage() {
               onDelete={handleDelete}
               onImageUpload={handleImageUpload}
               onConvertToAccessory={handleConvertToAccessory}
-              onAddEquipment={() => setIsAddDialogOpen(true)}
+              onAddEquipment={() => navigate('/equipment/new')}
               isLoading={loading}
             />
           );
@@ -470,7 +408,7 @@ export default function EquipmentPage() {
               />
             </AdminOnly>
             <ResponsiveButton
-              onClick={() => setIsAddDialogOpen(true)}
+              onClick={() => navigate('/equipment/new')}
               icon={Plus}
               mobileText="Adicionar"
               desktopText="Adicionar Equipamento"
@@ -544,14 +482,6 @@ export default function EquipmentPage() {
       </div>
 
       {/* Dialogs */}
-      <AddEquipmentDialog
-        open={isAddDialogOpen}
-        onOpenChange={handleDialogClose}
-        onSubmit={editingEquipment ? handleUpdate : handleAdd}
-        equipment={editingEquipment}
-        mainItems={filteredEquipment.filter(e => e.itemType === 'main')}
-      />
-
       <ImportDialog
         open={isImportDialogOpen}
         onOpenChange={setIsImportDialogOpen}
