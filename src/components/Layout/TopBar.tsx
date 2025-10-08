@@ -29,13 +29,19 @@ export function TopBar() {
       </Button>
 
       {/* Logo centralizado */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+      <div 
+        className="absolute left-1/2 -translate-x-1/2 flex items-center pointer-events-none"
+        style={{ zIndex: Z_INDEX.header + 1 }}
+      >
         <img 
           src="/lovable-uploads/418c9547-19f7-4c12-8117-10a72835f155.png" 
           alt="Hiro Logo" 
           className="h-8 w-auto"
         />
       </div>
+      
+      {/* Espaço vazio à direita para manter simetria */}
+      <div className="w-9 h-9" />
     </header>
   );
 }
