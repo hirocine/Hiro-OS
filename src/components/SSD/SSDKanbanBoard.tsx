@@ -250,13 +250,13 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder }: SSDK
           count={ssdsByStatus.available.length}
         />
         <KanbanColumn
-          title="Em Uso"
+          title="Em uso (Interno)"
           status="in_use"
           ssds={ssdsByStatus.in_use}
           count={ssdsByStatus.in_use.length}
         />
         <KanbanColumn
-          title="Emprestado"
+          title="Em uso (Externo)"
           status="loaned"
           ssds={ssdsByStatus.loaned}
           count={ssdsByStatus.loaned.length}
