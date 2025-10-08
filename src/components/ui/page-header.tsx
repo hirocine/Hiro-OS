@@ -26,7 +26,7 @@ export function PageHeader({
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div className="space-y-1 md:space-y-2 min-w-0 flex-1">
           <h1 className={cn(
-            "font-bold tracking-tight text-foreground",
+            "font-bold tracking-tight text-foreground text-left",
             isMobile ? "text-xl" : "text-2xl md:text-3xl"
           )}>
             {title}
