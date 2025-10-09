@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar } from 'lucide-react';
+import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EquipmentFormProps {
@@ -49,64 +49,58 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const isMobile = useIsMobile();
   const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
 
-  // Hero Card: Foto grande + campos principais em destaque
+  // Hero Card: Foto grande + Nome em destaque
   const renderHeroCard = () => (
     <Card className="bg-accent/5 border-2 border-primary/10">
       <CardContent className="p-6">
         <div className={cn(
           "flex gap-6",
-          isMobile ? "flex-col items-center" : "flex-row items-start"
+          isMobile ? "flex-col items-center" : "flex-row items-center"
         )}>
-          {/* Foto Grande */}
+          {/* Foto Upload */}
           <div className={cn(
-            "flex-shrink-0",
+            "flex-shrink-0 self-start",
             isMobile ? "w-full" : "w-[150px]"
           )}>
-            {imageUrl ? (
-              <div className="relative group">
-                <img 
-                  src={imageUrl} 
-                  alt="Equipment" 
-                  className={cn(
-                    "object-cover rounded-lg border-2 border-primary/20",
-                    isMobile ? "w-full aspect-square" : "w-[150px] h-[150px]"
-                  )}
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+            <div className={cn(
+              "relative border-2 border-dashed border-border rounded-lg overflow-hidden bg-muted/30",
+              isMobile ? "aspect-square w-full" : "w-[150px] h-[150px]"
+            )}>
+              {imageUrl ? (
+                <>
+                  <img 
+                    src={imageUrl} 
+                    alt="Equipment preview" 
+                    className="w-full h-full object-cover"
+                  />
                   <Button
                     type="button"
                     variant="destructive"
-                    size={isMobile ? "sm" : "icon"}
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
                     onClick={handleImageRemove}
                   >
                     <X className="h-4 w-4" />
-                    {isMobile && <span className="ml-1">Remover</span>}
                   </Button>
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                  <Camera className="h-8 w-8 text-muted-foreground mb-2" />
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Clique ou arraste uma foto
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
                 </div>
-              </div>
-            ) : (
-              <div className={cn(
-                "border-2 border-dashed border-primary/30 rounded-lg flex flex-col items-center justify-center text-center space-y-2 hover:border-primary/50 transition-colors",
-                isMobile ? "aspect-square p-8" : "w-[150px] h-[150px] p-4"
-              )}>
-                <Upload className={cn("text-muted-foreground", isMobile ? "h-12 w-12" : "h-8 w-8")} />
-                <label htmlFor="equipment-photo-hero" className="cursor-pointer text-sm text-primary hover:underline font-medium">
-                  {isMobile ? "Adicionar Foto" : "Upload"}
-                </label>
-                <input
-                  id="equipment-photo-hero"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file);
-                  }}
-                  disabled={isUploadingImage}
-                />
-                <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP</p>
-              </div>
-            )}
+              )}
+            </div>
             
             {isUploadingImage && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
@@ -116,132 +110,55 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             )}
           </div>
 
-          {/* Campos Principais */}
-          <div className="flex-1 space-y-4 w-full">
-            {/* Nome (destaque) */}
-            <div>
-              <Label htmlFor="name" className="text-sm font-medium">
-                Nome do Equipamento <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                placeholder="Ex: Canon EOS R5"
-                className={cn(
-                  "font-semibold text-base mt-1.5",
-                  isMobile ? "h-12" : "h-10"
-                )}
-                required
-              />
-            </div>
-
-            {/* Marca + Categoria em grid */}
-            <div className={cn(
-              "grid gap-4",
-              isMobile ? "grid-cols-1" : "grid-cols-2"
-            )}>
-              <div>
-                <Label htmlFor="brand" className="text-sm font-medium">
-                  Marca <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="brand"
-                  value={formData.brand}
-                  onChange={(e) => updateField('brand', e.target.value)}
-                  placeholder="Ex: Canon"
-                  className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="category" className="text-sm font-medium">
-                  Categoria <span className="text-destructive">*</span>
-                </Label>
-                <Select value={formData.category} onValueChange={(value) => updateField('category', value)}>
-                  <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="camera">Câmera</SelectItem>
-                    <SelectItem value="audio">Áudio</SelectItem>
-                    <SelectItem value="lighting">Iluminação</SelectItem>
-                    <SelectItem value="accessories">Acessórios</SelectItem>
-                    <SelectItem value="storage">Armazenamento</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Subcategoria + Status Badge */}
-            <div className={cn(
-              "grid gap-4 items-end",
-              isMobile ? "grid-cols-1" : "grid-cols-2"
-            )}>
-              <div>
-                <Label htmlFor="subcategory" className="text-sm font-medium">Subcategoria</Label>
-                <Select
-                  value={formData.subcategory || ''}
-                  onValueChange={(value) => updateField('subcategory', value)}
-                  disabled={categoriesLoading || !formData.category}
-                >
-                  <SelectTrigger id="subcategory" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getSubcategoriesForCategory(formData.category).map((sub) => (
-                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium block mb-1.5">Status Atual</Label>
-                <Badge 
-                  variant={formData.status === 'available' ? 'default' : 'secondary'}
-                  className="text-sm px-4 py-1.5 font-medium"
-                >
-                  {formData.status === 'available' ? '✓ Disponível' : '🔧 Manutenção'}
-                </Badge>
-              </div>
-            </div>
+          {/* Nome em Destaque */}
+          <div className="flex-1 w-full">
+            <Label htmlFor="hero-name" className="text-sm font-medium">
+              Nome do Equipamento <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="hero-name"
+              value={formData.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              placeholder="Ex: Canon EOS R5"
+              className={cn(
+                "font-bold text-lg mt-1.5",
+                isMobile ? "h-12" : "h-11"
+              )}
+              required
+            />
+            
+            {/* Mini-resumo visual */}
+            {(formData.brand || formData.category) && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {formData.brand && <span className="font-medium">{formData.brand}</span>}
+                {formData.brand && formData.category && <span className="mx-2">•</span>}
+                {formData.category && <span className="capitalize">{formData.category}</span>}
+              </p>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
   );
 
-  // Card: Identificação
-  const renderIdentificationCard = () => (
+
+  // Card: Identificação & Status
+  const renderStatusCard = () => (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Package className="w-4 h-4 text-primary" />
-          Identificação
+          Identificação & Status
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Marca */}
         <div>
-          <Label htmlFor="name-detail" className="text-sm font-medium">
-            Nome <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="name-detail"
-            value={formData.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            placeholder="Ex: Canon EOS R5"
-            className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="brand-detail" className="text-sm font-medium">
+          <Label htmlFor="brand" className="text-sm font-medium">
             Marca <span className="text-destructive">*</span>
           </Label>
           <Input
-            id="brand-detail"
+            id="brand"
             value={formData.brand}
             onChange={(e) => updateField('brand', e.target.value)}
             placeholder="Ex: Canon"
@@ -249,12 +166,17 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             required
           />
         </div>
+
+        {/* Categoria */}
         <div>
-          <Label htmlFor="category-detail" className="text-sm font-medium">
+          <Label htmlFor="category" className="text-sm font-medium">
             Categoria <span className="text-destructive">*</span>
           </Label>
-          <Select value={formData.category} onValueChange={(value) => updateField('category', value)}>
-            <SelectTrigger id="category-detail" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
+          <Select 
+            value={formData.category} 
+            onValueChange={(value: EquipmentCategory) => updateField('category', value)}
+          >
+            <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -266,42 +188,39 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Subcategoria */}
         <div>
-          <Label htmlFor="subcategory-detail" className="text-sm font-medium">Subcategoria</Label>
+          <Label htmlFor="subcategory" className="text-sm font-medium">
+            Subcategoria
+          </Label>
           <Select
             value={formData.subcategory || ''}
             onValueChange={(value) => updateField('subcategory', value)}
             disabled={categoriesLoading || !formData.category}
           >
-            <SelectTrigger id="subcategory-detail" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
+            <SelectTrigger id="subcategory" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
               {getSubcategoriesForCategory(formData.category).map((sub) => (
-                <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                <SelectItem key={sub} value={sub}>
+                  {sub}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      </CardContent>
-    </Card>
-  );
 
-  // Card: Status & Tipo
-  const renderStatusCard = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" />
-          Status & Tipo
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        {/* Status */}
         <div>
           <Label htmlFor="status" className="text-sm font-medium">
             Status <span className="text-destructive">*</span>
           </Label>
-          <Select value={formData.status} onValueChange={(value: EquipmentStatus) => updateField('status', value)}>
+          <Select 
+            value={formData.status} 
+            onValueChange={(value: EquipmentStatus) => updateField('status', value)}
+          >
             <SelectTrigger id="status" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
               <SelectValue />
             </SelectTrigger>
@@ -312,6 +231,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Tipo de Item */}
         <div>
           <Label htmlFor="itemType" className="text-sm font-medium">
             Tipo de Item <span className="text-destructive">*</span>
@@ -330,6 +250,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Capacidade (condicional para storage) */}
         {formData.category === 'storage' && (
           <div>
             <Label htmlFor="capacity" className="text-sm font-medium">
@@ -535,7 +456,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         "grid gap-4",
         isMobile ? "grid-cols-1" : "grid-cols-2"
       )}>
-        {renderIdentificationCard()}
         {renderStatusCard()}
         {renderLinksCard()}
         {renderFinancialCard()}
