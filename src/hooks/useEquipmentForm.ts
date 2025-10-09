@@ -38,11 +38,6 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [parentSearchOpen, setParentSearchOpen] = useState(false);
-  const [showCustomCategory, setShowCustomCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newSubcategoryName, setNewSubcategoryName] = useState('');
-  const [currentStep, setCurrentStep] = useState(0);
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
@@ -227,16 +222,6 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     formData,
     isSubmitting,
     isLoading,
-    parentSearchOpen,
-    setParentSearchOpen,
-    showCustomCategory,
-    setShowCustomCategory,
-    newCategoryName,
-    setNewCategoryName,
-    newSubcategoryName,
-    setNewSubcategoryName,
-    currentStep,
-    setCurrentStep,
     updateField,
     handleSubmit,
     handleCancel,

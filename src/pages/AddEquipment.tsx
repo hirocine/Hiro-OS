@@ -14,16 +14,6 @@ export default function AddEquipment() {
     formData,
     isSubmitting,
     isLoading,
-    parentSearchOpen,
-    setParentSearchOpen,
-    showCustomCategory,
-    setShowCustomCategory,
-    newCategoryName,
-    setNewCategoryName,
-    newSubcategoryName,
-    setNewSubcategoryName,
-    currentStep,
-    setCurrentStep,
     updateField,
     handleSubmit,
     handleCancel,
@@ -93,24 +83,14 @@ export default function AddEquipment() {
             onCancel={handleCancel}
             isSubmitting={isSubmitting}
             isEditMode={isEditMode}
-            mainItems={getMainItems()}
-            parentSearchOpen={parentSearchOpen}
-            setParentSearchOpen={setParentSearchOpen}
-            showCustomCategory={showCustomCategory}
-            setShowCustomCategory={setShowCustomCategory}
-            newCategoryName={newCategoryName}
-            setNewCategoryName={setNewCategoryName}
-            newSubcategoryName={newSubcategoryName}
-            setNewSubcategoryName={setNewSubcategoryName}
-            currentStep={currentStep}
-            setCurrentStep={setCurrentStep}
             formatCurrency={formatCurrency}
             parseCurrencyInput={parseCurrencyInput}
+            getMainItems={getMainItems}
             getSelectedParentName={getSelectedParentName}
             imageUrl={imageUrl}
             isUploadingImage={isUploadingImage}
-            onImageUpload={handleImageUpload}
-            onImageRemove={handleImageRemove}
+            handleImageUpload={handleImageUpload}
+            handleImageRemove={handleImageRemove}
           />
         </CardContent>
       </Card>
