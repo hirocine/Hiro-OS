@@ -250,6 +250,31 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Item Principal (condicional - só para acessórios) */}
+        {formData.itemType === 'accessory' && (
+          <div>
+            <Label htmlFor="parentId" className="text-sm font-medium">
+              Item Principal
+            </Label>
+            <Select
+              value={formData.parentId || 'none'}
+              onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
+            >
+              <SelectTrigger id="parentId" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
+                <SelectValue>{getSelectedParentName()}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {getMainItems().map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.patrimonyNumber || 'S/N'} - {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Capacidade (condicional para storage) */}
         {formData.category === 'storage' && (
           <div>
@@ -301,28 +326,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
           />
         </div>
-
-        {formData.itemType === 'accessory' && (
-          <div>
-            <Label htmlFor="parentId" className="text-sm font-medium">Item Principal</Label>
-            <Select
-              value={formData.parentId || 'none'}
-              onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
-            >
-              <SelectTrigger id="parentId" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-                <SelectValue>{getSelectedParentName()}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {getMainItems().map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.patrimonyNumber || 'S/N'} - {item.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
 
         <div>
           <Label htmlFor="description" className="text-sm font-medium">Descrição</Label>
