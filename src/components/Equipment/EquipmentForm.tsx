@@ -451,17 +451,10 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       {/* Hero Card: Foto + Campos Principais */}
       {renderHeroCard()}
 
-      {/* Grid 2x2: Cards Organizados */}
-      <div className={cn(
-        "grid gap-4",
-        isMobile ? "grid-cols-1" : "grid-cols-2"
-      )}>
-        {renderStatusCard()}
-        {renderLinksCard()}
-        {renderFinancialCard()}
-      </div>
-
-      {/* Seção Datas: Full-width */}
+      {/* Cards em Coluna Única */}
+      {renderStatusCard()}
+      {renderLinksCard()}
+      {renderFinancialCard()}
       {renderDatesSection()}
 
       {/* Actions */}
