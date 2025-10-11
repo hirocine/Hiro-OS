@@ -50,13 +50,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
 
   // Helper para mapear categoria para variante de badge
-  const getCategoryBadgeVariant = (category: EquipmentCategory): "default" | "secondary" | "warning" | "success" | "outline" => {
+  const getCategoryBadgeVariant = (category: EquipmentCategory): "default" | "secondary" | "warning" | "success" | "info" => {
     const variants = {
       camera: 'default' as const,
       audio: 'secondary' as const,
       lighting: 'warning' as const,
       accessories: 'success' as const,
-      storage: 'outline' as const
+      storage: 'info' as const
     };
     return variants[category];
   };
@@ -258,7 +258,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               </SelectItem>
               <SelectItem value="storage">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="gap-1.5">
+                  <Badge variant="info" className="gap-1.5">
                     <HardDrive className="w-3 h-3" />
                     Armazenamento
                   </Badge>
