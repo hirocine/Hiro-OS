@@ -40,7 +40,7 @@ All colors MUST be HSL.
     --success: 142 76% 36%;
     --success-foreground: 210 40% 98%;
 
-    --warning: 25 95% 53%;
+    --warning: 43 74% 49%;
     --warning-foreground: 0 0% 98%;
 
     /* Project Steps Colors */
@@ -48,7 +48,7 @@ All colors MUST be HSL.
     --step-pending-foreground: 0 0% 98%;
     --step-separated: 217 91% 60%;
     --step-separated-foreground: 0 0% 98%;
-    --step-pickup: 25 95% 53%;
+    --step-pickup: 220 13% 60%;
     --step-pickup-foreground: 0 0% 98%;
     --step-in-use: 142 76% 36%;
     --step-in-use-foreground: 210 40% 98%;

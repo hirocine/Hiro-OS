@@ -81,7 +81,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   "w-14 h-14 rounded-full border-3 flex items-center justify-center transition-all duration-500 ease-out relative z-20",
                   {
                     "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20 scale-105": status === 'completed',
-                    "bg-warning border-warning text-warning-foreground shadow-elegant shadow-warning/30 scale-110": status === 'current',
+                    "bg-foreground border-foreground text-background shadow-elegant shadow-foreground/20 scale-110": status === 'current',
                     "bg-background border-border text-muted-foreground hover:bg-muted hover:border-muted-foreground/50": status === 'pending' && !clickable,
                     "bg-background border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg hover:shadow-primary/20 hover:scale-110 ring-2 ring-primary/20 hover:ring-primary/40": status === 'pending' && clickable
                   }
@@ -99,7 +99,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 
                 {/* Glow effect for current step */}
                 {status === 'current' && (
-                  <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping z-0" />
+                  <div className="absolute inset-0 rounded-full bg-foreground/15 animate-ping z-0" />
                 )}
               </div>
 
@@ -153,7 +153,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                     "w-12 h-12 rounded-full border-3 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative z-20",
                     {
                       "bg-step-verified border-step-verified text-step-verified-foreground shadow-lg shadow-step-verified/20": status === 'completed',
-                      "bg-warning border-warning text-warning-foreground shadow-lg shadow-warning/30": status === 'current',
+                      "bg-foreground border-foreground text-background shadow-lg shadow-foreground/30": status === 'current',
                       "bg-background border-border text-muted-foreground": status === 'pending' && !clickable,
                       "bg-background border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-md hover:shadow-lg ring-2 ring-primary/20": status === 'pending' && clickable
                     }
@@ -171,7 +171,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   
                   {/* Glow effect for current step */}
                   {status === 'current' && (
-                    <div className="absolute inset-0 rounded-full bg-warning/20 animate-ping z-0" />
+                    <div className="absolute inset-0 rounded-full bg-foreground/15 animate-ping z-0" />
                   )}
                 </div>
 

@@ -148,7 +148,7 @@ Equipe de Inventário`,
       <ResponsiveDialogContent className={isMobile ? "" : "max-w-2xl"}>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertTriangle className="h-5 w-5 text-muted-foreground" />
             Enviar Lembrete de Devolução
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
@@ -230,7 +230,7 @@ Equipe de Inventário`,
             <p className="text-xs text-muted-foreground">
               {message.length} caracteres
               {reminderType === 'sms' && message.length > 160 && (
-                <span className="text-orange-500 ml-2">
+                <span className="text-muted-foreground ml-2">
                   (SMS longo - pode ser cobrado como múltiplas mensagens)
                 </span>
               )}

@@ -108,7 +108,7 @@ export function SecurityScanCard() {
                   )}
                   {scanResults.highIssues > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-orange-500">Altas:</span>
+                      <span className="text-muted-foreground">Altas:</span>
                       <Badge variant="secondary">{scanResults.highIssues}</Badge>
                     </div>
                   )}
