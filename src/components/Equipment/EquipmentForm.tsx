@@ -198,21 +198,30 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             />
             
             {/* Mini-resumo visual */}
-            {(formData.brand || formData.category || formData.status) && (
+            {(formData.brand || formData.category || formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && (
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {formData.brand && <span className="text-sm font-medium text-muted-foreground">{formData.brand}</span>}
-                {formData.brand && (formData.category || formData.status) && <span className="text-muted-foreground">•</span>}
+                {formData.brand && (formData.category || formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && <span className="text-muted-foreground">•</span>}
                 {formData.category && (
                   <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
                     {getCategoryIcon(formData.category)}
                     {getCategoryLabel(formData.category)}
                   </Badge>
                 )}
-                {formData.category && formData.status && <span className="text-muted-foreground">•</span>}
+                {formData.category && (formData.status || (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none')) && <span className="text-muted-foreground">•</span>}
                 {formData.status && (
                   <Badge variant={getStatusBadgeVariant(formData.status)} className="gap-1.5">
                     {getStatusIcon(formData.status)}
                     {getStatusLabel(formData.status)}
+                  </Badge>
+                )}
+                {formData.status && (formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none') && <span className="text-muted-foreground">•</span>}
+                
+                {/* Badge de Acessório */}
+                {formData.itemType === 'accessory' && formData.parentId && formData.parentId !== 'none' && (
+                  <Badge variant="neutral" className="gap-1.5">
+                    <Link2 className="w-3 h-3" />
+                    Acessório de <span className="mx-1">›</span> {getSelectedParentName()}
                   </Badge>
                 )}
               </div>
