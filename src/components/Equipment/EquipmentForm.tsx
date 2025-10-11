@@ -121,7 +121,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
   // Hero Card: Foto grande + Nome em destaque
   const renderHeroCard = () => (
-    <Card className="bg-accent/5 border-2 border-primary/10">
+    <Card className="border-2 border-border">
       <CardContent className="p-6">
         <div className={cn(
           "flex gap-6",
