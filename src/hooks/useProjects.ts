@@ -186,8 +186,6 @@ export function useProjects() {
                 equipment_id: equipment.id as string,
                 equipment_name: equipment.name as string,
                 borrower_name: newProject.responsibleName,
-                borrower_email: newProject.responsibleEmail,
-                department: newProject.department,
                 project: data.name,
                 loan_date: newProject.startDate,
                 expected_return_date: newProject.expectedEndDate,
@@ -197,8 +195,39 @@ export function useProjects() {
               .single();
           });
 
-          await Promise.all(loanPromises);
-          logger.debug('All loans created successfully', { module: 'projects' });
+          const loanResults = await Promise.all(loanPromises);
+          
+          // Check for loan creation errors
+          const failedLoans = loanResults.filter(result => result.error);
+          if (failedLoans.length > 0) {
+            logger.error('Failed to create some loans', {
+              module: 'projects',
+              data: { failedCount: failedLoans.length, errors: failedLoans.map(r => r.error) }
+            });
+          }
+          
+          logger.debug('All loans created successfully', { 
+            module: 'projects',
+            data: { loansCreated: loanResults.filter(r => r.data).length }
+          });
+          
+          // Create borrower contact records for each loan
+          if (newProject.responsibleEmail || newProject.department) {
+            const contactPromises = loanResults
+              .filter(result => result.data)
+              .map(result => {
+                return supabase
+                  .from('borrower_contacts')
+                  .insert({
+                    loan_id: result.data!.id,
+                    borrower_email: newProject.responsibleEmail,
+                    department: newProject.department
+                  });
+              });
+            
+            await Promise.all(contactPromises);
+            logger.debug('All borrower contacts created successfully', { module: 'projects' });
+          }
           
           // Wait for triggers to update the project
           await new Promise(resolve => setTimeout(resolve, 200));
