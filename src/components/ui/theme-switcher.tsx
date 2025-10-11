@@ -11,7 +11,13 @@ export const ThemeSwitcher = forwardRef<HTMLButtonElement>((props, ref) => {
       ref={ref}
       variant="ghost"
       size="sm"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={() => {
+        const currentTheme = theme === "system"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : theme
+        
+        setTheme(currentTheme === "light" ? "dark" : "light")
+      }}
       className="relative text-foreground hover:bg-muted hover:text-foreground"
       {...props}
     >
