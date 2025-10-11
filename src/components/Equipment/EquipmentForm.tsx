@@ -51,9 +51,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
 
   // Helper para mapear categoria para variante de badge
-  const getCategoryBadgeVariant = (category: EquipmentCategory): "secondary" => {
-    // Todas as categorias com cinza médio preenchido
-    return 'secondary' as const;
+  const getCategoryBadgeVariant = (category: EquipmentCategory): "neutral" => {
+    return 'neutral' as const;
   };
 
   // Helper para mapear categoria para ícone
@@ -261,7 +260,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           >
             <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
               {formData.category ? (
-                <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
+                <Badge variant="neutral" className="gap-1.5">
                   {getCategoryIcon(formData.category)}
                   {getCategoryLabel(formData.category)}
                 </Badge>
@@ -272,7 +271,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             <SelectContent>
               <SelectItem value="camera">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1.5">
+                  <Badge variant="neutral" className="gap-1.5">
                     <Camera className="w-3 h-3" />
                     Câmera
                   </Badge>
@@ -280,7 +279,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               </SelectItem>
               <SelectItem value="audio">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1.5">
+                  <Badge variant="neutral" className="gap-1.5">
                     <Mic className="w-3 h-3" />
                     Áudio
                   </Badge>
@@ -288,7 +287,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               </SelectItem>
               <SelectItem value="lighting">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1.5">
+                  <Badge variant="neutral" className="gap-1.5">
                     <Lightbulb className="w-3 h-3" />
                     Iluminação
                   </Badge>
@@ -296,7 +295,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               </SelectItem>
               <SelectItem value="accessories">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1.5">
+                  <Badge variant="neutral" className="gap-1.5">
                     <Wrench className="w-3 h-3" />
                     Acessórios
                   </Badge>
@@ -304,7 +303,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               </SelectItem>
               <SelectItem value="storage">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1.5">
+                  <Badge variant="neutral" className="gap-1.5">
                     <HardDrive className="w-3 h-3" />
                     Armazenamento
                   </Badge>

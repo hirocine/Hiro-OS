@@ -21,6 +21,8 @@ const badgeVariants = cva(
           "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
         info:
           "border-transparent bg-blue-500 text-white hover:bg-blue-600",
+        neutral:
+          "border-transparent bg-gray-400 text-white hover:bg-gray-500",
         "step-pending":
           "border-transparent bg-step-pending text-step-pending-foreground hover:bg-step-pending/80",
         "step-pickup":
