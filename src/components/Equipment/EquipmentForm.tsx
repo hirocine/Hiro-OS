@@ -11,7 +11,7 @@ import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/m
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Autocomplete } from '@/components/ui/autocomplete';
-import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive } from 'lucide-react';
+import { Loader2, Upload, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EquipmentFormProps {
@@ -99,10 +99,10 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   // Helper para obter ícone do status
   const getStatusIcon = (status: EquipmentStatus) => {
     const icons: Record<EquipmentStatus, JSX.Element> = {
-      available: <Activity className="w-3 h-3" />,
+      available: <Check className="w-3 h-3" />,
       maintenance: <Wrench className="w-3 h-3" />
     };
-    return icons[status] || <Activity className="w-3 h-3" />;
+    return icons[status] || <Check className="w-3 h-3" />;
   };
 
   // Helper para obter label traduzido do status
@@ -364,7 +364,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <SelectItem value="available">
                 <div className="flex items-center gap-2">
                   <Badge variant="success" className="gap-1.5">
-                    <Activity className="w-3 h-3" />
+                    <Check className="w-3 h-3" />
                     Disponível
                   </Badge>
                 </div>
