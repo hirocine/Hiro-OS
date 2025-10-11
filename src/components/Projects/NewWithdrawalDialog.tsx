@@ -8,10 +8,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
@@ -708,7 +709,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     
     if (isEmpty) {
       return (
-        <Card key={title} className="opacity-50 h-40">
+        <Card key={title} className="opacity-50 h-40 border-dashed">
           <CardHeader>
             <div className="flex items-center gap-3">
               <IconComponent className="h-6 w-6 text-muted-foreground" />
@@ -719,8 +720,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="py-4">
-              <span className="text-xs text-muted-foreground">Nenhum item selecionado</span>
+            <div className="py-4 text-center">
+              <span className="text-xs text-muted-foreground">Nenhum item selecionado para esta categoria</span>
             </div>
           </CardContent>
         </Card>
@@ -728,7 +729,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     }
 
       return (
-        <Card key={title} className="min-h-32">
+        <Card key={title} className="min-h-32 border-primary/30 bg-primary/5 animate-fade-in">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -739,16 +740,23 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 </div>
               </div>
               
-              {/* Edit button */}
+              {/* Edit button with tooltip */}
               {count > 0 && stepNumber && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentStep(stepNumber)}
-                >
-                  Editar
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentStep(stepNumber)}
+                    >
+                      Editar
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Editar seleção de {title.toLowerCase()}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </CardHeader>
@@ -788,8 +796,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Dados do Projeto</h3>
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Informações do Projeto</h3>
+              <p className="text-sm text-muted-foreground mt-1">Preencha os dados básicos do projeto</p>
+            </div>
             
             <div className="space-y-4">
               <div>
@@ -844,8 +855,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 2:
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Responsável pelo Projeto</h3>
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Responsável pelo Projeto</h3>
+              <p className="text-sm text-muted-foreground mt-1">Selecione quem será responsável por este projeto</p>
+            </div>
             
             <div className="space-y-4">
               <div>
@@ -930,8 +944,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 3:
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Datas do Projeto</h3>
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Datas do Projeto</h3>
+              <p className="text-sm text-muted-foreground mt-1">Defina as datas de separação, retirada e devolução</p>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
@@ -1055,8 +1072,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 4:
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Tipo de Gravação</h3>
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Tipo de Gravação</h3>
+              <p className="text-sm text-muted-foreground mt-1">Escolha o tipo de gravação do projeto</p>
+            </div>
             
             <div className="space-y-4">
               <div>
@@ -1148,9 +1168,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     <Card className="border-dashed">
                       <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                          <div className="text-center text-sm text-muted-foreground">
+                          <div className="text-center text-sm text-muted-foreground space-y-2">
                             <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            Nenhuma câmera disponível
+                            <p className="font-medium">Nenhuma câmera disponível</p>
+                            <p className="text-xs">Todas as câmeras estão em uso no momento</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -1160,7 +1181,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       {getAvailableCameras().map((cameraHierarchy) => (
                         <Card 
                           key={cameraHierarchy.item.id}
-                          className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                          className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
                           onClick={() => 
                             data.selectedEquipment.cameras.length < data.selectedEquipment.cameraQuantity && 
                             handleCameraSelect(cameraHierarchy)
@@ -1239,9 +1260,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     <Card className="border-dashed">
                       <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                          <div className="text-center text-sm text-muted-foreground">
+                          <div className="text-center text-sm text-muted-foreground space-y-2">
                             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            Nenhuma câmera selecionada
+                            <p className="font-medium">Nenhuma câmera selecionada</p>
+                            <p className="text-xs">Clique nas câmeras disponíveis para adicioná-las</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -1249,7 +1271,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   ) : (
                     <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {data.selectedEquipment.cameras.map((selectedCamera) => (
-                        <Card key={selectedCamera.camera.id} className="border-primary/20 h-24">
+                        <Card key={selectedCamera.camera.id} className="border-primary/30 bg-primary/5 h-24 animate-fade-in">
                           <CardContent className="p-4 h-full">
                             <div className="flex items-center gap-3 h-full">
                                <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1321,8 +1343,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 6:
         return (
-          <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Seleção de Lentes</h3>
+          <div className="space-y-6 flex-1 overflow-y-auto animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Seleção de Lentes</h3>
+              <p className="text-sm text-muted-foreground mt-1">Selecione as lentes que serão usadas (opcional)</p>
+            </div>
             
             {/* Search Input */}
             <div className="space-y-2">
@@ -1360,9 +1385,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-muted-foreground space-y-2">
                           <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          Nenhuma lente disponível
+                          <p className="font-medium">Nenhuma lente disponível</p>
+                          <p className="text-xs">Todas as lentes estão em uso ou seu filtro não encontrou resultados</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1372,7 +1398,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     {filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).map((lens) => (
                       <Card 
                         key={lens.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
                         onClick={() => handleEquipmentSelect(lens, 'lenses')}
                       >
                         <CardContent className="p-4 h-full">
@@ -1439,9 +1465,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-muted-foreground space-y-2">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          Nenhuma lente selecionada
+                          <p className="font-medium">Nenhuma lente selecionada</p>
+                          <p className="text-xs">Clique nas lentes disponíveis para adicioná-las</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1449,7 +1476,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {data.selectedEquipment.lenses.map((lens) => (
-                      <Card key={lens.id} className="border-primary/20 h-24">
+                      <Card key={lens.id} className="border-primary/30 bg-primary/5 h-24 animate-fade-in">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
                              <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1491,8 +1518,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
       case 7:
         return (
-          <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Acessórios de Câmera</h3>
+          <div className="space-y-6 flex-1 overflow-y-auto animate-fade-in">
+            <div>
+              <h3 className="text-lg font-semibold">Acessórios de Câmera</h3>
+              <p className="text-sm text-muted-foreground mt-1">Selecione acessórios adicionais (opcional)</p>
+            </div>
             
             {/* Search Input */}
             <div className="space-y-2">
@@ -1530,9 +1560,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-muted-foreground space-y-2">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          Nenhum acessório disponível
+                          <p className="font-medium">Nenhum acessório disponível</p>
+                          <p className="text-xs">Todos os acessórios estão em uso ou seu filtro não encontrou resultados</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1542,7 +1573,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     {filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).map((accessory) => (
                       <Card 
                         key={accessory.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
+                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
                         onClick={() => handleEquipmentSelect(accessory, 'cameraAccessories')}
                       >
                         <CardContent className="p-4 h-full">
@@ -1609,9 +1640,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-muted-foreground space-y-2">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          Nenhum acessório selecionado
+                          <p className="font-medium">Nenhum acessório selecionado</p>
+                          <p className="text-xs">Clique nos acessórios disponíveis para adicioná-los</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1619,7 +1651,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                     {data.selectedEquipment.cameraAccessories.map((accessory) => (
-                      <Card key={accessory.id} className="border-primary/20 h-24">
+                      <Card key={accessory.id} className="border-primary/30 bg-primary/5 h-24 animate-fade-in">
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
                              <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -2800,7 +2832,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               
               {renderEquipmentCategoryCard(
                 'Lentes',
-                Zap,
+                Video,
                 data.selectedEquipment.lenses,
                 data.selectedEquipment.lenses.length === 0,
                 6
@@ -2816,7 +2848,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               
               {renderEquipmentCategoryCard(
                 'Tripés',
-                Cog,
+                Box,
                 data.selectedEquipment.tripods,
                 data.selectedEquipment.tripods.length === 0,
                 8
@@ -2848,7 +2880,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
               
               {renderEquipmentCategoryCard(
                 'Elétricos',
-                Zap,
+                Plug,
                 data.selectedEquipment.electrical,
                 data.selectedEquipment.electrical.length === 0,
                 12
@@ -2926,11 +2958,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
           <div className="flex-1 overflow-hidden py-2 sm:py-4 flex flex-col min-h-0">
             {/* Progress bar */}
-            <div className="w-full bg-muted rounded-full h-2 mb-6">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(currentStep / 15) * 100}%` }}
-              />
+            <div className="space-y-2 mb-6">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Passo {currentStep} de 15</span>
+                <span>{Math.round((currentStep / 15) * 100)}% completo</span>
+              </div>
+              <Progress value={(currentStep / 15) * 100} className="h-2" />
             </div>
 
             {renderStep()}
@@ -2947,18 +2980,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             </Button>
 
             <div className="flex gap-2">
-              {/* Skip button for optional equipment steps (6-14) */}
-              {currentStep >= 6 && currentStep <= 14 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={nextStep}
-                >
-                  Pular categoria
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-              
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
@@ -2975,13 +2996,51 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </Button>
                 </>
               ) : (
-                <Button
-                  onClick={nextStep}
-                  disabled={!isStepValid()}
-                >
-                  Próximo
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
+                <>
+                  {/* Skip button for optional equipment steps (6-14) - only show when no items selected */}
+                  {currentStep >= 6 && currentStep <= 14 && (() => {
+                    const categoryMap: { [key: number]: keyof WithdrawalData['selectedEquipment'] } = {
+                      6: 'lenses',
+                      7: 'cameraAccessories',
+                      8: 'tripods',
+                      9: 'lights',
+                      10: 'lightModifiers',
+                      11: 'machinery',
+                      12: 'electrical',
+                      13: 'storage',
+                      14: 'computers'
+                    };
+                    const category = categoryMap[currentStep];
+                    const hasItems = category && Array.isArray(data.selectedEquipment[category]) && 
+                                    data.selectedEquipment[category].length > 0;
+                    
+                    return !hasItems ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={nextStep}
+                          >
+                            Pular categoria
+                            <ChevronRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Esta categoria é opcional</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : null;
+                  })()}
+                  
+                  <Button
+                    onClick={nextStep}
+                    disabled={!isStepValid()}
+                  >
+                    Próximo
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </>
               )}
             </div>
           </div>
