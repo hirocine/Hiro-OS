@@ -143,6 +143,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     return isNaN(num) ? 0 : num;
   };
 
+
   const getMainItems = useCallback(() => {
     return allEquipment.filter(e => e.itemType === 'main');
   }, [allEquipment]);
