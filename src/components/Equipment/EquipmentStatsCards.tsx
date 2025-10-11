@@ -9,6 +9,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { DashboardStats } from '@/types/equipment';
+import { formatCurrency } from '@/lib/utils';
 
 interface EquipmentStatsCardsProps {
   stats: DashboardStats;
@@ -16,22 +17,12 @@ interface EquipmentStatsCardsProps {
 }
 
 export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   const statsCards = [
     {
       title: 'Total de Equipamentos',
       value: stats.total,
       icon: Package,
       description: `${stats.mainItems} principais, ${stats.accessories} acessórios`,
-      trend: '+12% este mês',
       color: 'text-primary',
       bgColor: 'bg-primary/10',
     },
@@ -100,12 +91,14 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
                 <p className="text-xs text-muted-foreground mb-1">
                   {stat.description}
                 </p>
-                <Badge 
-                  variant={stat.trend === 'Atenção' ? 'warning' : 'secondary'} 
-                  className="text-xs"
-                >
-                  {stat.trend}
-                </Badge>
+                {stat.trend && (
+                  <Badge 
+                    variant={stat.trend === 'Atenção' ? 'warning' : 'secondary'} 
+                    className="text-xs"
+                  >
+                    {stat.trend}
+                  </Badge>
+                )}
               </CardContent>
             </Card>
           );

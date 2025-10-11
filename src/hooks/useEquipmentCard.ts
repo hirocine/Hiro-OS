@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Equipment } from '@/types/equipment';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
 
 export function useEquipmentCard() {
   const [uploadingStates, setUploadingStates] = useState<Record<string, boolean>>({});
@@ -28,10 +29,7 @@ export function useEquipmentCard() {
 
   const formatCurrency = useCallback((value?: number) => {
     if (!value) return '-';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
+    return formatCurrencyUtil(value);
   }, []);
 
   const handleImageUpload = useCallback(async (

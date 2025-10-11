@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download } from 'lucide-react';
+import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,17 +59,10 @@ export default function EquipmentPage() {
   const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
   
   // Loading states for individual actions
-  const [loadingStates, setLoadingStates] = useState<{
-    deleting: string | null;
-    updating: string | null;
-    uploading: string | null;
-    convert: boolean;
-  }>({
-    deleting: null,
-    updating: null,
-    uploading: null,
-    convert: false
-  });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
+  
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Confirmation dialog state
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -92,6 +85,24 @@ export default function EquipmentPage() {
   const isMobile = useIsMobile();
   const isTablet = false; // Simplified for now
   const { classes } = usePageLayout('table');
+
+  // Update timestamp when data is loaded
+  useEffect(() => {
+    if (!loading && allEquipment.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [loading, allEquipment.length]);
+
+  // Helper function to format relative time
+  const formatRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'agora mesmo';
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
+    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
+  };
 
   // Auto-switch view mode based on screen size - FORÇA cards no mobile
   const effectiveViewMode = useMemo(() => {
@@ -153,7 +164,7 @@ export default function EquipmentPage() {
     if (!equipment) return;
 
     try {
-      setLoadingStates(prev => ({ ...prev, deleting: equipment.id }));
+      setDeletingId(equipment.id);
       await deleteEquipment(equipment.id);
       
       enhancedToast.success({
@@ -189,7 +200,7 @@ export default function EquipmentPage() {
         description: 'Tente novamente ou contate o suporte.'
       });
     } finally {
-      setLoadingStates(prev => ({ ...prev, deleting: null }));
+      setDeletingId(null);
       setDeleteConfirmation({ open: false, equipment: null });
     }
   };
@@ -202,8 +213,6 @@ export default function EquipmentPage() {
 
   const handleImageUpload = async (equipment: Equipment, file: File) => {
     try {
-      setLoadingStates(prev => ({ ...prev, uploading: equipment.id }));
-      
       const fileExt = file.name.split('.').pop();
       const fileName = `${equipment.id}-${Date.now()}.${fileExt}`;
 
@@ -237,8 +246,6 @@ export default function EquipmentPage() {
         title: 'Erro ao fazer upload da imagem',
         description: 'Tente novamente ou contate o suporte.'
       });
-    } finally {
-      setLoadingStates(prev => ({ ...prev, uploading: null }));
     }
   };
 
@@ -395,7 +402,20 @@ export default function EquipmentPage() {
     <ResponsiveContainer maxWidth="7xl" className="min-h-screen">
       <PageHeader 
         title="Equipamentos" 
-        subtitle="Gerencie o inventário de equipamentos audiovisuais"
+        subtitle={
+          <span className="flex items-center gap-2">
+            Gerencie o inventário de equipamentos audiovisuais
+            {lastUpdate && (
+              <>
+                <span className="text-muted-foreground/50">•</span>
+                <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Atualizado {formatRelativeTime(lastUpdate)}
+                </span>
+              </>
+            )}
+          </span>
+        }
         actions={
           <div className="flex flex-col sm:flex-row gap-2">
             <AdminOnly>
@@ -503,7 +523,7 @@ export default function EquipmentPage() {
           mainItems={allEquipment.filter(eq => eq.itemType === 'main')}
           onConvert={async (equipmentId: string, parentId: string) => {
             try {
-              setLoadingStates(prev => ({ ...prev, convert: true }));
+              setIsConverting(true);
               await convertToAccessory(equipmentId, parentId);
               setConvertingEquipment(null);
               setIsConvertDialogOpen(false);
@@ -534,7 +554,7 @@ export default function EquipmentPage() {
               
               return { success: false };
             } finally {
-              setLoadingStates(prev => ({ ...prev, convert: false }));
+              setIsConverting(false);
             }
           }}
         />
@@ -562,8 +582,47 @@ export default function EquipmentPage() {
         onOpenChange={(open) => setUndoDeleteDialog({ open, equipment: null })}
         deletedEquipment={undoDeleteDialog.equipment}
         onRestore={async (equipmentId) => {
-          equipmentDebug('Restoring equipment', { equipmentId });
-          // Implementar lógica de restauração quando necessário
+          try {
+            equipmentDebug('Restoring equipment', { equipmentId });
+            
+            const deletedEquipment = undoDeleteDialog.equipment;
+            if (!deletedEquipment) {
+              throw new Error('Dados do equipamento não encontrados');
+            }
+
+            const equipmentData: Omit<Equipment, 'id'> = {
+              name: deletedEquipment.name,
+              brand: deletedEquipment.brand,
+              category: deletedEquipment.category,
+              status: 'available',
+              itemType: 'main',
+              patrimonyNumber: deletedEquipment.patrimony_number,
+            };
+
+            const result = await addEquipment(equipmentData);
+            
+            if (result.success) {
+              enhancedToast.success({
+                title: 'Equipamento restaurado!',
+                description: `${deletedEquipment.name} foi restaurado com sucesso.`
+              });
+              setUndoDeleteDialog({ open: false, equipment: null });
+            } else {
+              throw new Error(result.error || 'Erro ao restaurar equipamento');
+            }
+          } catch (error) {
+            logger.error('Error restoring equipment', {
+              module: 'equipment-page',
+              action: 'restore_equipment',
+              error,
+              data: { equipmentId }
+            });
+            
+            enhancedToast.error({
+              title: 'Erro ao restaurar',
+              description: 'Não foi possível restaurar o equipamento. Tente adicionar manualmente.'
+            });
+          }
         }}
       />
     </ResponsiveContainer>
