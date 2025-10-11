@@ -88,7 +88,7 @@ export function useEquipment(): UseEquipmentReturn {
         capacity: item.capacity ? Number(item.capacity) : undefined,
       }));
       
-      logger.apiResponse('fetchEquipment', 'success', null, { count: equipmentData.length });
+      logger.apiResponse('fetchEquipment', '/equipments', true, { count: equipmentData.length });
       return equipmentData;
     });
 
