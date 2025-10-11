@@ -87,7 +87,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     // Se for formato yyyy-MM-dd completo, formata
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       try {
-        const date = new Date(dateString);
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // mês é 0-based
         if (!isNaN(date.getTime())) {
           return format(date, 'dd/MM/yyyy');
         }
@@ -115,7 +116,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (fullMatch) {
       const [, day, month, year] = fullMatch;
       // Valida se é uma data válida
-      const date = new Date(`${year}-${month}-${day}`);
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
       if (!isNaN(date.getTime())) {
         return `${year}-${month}-${day}`;
       }
@@ -149,7 +150,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     const fullMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (fullMatch) {
       const [, day, month, year] = fullMatch;
-      const date = new Date(`${year}-${month}-${day}`);
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
       if (!isNaN(date.getTime())) {
         updateField(field, `${year}-${month}-${day}`);
         return;
