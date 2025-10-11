@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +53,7 @@ export default function Admin() {
   const { user } = useAuth();
   const { isAdmin, loading: roleLoading, role } = useUserRole();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -105,7 +107,7 @@ export default function Admin() {
                 Role atual: {role || 'não definida'}
               </p>
             </div>
-            <Button onClick={() => window.location.href = '/'}>
+            <Button onClick={() => navigate('/dashboard')}>
               Voltar ao Dashboard
             </Button>
           </CardContent>

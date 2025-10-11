@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder } from '@/types/equipment';
+import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder, EquipmentCategory } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
 import { naturalSort } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -248,42 +248,71 @@ export function useEquipment(): UseEquipmentReturn {
   }, [filteredEquipment]);
 
   const stats: DashboardStats = useMemo(() => {
-    const total = enrichedEquipment.length;
-    const available = enrichedEquipment.filter(item => item.status === 'available').length;
-    const inUse = enrichedEquipment.filter(item => item.simplifiedStatus === 'in_project').length;
-    const maintenance = enrichedEquipment.filter(item => item.status === 'maintenance').length;
-    const mainItems = enrichedEquipment.filter(item => item.itemType === 'main').length;
-    const accessories = enrichedEquipment.filter(item => item.itemType === 'accessory').length;
-    
-    const byCategory = enrichedEquipment.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryCounts: Record<string, number> = {};
+    const categoryInUse: Record<string, number> = {};
+    let mainItems = 0;
+    let accessories = 0;
 
-    const byItemType = enrichedEquipment.reduce((acc, item) => {
-      acc[item.itemType] = (acc[item.itemType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    enrichedEquipment.forEach(eq => {
+      const category = eq.category.toLowerCase();
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
 
-    // Calculate total values
-    const totalValue = enrichedEquipment.reduce((acc, item) => acc + (item.value || 0), 0);
+      // Count in use by category
+      if (eq.simplifiedStatus === 'in_project') {
+        categoryInUse[category] = (categoryInUse[category] || 0) + 1;
+      }
+
+      if (eq.itemType === 'main') mainItems++;
+      else accessories++;
+    });
+
+    const inProject = enrichedEquipment.filter(
+      eq => eq.simplifiedStatus === 'in_project'
+    ).length;
     
-    const valueByCategory = enrichedEquipment.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + (item.value || 0);
-      return acc;
-    }, {} as Record<string, number>);
+    const available = enrichedEquipment.filter(
+      eq => eq.simplifiedStatus === 'available' && eq.status !== 'maintenance'
+    ).length;
+
+    const inUse = enrichedEquipment.filter(
+      eq => eq.currentLoanId !== null && eq.simplifiedStatus === 'in_project'
+    ).length;
+
+    const maintenance = enrichedEquipment.filter(
+      eq => eq.status === 'maintenance'
+    ).length;
 
     return {
-      total,
+      total: enrichedEquipment.length,
+      byCategory: {
+        camera: categoryCounts['camera'] || 0,
+        audio: categoryCounts['audio'] || 0,
+        lighting: categoryCounts['lighting'] || 0,
+        accessories: categoryCounts['accessories'] || 0,
+        storage: categoryCounts['storage'] || 0,
+      },
+      inUseByCategory: {
+        camera: categoryInUse['camera'] || 0,
+        audio: categoryInUse['audio'] || 0,
+        lighting: categoryInUse['lighting'] || 0,
+        accessories: categoryInUse['accessories'] || 0,
+        storage: categoryInUse['storage'] || 0,
+      },
+      byItemType: {
+        main: mainItems,
+        accessory: accessories,
+      },
       available,
       inUse,
       maintenance,
       mainItems,
       accessories,
-      byCategory: byCategory as DashboardStats['byCategory'],
-      byItemType: byItemType as DashboardStats['byItemType'],
-      totalValue,
-      valueByCategory: valueByCategory as DashboardStats['valueByCategory']
+      totalValue: enrichedEquipment.reduce((acc, eq) => acc + (eq.value || 0), 0),
+      valueByCategory: enrichedEquipment.reduce((acc, eq) => {
+        const category = eq.category.toLowerCase();
+        acc[category as EquipmentCategory] = (acc[category as EquipmentCategory] || 0) + (eq.value || 0);
+        return acc;
+      }, {} as Record<EquipmentCategory, number>),
     };
   }, [enrichedEquipment]);
 

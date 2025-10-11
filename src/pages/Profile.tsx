@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +27,12 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
+const profileSchema = z.object({
+  display_name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
+  position: z.string().max(100, 'Cargo muito longo').optional(),
+  department: z.string().max(100, 'Departamento muito longo').optional(),
+});
+
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,6 +48,8 @@ export default function Profile() {
   // Avatar cropping state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string>('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [loadingPasswordReset, setLoadingPasswordReset] = useState(false);
   const { uploading, validateFile, uploadAvatar, removeAvatar, setImageUrl } = useAvatarUpload();
   const { hasGoogleAvatar, googleAvatarUrl, isGoogleUser, syncGoogleAvatarToProfile } = useGoogleProfile();
 
@@ -84,6 +93,28 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate form data
+    try {
+      profileSchema.parse(formData);
+      setValidationErrors({});
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0].toString()] = err.message;
+          }
+        });
+        setValidationErrors(errors);
+        toast({
+          title: 'Erro de validação',
+          description: 'Por favor, corrija os erros no formulário.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
 
     try {
       setSaving(true);
@@ -173,6 +204,32 @@ export default function Profile() {
       await fetchProfile();
     } catch (error) {
       // Error is handled by the hook
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    
+    setLoadingPasswordReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email enviado!',
+        description: 'Verifique sua caixa de entrada para redefinir a senha.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao enviar email',
+        description: 'Não foi possível enviar o email de redefinição.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingPasswordReset(false);
     }
   };
 
@@ -271,13 +328,17 @@ export default function Profile() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="display_name">Nome Completo</Label>
-                <Input
-                  id="display_name"
-                  value={formData.display_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                  placeholder="Seu nome completo"
-                />
+                  <Label htmlFor="display_name">Nome Completo</Label>
+                  <Input
+                    id="display_name"
+                    value={formData.display_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                    placeholder="Seu nome completo"
+                    className={validationErrors.display_name ? 'border-destructive' : ''}
+                  />
+                  {validationErrors.display_name && (
+                    <p className="text-sm text-destructive">{validationErrors.display_name}</p>
+                  )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -288,7 +349,11 @@ export default function Profile() {
                     value={formData.position}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                     placeholder="Ex: Editor, Cinegrafista"
+                    className={validationErrors.position ? 'border-destructive' : ''}
                   />
+                  {validationErrors.position && (
+                    <p className="text-sm text-destructive">{validationErrors.position}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="department">Área</Label>
@@ -297,7 +362,11 @@ export default function Profile() {
                     value={formData.department}
                     onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                     placeholder="Ex: Pós-produção, Captação"
+                    className={validationErrors.department ? 'border-destructive' : ''}
                   />
+                  {validationErrors.department && (
+                    <p className="text-sm text-destructive">{validationErrors.department}</p>
+                  )}
                 </div>
               </div>
 
@@ -324,12 +393,13 @@ export default function Profile() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Alterar Senha</Label>
-              <Button variant="outline" className="w-full" onClick={() => {
-                toast({
-                  title: "Email enviado",
-                  description: "Email de redefinição de senha enviado para sua caixa de entrada.",
-                });
-              }}>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handlePasswordReset}
+                disabled={loadingPasswordReset}
+              >
+                {loadingPasswordReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Redefinir Senha
               </Button>
             </div>

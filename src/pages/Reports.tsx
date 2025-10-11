@@ -1,15 +1,37 @@
-import { BarChart3, TrendingUp, Package, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BarChart3, TrendingUp, Package, AlertTriangle, Clock, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useProjects } from '@/hooks/useProjects';
+import { Button } from '@/components/ui/button';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer as RechartsResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--success))', 'hsl(var(--warning))'];
 
 export default function Reports() {
-  const { stats: equipmentStats, loading: equipmentLoading } = useEquipment();
+  const { stats: equipmentStats, loading: equipmentLoading, allEquipment } = useEquipment();
   const { stats: projectStats, loading: projectLoading } = useProjects();
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const loading = equipmentLoading || projectLoading;
+
+  useEffect(() => {
+    if (!loading && allEquipment.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [loading, allEquipment.length]);
+
+  const formatRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'agora mesmo';
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
+    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
+  };
 
   if (loading) {
     return (
@@ -27,26 +49,59 @@ export default function Reports() {
     );
   }
 
-  // Calculate utilization percentages
+  // Calculate utilization percentages - FIXED: use category-specific inUse counts
   const cameraUtilization = equipmentStats.byCategory.camera > 0 
-    ? Math.round((equipmentStats.inUse / equipmentStats.byCategory.camera) * 100) 
+    ? Math.round((equipmentStats.inUseByCategory.camera / equipmentStats.byCategory.camera) * 100) 
     : 0;
   const audioUtilization = equipmentStats.byCategory.audio > 0 
-    ? Math.round((equipmentStats.inUse / equipmentStats.byCategory.audio) * 100) 
+    ? Math.round((equipmentStats.inUseByCategory.audio / equipmentStats.byCategory.audio) * 100) 
     : 0;
   const lightingUtilization = equipmentStats.byCategory.lighting > 0 
-    ? Math.round((equipmentStats.inUse / equipmentStats.byCategory.lighting) * 100) 
+    ? Math.round((equipmentStats.inUseByCategory.lighting / equipmentStats.byCategory.lighting) * 100) 
     : 0;
 
   const overallUtilization = equipmentStats.total > 0 
     ? Math.round((equipmentStats.inUse / equipmentStats.total) * 100) 
     : 0;
 
+  // Data for charts
+  const categoryData = [
+    { name: 'Câmeras', total: equipmentStats.byCategory.camera, emUso: equipmentStats.inUseByCategory.camera },
+    { name: 'Áudio', total: equipmentStats.byCategory.audio, emUso: equipmentStats.inUseByCategory.audio },
+    { name: 'Iluminação', total: equipmentStats.byCategory.lighting, emUso: equipmentStats.inUseByCategory.lighting },
+    { name: 'Acessórios', total: equipmentStats.byCategory.accessories, emUso: equipmentStats.inUseByCategory.accessories },
+  ];
+
+  const statusData = [
+    { name: 'Disponíveis', value: equipmentStats.available },
+    { name: 'Em Uso', value: equipmentStats.inUse },
+    { name: 'Manutenção', value: equipmentStats.maintenance },
+  ];
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
         title="Relatórios" 
-        subtitle="Análises e insights sobre o inventário de equipamentos"
+        subtitle={
+          <span className="flex items-center gap-2">
+            Análises e insights sobre o inventário de equipamentos
+            {lastUpdate && (
+              <>
+                <span className="text-muted-foreground/50">•</span>
+                <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Atualizado {formatRelativeTime(lastUpdate)}
+                </span>
+              </>
+            )}
+          </span>
+        }
+        actions={
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Exportar PDF
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -115,7 +170,73 @@ export default function Reports() {
         </Card>
       </div>
 
-      <Card className="shadow-card">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Equipamentos por Categoria
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RechartsResponsiveContainer width="100%" height={300}>
+              <BarChart data={categoryData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis className="text-xs" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="total" name="Total" fill="hsl(var(--primary))" />
+                <Bar dataKey="emUso" name="Em Uso" fill="hsl(var(--accent))" />
+              </BarChart>
+            </RechartsResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Distribuição por Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RechartsResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+              </PieChart>
+            </RechartsResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="shadow-card mt-4 md:mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
