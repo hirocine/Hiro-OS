@@ -3,6 +3,7 @@ import { Moon, Sun } from "lucide-react"
 import { Button, ButtonProps } from "@/components/ui/button"
 import { useTheme } from "@/components/ui/theme-provider"
 import { cn } from "@/lib/utils"
+import { debugLog } from "@/lib/debug"
 
 interface ThemeSwitcherProps extends Omit<ButtonProps, 'onClick'> {}
 
@@ -15,12 +16,25 @@ export const ThemeSwitcher = forwardRef<HTMLButtonElement, ThemeSwitcherProps>(
         ref={ref}
         variant="ghost"
         size="sm"
-        onClick={() => {
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          
           const currentTheme = theme === "system"
             ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
             : theme
           
-          setTheme(currentTheme === "light" ? "dark" : "light")
+          const nextTheme = currentTheme === "light" ? "dark" : "light"
+          
+          debugLog("theme", "Toggle clicked", { 
+            theme, 
+            currentTheme, 
+            nextTheme,
+            target: e.currentTarget.tagName
+          })
+          
+          setTheme(nextTheme)
         }}
         className={cn("relative text-foreground hover:bg-muted hover:text-foreground", className)}
         {...props}

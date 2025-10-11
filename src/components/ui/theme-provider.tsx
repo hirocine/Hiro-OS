@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from "react"
+import { debugLog } from "@/lib/debug"
 
 type Theme = "dark" | "light" | "system"
 
@@ -24,40 +25,55 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
-  ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
+  const [themeState, setThemeState] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
 
   useEffect(() => {
     const root = window.document.documentElement
-
+    
     root.classList.remove("light", "dark")
 
-    if (theme === "system") {
+    if (themeState === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light"
 
       root.classList.add(systemTheme)
+      root.setAttribute("data-theme", systemTheme)
+      root.style.colorScheme = systemTheme
+      
+      debugLog("theme", "Theme applied (system)", { 
+        theme: themeState, 
+        resolved: systemTheme,
+        classList: root.classList.toString()
+      })
       return
     }
 
-    root.classList.add(theme)
-  }, [theme])
+    root.classList.add(themeState)
+    root.setAttribute("data-theme", themeState)
+    root.style.colorScheme = themeState
+    
+    debugLog("theme", "Theme applied", { 
+      theme: themeState,
+      classList: root.classList.toString()
+    })
+  }, [themeState])
 
-  const value = {
-    theme,
+  const value = useMemo(() => ({
+    theme: themeState,
     setTheme: (theme: Theme) => {
+      debugLog("theme", "setTheme called", { currentTheme: themeState, newTheme: theme })
       localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+      setThemeState(theme)
     },
-  }
+  }), [themeState, storageKey])
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
     </ThemeProviderContext.Provider>
   )
