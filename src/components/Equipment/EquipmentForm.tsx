@@ -627,7 +627,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                     updateField('purchaseDate', parsed);
                   }
                 }}
-                placeholder="dd/MM/aaaa"
+                placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
               <Popover open={showPurchaseDateCalendar} onOpenChange={setShowPurchaseDateCalendar}>
@@ -667,7 +667,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                     updateField('receiveDate', parsed);
                   }
                 }}
-                placeholder="dd/MM/aaaa"
+                placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
               <Popover open={showReceiveDateCalendar} onOpenChange={setShowReceiveDateCalendar}>
@@ -707,7 +707,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                     updateField('lastMaintenance', parsed);
                   }
                 }}
-                placeholder="dd/MM/aaaa"
+                placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
               <Popover open={showMaintenanceDateCalendar} onOpenChange={setShowMaintenanceDateCalendar}>
