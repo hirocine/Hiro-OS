@@ -80,6 +80,34 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     }
   };
 
+  // Helper para formatar data do formato yyyy-MM-dd para dd/MM/yyyy
+  const formatDateForDisplay = (dateString: string): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return format(date, 'dd/MM/yyyy');
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper para converter dd/MM/yyyy para yyyy-MM-dd
+  const parseDateInput = (input: string): string => {
+    if (!input) return '';
+    
+    // Se já está no formato yyyy-MM-dd, retorna
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+    
+    // Tenta converter dd/MM/yyyy para yyyy-MM-dd
+    const match = input.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (match) {
+      const [, day, month, year] = match;
+      return `${year}-${month}-${day}`;
+    }
+    
+    return '';
+  };
+
   // Helper para mapear categoria para variante de badge
   const getCategoryBadgeVariant = (category: EquipmentCategory): "neutral" => {
     return 'neutral' as const;
@@ -589,97 +617,121 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           {/* Data de Compra */}
           <div>
             <Label htmlFor="purchaseDate" className="text-sm font-medium">Data de Compra</Label>
-            <Popover open={showPurchaseDateCalendar} onOpenChange={setShowPurchaseDateCalendar}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal mt-1.5",
-                    !formData.purchaseDate && "text-muted-foreground",
-                    isMobile ? "h-10" : "h-9"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.purchaseDate ? 
-                    format(new Date(formData.purchaseDate), 'dd/MM/yyyy') : 
-                    'Selecione a data'
+            <div className="flex gap-2 mt-1.5">
+              <Input
+                id="purchaseDate"
+                value={formatDateForDisplay(formData.purchaseDate || '')}
+                onChange={(e) => {
+                  const parsed = parseDateInput(e.target.value);
+                  if (parsed || !e.target.value) {
+                    updateField('purchaseDate', parsed);
                   }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.purchaseDate ? new Date(formData.purchaseDate) : undefined}
-                  onSelect={handlePurchaseDateSelect}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+                }}
+                placeholder="dd/MM/aaaa"
+                className={cn(isMobile ? "h-10" : "h-9")}
+              />
+              <Popover open={showPurchaseDateCalendar} onOpenChange={setShowPurchaseDateCalendar}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.purchaseDate ? new Date(formData.purchaseDate) : undefined}
+                    onSelect={handlePurchaseDateSelect}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           {/* Data de Recebimento */}
           <div>
             <Label htmlFor="receiveDate" className="text-sm font-medium">Data de Recebimento</Label>
-            <Popover open={showReceiveDateCalendar} onOpenChange={setShowReceiveDateCalendar}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal mt-1.5",
-                    !formData.receiveDate && "text-muted-foreground",
-                    isMobile ? "h-10" : "h-9"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.receiveDate ? 
-                    format(new Date(formData.receiveDate), 'dd/MM/yyyy') : 
-                    'Selecione a data'
+            <div className="flex gap-2 mt-1.5">
+              <Input
+                id="receiveDate"
+                value={formatDateForDisplay(formData.receiveDate || '')}
+                onChange={(e) => {
+                  const parsed = parseDateInput(e.target.value);
+                  if (parsed || !e.target.value) {
+                    updateField('receiveDate', parsed);
                   }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.receiveDate ? new Date(formData.receiveDate) : undefined}
-                  onSelect={handleReceiveDateSelect}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+                }}
+                placeholder="dd/MM/aaaa"
+                className={cn(isMobile ? "h-10" : "h-9")}
+              />
+              <Popover open={showReceiveDateCalendar} onOpenChange={setShowReceiveDateCalendar}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.receiveDate ? new Date(formData.receiveDate) : undefined}
+                    onSelect={handleReceiveDateSelect}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           {/* Última Manutenção */}
           <div>
             <Label htmlFor="lastMaintenance" className="text-sm font-medium">Última Manutenção</Label>
-            <Popover open={showMaintenanceDateCalendar} onOpenChange={setShowMaintenanceDateCalendar}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal mt-1.5",
-                    !formData.lastMaintenance && "text-muted-foreground",
-                    isMobile ? "h-10" : "h-9"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.lastMaintenance ? 
-                    format(new Date(formData.lastMaintenance), 'dd/MM/yyyy') : 
-                    'Selecione a data'
+            <div className="flex gap-2 mt-1.5">
+              <Input
+                id="lastMaintenance"
+                value={formatDateForDisplay(formData.lastMaintenance || '')}
+                onChange={(e) => {
+                  const parsed = parseDateInput(e.target.value);
+                  if (parsed || !e.target.value) {
+                    updateField('lastMaintenance', parsed);
                   }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : undefined}
-                  onSelect={handleMaintenanceDateSelect}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+                }}
+                placeholder="dd/MM/aaaa"
+                className={cn(isMobile ? "h-10" : "h-9")}
+              />
+              <Popover open={showMaintenanceDateCalendar} onOpenChange={setShowMaintenanceDateCalendar}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className={cn(isMobile ? "h-10 w-10" : "h-9 w-9")}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : undefined}
+                    onSelect={handleMaintenanceDateSelect}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
       </CardContent>
