@@ -4,11 +4,14 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench } from 'lucide-react';
+import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3, Layers } from 'lucide-react';
 import { useMemo } from 'react';
+import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
-  const { stats, allEquipment } = useEquipment();
+  const { stats, allEquipment, loading } = useEquipment();
   
   // Initialize notifications
   useNotifications();
@@ -97,6 +100,74 @@ export default function Dashboard() {
     }
   ];
 
+  // Loading state
+  if (loading) {
+    return (
+      <ResponsiveContainer maxWidth="7xl">
+        <PageHeader 
+          title="Dashboard" 
+          subtitle="Visão geral do inventário de equipamentos audiovisuais"
+        />
+        
+        <div className="space-y-6 lg:space-y-8">
+          {/* Skeleton do Resumo Financeiro */}
+          <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
+            <Skeleton className="h-6 w-48 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+            <div className="border-t border-border/20 pt-4">
+              <Skeleton className="h-4 w-64 mb-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </div>
+            </div>
+          </div>
+
+          {/* Skeleton Visão Geral */}
+          <div>
+            <Skeleton className="h-8 w-48 mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {[...Array(4)].map((_, i) => <StatsCardSkeleton key={i} />)}
+            </div>
+          </div>
+
+          {/* Skeleton Categorias */}
+          <div>
+            <Skeleton className="h-8 w-64 mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {[...Array(4)].map((_, i) => <StatsCardSkeleton key={i} />)}
+            </div>
+          </div>
+        </div>
+      </ResponsiveContainer>
+    );
+  }
+
+  // Empty state
+  if (allEquipment.length === 0) {
+    return (
+      <ResponsiveContainer maxWidth="7xl">
+        <PageHeader 
+          title="Dashboard" 
+          subtitle="Visão geral do inventário de equipamentos audiovisuais"
+        />
+        <EmptyState
+          icon={Package}
+          title="Nenhum equipamento cadastrado"
+          description="Comece adicionando seu primeiro equipamento ao inventário para visualizar estatísticas e análises."
+          action={{
+            label: "Adicionar Equipamento",
+            onClick: () => window.location.href = '/equipment/add'
+          }}
+        />
+      </ResponsiveContainer>
+    );
+  }
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
@@ -104,93 +175,121 @@ export default function Dashboard() {
         subtitle="Visão geral do inventário de equipamentos audiovisuais"
       />
 
-      {/* Financial Summary */}
-      <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
-        <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Resumo Financeiro</h2>
+      <div className="space-y-6 lg:space-y-8">
+        {/* Seção: Resumo Financeiro */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-xl lg:text-2xl font-semibold">Resumo Financeiro</h2>
+          </div>
+          <div className="bg-gradient-card rounded-lg p-4 lg:p-6 shadow-elegant">
         
-        {/* Financial Values */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 bg-background/50 rounded-lg border border-border/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Package className="h-4 w-4 text-primary" />
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total do Inventário</p>
+            {/* Financial Values */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="p-4 bg-background/50 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total do Inventário</p>
+                </div>
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-primary" aria-label={`Valor total do inventário: ${formatCurrency(totalInventoryValue)}`}>
+                  {formatCurrency(totalInventoryValue)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Valor pago original</p>
+              </div>
+              <div className="p-4 bg-background/50 rounded-lg border-2 border-destructive/20 hover:border-destructive/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total Real</p>
+                </div>
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive" aria-label={`Valor total real com depreciação: ${formatCurrency(totalDepreciatedValue)}`}>
+                  {formatCurrency(totalDepreciatedValue)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Com depreciação aplicada</p>
+              </div>
             </div>
-            <p className="text-lg md:text-xl lg:text-2xl font-bold text-primary">{formatCurrency(totalInventoryValue)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Valor pago original</p>
-          </div>
-          <div className="p-4 bg-background/50 rounded-lg border border-border/20">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Valor Total Real</p>
+
+            {/* Equipment Age Analysis */}
+            <div className="border-t border-border/20 pt-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Análise por Idade dos Equipamentos</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Mais de 1 ano
+                    </CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-muted-foreground" aria-label={`${equipmentByAge.over1Year} equipamentos com mais de 1 ano`}>
+                      {equipmentByAge.over1Year}
+                    </div>
+                    <p className="text-xs text-muted-foreground">equipamentos</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Mais de 2 anos
+                    </CardTitle>
+                    <Clock className="h-4 w-4 text-warning" aria-hidden="true" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-warning" aria-label={`${equipmentByAge.over2Years} equipamentos com mais de 2 anos`}>
+                      {equipmentByAge.over2Years}
+                    </div>
+                    <p className="text-xs text-muted-foreground">equipamentos</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Mais de 3 anos
+                    </CardTitle>
+                    <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-destructive" aria-label={`${equipmentByAge.over3Years} equipamentos com mais de 3 anos`}>
+                      {equipmentByAge.over3Years}
+                    </div>
+                    <p className="text-xs text-muted-foreground">equipamentos</p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-            <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive">{formatCurrency(totalDepreciatedValue)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Com depreciação aplicada</p>
           </div>
-        </div>
+        </section>
 
-        {/* Equipment Age Analysis */}
-        <div className="border-t border-border/20 pt-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Análise por Idade dos Equipamentos</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Mais de 1 ano
-                </CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-warning">{equipmentByAge.over1Year}</div>
-                <p className="text-xs text-muted-foreground">equipamentos</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Mais de 2 anos
-                </CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-warning">{equipmentByAge.over2Years}</div>
-                <p className="text-xs text-muted-foreground">equipamentos</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Mais de 3 anos
-                </CardTitle>
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">{equipmentByAge.over3Years}</div>
-                <p className="text-xs text-muted-foreground">equipamentos</p>
-              </CardContent>
-            </Card>
+        {/* Seção: Visão Geral */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-xl lg:text-2xl font-semibold">Visão Geral</h2>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {mainStats.map((stat, index) => (
-          <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
-            <StatsCard {...stat} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {mainStats.map((stat, index) => (
+              <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                <StatsCard {...stat} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </section>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Equipamentos por Categoria</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {categoryStats.map((stat, index) => (
-            <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${(index + 4) * 100}ms` }}>
-              <StatsCard {...stat} />
-            </div>
-          ))}
-        </div>
+        {/* Seção: Equipamentos por Categoria */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-xl lg:text-2xl font-semibold">Equipamentos por Categoria</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {categoryStats.map((stat, index) => (
+              <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${(index + 4) * 100}ms` }}>
+                <StatsCard {...stat} />
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </ResponsiveContainer>
   );
