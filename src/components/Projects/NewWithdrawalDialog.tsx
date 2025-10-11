@@ -101,6 +101,19 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     },
   });
 
+  // Search filters state for each equipment category
+  const [searchFilters, setSearchFilters] = useState({
+    lenses: '',
+    cameraAccessories: '',
+    tripods: '',
+    lights: '',
+    lightModifiers: '',
+    machinery: '',
+    electrical: '',
+    storage: '',
+    computers: ''
+  });
+
   const { users, loading: usersLoading } = useUsers();
   const { toast } = useToast();
   const { equipmentHierarchy, loading: equipmentLoading } = useEquipment();
@@ -232,6 +245,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .map(item => item.item);
   };
 
+  // Filter equipment by search term (name or brand)
+  const filterEquipmentBySearch = (items: Equipment[], searchTerm: string) => {
+    if (!searchTerm.trim()) return items;
+    
+    const lowerSearch = searchTerm.toLowerCase();
+    return items.filter(item => 
+      item.name.toLowerCase().includes(lowerSearch) ||
+      item.brand.toLowerCase().includes(lowerSearch)
+    );
+  };
+
   const handleCameraQuantityChange = (quantity: number) => {
     const currentQuantity = data.selectedEquipment.cameraQuantity;
     const selectedCameras = data.selectedEquipment.cameras;
@@ -308,7 +332,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 2:
         return data.responsibleUserId !== '';
       case 3:
-        return data.withdrawalDate && data.returnDate && data.separationDate;
+        return data.withdrawalDate && 
+               data.returnDate && 
+               data.separationDate &&
+               data.returnDate >= data.withdrawalDate;
       case 4:
         return data.recordingType !== '';
       case 5:
@@ -673,7 +700,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     title: string,
     icon: any,
     items: Equipment[] | SelectedCamera[],
-    isEmpty: boolean
+    isEmpty: boolean,
+    stepNumber?: number
   ) => {
     const IconComponent = icon;
     const count = Array.isArray(items) ? items.length : 0;
@@ -702,12 +730,26 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       return (
         <Card key={title} className="min-h-32">
           <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <IconComponent className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle className="text-sm">{title}</CardTitle>
-                <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <IconComponent className="h-6 w-6 text-primary" />
+                <div>
+                  <CardTitle className="text-sm">{title}</CardTitle>
+                  <Badge variant="default" className="text-xs">{count} {count === 1 ? 'item' : 'itens'}</Badge>
+                </div>
               </div>
+              
+              {/* Edit button */}
+              {count > 0 && stepNumber && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentStep(stepNumber)}
+                >
+                  Editar
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -912,6 +954,14 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       mode="single"
                       selected={data.separationDate}
                       onSelect={(date) => updateField('separationDate', date)}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const oneYearFromNow = new Date();
+                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
+                        
+                        return date < today || date > oneYearFromNow;
+                      }}
                       initialFocus
                       className="pointer-events-auto"
                     />
@@ -939,7 +989,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       mode="single"
                       selected={data.withdrawalDate}
                       onSelect={(date) => updateField('withdrawalDate', date)}
-                      disabled={(date) => data.separationDate && date < data.separationDate}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const oneYearFromNow = new Date();
+                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
+                        
+                        if (date < today || date > oneYearFromNow) return true;
+                        if (data.separationDate && date < data.separationDate) return true;
+                        
+                        return false;
+                      }}
                       initialFocus
                       className="pointer-events-auto"
                     />
@@ -967,7 +1027,17 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       mode="single"
                       selected={data.returnDate}
                       onSelect={(date) => updateField('returnDate', date)}
-                      disabled={(date) => data.withdrawalDate && date < data.withdrawalDate}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const oneYearFromNow = new Date();
+                        oneYearFromNow.setFullYear(today.getFullYear() + 1);
+                        
+                        if (date < today || date > oneYearFromNow) return true;
+                        if (data.withdrawalDate && date < data.withdrawalDate) return true;
+                        
+                        return false;
+                      }}
                       initialFocus
                       className="pointer-events-auto"
                     />
@@ -1254,6 +1324,21 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="space-y-6 flex-1 overflow-y-auto">
             <h3 className="text-lg font-semibold">Seleção de Lentes</h3>
             
+            {/* Search Input */}
+            <div className="space-y-2">
+              <Label htmlFor="search-lenses">Buscar lentes</Label>
+              <Input
+                id="search-lenses"
+                placeholder="Digite nome ou marca..."
+                value={searchFilters.lenses}
+                onChange={(e) => setSearchFilters(prev => ({
+                  ...prev,
+                  lenses: e.target.value
+                }))}
+                className="max-w-md"
+              />
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Lenses */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -1261,7 +1346,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <Camera className="h-5 w-5" />
                   <h4 className="font-medium">Lentes Disponíveis</h4>
                   <Badge variant="secondary">
-                    {getAvailableLenses().length} disponíveis
+                    {filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).length} disponíveis
                   </Badge>
                 </div>
 
@@ -1271,7 +1356,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
                     ))}
                   </div>
-                ) : getAvailableLenses().length === 0 ? (
+                ) : filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
@@ -1284,7 +1369,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableLenses().map((lens) => (
+                    {filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).map((lens) => (
                       <Card 
                         key={lens.id}
                         className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
@@ -1409,6 +1494,21 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="space-y-6 flex-1 overflow-y-auto">
             <h3 className="text-lg font-semibold">Acessórios de Câmera</h3>
             
+            {/* Search Input */}
+            <div className="space-y-2">
+              <Label htmlFor="search-accessories">Buscar acessórios</Label>
+              <Input
+                id="search-accessories"
+                placeholder="Digite nome ou marca..."
+                value={searchFilters.cameraAccessories}
+                onChange={(e) => setSearchFilters(prev => ({
+                  ...prev,
+                  cameraAccessories: e.target.value
+                }))}
+                className="max-w-md"
+              />
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Camera Accessories */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -1416,7 +1516,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   <Package className="h-5 w-5" />
                   <h4 className="font-medium">Acessórios Disponíveis</h4>
                   <Badge variant="secondary">
-                    {getAvailableCameraAccessories().length} disponíveis
+                    {filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).length} disponíveis
                   </Badge>
                 </div>
 
@@ -1426,7 +1526,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                       <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
                     ))}
                   </div>
-                ) : getAvailableCameraAccessories().length === 0 ? (
+                ) : filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).length === 0 ? (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                   <Card className="border-dashed">
                     <CardContent className="pt-6 flex items-center justify-center" style={{ minHeight: '120px' }}>
@@ -1439,7 +1539,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableCameraAccessories().map((accessory) => (
+                    {filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).map((accessory) => (
                       <Card 
                         key={accessory.id}
                         className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
@@ -2649,10 +2749,44 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
           <div className="space-y-6 flex-1 overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Resumo da Retirada</h3>
-              <Badge variant="outline" className="text-lg px-3 py-1">
-                {getTotalEquipmentCount()} {getTotalEquipmentCount() === 1 ? 'item selecionado' : 'itens selecionados'}
+              <Badge variant="default" className="text-base px-4 py-2">
+                Total: {getTotalEquipmentCount()} itens
               </Badge>
             </div>
+            
+            {/* Detailed Summary Card */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {data.selectedEquipment.cameras.length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Câmeras</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {data.selectedEquipment.cameras.reduce((acc, cam) => 
+                        acc + cam.accessories.length, 0)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Acessórios de Câmera</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {data.selectedEquipment.lenses.length + 
+                       data.selectedEquipment.lights.length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Lentes + Luzes</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {getTotalEquipmentCount()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Total Geral</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
             <div className="grid grid-cols-1 gap-4">
               {/* Equipment Categories */}
@@ -2660,70 +2794,80 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                 'Câmeras',
                 Camera,
                 data.selectedEquipment.cameras,
-                data.selectedEquipment.cameras.length === 0
+                data.selectedEquipment.cameras.length === 0,
+                5
               )}
               
               {renderEquipmentCategoryCard(
                 'Lentes',
                 Zap,
                 data.selectedEquipment.lenses,
-                data.selectedEquipment.lenses.length === 0
+                data.selectedEquipment.lenses.length === 0,
+                6
               )}
               
               {renderEquipmentCategoryCard(
                 'Acessórios de Câmera',
                 Settings,
                 data.selectedEquipment.cameraAccessories,
-                data.selectedEquipment.cameraAccessories.length === 0
+                data.selectedEquipment.cameraAccessories.length === 0,
+                7
               )}
               
               {renderEquipmentCategoryCard(
                 'Tripés',
                 Cog,
                 data.selectedEquipment.tripods,
-                data.selectedEquipment.tripods.length === 0
+                data.selectedEquipment.tripods.length === 0,
+                8
               )}
               
               {renderEquipmentCategoryCard(
                 'Iluminação',
                 Lightbulb,
                 data.selectedEquipment.lights,
-                data.selectedEquipment.lights.length === 0
+                data.selectedEquipment.lights.length === 0,
+                9
               )}
               
               {renderEquipmentCategoryCard(
                 'Modificadores de Luz',
                 Wrench,
                 data.selectedEquipment.lightModifiers,
-                data.selectedEquipment.lightModifiers.length === 0
+                data.selectedEquipment.lightModifiers.length === 0,
+                10
               )}
               
               {renderEquipmentCategoryCard(
                 'Máquinas',
                 Cog,
                 data.selectedEquipment.machinery,
-                data.selectedEquipment.machinery.length === 0
+                data.selectedEquipment.machinery.length === 0,
+                11
               )}
               
               {renderEquipmentCategoryCard(
                 'Elétricos',
                 Zap,
                 data.selectedEquipment.electrical,
-                data.selectedEquipment.electrical.length === 0
+                data.selectedEquipment.electrical.length === 0,
+                12
               )}
               
               {renderEquipmentCategoryCard(
                 'Armazenamento',
                 HardDrive,
                 data.selectedEquipment.storage,
-                data.selectedEquipment.storage.length === 0
+                data.selectedEquipment.storage.length === 0,
+                13
               )}
               
               {renderEquipmentCategoryCard(
                 'Computadores',
                 Monitor,
                 data.selectedEquipment.computers,
-                data.selectedEquipment.computers.length === 0
+                data.selectedEquipment.computers.length === 0,
+                14
               )}
             </div>
             
@@ -2803,6 +2947,18 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
             </Button>
 
             <div className="flex gap-2">
+              {/* Skip button for optional equipment steps (6-14) */}
+              {currentStep >= 6 && currentStep <= 14 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={nextStep}
+                >
+                  Pular categoria
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+              
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
