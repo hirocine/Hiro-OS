@@ -77,7 +77,7 @@ export default function ProjectWithdrawal() {
   const { id: projectId } = useParams();
   const isMobile = useIsMobile();
   
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
   const [expandedCameras, setExpandedCameras] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<WithdrawalData>({
@@ -509,28 +509,28 @@ export default function ProjectWithdrawal() {
       
       const projectData = {
         name: `${data.projectNumber} - ${data.company}: ${data.projectName}`,
-        projectNumber: data.projectNumber,
+        project_number: data.projectNumber,
         company: data.company,
-        projectName: data.projectName,
-        responsibleUserId: data.responsibleUserId,
-        responsibleName: selectedUser?.display_name || selectedUser?.email || '',
-        responsibleEmail: selectedUser?.email || '',
+        project_name: data.projectName,
+        responsible_user_id: data.responsibleUserId,
+        responsible_name: selectedUser?.display_name || selectedUser?.email || '',
+        responsible_email: selectedUser?.email || '',
         department: selectedUser?.department || '',
-        startDate: data.withdrawalDate?.toISOString().split('T')[0] || '',
-        expectedEndDate: data.returnDate?.toISOString().split('T')[0] || '',
-        withdrawalDate: data.withdrawalDate?.toISOString().split('T')[0] || '',
-        separationDate: data.separationDate?.toISOString().split('T')[0] || '',
-        recordingType: data.recordingType,
+        start_date: data.withdrawalDate?.toISOString().split('T')[0] || '',
+        expected_end_date: data.returnDate?.toISOString().split('T')[0] || '',
+        withdrawal_date: data.withdrawalDate?.toISOString().split('T')[0] || '',
+        separation_date: data.separationDate?.toISOString().split('T')[0] || '',
+        recording_type: data.recordingType,
         status: 'active' as const,
         step: 'pending_separation' as const,
-        stepHistory: [],
-        equipmentCount: selectedEquipment.length,
-        loanIds: []
+        step_history: [],
+        equipment_count: selectedEquipment.length,
+        loan_ids: []
       };
 
       const { data: newProject, error: projectError } = await supabase
         .from('projects')
-        .insert(projectData)
+        .insert([projectData])
         .select()
         .single();
 
@@ -539,7 +539,7 @@ export default function ProjectWithdrawal() {
       const loansToCreate = selectedEquipment.map(equipment => ({
         equipment_id: equipment.id,
         equipment_name: equipment.name,
-        borrower_name: projectData.responsibleName,
+        borrower_name: projectData.responsible_name,
         project: newProject.id,
         loan_date: data.withdrawalDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
         expected_return_date: data.returnDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
@@ -572,25 +572,44 @@ export default function ProjectWithdrawal() {
     }
   };
 
-  const isStepValid = (step: number) => {
-    switch (step) {
-      case 0:
+  // Navigation functions
+  const nextStep = () => {
+    if (isStepValid() && currentStep < 15) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const goToStep = (step: number) => {
+    setCurrentStep(step);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const isStepValid = (): boolean => {
+    switch (currentStep) {
+      case 1:
         return data.projectNumber.trim() !== '' && 
                data.company.trim() !== '' && 
                data.projectName.trim() !== '' &&
                /^\d{1,4}$/.test(data.projectNumber.trim());
-      case 1:
-        return data.responsibleUserId !== '';
       case 2:
+        return data.responsibleUserId !== '';
+      case 3:
         return data.withdrawalDate && 
                data.returnDate && 
                data.separationDate &&
                data.returnDate >= data.withdrawalDate;
-      case 3:
-        return data.recordingType !== '';
       case 4:
-        return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
+        return data.recordingType !== '';
       case 5:
+        return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
       case 6:
       case 7:
       case 8:
@@ -600,11 +619,36 @@ export default function ProjectWithdrawal() {
       case 12:
       case 13:
       case 14:
-        return true;
+      case 15:
+        return true; // Optional steps and summary
       default:
-        return true;
+        return false;
     }
   };
+
+  const shouldShowSkipButton = (): boolean => {
+    if (currentStep < 6 || currentStep > 14) return false;
+    
+    const categoryMap: Record<number, keyof typeof data.selectedEquipment> = {
+      6: 'lenses',
+      7: 'cameraAccessories',
+      8: 'tripods',
+      9: 'lights',
+      10: 'lightModifiers',
+      11: 'machinery',
+      12: 'electrical',
+      13: 'storage',
+      14: 'computers'
+    };
+    
+    const category = categoryMap[currentStep];
+    if (!category) return false;
+    
+    const items = data.selectedEquipment[category];
+    return Array.isArray(items) && items.length === 0;
+  };
+
+  const progressPercentage = (currentStep / 15) * 100;
 
   const renderEquipmentSelectionStep = (
     title: string,
@@ -1244,43 +1288,121 @@ export default function ProjectWithdrawal() {
     }
   ];
 
+  const currentStepData = steps[currentStep - 1];
+
   return (
-    <ResponsiveContainer maxWidth="4xl">
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/projects')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Nova Retirada</h1>
-            <p className="text-sm text-muted-foreground">
-              Crie um novo projeto de retirada de equipamentos
-            </p>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <div className="border-b bg-card sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/projects')}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold">Nova Retirada de Equipamentos</h1>
+                <p className="text-sm text-muted-foreground">
+                  Etapa {currentStep} de 15 - {currentStepData?.title}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <Progress value={progressPercentage} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{Math.round(progressPercentage)}% completo</span>
+              <span>Etapa {currentStep}/15</span>
+            </div>
           </div>
         </div>
-
-        <MobileStepperForm
-          steps={steps}
-          currentStep={currentStep}
-          onStepChange={(step) => {
-            if (step > currentStep && !isStepValid(currentStep)) {
-              enhancedToast.error({
-                title: "Atenção",
-                description: "Preencha todos os campos obrigatórios antes de continuar."
-              });
-              return;
-            }
-            setCurrentStep(step);
-          }}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          submitText="Criar Retirada"
-        />
       </div>
-    </ResponsiveContainer>
+
+      {/* Content */}
+      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        {currentStepData?.content}
+      </div>
+
+      {/* Footer with navigation */}
+      <div className="border-t bg-card sticky bottom-0">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-3">
+            {/* Previous button */}
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="w-full sm:w-auto"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Anterior
+            </Button>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              {/* Cancel button */}
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/projects')}
+                className="w-full sm:w-auto"
+              >
+                Cancelar
+              </Button>
+
+              {/* Step 15: Special actions */}
+              {currentStep === 15 ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={generatePDF}
+                    className="w-full sm:w-auto"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar PDF
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto"
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    {isSubmitting ? 'Criando...' : 'Criar Retirada'}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {/* Skip button for equipment steps */}
+                  {shouldShowSkipButton() && (
+                    <Button
+                      variant="ghost"
+                      onClick={nextStep}
+                      className="w-full sm:w-auto"
+                    >
+                      Pular categoria
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  )}
+
+                  {/* Next button */}
+                  <Button
+                    onClick={nextStep}
+                    disabled={!isStepValid()}
+                    className="w-full sm:w-auto"
+                  >
+                    Próximo
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
