@@ -6,9 +6,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useProjects } from '@/hooks/useProjects';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer as RechartsResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--success))', 'hsl(var(--warning))'];
 
 export default function Reports() {
   const { stats: equipmentStats, loading: equipmentLoading, allEquipment } = useEquipment();
@@ -64,19 +61,6 @@ export default function Reports() {
     ? Math.round((equipmentStats.inUse / equipmentStats.total) * 100) 
     : 0;
 
-  // Data for charts
-  const categoryData = [
-    { name: 'Câmeras', total: equipmentStats.byCategory.camera, emUso: equipmentStats.inUseByCategory.camera },
-    { name: 'Áudio', total: equipmentStats.byCategory.audio, emUso: equipmentStats.inUseByCategory.audio },
-    { name: 'Iluminação', total: equipmentStats.byCategory.lighting, emUso: equipmentStats.inUseByCategory.lighting },
-    { name: 'Acessórios', total: equipmentStats.byCategory.accessories, emUso: equipmentStats.inUseByCategory.accessories },
-  ];
-
-  const statusData = [
-    { name: 'Disponíveis', value: equipmentStats.available },
-    { name: 'Em Uso', value: equipmentStats.inUse },
-    { name: 'Manutenção', value: equipmentStats.maintenance },
-  ];
 
   return (
     <ResponsiveContainer maxWidth="7xl">
@@ -170,71 +154,6 @@ export default function Reports() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Equipamentos por Categoria
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RechartsResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="total" name="Total" fill="hsl(var(--primary))" />
-                <Bar dataKey="emUso" name="Em Uso" fill="hsl(var(--accent))" />
-              </BarChart>
-            </RechartsResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Distribuição por Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RechartsResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-              </PieChart>
-            </RechartsResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
 
       <Card className="shadow-card mt-4 md:mt-6">
         <CardHeader>
