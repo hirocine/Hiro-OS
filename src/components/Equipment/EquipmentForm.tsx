@@ -249,7 +249,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             </SelectContent>
           </Select>
         </div>
-
+        
         {/* Item Principal (condicional - só para acessórios) */}
         {formData.itemType === 'accessory' && (
           <div>
