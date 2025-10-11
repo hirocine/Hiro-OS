@@ -131,10 +131,10 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         size="sm"
         disabled={loading}
         className={cn(
-          "h-9 px-4 text-sm font-medium transition-all duration-300 hover:scale-105",
+          "h-9 px-4 text-sm font-medium transition-all duration-200",
           isCompleting 
-            ? "bg-gradient-to-r from-step-verified to-step-verified-foreground text-background shadow-lg hover:shadow-xl" 
-            : "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-elegant hover:shadow-xl",
+            ? "bg-foreground/90 text-background shadow-md" 
+            : "bg-foreground text-background hover:bg-foreground/90 shadow-card",
           className
         )}
       >

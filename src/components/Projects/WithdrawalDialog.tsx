@@ -152,7 +152,7 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid() || loading}
-            className="bg-gradient-to-r from-primary to-primary-glow"
+            className="bg-foreground hover:bg-foreground/90 text-background"
           >
             {loading ? 'Registrando...' : 'Registrar Retirada'}
           </Button>

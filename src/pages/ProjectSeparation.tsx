@@ -328,7 +328,7 @@ export default function ProjectSeparation() {
           type="button" 
           onClick={handleConfirm}
           disabled={!allItemsChecked || isSubmitting}
-          className="bg-success hover:bg-success/90 w-full sm:min-w-[200px] sm:w-auto"
+          className="bg-foreground hover:bg-foreground/90 text-background w-full sm:min-w-[200px] sm:w-auto"
         >
           {isSubmitting ? (
             <>

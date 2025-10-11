@@ -128,7 +128,7 @@ export function OfficeReceiptDialog({
             <Button
               onClick={handleConfirm}
               disabled={!canConfirm}
-              className="bg-gradient-to-r from-primary to-primary-glow"
+              className="bg-foreground hover:bg-foreground/90 text-background"
             >
               {loading ? 'Processando...' : 'Confirmar Recebimento'}
             </Button>
