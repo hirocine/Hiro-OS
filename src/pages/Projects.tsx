@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -8,19 +9,18 @@ import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
-import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
-import { ProjectFilters } from '@/components/Projects/ProjectFilters';
-import { NewWithdrawalDialog } from '@/components/Projects/NewWithdrawalDialog';
-import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
-import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
 import { getStepLabel } from '@/lib/projectLabels';
-import { Equipment } from '@/types/equipment';
+import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
+import { ProjectFilters } from '@/components/Projects/ProjectFilters';
+import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
+import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
 import { logger } from '@/lib/logger';
 
 export default function Projects() {
+  const navigate = useNavigate();
   const { 
     projects: allFilteredProjects, 
     stats, 
@@ -39,7 +39,6 @@ export default function Projects() {
   // Sincronização automática entre equipamentos e projetos
   useEquipmentProjectSync();
   
-  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -70,31 +69,6 @@ export default function Projects() {
   const archivedProjects = allFilteredProjects
     .filter(project => project.status === 'archived')
     .sort((a, b) => new Date(b.expectedEndDate).getTime() - new Date(a.expectedEndDate).getTime());
-
-  const handleNewProject = async (projectData: any, selectedEquipment: Equipment[] = []) => {
-    try {
-      // Create the project with equipment directly
-      await addProject(projectData, selectedEquipment);
-      
-      toast({
-        title: "Projeto criado com sucesso",
-        description: `O projeto "${projectData.name}" foi criado com ${selectedEquipment.length} equipamentos.`,
-      });
-    } catch (error) {
-      logger.error('Error creating project', {
-        module: 'projects-page',
-        action: 'create_project',
-        error
-      });
-      toast({
-        title: "Erro ao criar projeto",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
-    } finally {
-      setShowNewProjectDialog(false);
-    }
-  };
 
   const handleEditProject = async (projectId: string, updates: Partial<Project>) => {
     try {
@@ -247,7 +221,7 @@ export default function Projects() {
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         actions={
           <ResponsiveButton 
-            onClick={() => setShowNewProjectDialog(true)}
+            onClick={() => navigate('/projects/new')}
             icon={Plus}
             className="shadow-elegant"
             mobileText="Nova"
@@ -448,7 +422,7 @@ export default function Projects() {
               <p className="text-muted-foreground mb-4">
                 Comece criando seu primeiro projeto de retirada de equipamentos
               </p>
-              <Button onClick={() => setShowNewProjectDialog(true)}>
+              <Button onClick={() => navigate('/projects/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Projeto
               </Button>
@@ -458,12 +432,6 @@ export default function Projects() {
       </div>
 
       {/* Dialogs */}
-      <NewWithdrawalDialog
-        open={showNewProjectDialog}
-        onOpenChange={setShowNewProjectDialog}
-        onSubmit={handleNewProject}
-      />
-
       {editingProject && (
         <EditProjectDialog
           open={showEditDialog}
