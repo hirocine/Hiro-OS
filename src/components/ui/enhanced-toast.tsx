@@ -47,7 +47,7 @@ export const enhancedToast = {
         label: action.label,
         onClick: action.onClick,
       } : undefined,
-      className: 'border-muted bg-muted/20 text-foreground',
+      className: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-300',
     });
   },
 
