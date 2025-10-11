@@ -87,6 +87,33 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     return labels[category];
   };
 
+  // Helper para obter variante do badge de status
+  const getStatusBadgeVariant = (status: EquipmentStatus): 'success' | 'warning' => {
+    const variants: Record<EquipmentStatus, 'success' | 'warning'> = {
+      available: 'success',
+      maintenance: 'warning'
+    };
+    return variants[status] || 'success';
+  };
+
+  // Helper para obter ícone do status
+  const getStatusIcon = (status: EquipmentStatus) => {
+    const icons: Record<EquipmentStatus, JSX.Element> = {
+      available: <Activity className="w-3 h-3" />,
+      maintenance: <Wrench className="w-3 h-3" />
+    };
+    return icons[status] || <Activity className="w-3 h-3" />;
+  };
+
+  // Helper para obter label traduzido do status
+  const getStatusLabel = (status: EquipmentStatus): string => {
+    const labels: Record<EquipmentStatus, string> = {
+      available: 'Disponível',
+      maintenance: 'Em Manutenção'
+    };
+    return labels[status];
+  };
+
   // Helper para transformar itens principais em opções do Autocomplete
   const getMainItemsAsOptions = useCallback(() => {
     return [
@@ -178,14 +205,21 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             />
             
             {/* Mini-resumo visual */}
-            {(formData.brand || formData.category) && (
+            {(formData.brand || formData.category || formData.status) && (
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {formData.brand && <span className="text-sm font-medium text-muted-foreground">{formData.brand}</span>}
-                {formData.brand && formData.category && <span className="text-muted-foreground">•</span>}
+                {formData.brand && (formData.category || formData.status) && <span className="text-muted-foreground">•</span>}
                 {formData.category && (
                   <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
                     {getCategoryIcon(formData.category)}
                     {getCategoryLabel(formData.category)}
+                  </Badge>
+                )}
+                {formData.category && formData.status && <span className="text-muted-foreground">•</span>}
+                {formData.status && (
+                  <Badge variant={getStatusBadgeVariant(formData.status)} className="gap-1.5">
+                    {getStatusIcon(formData.status)}
+                    {getStatusLabel(formData.status)}
                   </Badge>
                 )}
               </div>
@@ -319,11 +353,30 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             onValueChange={(value: EquipmentStatus) => updateField('status', value)}
           >
             <SelectTrigger id="status" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue />
+              <SelectValue>
+                <Badge variant={getStatusBadgeVariant(formData.status)} className="gap-1.5">
+                  {getStatusIcon(formData.status)}
+                  {getStatusLabel(formData.status)}
+                </Badge>
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="available">Disponível</SelectItem>
-              <SelectItem value="maintenance">Em Manutenção</SelectItem>
+              <SelectItem value="available">
+                <div className="flex items-center gap-2">
+                  <Badge variant="success" className="gap-1.5">
+                    <Activity className="w-3 h-3" />
+                    Disponível
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="maintenance">
+                <div className="flex items-center gap-2">
+                  <Badge variant="warning" className="gap-1.5">
+                    <Wrench className="w-3 h-3" />
+                    Em Manutenção
+                  </Badge>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
