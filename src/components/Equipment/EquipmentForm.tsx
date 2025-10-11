@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar, Camera } from 'lucide-react';
+import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EquipmentFormProps {
@@ -48,6 +48,43 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
+
+  // Helper para mapear categoria para variante de badge
+  const getCategoryBadgeVariant = (category: EquipmentCategory): "default" | "secondary" | "warning" | "success" | "outline" => {
+    const variants = {
+      camera: 'default' as const,
+      audio: 'secondary' as const,
+      lighting: 'warning' as const,
+      accessories: 'success' as const,
+      storage: 'outline' as const
+    };
+    return variants[category];
+  };
+
+  // Helper para mapear categoria para ícone
+  const getCategoryIcon = (category: EquipmentCategory) => {
+    const icons = {
+      camera: Camera,
+      audio: Mic,
+      lighting: Lightbulb,
+      accessories: Wrench,
+      storage: HardDrive
+    };
+    const IconComponent = icons[category];
+    return IconComponent ? <IconComponent className="w-3 h-3" /> : null;
+  };
+
+  // Helper para traduzir categoria
+  const getCategoryLabel = (category: EquipmentCategory) => {
+    const labels = {
+      camera: 'Câmera',
+      audio: 'Áudio',
+      lighting: 'Iluminação',
+      accessories: 'Acessórios',
+      storage: 'Armazenamento'
+    };
+    return labels[category];
+  };
 
   // Hero Card: Foto grande + Nome em destaque
   const renderHeroCard = () => (
@@ -177,14 +214,56 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             onValueChange={(value: EquipmentCategory) => updateField('category', value)}
           >
             <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue />
+              {formData.category ? (
+                <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
+                  {getCategoryIcon(formData.category)}
+                  {getCategoryLabel(formData.category)}
+                </Badge>
+              ) : (
+                <SelectValue placeholder="Selecione uma categoria" />
+              )}
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="camera">Câmera</SelectItem>
-              <SelectItem value="audio">Áudio</SelectItem>
-              <SelectItem value="lighting">Iluminação</SelectItem>
-              <SelectItem value="accessories">Acessórios</SelectItem>
-              <SelectItem value="storage">Armazenamento</SelectItem>
+              <SelectItem value="camera">
+                <div className="flex items-center gap-2">
+                  <Badge variant="default" className="gap-1.5">
+                    <Camera className="w-3 h-3" />
+                    Câmera
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="audio">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1.5">
+                    <Mic className="w-3 h-3" />
+                    Áudio
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="lighting">
+                <div className="flex items-center gap-2">
+                  <Badge variant="warning" className="gap-1.5">
+                    <Lightbulb className="w-3 h-3" />
+                    Iluminação
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="accessories">
+                <div className="flex items-center gap-2">
+                  <Badge variant="success" className="gap-1.5">
+                    <Wrench className="w-3 h-3" />
+                    Acessórios
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="storage">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="gap-1.5">
+                    <HardDrive className="w-3 h-3" />
+                    Armazenamento
+                  </Badge>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
