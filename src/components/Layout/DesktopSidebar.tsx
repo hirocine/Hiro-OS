@@ -157,14 +157,7 @@ export function DesktopSidebar() {
           </div>
           
           <div className="flex items-center justify-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ThemeSwitcher />
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>Tema</p>
-              </TooltipContent>
-            </Tooltip>
+            <ThemeSwitcher aria-label="Alternar tema" />
           </div>
         </div>
       </div>

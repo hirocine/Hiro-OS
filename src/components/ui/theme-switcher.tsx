@@ -17,23 +17,27 @@ export const ThemeSwitcher = forwardRef<HTMLButtonElement, ThemeSwitcherProps>(
         variant="ghost"
         size="sm"
         type="button"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          
-          const currentTheme = theme === "system"
+        onClick={() => {
+          const resolvedTheme = theme === "system"
             ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
             : theme
-          
-          const nextTheme = currentTheme === "light" ? "dark" : "light"
-          
-          debugLog("theme", "Toggle clicked", { 
-            theme, 
-            currentTheme, 
+
+          const nextTheme = resolvedTheme === "light" ? "dark" : "light"
+
+          const root = document.documentElement
+          root.classList.remove("light", "dark")
+          root.classList.add(nextTheme)
+          root.setAttribute("data-theme", nextTheme)
+          root.style.colorScheme = nextTheme
+          localStorage.setItem("vite-ui-theme", nextTheme)
+
+          debugLog("theme", "Toggle clicked (applying immediately)", {
+            theme,
+            resolvedTheme,
             nextTheme,
-            target: e.currentTarget.tagName
+            classList: root.classList.toString(),
           })
-          
+
           setTheme(nextTheme)
         }}
         className={cn("relative text-foreground hover:bg-muted hover:text-foreground", className)}
