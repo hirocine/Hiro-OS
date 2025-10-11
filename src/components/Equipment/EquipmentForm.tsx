@@ -529,12 +529,12 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         </div>
 
         <div>
-          <Label htmlFor="invoice" className="text-sm font-medium">Nota Fiscal</Label>
+          <Label htmlFor="invoice" className="text-sm font-medium">Link da Nota Fiscal (Drive)</Label>
           <Input
             id="invoice"
             value={formData.invoice || ''}
             onChange={(e) => updateField('invoice', e.target.value)}
-            placeholder="Ex: NF-12345"
+            placeholder="Ex: https://drive.google.com/..."
             className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
           />
         </div>
