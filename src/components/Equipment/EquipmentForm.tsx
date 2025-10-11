@@ -83,12 +83,21 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   // Helper para formatar data do formato yyyy-MM-dd para dd/MM/yyyy
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      return format(date, 'dd/MM/yyyy');
-    } catch {
-      return dateString;
+    
+    // Se for formato yyyy-MM-dd completo, formata
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      try {
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          return format(date, 'dd/MM/yyyy');
+        }
+      } catch {
+        return dateString;
+      }
     }
+    
+    // Retorna como está (permite ver o que está sendo digitado)
+    return dateString;
   };
 
   // Helper para converter dd/MM/yyyy para yyyy-MM-dd
@@ -98,14 +107,59 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     // Se já está no formato yyyy-MM-dd, retorna
     if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
     
-    // Tenta converter dd/MM/yyyy para yyyy-MM-dd
-    const match = input.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (match) {
-      const [, day, month, year] = match;
-      return `${year}-${month}-${day}`;
+    // Remove caracteres que não sejam dígitos ou /
+    const cleaned = input.replace(/[^\d/]/g, '');
+    
+    // Se for uma data completa dd/MM/yyyy, converte
+    const fullMatch = cleaned.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (fullMatch) {
+      const [, day, month, year] = fullMatch;
+      // Valida se é uma data válida
+      const date = new Date(`${year}-${month}-${day}`);
+      if (!isNaN(date.getTime())) {
+        return `${year}-${month}-${day}`;
+      }
     }
     
-    return '';
+    // Retorna a string limpa (permite digitação parcial)
+    return cleaned;
+  };
+
+  // Handler para entrada de data com máscara automática
+  const handleDateInput = (value: string, field: 'purchaseDate' | 'receiveDate' | 'lastMaintenance') => {
+    let cleaned = value.replace(/[^\d]/g, '');
+    
+    // Limita a 8 dígitos (ddmmyyyy)
+    cleaned = cleaned.substring(0, 8);
+    
+    // Adiciona as barras automaticamente
+    let formatted = cleaned;
+    if (cleaned.length >= 3) {
+      formatted = `${cleaned.substring(0, 2)}/${cleaned.substring(2)}`;
+    }
+    if (cleaned.length >= 5) {
+      formatted = `${cleaned.substring(0, 2)}/${cleaned.substring(2, 4)}/${cleaned.substring(4)}`;
+    }
+    
+    updateField(field, formatted);
+  };
+
+  // Validar data completa apenas no blur
+  const validateAndFormatDate = (value: string, field: 'purchaseDate' | 'receiveDate' | 'lastMaintenance') => {
+    const fullMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (fullMatch) {
+      const [, day, month, year] = fullMatch;
+      const date = new Date(`${year}-${month}-${day}`);
+      if (!isNaN(date.getTime())) {
+        updateField(field, `${year}-${month}-${day}`);
+        return;
+      }
+    }
+    
+    // Se não for válida, limpa o campo
+    if (value && value.length > 0 && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      updateField(field, '');
+    }
   };
 
   // Helper para mapear categoria para variante de badge
@@ -621,12 +675,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <Input
                 id="purchaseDate"
                 value={formatDateForDisplay(formData.purchaseDate || '')}
-                onChange={(e) => {
-                  const parsed = parseDateInput(e.target.value);
-                  if (parsed || !e.target.value) {
-                    updateField('purchaseDate', parsed);
-                  }
-                }}
+                onChange={(e) => handleDateInput(e.target.value, 'purchaseDate')}
+                onBlur={(e) => validateAndFormatDate(e.target.value, 'purchaseDate')}
                 placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
@@ -661,12 +711,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <Input
                 id="receiveDate"
                 value={formatDateForDisplay(formData.receiveDate || '')}
-                onChange={(e) => {
-                  const parsed = parseDateInput(e.target.value);
-                  if (parsed || !e.target.value) {
-                    updateField('receiveDate', parsed);
-                  }
-                }}
+                onChange={(e) => handleDateInput(e.target.value, 'receiveDate')}
+                onBlur={(e) => validateAndFormatDate(e.target.value, 'receiveDate')}
                 placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
@@ -701,12 +747,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <Input
                 id="lastMaintenance"
                 value={formatDateForDisplay(formData.lastMaintenance || '')}
-                onChange={(e) => {
-                  const parsed = parseDateInput(e.target.value);
-                  if (parsed || !e.target.value) {
-                    updateField('lastMaintenance', parsed);
-                  }
-                }}
+                onChange={(e) => handleDateInput(e.target.value, 'lastMaintenance')}
+                onBlur={(e) => validateAndFormatDate(e.target.value, 'lastMaintenance')}
                 placeholder="dd/mm/aaaa"
                 className={cn(isMobile ? "h-10" : "h-9")}
               />
