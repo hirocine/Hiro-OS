@@ -5,7 +5,7 @@ import { ResponsiveText } from './responsive-text';
 
 interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | ReactNode;
   actions?: ReactNode;
   className?: string;
 }

@@ -5,16 +5,38 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3, Layers } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import { formatCurrency } from '@/lib/utils';
 
 export default function Dashboard() {
   const { stats, allEquipment, loading } = useEquipment();
+  const navigate = useNavigate();
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Initialize notifications
   useNotifications();
+
+  // Update timestamp when data is loaded
+  useEffect(() => {
+    if (!loading && allEquipment.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [loading, allEquipment.length]);
+
+  // Helper function to format relative time
+  const formatRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'agora mesmo';
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
+    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
+  };
 
   // Calculate financial stats with useMemo for performance
   const totalInventoryValue = useMemo(() => 
@@ -27,7 +49,7 @@ export default function Dashboard() {
     [allEquipment]
   );
 
-  // Calculate equipment by age with useMemo
+  // Calculate equipment by age with useMemo (cumulative logic)
   const equipmentByAge = useMemo(() => {
     const today = new Date();
     return allEquipment.reduce((acc, item) => {
@@ -35,45 +57,35 @@ export default function Dashboard() {
         const purchaseDate = new Date(item.purchaseDate);
         const ageInYears = (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
         
+        // Cumulative logic: each category includes previous ones
+        if (ageInYears >= 1) acc.over1Year++;
+        if (ageInYears >= 2) acc.over2Years++;
         if (ageInYears >= 3) acc.over3Years++;
-        else if (ageInYears >= 2) acc.over2Years++;
-        else if (ageInYears >= 1) acc.over1Year++;
       }
       return acc;
     }, { over1Year: 0, over2Years: 0, over3Years: 0 });
   }, [allEquipment]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
   const mainStats = [
     {
       title: 'Total de Equipamentos',
       value: stats.total,
-      icon: Package,
-      trend: { value: 12, isPositive: true }
+      icon: Package
     },
     {
       title: 'Disponíveis',
       value: stats.available,
-      icon: CheckCircle,
-      trend: { value: 8, isPositive: true }
+      icon: CheckCircle
     },
     {
       title: 'Gravação',
       value: stats.inUse,
-      icon: Clock,
-      trend: { value: 5, isPositive: false }
+      icon: Clock
     },
     {
       title: 'Em Manutenção',
       value: stats.maintenance,
-      icon: AlertTriangle,
-      trend: { value: 2, isPositive: false }
+      icon: AlertTriangle
     }
   ];
 
@@ -161,7 +173,7 @@ export default function Dashboard() {
           description="Comece adicionando seu primeiro equipamento ao inventário para visualizar estatísticas e análises."
           action={{
             label: "Adicionar Equipamento",
-            onClick: () => window.location.href = '/equipment/add'
+            onClick: () => navigate('/equipment/add')
           }}
         />
       </ResponsiveContainer>
@@ -172,7 +184,20 @@ export default function Dashboard() {
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
         title="Dashboard" 
-        subtitle="Visão geral do inventário de equipamentos audiovisuais"
+        subtitle={
+          <span className="flex items-center gap-2">
+            Visão geral do inventário de equipamentos audiovisuais
+            {lastUpdate && (
+              <>
+                <span className="text-muted-foreground/50">•</span>
+                <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Atualizado {formatRelativeTime(lastUpdate)}
+                </span>
+              </>
+            )}
+          </span>
+        }
       />
 
       <div className="space-y-6 lg:space-y-8">
