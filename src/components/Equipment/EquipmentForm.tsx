@@ -166,11 +166,16 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             
             {/* Mini-resumo visual */}
             {(formData.brand || formData.category) && (
-              <p className="text-sm text-muted-foreground mt-2">
-                {formData.brand && <span className="font-medium">{formData.brand}</span>}
-                {formData.brand && formData.category && <span className="mx-2">•</span>}
-                {formData.category && <span className="capitalize">{formData.category}</span>}
-              </p>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                {formData.brand && <span className="text-sm font-medium text-muted-foreground">{formData.brand}</span>}
+                {formData.brand && formData.category && <span className="text-muted-foreground">•</span>}
+                {formData.category && (
+                  <Badge variant={getCategoryBadgeVariant(formData.category)} className="gap-1.5">
+                    {getCategoryIcon(formData.category)}
+                    {getCategoryLabel(formData.category)}
+                  </Badge>
+                )}
+              </div>
             )}
           </div>
         </div>
