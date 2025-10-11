@@ -30,9 +30,7 @@ export function SidebarTools({ isMobile = false }: SidebarToolsProps) {
           
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center h-12 rounded-md hover:bg-accent/50 transition-colors">
-                <ThemeSwitcher />
-              </div>
+              <ThemeSwitcher className="h-12 w-full rounded-md hover:bg-accent/50 transition-colors" />
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>Tema</p>

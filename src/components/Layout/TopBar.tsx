@@ -34,9 +34,7 @@ export function TopBar() {
         <div className="h-9 w-9 flex items-center justify-center">
           <NotificationPanel />
         </div>
-        <div className="h-9 w-9 flex items-center justify-center">
-          <ThemeSwitcher />
-        </div>
+        <ThemeSwitcher />
       </div>
     </header>
   );
