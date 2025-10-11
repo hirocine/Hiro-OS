@@ -51,15 +51,9 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
 
   // Helper para mapear categoria para variante de badge
-  const getCategoryBadgeVariant = (category: EquipmentCategory): "default" | "secondary" | "warning" | "success" | "info" => {
-    const variants = {
-      camera: 'default' as const,
-      audio: 'secondary' as const,
-      lighting: 'warning' as const,
-      accessories: 'success' as const,
-      storage: 'info' as const
-    };
-    return variants[category];
+  const getCategoryBadgeVariant = (category: EquipmentCategory): "default" | "secondary" | "outline" | "warning" | "success" | "info" => {
+    // Todas as categorias com a mesma cor cinza
+    return 'outline' as const;
   };
 
   // Helper para mapear categoria para ícone
