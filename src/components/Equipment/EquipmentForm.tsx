@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCategories } from '@/hooks/useCategories';
 import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { Loader2, Upload, X, Package, Activity, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -85,6 +86,18 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     };
     return labels[category];
   };
+
+  // Helper para transformar itens principais em opções do Autocomplete
+  const getMainItemsAsOptions = useCallback(() => {
+    return [
+      { value: 'none', label: 'Nenhum', description: '' },
+      ...getMainItems().map(item => ({
+        value: item.id,
+        label: `${item.patrimonyNumber || 'S/N'} - ${item.name}`,
+        description: item.brand || item.category || ''
+      }))
+    ];
+  }, [getMainItems]);
 
   // Hero Card: Foto grande + Nome em destaque
   const renderHeroCard = () => (
@@ -340,22 +353,14 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             <Label htmlFor="parentId" className="text-sm font-medium">
               Item Principal
             </Label>
-            <Select
+            <Autocomplete
+              options={getMainItemsAsOptions()}
               value={formData.parentId || 'none'}
               onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
-            >
-              <SelectTrigger id="parentId" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-                <SelectValue>{getSelectedParentName()}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {getMainItems().map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.patrimonyNumber || 'S/N'} - {item.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Pesquise por número ou nome"
+              allowCustomValue={false}
+              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
+            />
           </div>
         )}
 
