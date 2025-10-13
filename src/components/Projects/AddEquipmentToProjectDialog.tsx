@@ -333,10 +333,6 @@ export function AddEquipmentToProjectDialog({
                               <span>{equipment.brand} • {equipment.category}</span>
                             </div>
                             
-                            {equipment.patrimonyNumber && (
-                              <div>Patrimônio: {equipment.patrimonyNumber}</div>
-                            )}
-                            
                             {equipment.serialNumber && (
                               <div>Série: {equipment.serialNumber}</div>
                             )}
