@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { 
   ResponsiveDialog, 
   ResponsiveDialogContent, 
@@ -48,6 +48,7 @@ export function AddEquipmentToProjectDialog({
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const debouncedSearchTerm = useDebounce(searchInput, 300);
 
   // Filter equipment (show all equipment, regardless of current loan status)
@@ -106,23 +107,38 @@ export function AddEquipmentToProjectDialog({
     setSelectedEquipment(newSelected);
   };
   
-  // Handle scroll for lazy loading more equipment
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = target;
-    
-    // Load more when within 1.5 screens of the bottom
-    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-      if (displayLimit < availableEquipment.length && !isLoadingMore) {
-        setIsLoadingMore(true);
-        
-        // Small delay to show loading feedback
-        setTimeout(() => {
-          setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
-          setIsLoadingMore(false);
-        }, 300);
+  // Attach scroll listener to ScrollArea's internal viewport
+  useEffect(() => {
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea) return;
+
+    // Find the viewport element inside ScrollArea
+    const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]');
+    if (!viewport) return;
+
+    const handleScrollEvent = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      
+      // Load more when within 1.5 screens of the bottom
+      if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+        if (displayLimit < availableEquipment.length && !isLoadingMore) {
+          setIsLoadingMore(true);
+          
+          // Small delay to show loading feedback
+          setTimeout(() => {
+            setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
+            setIsLoadingMore(false);
+          }, 300);
+        }
       }
-    }
+    };
+
+    viewport.addEventListener('scroll', handleScrollEvent);
+    
+    return () => {
+      viewport.removeEventListener('scroll', handleScrollEvent);
+    };
   }, [availableEquipment.length, displayLimit, isLoadingMore]);
 
 
@@ -307,7 +323,7 @@ export function AddEquipmentToProjectDialog({
               </Label>
             </div>
 
-            <ScrollArea className="flex-1 border rounded-md" onScrollCapture={handleScroll}>
+            <ScrollArea ref={scrollAreaRef} className="flex-1 border rounded-md">
               <div className="p-3 space-y-2">
                 {visibleEquipment.map((equipment) => (
                   <Card 
