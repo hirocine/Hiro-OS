@@ -9,16 +9,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarIcon, Package, Search, Loader2 } from 'lucide-react';
+import { Package, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useLoans } from '@/hooks/useLoans';
 import { useToast } from '@/hooks/use-toast';
@@ -49,13 +45,6 @@ export function AddEquipmentToProjectDialog({
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
   const [searchInput, setSearchInput] = useState('');
   const [displayLimit, setDisplayLimit] = useState(30);
-  const [borrowerName, setBorrowerName] = useState(project.responsibleName || '');
-  const [borrowerEmail, setBorrowerEmail] = useState(project.responsibleEmail || '');
-  const [borrowerPhone, setBorrowerPhone] = useState('');
-  const [expectedReturnDate, setExpectedReturnDate] = useState<Date>(
-    new Date(project.expectedEndDate)
-  );
-  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
@@ -147,22 +136,13 @@ export function AddEquipmentToProjectDialog({
       return;
     }
 
-    if (!borrowerName.trim()) {
-      toast({
-        title: "Erro",
-        description: "Nome do responsável é obrigatório",
-        variant: "destructive"
-      });
-      return;
-    }
-
     logger.info('Starting loan creation process', {
       module: 'project-equipment',
       action: 'create_loans',
       data: {
         selectedEquipmentCount: selectedEquipment.size,
         project: project.name,
-        borrower: borrowerName,
+        borrower: project.responsibleName,
         selectedEquipmentIds: Array.from(selectedEquipment)
       }
     });
@@ -196,12 +176,11 @@ export function AddEquipmentToProjectDialog({
           await addLoan({
             equipmentId: equipment.id,
             equipmentName: equipment.name,
-            borrowerName: borrowerName.trim(),
-            project: project.name, // Use project name for linking
+            borrowerName: project.responsibleName,
+            project: project.name,
             loanDate: format(new Date(), 'yyyy-MM-dd'),
-            expectedReturnDate: format(expectedReturnDate, 'yyyy-MM-dd'),
-            status: 'active',
-            notes: notes.trim() || undefined
+            expectedReturnDate: format(new Date(project.expectedEndDate), 'yyyy-MM-dd'),
+            status: 'active'
           });
           
           successCount++;
@@ -262,10 +241,6 @@ export function AddEquipmentToProjectDialog({
         setSelectedEquipment(new Set());
         setSearchInput('');
         setDisplayLimit(30);
-        setBorrowerName(project.responsibleName || '');
-        setBorrowerEmail(project.responsibleEmail || '');
-        setBorrowerPhone('');
-        setNotes('');
         onOpenChange(false);
         onSuccess?.();
       }
@@ -310,7 +285,7 @@ export function AddEquipmentToProjectDialog({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Equipment Selection */}
           <div className="flex-1 flex flex-col">
             <div className="space-y-4 mb-4">
@@ -391,105 +366,27 @@ export function AddEquipmentToProjectDialog({
             </ScrollArea>
           </div>
 
-          {/* Loan Details Form */}
-          <div className="w-full lg:w-80 space-y-4">
-            <div>
-              <Label htmlFor="borrower-name">Nome do Responsável *</Label>
-                <Input
-                  id="borrower-name"
-                  value={borrowerName}
-                  onChange={(e) => setBorrowerName(e.target.value)}
-                  placeholder="Nome completo"
-                  className="h-12"
-                />
+          {/* Footer with Action Buttons */}
+          <div className="pt-4 border-t space-y-4">
+            <div className="text-sm text-muted-foreground">
+              {selectedEquipment.size} equipamento(s) selecionado(s)
             </div>
-
-            <div>
-              <Label htmlFor="borrower-email">Email</Label>
-                <Input
-                  id="borrower-email"
-                  type="email"
-                  value={borrowerEmail}
-                  onChange={(e) => setBorrowerEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                  className="h-12"
-                />
-            </div>
-
-            <div>
-              <Label htmlFor="borrower-phone">Telefone</Label>
-                <Input
-                  id="borrower-phone"
-                  value={borrowerPhone}
-                  onChange={(e) => setBorrowerPhone(e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  className="h-12"
-                />
-            </div>
-
-            <div>
-              <Label>Data de Retorno Prevista *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal h-12",
-                      !expectedReturnDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {expectedReturnDate ? 
-                      format(expectedReturnDate, "PPP", { locale: ptBR }) : 
-                      "Selecione uma data"
-                    }
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={expectedReturnDate}
-                    onSelect={(date) => date && setExpectedReturnDate(date)}
-                    initialFocus
-                    locale={ptBR}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div>
-              <Label htmlFor="notes">Observações</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Observações sobre o empréstimo..."
-                rows={3}
-              />
-            </div>
-
-            <div className="pt-2">
-              <p className="text-sm text-muted-foreground mb-4">
-                {selectedEquipment.size} equipamento{selectedEquipment.size !== 1 ? 's' : ''} selecionado{selectedEquipment.size !== 1 ? 's' : ''}
-              </p>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  className="flex-1 h-12"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={selectedEquipment.size === 0 || loading}
-                  className="flex-1 h-12"
-                >
-                  {loading ? 'Adicionando...' : 'Adicionar'}
-                </Button>
-              </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSubmit}
+                disabled={loading || selectedEquipment.size === 0}
+                className="flex-1"
+              >
+                {loading ? 'Adicionando...' : 'Adicionar ao Projeto'}
+              </Button>
             </div>
           </div>
         </div>
