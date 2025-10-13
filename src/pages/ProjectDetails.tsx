@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, User, Building, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
@@ -362,33 +362,6 @@ export default function ProjectDetails() {
               <label className="text-sm font-medium text-muted-foreground">Nome</label>
               <p className="mt-1">{project.responsibleName}</p>
             </div>
-            
-            {project.responsibleEmail && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <p className="mt-1">{project.responsibleEmail}</p>
-              </div>
-            )}
-            
-            {project.department && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Departamento</label>
-                <p className="mt-1 flex items-center space-x-2">
-                  <Building className="h-4 w-4" />
-                  <span>{project.department}</span>
-                </p>
-              </div>
-            )}
-
-            {project.company && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Empresa</label>
-                <p className="mt-1 flex items-center space-x-2">
-                  <Building className="h-4 w-4" />
-                  <span>{project.company}</span>
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
