@@ -283,88 +283,78 @@ export default function ProjectDetails() {
         </CardContent>
       </Card>
 
-      {/* Project Info Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Basic Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Package className="h-5 w-5" />
-              <span>Informações do Projeto</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {project.description && (
+      {/* Project Info - Consolidated */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Package className="h-5 w-5" />
+            <span>Informações do Projeto</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {project.description && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Descrição</label>
+              <p className="mt-1">{project.description}</p>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {project.separationDate && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Descrição</label>
-                <p className="mt-1">{project.description}</p>
+                <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
+                <p className="mt-1 flex items-center space-x-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
+                </p>
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-4">
-              {project.separationDate && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
-                  <p className="mt-1 flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
-                  </p>
-                </div>
-              )}
-              
-              {project.withdrawalDate && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
-                  <p className="mt-1 flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            {project.withdrawalDate && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
+                <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
                 <p className="mt-1 flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
-                  <span>{new Date(project.startDate).toLocaleDateString('pt-BR')}</span>
+                  <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
                 </p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {project.actualEndDate ? 'Data de Finalização' : 'Previsão de Fim'}
-                </label>
-                <p className="mt-1 flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    {project.actualEndDate 
-                      ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
-                      : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
-                    }
-                  </span>
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
 
-        {/* Responsible Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5" />
-              <span>Responsável</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Nome</label>
-              <p className="mt-1">{project.responsibleName}</p>
+              <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
+              <p className="mt-1 flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>{new Date(project.startDate).toLocaleDateString('pt-BR')}</span>
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                {project.actualEndDate ? 'Data de Finalização' : 'Previsão de Fim'}
+              </label>
+              <p className="mt-1 flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  {project.actualEndDate 
+                    ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
+                    : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
+                  }
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <Separator className="my-4" />
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Responsável</label>
+            <p className="mt-1 flex items-center space-x-2">
+              <User className="h-4 w-4" />
+              <span>{project.responsibleName}</span>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tabs Section */}
       <Tabs defaultValue="equipment" className="space-y-4">
