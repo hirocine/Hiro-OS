@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,10 +15,13 @@ import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { stepLabels, getStatusLabel } from '@/lib/projectLabels';
-import { useState } from 'react';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
 import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
 import { AddEquipmentToProjectDialog } from '@/components/Projects/AddEquipmentToProjectDialog';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarData } from '@/lib/avatarUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 import { AdminOnly } from '@/components/RoleGuard';
 
@@ -32,6 +35,10 @@ export default function ProjectDetails() {
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
+  const [responsibleProfile, setResponsibleProfile] = useState<{
+    avatar_url: string | null;
+    user_metadata: any;
+  } | null>(null);
   
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -53,7 +60,7 @@ export default function ProjectDetails() {
     : null;
 
   // Listen for add equipment dialog events
-  React.useEffect(() => {
+  useEffect(() => {
     const handleOpenAddEquipmentDialog = () => {
       setShowAddEquipmentDialog(true);
     };
@@ -63,6 +70,49 @@ export default function ProjectDetails() {
       window.removeEventListener('openAddEquipmentDialog', handleOpenAddEquipmentDialog);
     };
   }, []);
+
+  // Fetch responsible user profile
+  useEffect(() => {
+    const fetchResponsibleProfile = async () => {
+      if (!project?.responsibleUserId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('avatar_url, user_id')
+          .eq('user_id', project.responsibleUserId)
+          .maybeSingle();
+        
+        if (error) throw error;
+        
+        const { data: userData, error: userError } = await supabase.rpc(
+          'get_users_for_admin'
+        );
+        
+        if (!userError && userData) {
+          const user = userData.find((u: any) => u.id === project.responsibleUserId);
+          if (user) {
+            setResponsibleProfile({
+              avatar_url: data?.avatar_url,
+              user_metadata: user.user_metadata
+            });
+          }
+        } else {
+          setResponsibleProfile({
+            avatar_url: data?.avatar_url,
+            user_metadata: null
+          });
+        }
+      } catch (err) {
+        logger.error('Failed to fetch responsible profile', {
+          module: 'project-details',
+          error: err
+        });
+      }
+    };
+
+    fetchResponsibleProfile();
+  }, [project?.responsibleUserId]);
 
   if (loading) {
     return (
@@ -161,6 +211,35 @@ export default function ProjectDetails() {
   const isOverdue = project.status === 'active' && 
     new Date(project.expectedEndDate) < new Date() && 
     !project.actualEndDate;
+
+  const responsibleAvatarData = useMemo(() => {
+    if (!responsibleProfile) {
+      return {
+        url: null,
+        initials: project?.responsibleName
+          ? project.responsibleName.split(' ').map(n => n[0]).join('').toUpperCase()
+          : 'U'
+      };
+    }
+    
+    const mockUser = {
+      id: project?.responsibleUserId || '',
+      email: project?.responsibleEmail || '',
+      user_metadata: responsibleProfile.user_metadata || {},
+      app_metadata: { provider: responsibleProfile.user_metadata?.provider }
+    } as any;
+    
+    const avatarData = getAvatarData(
+      mockUser,
+      responsibleProfile.avatar_url,
+      project?.responsibleName
+    );
+    
+    return {
+      url: avatarData.url,
+      initials: avatarData.initials
+    };
+  }, [responsibleProfile, project?.responsibleName, project?.responsibleEmail, project?.responsibleUserId]);
 
   return (
     <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
@@ -348,10 +427,18 @@ export default function ProjectDetails() {
 
           <div>
             <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-            <p className="mt-1 flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span>{project.responsibleName}</span>
-            </p>
+            <div className="mt-2 flex items-center space-x-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage 
+                  src={responsibleAvatarData.url || undefined} 
+                  alt={project.responsibleName} 
+                />
+                <AvatarFallback className="text-sm font-medium">
+                  {responsibleAvatarData.initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-medium">{project.responsibleName}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
