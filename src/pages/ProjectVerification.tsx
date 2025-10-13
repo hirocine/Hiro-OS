@@ -13,6 +13,8 @@ import { useProjectEquipment } from '@/hooks/useProjectEquipment';
 import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useToast } from '@/hooks/use-toast';
+import { VerificationDialog } from '@/components/Projects/VerificationDialog';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   CheckCircle2, 
   CheckCircle, 
@@ -49,6 +51,8 @@ export default function ProjectVerification() {
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
+  const { user } = useAuth();
   
   const { project } = useProjectDetails(id!);
   const { equipment, loading, error } = useProjectEquipment(id || '');
@@ -80,9 +84,23 @@ export default function ProjectVerification() {
   const handleConfirm = async () => {
     if (!allItemsChecked || !project) return;
     
+    // Abrir o diálogo para selecionar usuário
+    setShowVerificationDialog(true);
+  };
+
+  const handleVerificationConfirm = async (data: {
+    userId: string;
+    userName: string;
+    timestamp: string;
+  }) => {
     setIsSubmitting(true);
     try {
-      await updateProjectStep('office_receipt', notes.trim() || undefined);
+      await updateProjectStep('office_receipt', notes.trim() || undefined, {
+        userId: data.userId,
+        userName: data.userName,
+        timestamp: data.timestamp
+      });
+      
       toast({
         title: "Verificação concluída",
         description: "A verificação dos equipamentos foi confirmada com sucesso.",
@@ -96,6 +114,7 @@ export default function ProjectVerification() {
       });
     } finally {
       setIsSubmitting(false);
+      setShowVerificationDialog(false);
     }
   };
 
@@ -344,6 +363,13 @@ export default function ProjectVerification() {
           )}
         </Button>
       </div>
+
+      <VerificationDialog
+        open={showVerificationDialog}
+        onOpenChange={setShowVerificationDialog}
+        onConfirm={handleVerificationConfirm}
+        loading={isSubmitting}
+      />
     </div>
   );
 }

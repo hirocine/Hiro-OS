@@ -13,6 +13,8 @@ import { useProjectEquipment } from '@/hooks/useProjectEquipment';
 import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useToast } from '@/hooks/use-toast';
+import { SeparationDialog } from '@/components/Projects/SeparationDialog';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Package, 
   CheckCircle, 
@@ -48,6 +50,8 @@ export default function ProjectSeparation() {
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSeparationDialog, setShowSeparationDialog] = useState(false);
+  const { user } = useAuth();
   
   const { project } = useProjectDetails(id!);
   const { equipment, loading, error } = useProjectEquipment(id || '');
@@ -79,9 +83,23 @@ export default function ProjectSeparation() {
   const handleConfirm = async () => {
     if (!allItemsChecked || !project) return;
     
+    // Abrir o diálogo para selecionar usuário
+    setShowSeparationDialog(true);
+  };
+
+  const handleSeparationConfirm = async (data: {
+    userId: string;
+    userName: string;
+    timestamp: string;
+  }) => {
     setIsSubmitting(true);
     try {
-      await updateProjectStep('ready_for_pickup', notes.trim() || undefined);
+      await updateProjectStep('ready_for_pickup', notes.trim() || undefined, {
+        userId: data.userId,
+        userName: data.userName,
+        timestamp: data.timestamp
+      });
+      
       toast({
         title: "Equipamentos separados",
         description: "A separação dos equipamentos foi confirmada com sucesso.",
@@ -95,6 +113,7 @@ export default function ProjectSeparation() {
       });
     } finally {
       setIsSubmitting(false);
+      setShowSeparationDialog(false);
     }
   };
 
@@ -343,6 +362,13 @@ export default function ProjectSeparation() {
           )}
         </Button>
       </div>
+
+      <SeparationDialog
+        open={showSeparationDialog}
+        onOpenChange={setShowSeparationDialog}
+        onConfirm={handleSeparationConfirm}
+        loading={isSubmitting}
+      />
     </div>
   );
 }

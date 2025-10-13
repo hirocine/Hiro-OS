@@ -27,8 +27,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const navigate = useNavigate();
   const [withdrawalDialogOpen, setWithdrawalDialogOpen] = useState(false);
   const [officeReceiptDialogOpen, setOfficeReceiptDialogOpen] = useState(false);
-  const [separationDialogOpen, setSeparationDialogOpen] = useState(false);
-  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -66,12 +64,12 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     });
     
     if (isSeparating) {
-      logger.debug('Opening separation dialog', {
+      logger.debug('Navigating to separation page', {
         module: 'project-step',
-        action: 'open_separation_dialog',
+        action: 'navigate_separation',
         data: { projectId: project.id }
       });
-      setSeparationDialogOpen(true);
+      navigate(`/projects/${project.id}/separation`);
     } else if (isWithdrawing) {
       logger.debug('Opening withdrawal dialog', {
         module: 'project-step',
@@ -80,12 +78,12 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       });
       setWithdrawalDialogOpen(true);
     } else if (isVerifying) {
-      logger.debug('Opening verification dialog', {
+      logger.debug('Navigating to verification page', {
         module: 'project-step',
-        action: 'open_verification_dialog',
+        action: 'navigate_verification',
         data: { projectId: project.id }
       });
-      setVerificationDialogOpen(true);
+      navigate(`/projects/${project.id}/verification`);
     } else if (isOfficeReceipt) {
       logger.debug('Opening office receipt dialog', {
         module: 'project-step',
@@ -110,16 +108,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     }
   };
 
-  const handleSeparationConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
-    setLoading(true);
-    try {
-      await onStepUpdate(nextStep, undefined, data);
-      setSeparationDialogOpen(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleWithdrawalConfirm = async (withdrawalData: WithdrawalData) => {
     setLoading(true);
     try {
@@ -129,16 +117,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         timestamp: withdrawalData.withdrawalTime
       });
       setWithdrawalDialogOpen(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerificationConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
-    setLoading(true);
-    try {
-      await onStepUpdate(nextStep, undefined, data);
-      setVerificationDialogOpen(false);
     } finally {
       setLoading(false);
     }
@@ -204,20 +182,6 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         open={officeReceiptDialogOpen}
         onOpenChange={setOfficeReceiptDialogOpen}
         onConfirm={handleOfficeReceiptConfirm}
-        loading={loading}
-      />
-
-      <SeparationDialog
-        open={separationDialogOpen}
-        onOpenChange={setSeparationDialogOpen}
-        onConfirm={handleSeparationConfirm}
-        loading={loading}
-      />
-
-      <VerificationDialog
-        open={verificationDialogOpen}
-        onOpenChange={setVerificationDialogOpen}
-        onConfirm={handleVerificationConfirm}
         loading={loading}
       />
 
