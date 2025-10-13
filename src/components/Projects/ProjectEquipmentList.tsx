@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Package, AlertTriangle, HardDrive, ChevronDown, ChevronUp } from "lucide-react";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EquipmentDetailsDialog } from '@/components/Equipment/EquipmentDetailsDialog';
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -16,8 +15,6 @@ interface ProjectEquipmentListProps {
 
 export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   const { equipment, loading, error } = useProjectEquipment(projectId);
-  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [selectedLoanData, setSelectedLoanData] = useState<any>(null);
   const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
@@ -32,11 +29,6 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
       }
       return next;
     });
-  };
-
-  const handleViewDetails = (equipmentId: string) => {
-    setSelectedEquipmentId(equipmentId);
-    setDetailsDialogOpen(true);
   };
 
   const handleSendReminder = (item: any) => {
@@ -213,14 +205,6 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewDetails(item.id)}
-                        >
-                          Ver Detalhes
-                        </Button>
-                        
                         {item.loanInfo.status === 'overdue' && (
                           <Button 
                             variant="destructive" 
@@ -287,12 +271,6 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
           </div>
         </div>
       ))}
-
-      <EquipmentDetailsDialog
-        open={detailsDialogOpen}
-        onOpenChange={setDetailsDialogOpen}
-        equipmentId={selectedEquipmentId}
-      />
 
       <ReminderDialog
         open={reminderDialogOpen}
