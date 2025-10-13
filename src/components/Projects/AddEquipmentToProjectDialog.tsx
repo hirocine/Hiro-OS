@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   ResponsiveDialog, 
   ResponsiveDialogContent, 
@@ -27,6 +27,7 @@ import { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface AddEquipmentToProjectDialogProps {
   open: boolean;
@@ -46,7 +47,8 @@ export function AddEquipmentToProjectDialog({
   const { addLoan } = useLoans();
   
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(30);
   const [borrowerName, setBorrowerName] = useState(project.responsibleName || '');
   const [borrowerEmail, setBorrowerEmail] = useState(project.responsibleEmail || '');
   const [borrowerPhone, setBorrowerPhone] = useState('');
@@ -55,13 +57,15 @@ export function AddEquipmentToProjectDialog({
   );
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const debouncedSearchTerm = useDebounce(searchInput, 300);
 
   // Filter equipment (show all equipment, regardless of current loan status)
   const availableEquipment = useMemo(() => {
     return allEquipment.filter(equipment => {
       // Apply search filter
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
+      if (debouncedSearchTerm) {
+        const search = debouncedSearchTerm.toLowerCase();
         return equipment.name.toLowerCase().includes(search) ||
                equipment.brand.toLowerCase().includes(search) ||
                equipment.patrimonyNumber?.toLowerCase().includes(search);
@@ -69,7 +73,12 @@ export function AddEquipmentToProjectDialog({
       
       return true;
     });
-  }, [allEquipment, searchTerm]);
+  }, [allEquipment, debouncedSearchTerm]);
+  
+  // Limit visible equipment for performance (lazy rendering)
+  const visibleEquipment = useMemo(() => {
+    return availableEquipment.slice(0, displayLimit);
+  }, [availableEquipment, displayLimit]);
 
   // Function to get project count for equipment
   const getEquipmentProjectCount = async (equipmentId: string) => {
@@ -106,6 +115,17 @@ export function AddEquipmentToProjectDialog({
     }
     setSelectedEquipment(newSelected);
   };
+  
+  // Handle scroll for lazy loading more equipment
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    
+    // Load more when within 1.5 screens of the bottom
+    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+      setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
+    }
+  }, [availableEquipment.length]);
 
 
   const handleSubmit = async () => {
@@ -231,7 +251,8 @@ export function AddEquipmentToProjectDialog({
         
         // Reset form and close dialog
         setSelectedEquipment(new Set());
-        setSearchTerm('');
+        setSearchInput('');
+        setDisplayLimit(30);
         setBorrowerName(project.responsibleName || '');
         setBorrowerEmail(project.responsibleEmail || '');
         setBorrowerPhone('');
@@ -288,20 +309,23 @@ export function AddEquipmentToProjectDialog({
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar equipamentos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10"
                 />
               </div>
 
               <Label className="text-sm font-medium">
-                Todos os Equipamentos ({availableEquipment.length})
+                {visibleEquipment.length === availableEquipment.length 
+                  ? `Todos os Equipamentos (${availableEquipment.length})`
+                  : `Mostrando ${visibleEquipment.length} de ${availableEquipment.length} equipamentos`
+                }
               </Label>
             </div>
 
-            <ScrollArea className="flex-1 border rounded-md">
+            <ScrollArea className="flex-1 border rounded-md" onScrollCapture={handleScroll}>
               <div className="p-3 space-y-2">
-                {availableEquipment.map((equipment) => (
+                {visibleEquipment.map((equipment) => (
                   <Card 
                     key={equipment.id} 
                     className={cn(
@@ -339,6 +363,12 @@ export function AddEquipmentToProjectDialog({
                   </Card>
                 ))}
 
+                {visibleEquipment.length < availableEquipment.length && (
+                  <div className="text-center py-4 text-sm text-muted-foreground">
+                    Carregando mais equipamentos...
+                  </div>
+                )}
+                
                 {availableEquipment.length === 0 && (
                   <div className="text-center py-8">
                     <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
