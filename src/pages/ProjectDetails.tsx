@@ -5,13 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2 } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useProjectEquipment, getEquipmentBreakdown } from '@/hooks/useProjectEquipment';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
+import { SeparationDialog } from '@/components/Projects/SeparationDialog';
+import { VerificationDialog } from '@/components/Projects/VerificationDialog';
+import { CompletionDialog } from '@/components/Projects/CompletionDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { stepLabels, getStatusLabel } from '@/lib/projectLabels';
@@ -35,6 +38,9 @@ export default function ProjectDetails() {
   const [showStepDialog, setShowStepDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
+  const [showSeparationDialog, setShowSeparationDialog] = useState(false);
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const [responsibleProfile, setResponsibleProfile] = useState<{
     avatar_url: string | null;
     user_metadata: any;
@@ -210,6 +216,57 @@ export default function ProjectDetails() {
     toast({
       title: "Status atualizado",
       description: `O projeto foi atualizado para "${stepLabels[newStep]}".`,
+    });
+  };
+
+  const handleSeparationConfirm = (data: { userId: string; userName: string; timestamp: string }) => {
+    updateProjectStep('ready_for_pickup', undefined, data);
+    setShowSeparationDialog(false);
+    toast({
+      title: "Separação confirmada",
+      description: "Os equipamentos foram separados com sucesso.",
+    });
+  };
+
+  const handleVerificationConfirm = (data: { userId: string; userName: string; timestamp: string }) => {
+    updateProjectStep('pending_verification', undefined, data);
+    setShowVerificationDialog(false);
+    toast({
+      title: "Verificação confirmada",
+      description: "O check de desmontagem foi realizado.",
+    });
+  };
+
+  const handleCompletionConfirm = (data: { userId: string; userName: string; timestamp: string }) => {
+    updateProjectStep('verified', undefined, data);
+    setShowCompletionDialog(false);
+    toast({
+      title: "Projeto finalizado",
+      description: "O projeto foi concluído com sucesso.",
+    });
+  };
+
+  const handleOfficeReceiptConfirm = (data: { userId: string; userName: string; receiptTime: string }) => {
+    updateProjectStep('office_receipt', undefined, {
+      userId: data.userId,
+      userName: data.userName,
+      timestamp: data.receiptTime
+    });
+    toast({
+      title: "Recebimento confirmado",
+      description: "Os equipamentos foram recebidos no escritório.",
+    });
+  };
+
+  const handleWithdrawalConfirm = (data: { userId: string; userName: string; withdrawalTime: string }) => {
+    updateProjectStep('in_use', undefined, {
+      userId: data.userId,
+      userName: data.userName,
+      timestamp: data.withdrawalTime
+    });
+    toast({
+      title: "Retirada confirmada",
+      description: "Os equipamentos foram retirados.",
     });
   };
 
@@ -488,40 +545,144 @@ export default function ProjectDetails() {
         <TabsContent value="history">
           <Card>
             <CardHeader>
-              <CardTitle>Histórico de Alterações</CardTitle>
+              <CardTitle>Histórico do Projeto</CardTitle>
               <CardDescription>
-                Registro de todas as mudanças de status do projeto
+                Registro completo de todas as etapas e ações realizadas
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {project.stepHistory.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Nenhum histórico disponível</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {project.stepHistory
-                    .slice()
-                    .reverse()
-                    .map((entry, index) => (
-                      <div key={index} className="flex items-start space-x-4 pb-4 border-b last:border-b-0">
-                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-medium">{stepLabels[entry.step]}</p>
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(entry.timestamp).toLocaleString('pt-BR')}
-                            </span>
+              {(() => {
+                const historyEvents: any[] = [];
+                
+                // 1. Criação do projeto
+                historyEvents.push({
+                  type: 'creation',
+                  title: 'Projeto Criado',
+                  timestamp: project.createdAt || project.startDate,
+                  user: project.createdByUserName || project.responsibleName,
+                  icon: Package
+                });
+                
+                // 2. Separação
+                if (project.separationTime) {
+                  historyEvents.push({
+                    type: 'separation',
+                    title: 'Equipamentos Separados',
+                    timestamp: project.separationTime,
+                    user: project.separationUserName,
+                    icon: Package
+                  });
+                }
+                
+                // 3. Equipamentos adicionados (do stepHistory)
+                project.stepHistory
+                  .filter(h => h.notes?.toLowerCase().includes('equipamento'))
+                  .forEach(h => {
+                    historyEvents.push({
+                      type: 'equipment_added',
+                      title: 'Equipamento Adicionado',
+                      timestamp: h.timestamp,
+                      notes: h.notes,
+                      user: h.userName,
+                      icon: Plus
+                    });
+                  });
+                
+                // 4. Retirada
+                if (project.withdrawalTime) {
+                  historyEvents.push({
+                    type: 'withdrawal',
+                    title: 'Equipamentos Retirados',
+                    timestamp: project.withdrawalTime,
+                    user: project.withdrawalUserName,
+                    icon: Truck
+                  });
+                }
+                
+                // 5. Check Desmontagem
+                if (project.verificationTime) {
+                  historyEvents.push({
+                    type: 'verification',
+                    title: 'Check de Desmontagem Realizado',
+                    timestamp: project.verificationTime,
+                    user: project.verificationUserName,
+                    icon: CheckCircle
+                  });
+                }
+                
+                // 6. Devolução
+                if (project.officeReceiptTime) {
+                  historyEvents.push({
+                    type: 'office_receipt',
+                    title: 'Equipamentos Devolvidos',
+                    timestamp: project.officeReceiptTime,
+                    user: project.officeReceiptUserName,
+                    icon: Building2
+                  });
+                }
+                
+                // 7. Finalização
+                if (project.completedTime) {
+                  historyEvents.push({
+                    type: 'completion',
+                    title: 'Projeto Finalizado',
+                    timestamp: project.completedTime,
+                    user: project.completedByUserName,
+                    icon: CheckCircle
+                  });
+                }
+                
+                // Ordenar por timestamp (mais recente primeiro)
+                historyEvents.sort((a, b) => 
+                  new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                );
+                
+                return historyEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">Nenhum histórico disponível</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {historyEvents.map((event, index) => {
+                      const Icon = event.icon;
+                      return (
+                        <div key={index} className="flex items-start space-x-4 pb-4 border-b last:border-b-0">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="h-5 w-5 text-primary" />
                           </div>
-                          {entry.notes && (
-                            <p className="text-sm text-muted-foreground mt-1">{entry.notes}</p>
-                          )}
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-medium">{event.title}</p>
+                                {event.user && (
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    Por: {event.user}
+                                  </p>
+                                )}
+                                {event.notes && (
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {event.notes}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                {new Date(event.timestamp).toLocaleString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
@@ -578,6 +739,24 @@ export default function ProjectDetails() {
           // Trigger a refresh of project data
           refetch();
         }}
+      />
+
+      <SeparationDialog
+        open={showSeparationDialog}
+        onOpenChange={setShowSeparationDialog}
+        onConfirm={handleSeparationConfirm}
+      />
+
+      <VerificationDialog
+        open={showVerificationDialog}
+        onOpenChange={setShowVerificationDialog}
+        onConfirm={handleVerificationConfirm}
+      />
+
+      <CompletionDialog
+        open={showCompletionDialog}
+        onOpenChange={setShowCompletionDialog}
+        onConfirm={handleCompletionConfirm}
       />
     </div>
   );

@@ -7,18 +7,17 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WithdrawalDialog, WithdrawalData } from './WithdrawalDialog';
 import { OfficeReceiptDialog, OfficeReceiptData } from './OfficeReceiptDialog';
+import { SeparationDialog } from './SeparationDialog';
+import { VerificationDialog } from './VerificationDialog';
+import { CompletionDialog } from './CompletionDialog';
 import { logger } from '@/lib/logger';
 
 interface ProjectNextStepButtonProps {
   project: Project;
-  onStepUpdate: (newStep: ProjectStep, notes?: string, withdrawalData?: {
+  onStepUpdate: (newStep: ProjectStep, notes?: string, userData?: {
     userId: string;
     userName: string;
-    withdrawalTime: string;
-  }, officeReceiptData?: {
-    userId: string;
-    userName: string;
-    receiptTime: string;
+    timestamp: string;
   }) => void;
   onSeparationClick?: () => void;
   className?: string;
@@ -28,6 +27,9 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const navigate = useNavigate();
   const [withdrawalDialogOpen, setWithdrawalDialogOpen] = useState(false);
   const [officeReceiptDialogOpen, setOfficeReceiptDialogOpen] = useState(false);
+  const [separationDialogOpen, setSeparationDialogOpen] = useState(false);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
   if (project.status !== 'active') {
@@ -63,7 +65,14 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       }
     });
     
-    if (isWithdrawing) {
+    if (isSeparating) {
+      logger.debug('Opening separation dialog', {
+        module: 'project-step',
+        action: 'open_separation_dialog',
+        data: { projectId: project.id }
+      });
+      setSeparationDialogOpen(true);
+    } else if (isWithdrawing) {
       logger.debug('Opening withdrawal dialog', {
         module: 'project-step',
         action: 'open_withdrawal_dialog',
@@ -71,7 +80,12 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
       });
       setWithdrawalDialogOpen(true);
     } else if (isVerifying) {
-      navigate(`/projects/${project.id}/verification`);
+      logger.debug('Opening verification dialog', {
+        module: 'project-step',
+        action: 'open_verification_dialog',
+        data: { projectId: project.id }
+      });
+      setVerificationDialogOpen(true);
     } else if (isOfficeReceipt) {
       logger.debug('Opening office receipt dialog', {
         module: 'project-step',
@@ -79,13 +93,13 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         data: { projectId: project.id }
       });
       setOfficeReceiptDialogOpen(true);
-    } else if (isSeparating) {
-      logger.debug('Navigating to separation page', {
+    } else if (isCompleting) {
+      logger.debug('Opening completion dialog', {
         module: 'project-step',
-        action: 'navigate_to_separation',
+        action: 'open_completion_dialog',
         data: { projectId: project.id }
       });
-      navigate(`/projects/${project.id}/separation`);
+      setCompletionDialogOpen(true);
     } else {
       logger.debug('Normal step update', {
         module: 'project-step',
@@ -96,15 +110,35 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
     }
   };
 
+  const handleSeparationConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
+    setLoading(true);
+    try {
+      await onStepUpdate(nextStep, undefined, data);
+      setSeparationDialogOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleWithdrawalConfirm = async (withdrawalData: WithdrawalData) => {
     setLoading(true);
     try {
       await onStepUpdate(nextStep, undefined, {
         userId: withdrawalData.userId,
         userName: withdrawalData.userName,
-        withdrawalTime: withdrawalData.withdrawalTime
+        timestamp: withdrawalData.withdrawalTime
       });
       setWithdrawalDialogOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerificationConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
+    setLoading(true);
+    try {
+      await onStepUpdate(nextStep, undefined, data);
+      setVerificationDialogOpen(false);
     } finally {
       setLoading(false);
     }
@@ -113,12 +147,22 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
   const handleOfficeReceiptConfirm = async (officeReceiptData: OfficeReceiptData) => {
     setLoading(true);
     try {
-      await onStepUpdate(nextStep, undefined, undefined, {
+      await onStepUpdate(nextStep, undefined, {
         userId: officeReceiptData.userId,
         userName: officeReceiptData.userName,
-        receiptTime: officeReceiptData.receiptTime
+        timestamp: officeReceiptData.receiptTime
       });
       setOfficeReceiptDialogOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompletionConfirm = async (data: { userId: string; userName: string; timestamp: string }) => {
+    setLoading(true);
+    try {
+      await onStepUpdate(nextStep, undefined, data);
+      setCompletionDialogOpen(false);
     } finally {
       setLoading(false);
     }
@@ -160,6 +204,27 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         open={officeReceiptDialogOpen}
         onOpenChange={setOfficeReceiptDialogOpen}
         onConfirm={handleOfficeReceiptConfirm}
+        loading={loading}
+      />
+
+      <SeparationDialog
+        open={separationDialogOpen}
+        onOpenChange={setSeparationDialogOpen}
+        onConfirm={handleSeparationConfirm}
+        loading={loading}
+      />
+
+      <VerificationDialog
+        open={verificationDialogOpen}
+        onOpenChange={setVerificationDialogOpen}
+        onConfirm={handleVerificationConfirm}
+        loading={loading}
+      />
+
+      <CompletionDialog
+        open={completionDialogOpen}
+        onOpenChange={setCompletionDialogOpen}
+        onConfirm={handleCompletionConfirm}
         loading={loading}
       />
     </>

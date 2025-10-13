@@ -12,6 +12,8 @@ export interface StepChange {
   step: ProjectStep;
   timestamp: string;
   notes?: string;
+  userId?: string;
+  userName?: string;
 }
 
 export interface Project {
@@ -41,6 +43,27 @@ export interface Project {
   withdrawalUserId?: string;
   withdrawalUserName?: string;
   withdrawalTime?: string;
+  
+  // Rastreamento de usuários por etapa
+  createdAt?: string;
+  createdByUserId?: string;
+  createdByUserName?: string;
+  
+  separationUserId?: string;
+  separationUserName?: string;
+  separationTime?: string;
+  
+  verificationUserId?: string;
+  verificationUserName?: string;
+  verificationTime?: string;
+  
+  officeReceiptUserId?: string;
+  officeReceiptUserName?: string;
+  officeReceiptTime?: string;
+  
+  completedByUserId?: string;
+  completedByUserName?: string;
+  completedTime?: string;
 }
 
 export interface ProjectFilters {

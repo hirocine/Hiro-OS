@@ -79,7 +79,22 @@ export function useProjectDetails(projectId: string) {
           recordingType: data.recording_type,
           withdrawalUserId: data.withdrawal_user_id,
           withdrawalUserName: data.withdrawal_user_name,
-          withdrawalTime: data.withdrawal_time
+          withdrawalTime: data.withdrawal_time,
+          createdAt: data.created_at,
+          createdByUserId: data.created_by_user_id,
+          createdByUserName: data.created_by_user_name,
+          separationUserId: data.separation_user_id,
+          separationUserName: data.separation_user_name,
+          separationTime: data.separation_time,
+          verificationUserId: data.verification_user_id,
+          verificationUserName: data.verification_user_name,
+          verificationTime: data.verification_time,
+          officeReceiptUserId: data.office_receipt_user_id,
+          officeReceiptUserName: data.office_receipt_user_name,
+          officeReceiptTime: data.office_receipt_time,
+          completedByUserId: data.completed_by_user_id,
+          completedByUserName: data.completed_by_user_name,
+          completedTime: data.completed_time
         };
 
         logger.database('select', 'projects', true);
@@ -148,10 +163,10 @@ export function useProjectDetails(projectId: string) {
     }
   };
 
-  const updateProjectStep = async (newStep: ProjectStep, notes?: string, withdrawalData?: {
+  const updateProjectStep = async (newStep: ProjectStep, notes?: string, userData?: {
     userId: string;
     userName: string;
-    withdrawalTime: string;
+    timestamp: string;
   }) => {
     if (!project) return;
 
@@ -159,7 +174,9 @@ export function useProjectDetails(projectId: string) {
       const stepChange = {
         step: newStep,
         timestamp: new Date().toISOString(),
-        notes
+        notes,
+        userId: userData?.userId,
+        userName: userData?.userName
       };
 
       const updatedStepHistory = [...project.stepHistory, stepChange];
@@ -173,11 +190,41 @@ export function useProjectDetails(projectId: string) {
         updated_at: new Date().toISOString()
       };
 
-      // Add withdrawal data if provided (for in_use step)
-      if (withdrawalData && newStep === 'in_use') {
-        updates.withdrawal_user_id = withdrawalData.userId;
-        updates.withdrawal_user_name = withdrawalData.userName;
-        updates.withdrawal_time = withdrawalData.withdrawalTime;
+      // Add user data based on step
+      if (userData) {
+        const timestamp = userData.timestamp;
+        
+        switch(newStep) {
+          case 'ready_for_pickup': // Separação concluída
+            updates.separation_user_id = userData.userId;
+            updates.separation_user_name = userData.userName;
+            updates.separation_time = timestamp;
+            break;
+            
+          case 'in_use': // Retirada
+            updates.withdrawal_user_id = userData.userId;
+            updates.withdrawal_user_name = userData.userName;
+            updates.withdrawal_time = timestamp;
+            break;
+            
+          case 'pending_verification': // Check de desmontagem
+            updates.verification_user_id = userData.userId;
+            updates.verification_user_name = userData.userName;
+            updates.verification_time = timestamp;
+            break;
+            
+          case 'office_receipt': // Devolução no escritório
+            updates.office_receipt_user_id = userData.userId;
+            updates.office_receipt_user_name = userData.userName;
+            updates.office_receipt_time = timestamp;
+            break;
+            
+          case 'verified': // Finalização
+            updates.completed_by_user_id = userData.userId;
+            updates.completed_by_user_name = userData.userName;
+            updates.completed_time = timestamp;
+            break;
+        }
       }
 
       if (shouldComplete) {
@@ -203,17 +250,41 @@ export function useProjectDetails(projectId: string) {
       // Update local state
       setProject(prev => {
         if (!prev) return null;
-        const updated = {
+        const updated: Project = {
           ...prev,
           step: newStep,
           stepHistory: updatedStepHistory
         };
 
-        // Update withdrawal data if provided
-        if (withdrawalData && newStep === 'in_use') {
-          updated.withdrawalUserId = withdrawalData.userId;
-          updated.withdrawalUserName = withdrawalData.userName;
-          updated.withdrawalTime = withdrawalData.withdrawalTime;
+        // Update user data based on step
+        if (userData) {
+          switch(newStep) {
+            case 'ready_for_pickup':
+              updated.separationUserId = userData.userId;
+              updated.separationUserName = userData.userName;
+              updated.separationTime = userData.timestamp;
+              break;
+            case 'in_use':
+              updated.withdrawalUserId = userData.userId;
+              updated.withdrawalUserName = userData.userName;
+              updated.withdrawalTime = userData.timestamp;
+              break;
+            case 'pending_verification':
+              updated.verificationUserId = userData.userId;
+              updated.verificationUserName = userData.userName;
+              updated.verificationTime = userData.timestamp;
+              break;
+            case 'office_receipt':
+              updated.officeReceiptUserId = userData.userId;
+              updated.officeReceiptUserName = userData.userName;
+              updated.officeReceiptTime = userData.timestamp;
+              break;
+            case 'verified':
+              updated.completedByUserId = userData.userId;
+              updated.completedByUserName = userData.userName;
+              updated.completedTime = userData.timestamp;
+              break;
+          }
         }
         
         if (shouldComplete) {

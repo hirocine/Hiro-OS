@@ -396,7 +396,12 @@ export type Database = {
         Row: {
           actual_end_date: string | null
           company: string | null
+          completed_by_user_id: string | null
+          completed_by_user_name: string | null
+          completed_time: string | null
           created_at: string
+          created_by_user_id: string | null
+          created_by_user_name: string | null
           department: string | null
           description: string | null
           equipment_count: number | null
@@ -405,6 +410,9 @@ export type Database = {
           loan_ids: string[] | null
           name: string
           notes: string | null
+          office_receipt_time: string | null
+          office_receipt_user_id: string | null
+          office_receipt_user_name: string | null
           project_name: string | null
           project_number: string | null
           recording_type: string | null
@@ -414,11 +422,17 @@ export type Database = {
           return_condition: string | null
           return_notes: string | null
           separation_date: string | null
+          separation_time: string | null
+          separation_user_id: string | null
+          separation_user_name: string | null
           start_date: string
           status: string
           step: string
           step_history: Json | null
           updated_at: string
+          verification_time: string | null
+          verification_user_id: string | null
+          verification_user_name: string | null
           withdrawal_date: string | null
           withdrawal_notes: string | null
           withdrawal_time: string | null
@@ -428,7 +442,12 @@ export type Database = {
         Insert: {
           actual_end_date?: string | null
           company?: string | null
+          completed_by_user_id?: string | null
+          completed_by_user_name?: string | null
+          completed_time?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          created_by_user_name?: string | null
           department?: string | null
           description?: string | null
           equipment_count?: number | null
@@ -437,6 +456,9 @@ export type Database = {
           loan_ids?: string[] | null
           name: string
           notes?: string | null
+          office_receipt_time?: string | null
+          office_receipt_user_id?: string | null
+          office_receipt_user_name?: string | null
           project_name?: string | null
           project_number?: string | null
           recording_type?: string | null
@@ -446,11 +468,17 @@ export type Database = {
           return_condition?: string | null
           return_notes?: string | null
           separation_date?: string | null
+          separation_time?: string | null
+          separation_user_id?: string | null
+          separation_user_name?: string | null
           start_date: string
           status?: string
           step?: string
           step_history?: Json | null
           updated_at?: string
+          verification_time?: string | null
+          verification_user_id?: string | null
+          verification_user_name?: string | null
           withdrawal_date?: string | null
           withdrawal_notes?: string | null
           withdrawal_time?: string | null
@@ -460,7 +488,12 @@ export type Database = {
         Update: {
           actual_end_date?: string | null
           company?: string | null
+          completed_by_user_id?: string | null
+          completed_by_user_name?: string | null
+          completed_time?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          created_by_user_name?: string | null
           department?: string | null
           description?: string | null
           equipment_count?: number | null
@@ -469,6 +502,9 @@ export type Database = {
           loan_ids?: string[] | null
           name?: string
           notes?: string | null
+          office_receipt_time?: string | null
+          office_receipt_user_id?: string | null
+          office_receipt_user_name?: string | null
           project_name?: string | null
           project_number?: string | null
           recording_type?: string | null
@@ -478,11 +514,17 @@ export type Database = {
           return_condition?: string | null
           return_notes?: string | null
           separation_date?: string | null
+          separation_time?: string | null
+          separation_user_id?: string | null
+          separation_user_name?: string | null
           start_date?: string
           status?: string
           step?: string
           step_history?: Json | null
           updated_at?: string
+          verification_time?: string | null
+          verification_user_id?: string | null
+          verification_user_name?: string | null
           withdrawal_date?: string | null
           withdrawal_notes?: string | null
           withdrawal_time?: string | null
