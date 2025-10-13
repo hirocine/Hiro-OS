@@ -59,6 +59,43 @@ export default function ProjectDetails() {
     ? getEquipmentBreakdown(projectEquipment) 
     : null;
 
+  // Calculate responsible avatar data (must be before early returns)
+  const responsibleAvatarData = useMemo(() => {
+    if (!project) {
+      return {
+        url: null,
+        initials: 'U'
+      };
+    }
+
+    if (!responsibleProfile) {
+      return {
+        url: null,
+        initials: project.responsibleName
+          ? project.responsibleName.split(' ').map(n => n[0]).join('').toUpperCase()
+          : 'U'
+      };
+    }
+    
+    const mockUser = {
+      id: project.responsibleUserId || '',
+      email: project.responsibleEmail || '',
+      user_metadata: responsibleProfile.user_metadata || {},
+      app_metadata: { provider: responsibleProfile.user_metadata?.provider }
+    } as any;
+    
+    const avatarData = getAvatarData(
+      mockUser,
+      responsibleProfile.avatar_url,
+      project.responsibleName
+    );
+    
+    return {
+      url: avatarData.url,
+      initials: avatarData.initials
+    };
+  }, [responsibleProfile, project]);
+
   // Listen for add equipment dialog events
   useEffect(() => {
     const handleOpenAddEquipmentDialog = () => {
@@ -211,35 +248,6 @@ export default function ProjectDetails() {
   const isOverdue = project.status === 'active' && 
     new Date(project.expectedEndDate) < new Date() && 
     !project.actualEndDate;
-
-  const responsibleAvatarData = useMemo(() => {
-    if (!responsibleProfile) {
-      return {
-        url: null,
-        initials: project?.responsibleName
-          ? project.responsibleName.split(' ').map(n => n[0]).join('').toUpperCase()
-          : 'U'
-      };
-    }
-    
-    const mockUser = {
-      id: project?.responsibleUserId || '',
-      email: project?.responsibleEmail || '',
-      user_metadata: responsibleProfile.user_metadata || {},
-      app_metadata: { provider: responsibleProfile.user_metadata?.provider }
-    } as any;
-    
-    const avatarData = getAvatarData(
-      mockUser,
-      responsibleProfile.avatar_url,
-      project?.responsibleName
-    );
-    
-    return {
-      url: avatarData.url,
-      initials: avatarData.initials
-    };
-  }, [responsibleProfile, project?.responsibleName, project?.responsibleEmail, project?.responsibleUserId]);
 
   return (
     <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
