@@ -290,7 +290,7 @@ export function AddEquipmentToProjectDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col max-h-[80vh]">
+      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col h-[80vh] overflow-hidden">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Adicionar Equipamentos ao Projeto</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
