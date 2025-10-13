@@ -118,82 +118,87 @@ export function AddEquipmentToProjectDialog({
     setSelectedEquipment(newSelected);
   };
   
-  // Lazy loading via scroll listener (replaces IntersectionObserver)
+  // Lazy loading via IntersectionObserver with retry
   useEffect(() => {
     if (!open) return;
-    
-    const scrollArea = scrollAreaRef.current;
-    if (!scrollArea) return;
 
-    // Viewport interna do Radix ScrollArea
-    const viewport =
-      (scrollArea.querySelector('[data-lovable-scroll-viewport]') as HTMLElement | null) ||
-      (scrollArea.firstElementChild as HTMLElement | null);
+    let cancelled = false;
+    let cleanup = () => {};
 
-    if (!viewport) {
-      logger.debug('lazy_load_setup_missing', {
-        module: 'project-equipment',
-        data: { hasViewport: !!viewport }
-      });
-      return;
-    }
+    const attachObserver = (attempt = 0) => {
+      if (cancelled) return;
+      
+      const scrollArea = scrollAreaRef.current;
+      const loadMoreEl = loadMoreRef.current;
+      
+      if (!scrollArea || !loadMoreEl) {
+        if (attempt < 10) {
+          setTimeout(() => attachObserver(attempt + 1), 50);
+        }
+        return;
+      }
 
-    const vp = viewport as HTMLDivElement;
-    let ticking = false;
+      const viewport = scrollArea.querySelector('[data-lovable-scroll-viewport]') as HTMLElement | null;
+      
+      if (!viewport) {
+        if (attempt < 10) {
+          setTimeout(() => attachObserver(attempt + 1), 50);
+        } else {
+          logger.debug('io_setup_missing_viewport', {
+            module: 'project-equipment',
+            data: { attempt }
+          });
+        }
+        return;
+      }
 
-    logger.debug('lazy_load_listener_attached', {
-      module: 'project-equipment',
-      data: { total: availableEquipment.length }
-    });
+      // Garantir início no topo a cada abertura
+      viewport.scrollTo({ top: 0 });
 
-    const check = () => {
-      ticking = false;
-      const nearBottom = vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 160;
-
-      logger.debug('lazy_load_initial_check', {
-        module: 'project-equipment',
-        data: {
-          scrollTop: vp.scrollTop,
-          clientHeight: vp.clientHeight,
-          scrollHeight: vp.scrollHeight,
-          nearBottom,
-          displayLimit: displayLimitRef.current,
-          total: availableEquipment.length,
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (
+            entry.isIntersecting &&
+            !isLoadingMoreRef.current &&
+            displayLimitRef.current < availableEquipment.length
+          ) {
+            logger.debug('io_triggered', {
+              module: 'project-equipment',
+              data: {
+                displayLimit: displayLimitRef.current,
+                total: availableEquipment.length
+              }
+            });
+            setIsLoadingMore(true);
+            setTimeout(() => {
+              setDisplayLimit((prev) => Math.min(prev + 30, availableEquipment.length));
+              setIsLoadingMore(false);
+            }, 150);
+          }
         },
+        {
+          root: viewport,
+          rootMargin: '160px 0px 0px 0px',
+          threshold: 0.01,
+        }
+      );
+
+      observer.observe(loadMoreEl);
+
+      logger.debug('io_listener_attached', {
+        module: 'project-equipment',
+        data: { total: availableEquipment.length }
       });
 
-      if (
-        nearBottom &&
-        displayLimitRef.current < availableEquipment.length &&
-        !isLoadingMoreRef.current
-      ) {
-        setIsLoadingMore(true);
-        logger.debug('lazy_load_triggered', {
-          module: 'project-equipment',
-          action: 'scroll_near_bottom',
-          data: { displayLimit: displayLimitRef.current, total: availableEquipment.length }
-        });
-        setTimeout(() => {
-          setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
-          setIsLoadingMore(false);
-        }, 200);
-      }
+      cleanup = () => observer.disconnect();
     };
 
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(check);
-      }
-    };
-
-    vp.addEventListener('scroll', onScroll, { passive: true });
-
-    // Checagem inicial caso já esteja próximo do fim ao abrir
-    requestAnimationFrame(check);
+    attachObserver();
 
     return () => {
-      vp.removeEventListener('scroll', onScroll);
+      cancelled = true;
+      cleanup();
     };
   }, [open, availableEquipment.length]);
 
