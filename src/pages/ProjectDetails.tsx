@@ -294,20 +294,6 @@ export default function ProjectDetails() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {project.projectName && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Nome do Projeto</label>
-                <p className="mt-1 text-lg font-semibold">{project.projectName}</p>
-              </div>
-            )}
-
-            {project.recordingType && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Tipo de Gravação</label>
-                <p className="mt-1">{project.recordingType}</p>
-              </div>
-            )}
-            
             {project.description && (
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Descrição</label>
@@ -359,14 +345,6 @@ export default function ProjectDetails() {
                   </span>
                 </p>
               </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Equipamentos</label>
-              <p className="mt-1 flex items-center space-x-2">
-                <Package className="h-4 w-4" />
-                <span>{equipmentBreakdown || `${project.equipmentCount} equipamentos vinculados`}</span>
-              </p>
             </div>
           </CardContent>
         </Card>
