@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EquipmentDetailsDialog } from '@/components/Equipment/EquipmentDetailsDialog';
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ProjectAccessoriesDialog } from './ProjectAccessoriesDialog';
 
 interface ProjectEquipmentListProps {
   projectId: string;
@@ -19,10 +20,17 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [selectedLoanData, setSelectedLoanData] = useState<any>(null);
+  const [accessoriesDialogOpen, setAccessoriesDialogOpen] = useState(false);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
   const handleViewDetails = (equipmentId: string) => {
     setSelectedEquipmentId(equipmentId);
     setDetailsDialogOpen(true);
+  };
+
+  const handleViewAccessories = (equipmentId: string) => {
+    setSelectedParentId(equipmentId);
+    setAccessoriesDialogOpen(true);
   };
 
   const handleSendReminder = (item: any) => {
@@ -146,6 +154,15 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                         <Badge variant={getStatusVariant(item.loanInfo.status)}>
                           {getStatusLabel(item.loanInfo.status)}
                         </Badge>
+                        
+                        {/* Badge de acessórios */}
+                        {item.itemType === 'main' && item.accessoryCount && item.accessoryCount > 0 && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Package className="h-3 w-3" />
+                            {item.accessoryCount} acessório{item.accessoryCount !== 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        
                         {item.loanInfo.status === 'overdue' && (
                           <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
                         )}
@@ -187,13 +204,23 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
                     </div>
                     
                     <div className="flex flex-col gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewDetails(item.id)}
-                      >
-                        Ver Detalhes
-                      </Button>
+                      {item.itemType === 'main' && item.accessoryCount && item.accessoryCount > 0 ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewAccessories(item.id)}
+                        >
+                          Ver Acessórios
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewDetails(item.id)}
+                        >
+                          Ver Detalhes
+                        </Button>
+                      )}
                       
                       {item.loanInfo.status === 'overdue' && (
                         <Button 
@@ -223,6 +250,13 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
         open={reminderDialogOpen}
         onOpenChange={setReminderDialogOpen}
         loanData={selectedLoanData}
+      />
+
+      <ProjectAccessoriesDialog
+        open={accessoriesDialogOpen}
+        onOpenChange={setAccessoriesDialogOpen}
+        parentEquipmentId={selectedParentId}
+        equipment={equipment}
       />
     </div>
   );

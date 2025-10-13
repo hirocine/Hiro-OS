@@ -13,6 +13,7 @@ interface ProjectEquipment extends Equipment {
     expectedReturnDate: string;
     status: Loan['status'];
   };
+  accessoryCount?: number;
 }
 
 export function useProjectEquipment(projectId: string) {
@@ -109,8 +110,23 @@ export function useProjectEquipment(projectId: string) {
         }
       });
 
-      setEquipment(projectEquipment);
-      return projectEquipment;
+      // Enriquecer com contagem de acessórios
+      const enrichedEquipment = projectEquipment.map(item => {
+        if (item.itemType === 'main') {
+          const accessoryCount = projectEquipment.filter(
+            eq => eq.parentId === item.id && eq.itemType === 'accessory'
+          ).length;
+          
+          return {
+            ...item,
+            accessoryCount
+          };
+        }
+        return item;
+      });
+
+      setEquipment(enrichedEquipment);
+      return enrichedEquipment;
     });
 
     if (result.data !== undefined) {
