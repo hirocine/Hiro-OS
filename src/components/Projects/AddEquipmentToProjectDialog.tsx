@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarIcon, Package, Search } from 'lucide-react';
+import { CalendarIcon, Package, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEquipment } from '@/hooks/useEquipment';
@@ -57,6 +57,7 @@ export function AddEquipmentToProjectDialog({
   );
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   
   const debouncedSearchTerm = useDebounce(searchInput, 300);
 
@@ -123,9 +124,17 @@ export function AddEquipmentToProjectDialog({
     
     // Load more when within 1.5 screens of the bottom
     if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-      setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
+      if (displayLimit < availableEquipment.length && !isLoadingMore) {
+        setIsLoadingMore(true);
+        
+        // Small delay to show loading feedback
+        setTimeout(() => {
+          setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
+          setIsLoadingMore(false);
+        }, 300);
+      }
     }
-  }, [availableEquipment.length]);
+  }, [availableEquipment.length, displayLimit, isLoadingMore]);
 
 
   const handleSubmit = async () => {
@@ -364,8 +373,9 @@ export function AddEquipmentToProjectDialog({
                 ))}
 
                 {visibleEquipment.length < availableEquipment.length && (
-                  <div className="text-center py-4 text-sm text-muted-foreground">
-                    Carregando mais equipamentos...
+                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Carregando mais equipamentos...</span>
                   </div>
                 )}
                 
