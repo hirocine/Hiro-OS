@@ -1086,7 +1086,7 @@ export default function ProjectWithdrawal() {
                 max={10}
                 value={data.selectedEquipment.cameraQuantity}
                 onChange={(e) => handleCameraQuantityChange(parseInt(e.target.value) || 1)}
-                className="w-20 text-center"
+                className="w-20 text-center h-10 flex items-center justify-center"
               />
               <Button
                 type="button"
