@@ -49,6 +49,7 @@ export function AddEquipmentToProjectDialog({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchTerm = useDebounce(searchInput, 300);
 
   // Filter equipment (show all equipment, regardless of current loan status)
@@ -107,36 +108,47 @@ export function AddEquipmentToProjectDialog({
     setSelectedEquipment(newSelected);
   };
   
-  // Attach scroll listener to ScrollArea's internal viewport
+  // IntersectionObserver for lazy loading
   useEffect(() => {
     const scrollArea = scrollAreaRef.current;
     if (!scrollArea) return;
 
-    // Find the viewport element inside ScrollArea
+    // Viewport interna do Radix ScrollArea
     const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]');
-    if (!viewport) return;
+    const sentinel = loadMoreRef.current;
+    if (!viewport || !sentinel) return;
 
-    const handleScrollEvent = () => {
-      const vp = viewport as HTMLElement;
-      const { scrollTop, scrollHeight, clientHeight } = vp;
-      
-      if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-        if (displayLimit < availableEquipment.length && !isLoadingMore) {
-          setIsLoadingMore(true);
-          setTimeout(() => {
-            setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
-            setIsLoadingMore(false);
-          }, 300);
-        }
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (!entry.isIntersecting) return;
+
+      if (displayLimit < availableEquipment.length && !isLoadingMore) {
+        setIsLoadingMore(true);
+        // Log para depuração
+        logger.debug('lazy_load_triggered', {
+          module: 'project-equipment',
+          action: 'intersection_observed',
+          data: { displayLimit, total: availableEquipment.length }
+        });
+        setTimeout(() => {
+          setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
+          setIsLoadingMore(false);
+        }, 300);
       }
-    };
+    }, { 
+      root: viewport as Element, 
+      rootMargin: '0px 0px 200px 0px', 
+      threshold: 0.1 
+    });
 
-    viewport.addEventListener('scroll', handleScrollEvent);
-    
-    return () => {
-      viewport.removeEventListener('scroll', handleScrollEvent);
-    };
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, [availableEquipment.length, displayLimit, isLoadingMore]);
+
+  // Reset displayLimit when search changes
+  useEffect(() => {
+    setDisplayLimit(30);
+  }, [debouncedSearchTerm]);
 
 
   const handleSubmit = async () => {
@@ -361,9 +373,18 @@ export function AddEquipmentToProjectDialog({
                 ))}
 
                 {visibleEquipment.length < availableEquipment.length && (
-                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Carregando mais equipamentos...</span>
+                  <div
+                    ref={loadMoreRef}
+                    className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Carregando mais equipamentos...</span>
+                      </>
+                    ) : (
+                      <span>Role para carregar mais</span>
+                    )}
                   </div>
                 )}
                 
