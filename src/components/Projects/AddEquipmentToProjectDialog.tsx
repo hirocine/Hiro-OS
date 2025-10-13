@@ -114,9 +114,17 @@ export function AddEquipmentToProjectDialog({
     if (!scrollArea) return;
 
     // Viewport interna do Radix ScrollArea
-    const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]');
+    const viewport =
+      (scrollArea.querySelector('[data-lovable-scroll-viewport]') as HTMLElement | null) ||
+      (scrollArea.firstElementChild as HTMLElement | null);
     const sentinel = loadMoreRef.current;
-    if (!viewport || !sentinel) return;
+    if (!viewport || !sentinel) {
+      logger.debug('lazy_load_setup_missing', {
+        module: 'project-equipment',
+        data: { hasViewport: !!viewport, hasSentinel: !!sentinel }
+      });
+      return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
       const [entry] = entries;
