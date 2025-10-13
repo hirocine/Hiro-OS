@@ -300,25 +300,25 @@ export default function ProjectDetails() {
           )}
           
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {project.separationDate && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
-                <p className="mt-1 flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
-                </p>
-              </div>
-            )}
+      {project.separationDate && (
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
+          <p className="mt-1 flex items-center space-x-2">
+            <Calendar className="h-4 w-4 text-orange-500" />
+            <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
+          </p>
+        </div>
+      )}
             
-            {project.withdrawalDate && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
-                <p className="mt-1 flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
-                </p>
-              </div>
-            )}
+      {project.withdrawalDate && (
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
+          <p className="mt-1 flex items-center space-x-2">
+            <Calendar className="h-4 w-4 text-red-500" />
+            <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
+          </p>
+        </div>
+      )}
 
             <div>
               <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
@@ -328,20 +328,20 @@ export default function ProjectDetails() {
               </p>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                {project.actualEndDate ? 'Data de Finalização' : 'Previsão de Fim'}
-              </label>
-              <p className="mt-1 flex items-center space-x-2">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {project.actualEndDate 
-                    ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
-                    : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
-                  }
-                </span>
-              </p>
-            </div>
+      <div>
+        <label className="text-sm font-medium text-muted-foreground">
+          {project.actualEndDate ? 'Data de Finalização' : 'Previsão de Fim'}
+        </label>
+        <p className="mt-1 flex items-center space-x-2">
+          <Calendar className="h-4 w-4 text-green-500" />
+          <span>
+            {project.actualEndDate 
+              ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
+              : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
+            }
+          </span>
+        </p>
+      </div>
           </div>
 
           <Separator className="my-4" />
