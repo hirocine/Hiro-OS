@@ -51,6 +51,16 @@ export function AddEquipmentToProjectDialog({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchTerm = useDebounce(searchInput, 300);
+  
+  // Refs to avoid recreating scroll listener on every state change
+  const displayLimitRef = useRef(displayLimit);
+  const isLoadingMoreRef = useRef(isLoadingMore);
+  
+  // Sync refs with state
+  useEffect(() => {
+    displayLimitRef.current = displayLimit;
+    isLoadingMoreRef.current = isLoadingMore;
+  }, [displayLimit, isLoadingMore]);
 
   // Filter equipment (show all equipment, regardless of current loan status)
   const availableEquipment = useMemo(() => {
@@ -135,14 +145,14 @@ export function AddEquipmentToProjectDialog({
 
       if (
         nearBottom &&
-        displayLimit < availableEquipment.length &&
-        !isLoadingMore
+        displayLimitRef.current < availableEquipment.length &&
+        !isLoadingMoreRef.current
       ) {
         setIsLoadingMore(true);
         logger.debug('lazy_load_triggered', {
           module: 'project-equipment',
           action: 'scroll_near_bottom',
-          data: { displayLimit, total: availableEquipment.length }
+          data: { displayLimit: displayLimitRef.current, total: availableEquipment.length }
         });
         setTimeout(() => {
           setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
@@ -166,7 +176,7 @@ export function AddEquipmentToProjectDialog({
     return () => {
       vp.removeEventListener('scroll', onScroll);
     };
-  }, [availableEquipment.length, displayLimit, isLoadingMore]);
+  }, [availableEquipment.length]);
 
   // Reset displayLimit when search changes
   useEffect(() => {
