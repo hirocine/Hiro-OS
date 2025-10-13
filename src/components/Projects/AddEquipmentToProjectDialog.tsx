@@ -108,7 +108,7 @@ export function AddEquipmentToProjectDialog({
     setSelectedEquipment(newSelected);
   };
   
-  // IntersectionObserver for lazy loading
+  // Lazy loading via scroll listener (replaces IntersectionObserver)
   useEffect(() => {
     const scrollArea = scrollAreaRef.current;
     if (!scrollArea) return;
@@ -117,40 +117,55 @@ export function AddEquipmentToProjectDialog({
     const viewport =
       (scrollArea.querySelector('[data-lovable-scroll-viewport]') as HTMLElement | null) ||
       (scrollArea.firstElementChild as HTMLElement | null);
-    const sentinel = loadMoreRef.current;
-    if (!viewport || !sentinel) {
+
+    if (!viewport) {
       logger.debug('lazy_load_setup_missing', {
         module: 'project-equipment',
-        data: { hasViewport: !!viewport, hasSentinel: !!sentinel }
+        data: { hasViewport: !!viewport }
       });
       return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      const [entry] = entries;
-      if (!entry.isIntersecting) return;
+    const vp = viewport as HTMLDivElement;
+    let ticking = false;
 
-      if (displayLimit < availableEquipment.length && !isLoadingMore) {
+    const check = () => {
+      ticking = false;
+      const nearBottom = vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 160;
+
+      if (
+        nearBottom &&
+        displayLimit < availableEquipment.length &&
+        !isLoadingMore
+      ) {
         setIsLoadingMore(true);
-        // Log para depuração
         logger.debug('lazy_load_triggered', {
           module: 'project-equipment',
-          action: 'intersection_observed',
+          action: 'scroll_near_bottom',
           data: { displayLimit, total: availableEquipment.length }
         });
         setTimeout(() => {
           setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
           setIsLoadingMore(false);
-        }, 300);
+        }, 200);
       }
-    }, { 
-      root: viewport as Element, 
-      rootMargin: '0px 0px 200px 0px', 
-      threshold: 0.1 
-    });
+    };
 
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(check);
+      }
+    };
+
+    vp.addEventListener('scroll', onScroll, { passive: true });
+
+    // Checagem inicial caso já esteja próximo do fim ao abrir
+    requestAnimationFrame(check);
+
+    return () => {
+      vp.removeEventListener('scroll', onScroll);
+    };
   }, [availableEquipment.length, displayLimit, isLoadingMore]);
 
   // Reset displayLimit when search changes
