@@ -173,6 +173,14 @@ export function AddEquipmentToProjectDialog({
     setDisplayLimit(30);
   }, [debouncedSearchTerm]);
 
+  // Reset displayLimit when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setDisplayLimit(30);
+      setIsLoadingMore(false);
+    }
+  }, [open]);
+
 
   const handleSubmit = async () => {
     if (selectedEquipment.size === 0) {
@@ -288,7 +296,6 @@ export function AddEquipmentToProjectDialog({
         // Reset form and close dialog
         setSelectedEquipment(new Set());
         setSearchInput('');
-        setDisplayLimit(30);
         onOpenChange(false);
         onSuccess?.();
       }
