@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectStep, ProjectStatus } from '@/types/project';
 import { stepLabels, stepIcons, stepOrder } from '@/lib/projectSteps';
+import { Check } from 'lucide-react';
 
 interface ProjectTimelineProps {
   currentStep: ProjectStep;
@@ -66,7 +67,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           {/* Timeline Steps */}
           {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
-          const Icon = stepIcons[step];
+            const Icon = status === 'completed' ? Check : stepIcons[step];
           const stepDate = getStepDate(step);
           const clickable = isStepClickable(index);
 
@@ -129,7 +130,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
       <div className="block md:hidden space-y-4">
         {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
-          const Icon = stepIcons[step];
+          const Icon = status === 'completed' ? Check : stepIcons[step];
           const stepDate = getStepDate(step);
           const clickable = isStepClickable(index);
 
