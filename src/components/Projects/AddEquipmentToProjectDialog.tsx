@@ -120,6 +120,8 @@ export function AddEquipmentToProjectDialog({
   
   // Lazy loading via scroll listener (replaces IntersectionObserver)
   useEffect(() => {
+    if (!open) return;
+    
     const scrollArea = scrollAreaRef.current;
     if (!scrollArea) return;
 
@@ -139,9 +141,26 @@ export function AddEquipmentToProjectDialog({
     const vp = viewport as HTMLDivElement;
     let ticking = false;
 
+    logger.debug('lazy_load_listener_attached', {
+      module: 'project-equipment',
+      data: { total: availableEquipment.length }
+    });
+
     const check = () => {
       ticking = false;
       const nearBottom = vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 160;
+
+      logger.debug('lazy_load_initial_check', {
+        module: 'project-equipment',
+        data: {
+          scrollTop: vp.scrollTop,
+          clientHeight: vp.clientHeight,
+          scrollHeight: vp.scrollHeight,
+          nearBottom,
+          displayLimit: displayLimitRef.current,
+          total: availableEquipment.length,
+        },
+      });
 
       if (
         nearBottom &&
@@ -176,7 +195,7 @@ export function AddEquipmentToProjectDialog({
     return () => {
       vp.removeEventListener('scroll', onScroll);
     };
-  }, [availableEquipment.length]);
+  }, [open, availableEquipment.length]);
 
   // Reset displayLimit when search changes
   useEffect(() => {
