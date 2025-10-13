@@ -299,7 +299,7 @@ export default function ProjectDetails() {
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {project.separationDate && (
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
