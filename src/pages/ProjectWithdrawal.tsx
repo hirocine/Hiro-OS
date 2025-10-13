@@ -1573,25 +1573,6 @@ export default function ProjectWithdrawal() {
                     Você poderá fazer alterações posteriormente se necessário.
                   </AlertDescription>
                 </Alert>
-                
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  size="lg"
-                  className="w-full bg-primary hover:bg-primary/90 shadow-lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Criando Retirada...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-5 w-5 mr-2" />
-                      Criar Retirada de Equipamentos
-                    </>
-                  )}
-                </Button>
               </div>
             )}
           </div>
