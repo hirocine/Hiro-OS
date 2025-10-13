@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { getAvatarData } from "@/lib/avatarUtils";
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box, ArrowLeft, X } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box, ArrowLeft, X, Building2, User, Clock, FileText, Aperture, Link as LinkIcon, Move3d, Layers } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
@@ -650,6 +650,72 @@ export default function ProjectWithdrawal() {
 
   const progressPercentage = (currentStep / 15) * 100;
 
+  // Função para obter o título do step atual
+  const getStepTitle = (): string => {
+    const titles = [
+      'Informações do Projeto',
+      'Responsável',
+      'Datas',
+      'Tipo de Gravação',
+      'Câmeras',
+      'Lentes',
+      'Acessórios de Câmera',
+      'Tripés e Estabilizadores',
+      'Iluminação',
+      'Modificadores de Luz',
+      'Maquinário',
+      'Elétrica',
+      'Armazenamento',
+      'Computadores',
+      'Revisão e Confirmação'
+    ];
+    return titles[currentStep - 1] || '';
+  };
+
+  // Função para obter a descrição do step atual
+  const getStepDescription = (): string | null => {
+    const descriptions: Record<number, string> = {
+      1: 'Preencha as informações básicas do projeto de retirada',
+      2: 'Selecione o responsável pela retirada dos equipamentos',
+      3: 'Defina as datas de separação, retirada e devolução',
+      4: 'Informe o tipo de gravação que será realizada',
+      5: 'Selecione as câmeras e seus acessórios',
+      6: 'Adicione lentes necessárias (opcional)',
+      7: 'Adicione acessórios adicionais de câmera (opcional)',
+      8: 'Adicione tripés e estabilizadores (opcional)',
+      9: 'Adicione equipamentos de iluminação (opcional)',
+      10: 'Adicione modificadores de luz (opcional)',
+      11: 'Adicione maquinário necessário (opcional)',
+      12: 'Adicione equipamentos elétricos (opcional)',
+      13: 'Adicione dispositivos de armazenamento (opcional)',
+      14: 'Adicione computadores necessários (opcional)',
+      15: 'Revise todos os dados antes de criar a retirada'
+    };
+    return descriptions[currentStep] || null;
+  };
+
+  // Função para obter o ícone do step atual
+  const getStepIcon = () => {
+    const icons = [
+      <FileText className="h-5 w-5 text-primary" />,
+      <User className="h-5 w-5 text-primary" />,
+      <Clock className="h-5 w-5 text-primary" />,
+      <Video className="h-5 w-5 text-primary" />,
+      <Camera className="h-5 w-5 text-primary" />,
+      <Aperture className="h-5 w-5 text-primary" />,
+      <LinkIcon className="h-5 w-5 text-primary" />,
+      <Move3d className="h-5 w-5 text-primary" />,
+      <Lightbulb className="h-5 w-5 text-primary" />,
+      <Layers className="h-5 w-5 text-primary" />,
+      <Settings className="h-5 w-5 text-primary" />,
+      <Zap className="h-5 w-5 text-primary" />,
+      <HardDrive className="h-5 w-5 text-primary" />,
+      <Monitor className="h-5 w-5 text-primary" />,
+      <Check className="h-5 w-5 text-primary" />
+    ];
+    return icons[currentStep - 1] || null;
+  };
+
   const renderEquipmentSelectionStep = (
     title: string,
     icon: React.ReactNode,
@@ -734,8 +800,12 @@ export default function ProjectWithdrawal() {
       title: 'Informações do Projeto',
       content: (
         <div className="space-y-6">
-          <div>
-            <Label htmlFor="projectNumber">Número do Projeto *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="projectNumber" className="text-base font-semibold flex items-center gap-2">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              Número do Projeto
+              <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="projectNumber"
               value={data.projectNumber}
@@ -745,37 +815,62 @@ export default function ProjectWithdrawal() {
               }}
               placeholder="Ex: 398"
               maxLength={4}
-              className="font-mono"
+              className={cn(
+                "h-12 text-base font-mono transition-all",
+                data.projectNumber && /^\d{1,4}$/.test(data.projectNumber) 
+                  ? "border-success focus:ring-success" 
+                  : ""
+              )}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <FileText className="h-3 w-3" />
               Apenas números, máximo 4 dígitos
             </p>
           </div>
 
-          <div>
-            <Label htmlFor="company">Empresa *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="company" className="text-base font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              Empresa
+              <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="company"
               value={data.company}
               onChange={(e) => updateField('company', e.target.value)}
               placeholder="Ex: Hiro Films"
+              className={cn(
+                "h-12 text-base transition-all",
+                data.company.trim() ? "border-success focus:ring-success" : ""
+              )}
             />
           </div>
 
-          <div>
-            <Label htmlFor="projectName">Nome do Projeto *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="projectName" className="text-base font-semibold flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Nome do Projeto
+              <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="projectName"
               value={data.projectName}
               onChange={(e) => updateField('projectName', e.target.value)}
               placeholder="Ex: Institucional"
+              className={cn(
+                "h-12 text-base transition-all",
+                data.projectName.trim() ? "border-success focus:ring-success" : ""
+              )}
             />
           </div>
 
           {data.projectNumber && data.company && data.projectName && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium">Nome final do projeto:</p>
-              <p className="text-sm text-muted-foreground">
+            <div className="p-4 bg-success/10 border border-success/20 rounded-lg space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <p className="text-sm font-semibold flex items-center gap-2 text-success-foreground">
+                <Check className="h-4 w-4 text-success" />
+                Nome final do projeto:
+              </p>
+              <p className="text-sm text-foreground font-medium pl-6">
                 {data.projectNumber} - {data.company}: {data.projectName}
               </p>
             </div>
@@ -1290,77 +1385,138 @@ export default function ProjectWithdrawal() {
 
   const currentStepData = steps[currentStep - 1];
 
+  const renderStep = () => {
+    return currentStepData?.content;
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="border-b bg-card sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/projects')}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold">Nova Retirada de Equipamentos</h1>
-                <p className="text-sm text-muted-foreground">
-                  Etapa {currentStep} de 15 - {currentStepData?.title}
-                </p>
-              </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header Fixo com Backdrop Blur */}
+      <div className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-4 md:py-5">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <span 
+              className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
+              onClick={() => navigate('/projects')}
+            >
+              <Package className="h-3.5 w-3.5" />
+              Projetos
+            </span>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-foreground font-medium">Nova Retirada</span>
+          </div>
+          
+          {/* Título Principal */}
+          <div className="flex items-start gap-3 mb-5">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="mt-1"
+              onClick={() => navigate('/projects')}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
+                Nova Retirada de Equipamentos
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                {getStepTitle()}
+              </p>
             </div>
           </div>
           
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <Progress value={progressPercentage} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{Math.round(progressPercentage)}% completo</span>
-              <span>Etapa {currentStep}/15</span>
+          {/* Progress Bar Aprimorado */}
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-center text-xs md:text-sm font-medium">
+              <span className="text-muted-foreground flex items-center gap-2">
+                <span className="hidden sm:inline">Progresso:</span>
+                <span className="font-semibold text-foreground">Etapa {currentStep}/15</span>
+              </span>
+              <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
+            </div>
+            <div 
+              role="progressbar" 
+              aria-valuenow={progressPercentage} 
+              aria-valuemin={0} 
+              aria-valuemax={100}
+              aria-label={`Progresso: ${Math.round(progressPercentage)}% completo`}
+            >
+              <Progress value={progressPercentage} className="h-2.5" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        {currentStepData?.content}
+      {/* Conteúdo Scrollável com Animação */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-4 py-6 md:py-8 max-w-3xl">
+          <div 
+            key={currentStep}
+            className="animate-in fade-in slide-in-from-right-2 duration-200"
+          >
+            <Card className="border-border shadow-card">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl md:text-2xl flex items-center gap-2.5">
+                  {getStepIcon()}
+                  {getStepTitle()}
+                </CardTitle>
+                {getStepDescription() && (
+                  <CardDescription className="text-sm md:text-base mt-2">
+                    {getStepDescription()}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {renderStep()}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+      
+      {/* Aria Live Region para Acessibilidade */}
+      <div 
+        role="status" 
+        aria-live="polite" 
+        className="sr-only"
+      >
+        Etapa {currentStep} de 15: {getStepTitle()}
       </div>
 
-      {/* Footer with navigation */}
-      <div className="border-t bg-card sticky bottom-0">
+      {/* Footer Fixo com Shadow e Melhor Hierarquia */}
+      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 sticky bottom-0 shadow-elegant pb-safe">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row justify-between gap-3">
-            {/* Previous button */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto h-11 sm:h-10"
+              aria-label="Voltar para etapa anterior"
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
               Anterior
             </Button>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-2">
-              {/* Cancel button */}
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/projects')}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto h-11 sm:h-10"
+                aria-label="Cancelar criação de retirada"
               >
                 Cancelar
               </Button>
 
-              {/* Step 15: Special actions */}
               {currentStep === 15 ? (
                 <>
                   <Button 
                     variant="outline" 
                     onClick={generatePDF}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto h-11 sm:h-10 border-primary/50 hover:bg-primary/5"
+                    aria-label="Baixar PDF da retirada"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Baixar PDF
@@ -1368,31 +1524,34 @@ export default function ProjectWithdrawal() {
                   <Button 
                     onClick={handleSubmit} 
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 shadow-lg font-semibold"
+                    size="lg"
+                    aria-label="Finalizar e criar retirada"
                   >
-                    <Check className="h-4 w-4 mr-2" />
+                    <Check className="h-5 w-5 mr-2" />
                     {isSubmitting ? 'Criando...' : 'Criar Retirada'}
                   </Button>
                 </>
               ) : (
                 <>
-                  {/* Skip button for equipment steps */}
                   {shouldShowSkipButton() && (
                     <Button
                       variant="ghost"
                       onClick={nextStep}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto h-11 sm:h-10 text-muted-foreground"
+                      aria-label="Pular esta categoria"
                     >
                       Pular categoria
                       <ChevronRight className="h-4 w-4 ml-2" />
                     </Button>
                   )}
 
-                  {/* Next button */}
                   <Button
                     onClick={nextStep}
                     disabled={!isStepValid()}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 font-semibold"
+                    size="lg"
+                    aria-label="Avançar para próxima etapa"
                   >
                     Próximo
                     <ChevronRight className="h-4 w-4 ml-2" />
@@ -1400,6 +1559,18 @@ export default function ProjectWithdrawal() {
                 </>
               )}
             </div>
+          </div>
+          
+          {/* Atalhos de Teclado - Desktop Only */}
+          <div className="hidden lg:flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <kbd className="px-2 py-1 bg-muted rounded text-[10px] font-mono border border-border">Enter</kbd>
+              Próximo
+            </span>
+            <span className="flex items-center gap-1.5">
+              <kbd className="px-2 py-1 bg-muted rounded text-[10px] font-mono border border-border">Esc</kbd>
+              Cancelar
+            </span>
           </div>
         </div>
       </div>
