@@ -116,16 +116,13 @@ export function AddEquipmentToProjectDialog({
     const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]');
     if (!viewport) return;
 
-    const handleScrollEvent = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const { scrollTop, scrollHeight, clientHeight } = target;
+    const handleScrollEvent = () => {
+      const vp = viewport as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = vp;
       
-      // Load more when within 1.5 screens of the bottom
       if (scrollHeight - scrollTop <= clientHeight * 1.5) {
         if (displayLimit < availableEquipment.length && !isLoadingMore) {
           setIsLoadingMore(true);
-          
-          // Small delay to show loading feedback
           setTimeout(() => {
             setDisplayLimit(prev => Math.min(prev + 30, availableEquipment.length));
             setIsLoadingMore(false);
@@ -293,7 +290,7 @@ export function AddEquipmentToProjectDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col">
+      <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col max-h-[80vh]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Adicionar Equipamentos ao Projeto</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
@@ -301,9 +298,9 @@ export function AddEquipmentToProjectDialog({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           {/* Equipment Selection */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             <div className="space-y-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -323,7 +320,7 @@ export function AddEquipmentToProjectDialog({
               </Label>
             </div>
 
-            <ScrollArea ref={scrollAreaRef} className="flex-1 border rounded-md">
+            <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 h-full border rounded-md">
               <div className="p-3 space-y-2">
                 {visibleEquipment.map((equipment) => (
                   <Card 
