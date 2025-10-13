@@ -138,3 +138,19 @@ export function useProjectEquipment(projectId: string) {
 
   return { equipment, loading, error, refetch };
 }
+
+export function getEquipmentBreakdown(equipment: ProjectEquipment[]): string {
+  if (equipment.length === 0) return '';
+  
+  const categories = equipment.reduce((acc, item) => {
+    const category = item.customCategory || item.subcategory || item.category;
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const breakdown = Object.entries(categories)
+    .map(([cat, count]) => `${count} ${cat}`)
+    .join(', ');
+
+  return `${equipment.length} equipamentos: ${breakdown}`;
+}

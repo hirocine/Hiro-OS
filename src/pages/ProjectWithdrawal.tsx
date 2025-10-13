@@ -528,7 +528,11 @@ export default function ProjectWithdrawal() {
         recording_type: data.recordingType,
         status: 'active' as const,
         step: 'pending_separation' as const,
-        step_history: [],
+        step_history: [{
+          step: 'pending_separation',
+          timestamp: new Date().toISOString(),
+          notes: 'Projeto criado via sistema de retirada'
+        }],
         equipment_count: selectedEquipment.length,
         loan_ids: []
       };

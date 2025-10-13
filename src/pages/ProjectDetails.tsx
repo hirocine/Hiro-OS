@@ -9,6 +9,7 @@ import { ArrowLeft, Calendar, User, Building, Package, Clock, Edit, Archive, Che
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
+import { useProjectEquipment, getEquipmentBreakdown } from '@/hooks/useProjectEquipment';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -45,6 +46,11 @@ export default function ProjectDetails() {
     updateProjectStep,
     refetch
   } = useProjectDetails(id!);
+
+  const { equipment: projectEquipment } = useProjectEquipment(id!);
+  const equipmentBreakdown = projectEquipment.length > 0 
+    ? getEquipmentBreakdown(projectEquipment) 
+    : null;
 
   // Listen for add equipment dialog events
   React.useEffect(() => {
@@ -171,7 +177,7 @@ export default function ProjectDetails() {
           </Button>
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{project.name}</h1>
               <Badge variant={getStatusVariant(project.status)}>
                 {getStatusLabel(project.status)}
               </Badge>
@@ -179,10 +185,29 @@ export default function ProjectDetails() {
                 <Badge variant="destructive">Atrasado</Badge>
               )}
             </div>
-            <p className="text-muted-foreground">
-              {project.company && `${project.company} • `}
-              {project.projectNumber && `Nº ${project.projectNumber}`}
-            </p>
+            <div className="flex items-center gap-2 text-muted-foreground mt-1">
+              {project.projectName && (
+                <span className="font-medium">{project.projectName}</span>
+              )}
+              {project.company && (
+                <>
+                  {project.projectName && <span>•</span>}
+                  <span>{project.company}</span>
+                </>
+              )}
+              {project.projectNumber && (
+                <>
+                  <span>•</span>
+                  <span>Nº {project.projectNumber}</span>
+                </>
+              )}
+              {project.recordingType && (
+                <>
+                  <span>•</span>
+                  <span>{project.recordingType}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -269,6 +294,20 @@ export default function ProjectDetails() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {project.projectName && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Nome do Projeto</label>
+                <p className="mt-1 text-lg font-semibold">{project.projectName}</p>
+              </div>
+            )}
+
+            {project.recordingType && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Tipo de Gravação</label>
+                <p className="mt-1">{project.recordingType}</p>
+              </div>
+            )}
+            
             {project.description && (
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Descrição</label>
@@ -276,6 +315,28 @@ export default function ProjectDetails() {
               </div>
             )}
             
+            <div className="grid grid-cols-2 gap-4">
+              {project.separationDate && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
+                  <p className="mt-1 flex items-center space-x-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
+                  </p>
+                </div>
+              )}
+              
+              {project.withdrawalDate && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
+                  <p className="mt-1 flex items-center space-x-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
@@ -304,7 +365,7 @@ export default function ProjectDetails() {
               <label className="text-sm font-medium text-muted-foreground">Equipamentos</label>
               <p className="mt-1 flex items-center space-x-2">
                 <Package className="h-4 w-4" />
-                <span>{project.equipmentCount} equipamentos vinculados</span>
+                <span>{equipmentBreakdown || `${project.equipmentCount} equipamentos vinculados`}</span>
               </p>
             </div>
           </CardContent>
@@ -373,7 +434,7 @@ export default function ProjectDetails() {
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-muted-foreground">
-                  {project.equipmentCount} equipamentos vinculados a este projeto
+                  {equipmentBreakdown || `${project.equipmentCount} equipamentos vinculados a este projeto`}
                 </span>
                 <Button 
                   onClick={() => setShowAddEquipmentDialog(true)}
