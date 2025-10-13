@@ -107,13 +107,6 @@ export function AddEquipmentToProjectDialog({
     setSelectedEquipment(newSelected);
   };
 
-  const handleSelectAll = () => {
-    if (selectedEquipment.size === availableEquipment.length) {
-      setSelectedEquipment(new Set());
-    } else {
-      setSelectedEquipment(new Set(availableEquipment.map(eq => eq.id)));
-    }
-  };
 
   const handleSubmit = async () => {
     if (selectedEquipment.size === 0) {
@@ -301,21 +294,9 @@ export function AddEquipmentToProjectDialog({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  Todos os Equipamentos ({availableEquipment.length})
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSelectAll}
-                >
-                  {selectedEquipment.size === availableEquipment.length ? 
-                    'Desmarcar Todos' : 'Selecionar Todos'
-                  }
-                </Button>
-              </div>
+              <Label className="text-sm font-medium">
+                Todos os Equipamentos ({availableEquipment.length})
+              </Label>
             </div>
 
             <ScrollArea className="flex-1 border rounded-md">
@@ -358,12 +339,6 @@ export function AddEquipmentToProjectDialog({
                             
                             {equipment.serialNumber && (
                               <div>Série: {equipment.serialNumber}</div>
-                            )}
-                            
-                            {equipment.currentBorrower && (
-                              <div className="text-muted-foreground">
-                                Último empréstimo: {equipment.currentBorrower}
-                              </div>
                             )}
                           </div>
                         </div>
