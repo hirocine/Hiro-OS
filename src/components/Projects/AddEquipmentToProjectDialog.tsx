@@ -1,5 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import React, { useState, useMemo } from 'react';
 import { 
   ResponsiveDialog, 
   ResponsiveDialogContent, 
@@ -16,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { CalendarIcon, Package, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -55,9 +55,6 @@ export function AddEquipmentToProjectDialog({
   );
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // Ref for virtualization
-  const parentRef = useRef<HTMLDivElement>(null);
 
   // Filter equipment (show all equipment, regardless of current loan status)
   const availableEquipment = useMemo(() => {
@@ -73,14 +70,6 @@ export function AddEquipmentToProjectDialog({
       return true;
     });
   }, [allEquipment, searchTerm]);
-
-  // Setup virtualizer for efficient rendering
-  const virtualizer = useVirtualizer({
-    count: availableEquipment.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 48,
-    overscan: 5,
-  });
 
   // Function to get project count for equipment
   const getEquipmentProjectCount = async (equipmentId: string) => {
@@ -281,50 +270,6 @@ export function AddEquipmentToProjectDialog({
     }
   };
 
-  // Memoized equipment list item component for better performance
-  const EquipmentListItem = React.memo(({ 
-    equipment, 
-    isSelected, 
-    onToggle 
-  }: { 
-    equipment: Equipment; 
-    isSelected: boolean; 
-    onToggle: (id: string) => void;
-  }) => (
-    <div 
-      className={cn(
-        "flex items-center gap-3 px-4 py-2 border-b hover:bg-muted/50 cursor-pointer transition-colors",
-        isSelected && "bg-primary/5"
-      )}
-      onClick={() => onToggle(equipment.id)}
-    >
-      <Checkbox 
-        checked={isSelected}
-        onChange={() => onToggle(equipment.id)}
-        onClick={(e) => e.stopPropagation()}
-      />
-      
-      <div className="flex-1 grid grid-cols-[2fr,1fr,1fr] gap-4 items-center min-w-0">
-        <div className="truncate font-medium">
-          {equipment.name}
-        </div>
-        
-        <div className="text-sm text-muted-foreground truncate">
-          {equipment.brand}
-        </div>
-        
-        <div className="flex justify-end">
-          <Badge 
-            variant={equipment.currentBorrower ? "secondary" : "outline"}
-            className="shrink-0"
-          >
-            {equipment.currentBorrower ? "Em projetos" : "Disponível"}
-          </Badge>
-        </div>
-      </div>
-    </div>
-  ));
-
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="w-full max-w-5xl flex flex-col">
@@ -354,55 +299,56 @@ export function AddEquipmentToProjectDialog({
               </Label>
             </div>
 
-            <div className="flex-1 border rounded-md overflow-hidden">
-              <div className="grid grid-cols-[48px,2fr,1fr,1fr] gap-4 px-4 py-2 border-b bg-muted/50 text-sm font-medium text-muted-foreground">
-                <div></div>
-                <div>Nome</div>
-                <div>Marca</div>
-                <div className="text-right">Status</div>
-              </div>
-              
-              <ScrollArea ref={parentRef} className="h-[400px]">
-                <div 
-                  style={{
-                    height: `${virtualizer.getTotalSize()}px`,
-                    width: '100%',
-                    position: 'relative',
-                  }}
-                >
-                  {virtualizer.getVirtualItems().map((virtualItem) => {
-                    const equipment = availableEquipment[virtualItem.index];
-                    return (
-                      <div
-                        key={equipment.id}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          transform: `translateY(${virtualItem.start}px)`,
-                        }}
-                      >
-                        <EquipmentListItem
-                          equipment={equipment}
-                          isSelected={selectedEquipment.has(equipment.id)}
-                          onToggle={handleEquipmentToggle}
+            <ScrollArea className="flex-1 border rounded-md">
+              <div className="p-3 space-y-2">
+                {availableEquipment.map((equipment) => (
+                  <Card 
+                    key={equipment.id} 
+                    className={cn(
+                      "cursor-pointer transition-colors hover:bg-muted/50",
+                      selectedEquipment.has(equipment.id) && "bg-primary/5 border-primary"
+                    )}
+                    onClick={() => handleEquipmentToggle(equipment.id)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <Checkbox 
+                          checked={selectedEquipment.has(equipment.id)}
+                          onChange={() => handleEquipmentToggle(equipment.id)}
                         />
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium truncate">{equipment.name}</h4>
+                            <Badge 
+                              variant={equipment.currentBorrower ? "secondary" : "outline"}
+                            >
+                              {equipment.currentBorrower ? "Em projetos" : "Disponível"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <div className="flex items-center gap-1">
+                              <Package className="h-3 w-3" />
+                              <span>{equipment.brand} • {equipment.category}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    );
-                  })}
+                    </CardContent>
+                  </Card>
+                ))}
 
-                  {availableEquipment.length === 0 && (
-                    <div className="text-center py-8">
-                      <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Nenhum equipamento encontrado
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+                {availableEquipment.length === 0 && (
+                  <div className="text-center py-8">
+                    <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Nenhum equipamento encontrado
+                    </p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
 
           {/* Loan Details Form */}
