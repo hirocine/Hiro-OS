@@ -117,10 +117,13 @@ export function useProjectEquipment(projectId: string) {
             eq => eq.parentId === item.id && eq.itemType === 'accessory'
           ).length;
           
-          return {
-            ...item,
-            accessoryCount
-          };
+          // Só adicionar accessoryCount se for maior que 0
+          if (accessoryCount > 0) {
+            return {
+              ...item,
+              accessoryCount
+            };
+          }
         }
         return item;
       });
