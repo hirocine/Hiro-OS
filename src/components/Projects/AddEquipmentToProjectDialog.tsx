@@ -332,10 +332,6 @@ export function AddEquipmentToProjectDialog({
                               <Package className="h-3 w-3" />
                               <span>{equipment.brand} • {equipment.category}</span>
                             </div>
-                            
-                            {equipment.serialNumber && (
-                              <div>Série: {equipment.serialNumber}</div>
-                            )}
                           </div>
                         </div>
                       </div>
