@@ -95,7 +95,7 @@ export default function ProjectVerification() {
   }) => {
     setIsSubmitting(true);
     try {
-      await updateProjectStep('office_receipt', notes.trim() || undefined, {
+      await updateProjectStep('pending_verification', notes.trim() || undefined, {
         userId: data.userId,
         userName: data.userName,
         timestamp: data.timestamp

@@ -7,8 +7,6 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WithdrawalDialog, WithdrawalData } from './WithdrawalDialog';
 import { OfficeReceiptDialog, OfficeReceiptData } from './OfficeReceiptDialog';
-import { SeparationDialog } from './SeparationDialog';
-import { VerificationDialog } from './VerificationDialog';
 import { CompletionDialog } from './CompletionDialog';
 import { logger } from '@/lib/logger';
 
