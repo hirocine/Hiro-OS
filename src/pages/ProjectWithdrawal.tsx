@@ -561,7 +561,7 @@ export default function ProjectWithdrawal() {
         title: "Sucesso!",
         description: "Retirada criada com sucesso!"
       });
-      navigate('/projects');
+      navigate(`/projects/${newProject.id}`);
     } catch (error) {
       logger.error('Error creating withdrawal', {
         module: 'withdrawal-page',
