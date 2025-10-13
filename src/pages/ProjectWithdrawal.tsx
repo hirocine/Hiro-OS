@@ -1538,33 +1538,6 @@ export default function ProjectWithdrawal() {
             {/* Ações Finais */}
             {totalEquipment > 0 && (
               <div className="flex flex-col gap-3 pt-6 border-t">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={generatePDF}
-                    size="lg"
-                    className="w-full"
-                  >
-                    <Download className="h-5 w-5 mr-2" />
-                    Baixar PDF do Projeto
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      enhancedToast.info({
-                        title: "Preview em desenvolvimento",
-                        description: "Funcionalidade de preview será implementada em breve."
-                      });
-                    }}
-                    size="lg"
-                    className="w-full"
-                  >
-                    <Eye className="h-5 w-5 mr-2" />
-                    Visualizar Preview
-                  </Button>
-                </div>
-                
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Pronto para finalizar?</AlertTitle>
