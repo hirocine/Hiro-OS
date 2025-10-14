@@ -399,15 +399,15 @@ export default function ProjectWithdrawal() {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      doc.text('Resumo de Projeto Audio Visual', 38, yPosition + 12, { align: 'left' });
+      doc.text('Resumo de Projeto Audio Visual', 38, yPosition + 16, { align: 'left' });
       
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.3);
-      const headerLineY = yPosition + 22;
+      const headerLineY = yPosition + 28;
       doc.line(15, headerLineY, pageWidth - 15, headerLineY);
       
       // Respiro de 6mm abaixo da linha
-      yPosition = headerLineY + 6;
+      yPosition = headerLineY + 10;
       
       // === INFORMAÇÕES DO PROJETO (layout melhorado) ===
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
