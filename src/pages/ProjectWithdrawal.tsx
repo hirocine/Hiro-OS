@@ -1707,18 +1707,6 @@ export default function ProjectWithdrawal() {
               )}
             </div>
           </div>
-          
-          {/* Atalhos de Teclado - Desktop Only */}
-          <div className="hidden lg:flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-2 py-1 bg-muted rounded text-[10px] font-mono border border-border">Enter</kbd>
-              Próximo
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-2 py-1 bg-muted rounded text-[10px] font-mono border border-border">Esc</kbd>
-              Cancelar
-            </span>
-          </div>
         </div>
       </div>
     </div>
