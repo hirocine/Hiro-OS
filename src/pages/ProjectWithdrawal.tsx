@@ -132,8 +132,7 @@ export default function ProjectWithdrawal() {
         item.item.category === 'camera' && 
         item.item.subcategory === 'Câmera' &&
         item.item.itemType === 'main' && 
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
+        item.item.status === 'available'
       );
   };
 
@@ -142,8 +141,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'camera' && 
         item.item.subcategory === 'Lente' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lenses.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -154,8 +152,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'camera' && 
         cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameraAccessories.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -165,8 +162,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         ((item.item.category === 'accessories' && item.item.subcategory === 'Tripé de Câmera') ||
          (item.item.category === 'camera' && item.item.subcategory === 'Estabilizador')) &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.tripods.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -176,8 +172,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'lighting' && 
         item.item.subcategory === 'Luz' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lights.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -188,8 +183,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'lighting' && 
         lightModifierSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lightModifiers.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -199,8 +193,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'accessories' && 
         item.item.subcategory === 'Maquinária' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.machinery.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -210,8 +203,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'accessories' && 
         (item.item.subcategory === 'Cabo' || item.item.subcategory === 'Elétrica') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.electrical.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -222,8 +214,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'storage' && 
         storageSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.storage.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -233,8 +224,7 @@ export default function ProjectWithdrawal() {
       .filter(item => 
         item.item.category === 'accessories' && 
         item.item.subcategory === 'Computador' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.computers.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -727,12 +717,23 @@ export default function ProjectWithdrawal() {
           <div className="space-y-2">
             <Label>Selecionados ({selectedItems.length})</Label>
             {selectedItems.map((item) => (
-              <Card key={item.id}>
+              <Card 
+                key={item.id}
+                className={cn(
+                  "transition-all border",
+                  "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
+                )}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">{item.brand}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">{item.brand}</p>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
@@ -761,23 +762,41 @@ export default function ProjectWithdrawal() {
                 Nenhum equipamento disponível
               </p>
             ) : (
-              availableItems.map((item) => (
-                <Card 
-                  key={item.id}
-                  className="cursor-pointer hover:bg-accent"
-                  onClick={() => handleEquipmentSelect(item, equipmentType)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">{item.brand}</p>
+              availableItems.map((item) => {
+                const isSelected = selectedItems.some(si => si.id === item.id);
+                return (
+                  <Card 
+                    key={item.id}
+                    className={cn(
+                      "transition-all border",
+                      isSelected
+                        ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm cursor-default"
+                        : "cursor-pointer hover:bg-accent"
+                    )}
+                    onClick={() => !isSelected && handleEquipmentSelect(item, equipmentType)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isSelected && (
+                            <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
+                              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-muted-foreground">{item.brand}</p>
+                          </div>
+                        </div>
+                        {isSelected
+                          ? <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          : <Plus className="h-4 w-4 text-muted-foreground" />
+                        }
                       </div>
-                      <Plus className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </div>
@@ -1057,11 +1076,19 @@ export default function ProjectWithdrawal() {
           <div className="space-y-2">
             <Label>Câmeras Selecionadas ({data.selectedEquipment.cameras.length})</Label>
             {data.selectedEquipment.cameras.map(({ camera, accessories }) => (
-              <Card key={camera.id}>
+              <Card 
+                key={camera.id}
+                className={cn(
+                  "transition-all border",
+                  "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
+                )}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
+                      <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
                       <div>
                         <CardTitle className="text-sm">{camera.name}</CardTitle>
                         <p className="text-xs text-muted-foreground">{camera.brand}</p>
@@ -1116,28 +1143,48 @@ export default function ProjectWithdrawal() {
                     Nenhuma câmera disponível
                   </p>
                 ) : (
-                  getAvailableCameras().map((cameraHierarchy) => (
-                    <Card 
-                      key={cameraHierarchy.item.id}
-                      className="cursor-pointer hover:bg-accent"
-                      onClick={() => handleCameraSelect(cameraHierarchy)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{cameraHierarchy.item.name}</p>
-                            <p className="text-sm text-muted-foreground">{cameraHierarchy.item.brand}</p>
+                  getAvailableCameras().map((cameraHierarchy) => {
+                    const isSelected = data.selectedEquipment.cameras.some(
+                      sel => sel.camera.id === cameraHierarchy.item.id
+                    );
+                    return (
+                      <Card 
+                        key={cameraHierarchy.item.id}
+                        className={cn(
+                          "transition-all border",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm cursor-default"
+                            : "cursor-pointer hover:bg-accent"
+                        )}
+                        onClick={() => !isSelected && handleCameraSelect(cameraHierarchy)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {isSelected && (
+                                <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
+                                  <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-medium">{cameraHierarchy.item.name}</p>
+                                <p className="text-sm text-muted-foreground">{cameraHierarchy.item.brand}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {cameraHierarchy.accessories.length > 0 && (
+                                <Badge variant="secondary">+{cameraHierarchy.accessories.length}</Badge>
+                              )}
+                              {isSelected
+                                ? <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                : <Plus className="h-4 w-4 text-muted-foreground" />
+                              }
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {cameraHierarchy.accessories.length > 0 && (
-                              <Badge variant="secondary">+{cameraHierarchy.accessories.length}</Badge>
-                            )}
-                            <Plus className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </div>
