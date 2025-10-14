@@ -403,20 +403,27 @@ export default function ProjectWithdrawal() {
       
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.3);
-      doc.line(15, yPosition + 22, pageWidth - 15, yPosition + 22);
+      const headerLineY = yPosition + 22;
+      doc.line(15, headerLineY, pageWidth - 15, headerLineY);
       
-      yPosition = 34;
+      // Respiro de 6mm abaixo da linha
+      yPosition = headerLineY + 6;
       
       // === INFORMAÇÕES DO PROJETO (layout melhorado) ===
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       const projectFullName = `${data.projectNumber} - ${data.company}: ${data.projectName}`;
       
-      // Nome do projeto
+      // Nome do projeto (com quebra de texto se necessário)
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      doc.text(projectFullName, 15, yPosition);
-      yPosition += 6;
+      const maxWidth = pageWidth - 30; // 15mm margem esquerda + 15mm direita
+      const projectNameLines = doc.splitTextToSize(projectFullName, maxWidth);
+      doc.text(projectNameLines, 15, yPosition);
+      
+      // Avançar Y baseado no número de linhas
+      const lineStep = 5;
+      yPosition += projectNameLines.length * lineStep + 1;
       
       // Responsável
       doc.setFontSize(9);
