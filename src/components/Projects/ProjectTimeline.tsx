@@ -79,7 +79,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-out relative bg-background",
                   {
                     "bg-green-500 border-green-500 text-white": status === 'completed',
-                    "bg-primary/10 border-primary text-primary ring-2 ring-primary/20": status === 'current',
+                    "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
                     "border-border text-muted-foreground": status === 'pending' && !clickable,
                     "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
                   }
@@ -87,6 +87,9 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 onClick={() => handleStepClick(step, index)}
                 title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
               >
+                {status === 'current' && (
+                  <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
+                )}
                 <Icon 
                   className="w-5 h-5" 
                   strokeWidth={2}
@@ -143,7 +146,7 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                     "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative bg-background",
                     {
                       "bg-green-500 border-green-500 text-white": status === 'completed',
-                      "bg-primary/10 border-primary text-primary ring-2 ring-primary/20": status === 'current',
+                      "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
                       "border-border text-muted-foreground": status === 'pending' && !clickable,
                       "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
                     }
@@ -151,6 +154,9 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   onClick={() => handleStepClick(step, index)}
                   title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
+                  {status === 'current' && (
+                    <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
+                  )}
                   <Icon 
                     className="w-5 h-5" 
                     strokeWidth={2}
