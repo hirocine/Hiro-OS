@@ -345,7 +345,29 @@ export default function ProjectWithdrawal() {
     return equipment;
   };
 
-  const generatePDF = () => {
+  // Helper para remover emojis
+  const stripEmojis = (str: string): string => {
+    return (str || '').replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim();
+  };
+
+  // Helper para converter imagem em data URL
+  const getImageDataURL = async (url: string): Promise<string> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      logger.error('Error loading image for PDF', { error });
+      throw error;
+    }
+  };
+
+  const generatePDF = async () => {
     try {
       logger.info('Initiating PDF generation', {
         module: 'project-withdrawal',
@@ -363,42 +385,49 @@ export default function ProjectWithdrawal() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
-      let yPosition = 15;
+      let yPosition = 10;
       
-      // === CABEÇALHO (apenas primeira página) ===
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('HIRO FILMS', 15, yPosition);
+      // === CARREGAR E ADICIONAR LOGO ===
+      try {
+        const logoDataUrl = await getImageDataURL('/src/assets/hiro-logo.png');
+        doc.addImage(logoDataUrl, 'PNG', 15, yPosition, 20, 20);
+      } catch (error) {
+        logger.warn('Failed to load logo, using text fallback', { error });
+      }
       
+      // === CABEÇALHO ===
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      doc.text('Resumo de Projeto Audio Visual', pageWidth / 2, yPosition + 2, { align: 'center' });
+      doc.text('Resumo de Projeto Audio Visual', pageWidth / 2, yPosition + 12, { align: 'center' });
       
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.3);
-      doc.line(15, yPosition + 6, pageWidth - 15, yPosition + 6);
+      doc.line(15, yPosition + 22, pageWidth - 15, yPosition + 22);
       
-      yPosition = 28;
+      yPosition = 34;
       
-      // === INFORMAÇÕES DO PROJETO (bloco compacto) ===
+      // === INFORMAÇÕES DO PROJETO (layout melhorado) ===
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       const projectFullName = `${data.projectNumber} - ${data.company}: ${data.projectName}`;
       
+      // Nome do projeto
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
       doc.text(projectFullName, 15, yPosition);
       yPosition += 6;
       
+      // Responsável
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60);
       doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, 15, yPosition);
       yPosition += 5;
       
-      doc.text(`Tipo de Gravação: ${data.recordingType || 'Não informado'}`, 15, yPosition);
+      // Tipo de Gravação (sem emojis)
+      const recordingTypeClean = stripEmojis(data.recordingType || 'Não informado');
+      doc.text(`Tipo de Gravação: ${recordingTypeClean}`, 15, yPosition);
       yPosition += 5;
       
       // Datas
@@ -407,21 +436,21 @@ export default function ProjectWithdrawal() {
       const returnDate = data.returnDate ? format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
       
       doc.text(`Separação: ${separationDate}  |  Retirada: ${withdrawalDate}  |  Devolução: ${returnDate}`, 15, yPosition);
+      yPosition += 5;
       
-      // Dias de uso
+      // Dias de uso (linha própria)
       if (data.withdrawalDate && data.returnDate) {
         const days = Math.ceil((data.returnDate.getTime() - data.withdrawalDate.getTime()) / (1000 * 60 * 60 * 24));
         doc.setFont('helvetica', 'bold');
-        doc.text(`  (${days} ${days === 1 ? 'dia' : 'dias'} de uso)`, pageWidth / 2 + 10, yPosition);
+        doc.text(`(${days} ${days === 1 ? 'dia' : 'dias'} de uso)`, 15, yPosition);
         doc.setFont('helvetica', 'normal');
       }
       yPosition += 8;
       
-      // === PREPARAR DADOS DE EQUIPAMENTOS ===
+      // === PREPARAR DADOS DE EQUIPAMENTOS (SEM EMOJIS) ===
       const categoriesData: Array<{
         name: string;
-        emoji: string;
-        items: Array<{ name: string; isAccessory: boolean; checkboxX?: number }>;
+        items: Array<{ name: string; isAccessory: boolean }>;
       }> = [];
       
       // Câmeras
@@ -439,7 +468,7 @@ export default function ProjectWithdrawal() {
             });
           });
         });
-        categoriesData.push({ name: 'CÂMERAS', emoji: '📷', items: cameraItems });
+        categoriesData.push({ name: 'CÂMERAS', items: cameraItems });
       }
       
       // Lentes
@@ -448,7 +477,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'LENTES', emoji: '🔍', items });
+        categoriesData.push({ name: 'LENTES', items });
       }
       
       // Acessórios de Câmera
@@ -457,7 +486,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'ACESSÓRIOS DE CÂMERA', emoji: '🎥', items });
+        categoriesData.push({ name: 'ACESSÓRIOS DE CÂMERA', items });
       }
       
       // Tripés
@@ -466,7 +495,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'TRIPÉS E ESTABILIZADORES', emoji: '🎬', items });
+        categoriesData.push({ name: 'TRIPÉS E ESTABILIZADORES', items });
       }
       
       // Iluminação
@@ -475,7 +504,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'ILUMINAÇÃO', emoji: '💡', items });
+        categoriesData.push({ name: 'ILUMINAÇÃO', items });
       }
       
       // Modificadores
@@ -484,7 +513,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'MODIFICADORES DE LUZ', emoji: '⚡', items });
+        categoriesData.push({ name: 'MODIFICADORES DE LUZ', items });
       }
       
       // Maquinário
@@ -493,7 +522,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'MAQUINÁRIO', emoji: '🔧', items });
+        categoriesData.push({ name: 'MAQUINÁRIO', items });
       }
       
       // Elétrica
@@ -502,7 +531,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'ELÉTRICA', emoji: '🔌', items });
+        categoriesData.push({ name: 'ELÉTRICA', items });
       }
       
       // Armazenamento
@@ -511,7 +540,7 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'ARMAZENAMENTO', emoji: '💾', items });
+        categoriesData.push({ name: 'ARMAZENAMENTO', items });
       }
       
       // Computadores
@@ -520,35 +549,37 @@ export default function ProjectWithdrawal() {
           name: `${item.name} - ${item.brand}`, 
           isAccessory: false 
         }));
-        categoriesData.push({ name: 'COMPUTADORES', emoji: '💻', items });
+        categoriesData.push({ name: 'COMPUTADORES', items });
       }
       
-      // === RENDERIZAR CATEGORIAS COM CHECKBOXES ===
+      // === RENDERIZAR CATEGORIAS COM CHECKBOXES MAIORES ===
       categoriesData.forEach((category) => {
         // Verificar se precisa de nova página
-        if (yPosition > pageHeight - 30) {
+        if (yPosition > pageHeight - 40) {
           doc.addPage();
           yPosition = 15;
         }
         
-        // Cabeçalho da categoria (card header)
+        // Cabeçalho da categoria (card header - sem emoji)
         doc.setFillColor(240, 240, 240);
-        doc.rect(15, yPosition - 1, pageWidth - 30, 6, 'F');
+        doc.rect(15, yPosition - 1, pageWidth - 30, 7, 'F');
         
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(0, 0, 0);
-        doc.text(`${category.emoji} ${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 3);
+        doc.text(`${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 4);
         
-        yPosition += 7;
+        yPosition += 8;
         
-        // Borda do card
         const cardStartY = yPosition;
         
         // Itens da categoria
-        doc.setFontSize(8);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(40, 40, 40);
+        
+        const checkboxSize = 6; // 6mm = maior e mais visível
+        const checkboxX = pageWidth - 20 - checkboxSize;
         
         category.items.forEach((item) => {
           if (yPosition > pageHeight - 15) {
@@ -556,31 +587,31 @@ export default function ProjectWithdrawal() {
             yPosition = 15;
           }
           
-          const xStart = item.isAccessory ? 24 : 18;
-          const checkboxX = pageWidth - 22;
+          // Indentação mais clara para acessórios
+          const xStart = item.isAccessory ? 28 : 18;
           
           // Texto do item
           const itemText = item.name;
-          const maxWidth = checkboxX - xStart - 5;
+          const maxWidth = checkboxX - xStart - 6;
           const lines = doc.splitTextToSize(itemText, maxWidth);
           
-          // Desenhar checkbox à direita
-          doc.setDrawColor(100, 100, 100);
-          doc.setLineWidth(0.3);
-          doc.rect(checkboxX, yPosition - 2.5, 4, 4);
+          // Desenhar checkbox maior à direita
+          doc.setDrawColor(80, 80, 80);
+          doc.setLineWidth(0.4);
+          doc.rect(checkboxX, yPosition - (checkboxSize - 2), checkboxSize, checkboxSize);
           
           // Nome do item
           doc.text(lines, xStart, yPosition);
           
-          yPosition += Math.max(4, lines.length * 3.5);
+          yPosition += Math.max(6, lines.length * 4);
         });
         
         // Borda do card
         doc.setDrawColor(220, 220, 220);
-        doc.setLineWidth(0.2);
-        doc.rect(15, cardStartY - 1, pageWidth - 30, yPosition - cardStartY + 1);
+        doc.setLineWidth(0.3);
+        doc.rect(15, cardStartY - 2, pageWidth - 30, yPosition - cardStartY + 2);
         
-        yPosition += 4;
+        yPosition += 5;
       });
       
       // === RODAPÉ EM TODAS AS PÁGINAS ===
