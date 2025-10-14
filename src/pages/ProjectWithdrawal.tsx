@@ -588,17 +588,19 @@ export default function ProjectWithdrawal() {
           }
           
           // Indentação mais clara para acessórios
-          const xStart = item.isAccessory ? 28 : 18;
+          const xStart = item.isAccessory ? 25 : 18;
           
           // Texto do item
           const itemText = item.name;
           const maxWidth = checkboxX - xStart - 6;
           const lines = doc.splitTextToSize(itemText, maxWidth);
           
-          // Desenhar checkbox maior à direita
+          // Desenhar checkbox alinhado com a primeira linha do texto
+          // O checkbox deve estar centralizado verticalmente com o texto
+          const checkboxY = yPosition - 3;
           doc.setDrawColor(80, 80, 80);
           doc.setLineWidth(0.4);
-          doc.rect(checkboxX, yPosition - (checkboxSize - 2), checkboxSize, checkboxSize);
+          doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize);
           
           // Nome do item
           doc.text(lines, xStart, yPosition);
