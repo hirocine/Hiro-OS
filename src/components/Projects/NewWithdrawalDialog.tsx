@@ -45,7 +45,6 @@ interface WithdrawalData {
   separationDate: Date | undefined;
   recordingType: string;
   selectedEquipment: {
-    cameraQuantity: number;
     cameras: SelectedCamera[];
     lenses: Equipment[];
     cameraAccessories: Equipment[];
@@ -88,7 +87,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     separationDate: undefined,
     recordingType: '',
     selectedEquipment: {
-      cameraQuantity: 1,
       cameras: [],
       lenses: [],
       cameraAccessories: [],
@@ -257,25 +255,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
     );
   };
 
-  const handleCameraQuantityChange = (quantity: number) => {
-    const currentQuantity = data.selectedEquipment.cameraQuantity;
-    const selectedCameras = data.selectedEquipment.cameras;
-    
-    if (quantity < selectedCameras.length) {
-      // Remove excess cameras
-      const newCameras = selectedCameras.slice(0, quantity);
-      updateField('selectedEquipment', {
-        ...data.selectedEquipment,
-        cameraQuantity: quantity,
-        cameras: newCameras,
-      });
-    } else {
-      updateField('selectedEquipment', {
-        ...data.selectedEquipment,
-        cameraQuantity: quantity,
-      });
-    }
-  };
 
   const handleCameraSelect = (cameraHierarchy: { item: Equipment; accessories: Equipment[] }) => {
     const newSelectedCamera: SelectedCamera = {
@@ -302,7 +281,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   // Generic equipment selection handlers
   const handleEquipmentSelect = (equipment: Equipment, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras' || type === 'cameraQuantity') return; // Cameras have special handling
+    if (type === 'cameras') return; // Cameras have special handling
     
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     updateField('selectedEquipment', {
@@ -312,7 +291,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   };
 
   const handleEquipmentDeselect = (equipmentId: string, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras' || type === 'cameraQuantity') return; // Cameras have special handling
+    if (type === 'cameras') return; // Cameras have special handling
     
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     const updatedEquipment = currentEquipment.filter(item => item.id !== equipmentId);
@@ -340,7 +319,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 4:
         return data.recordingType !== '';
       case 5:
-        return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
+        return data.selectedEquipment.cameras.length > 0;
       // Steps 6-14 are optional - any selection is valid
       case 6:
       case 7:
@@ -632,7 +611,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         separationDate: undefined,
         recordingType: '',
         selectedEquipment: {
-          cameraQuantity: 1,
           cameras: [],
           lenses: [],
           cameraAccessories: [],
@@ -1113,40 +1091,12 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 5:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Seleção de Câmeras</h3>
+            <div>
+              <h3 className="text-lg font-semibold">Seleção de Câmeras</h3>
+              <p className="text-sm text-muted-foreground mt-1">Selecione todas as câmeras necessárias para o projeto</p>
+            </div>
             
             <div className="space-y-6">
-              {/* Camera Quantity Selection */}
-              <div className="space-y-3">
-                <Label>Quantidade de Câmeras *</Label>
-                <div className="flex items-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCameraQuantityChange(Math.max(1, data.selectedEquipment.cameraQuantity - 1))}
-                    disabled={data.selectedEquipment.cameraQuantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="font-mono text-lg font-semibold w-8 text-center">
-                    {data.selectedEquipment.cameraQuantity}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCameraQuantityChange(Math.min(10, data.selectedEquipment.cameraQuantity + 1))}
-                    disabled={data.selectedEquipment.cameraQuantity >= 10}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground ml-2">
-                    (máximo 10 câmeras)
-                  </span>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Available Cameras */}
                 <div className="flex-1 flex flex-col min-h-0">
@@ -1179,14 +1129,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   ) : (
                      <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
                       {getAvailableCameras().map((cameraHierarchy) => (
-                        <Card 
-                          key={cameraHierarchy.item.id}
-                          className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
-                          onClick={() => 
-                            data.selectedEquipment.cameras.length < data.selectedEquipment.cameraQuantity && 
-                            handleCameraSelect(cameraHierarchy)
-                          }
-                        >
+                      <Card 
+                        key={cameraHierarchy.item.id}
+                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
+                        onClick={() => handleCameraSelect(cameraHierarchy)}
+                      >
                           <CardContent className="p-4 h-full">
                             <div className="flex items-center gap-3 h-full">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1225,17 +1172,16 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                     </div>
                                   )}
                                 </div>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    disabled={data.selectedEquipment.cameras.length >= data.selectedEquipment.cameraQuantity}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCameraSelect(cameraHierarchy);
-                                    }}
-                                  >
-                                    Selecionar
-                                  </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCameraSelect(cameraHierarchy);
+                                  }}
+                                >
+                                  Selecionar
+                                </Button>
                                 </div>
                               </div>
                             </div>
@@ -1248,11 +1194,11 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
                 {/* Selected Cameras Preview */}
                 <div className="flex-1 flex flex-col min-h-0">
-                  <div className="flex items-center gap-2 flex-shrink-0 mb-4">
+                <div className="flex items-center gap-2 flex-shrink-0 mb-4">
                      <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <h4 className="font-medium">Câmeras Selecionadas</h4>
                     <Badge variant="default">
-                      {data.selectedEquipment.cameras.length} / {data.selectedEquipment.cameraQuantity}
+                      {data.selectedEquipment.cameras.length}
                     </Badge>
                   </div>
 
@@ -1325,7 +1271,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     <div>
                       <span className="text-muted-foreground">Câmeras:</span>
                       <span className="ml-2 font-medium">
-                        {data.selectedEquipment.cameras.length} / {data.selectedEquipment.cameraQuantity}
+                        {data.selectedEquipment.cameras.length}
                       </span>
                     </div>
                     <div>
