@@ -76,12 +76,12 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
               {/* Step Circle */}
               <div
                 className={cn(
-                  "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-out relative",
+                  "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-out relative bg-background",
                   {
                     "bg-green-500 border-green-500 text-white": status === 'completed',
                     "bg-primary/10 border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                    "bg-background border-border text-muted-foreground": status === 'pending' && !clickable,
-                    "bg-background border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
+                    "border-border text-muted-foreground": status === 'pending' && !clickable,
+                    "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
                   }
                 )}
                 onClick={() => handleStepClick(step, index)}
@@ -140,12 +140,12 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                 {/* Step Circle */}
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative",
+                    "w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 relative bg-background",
                     {
                       "bg-green-500 border-green-500 text-white": status === 'completed',
                       "bg-primary/10 border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                      "bg-background border-border text-muted-foreground": status === 'pending' && !clickable,
-                      "bg-background border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
+                      "border-border text-muted-foreground": status === 'pending' && !clickable,
+                      "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
                     }
                   )}
                   onClick={() => handleStepClick(step, index)}
