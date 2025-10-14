@@ -19,7 +19,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { differenceInDays } from 'date-fns';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -560,68 +560,78 @@ export default function ProjectWithdrawal() {
           yPosition = 15;
         }
         
-        // Cabeçalho da categoria (card header - sem emoji)
-        doc.setFillColor(240, 240, 240);
-        doc.rect(15, yPosition - 1, pageWidth - 30, 7, 'F');
+        // Preparar dados para autoTable
+        const head = [[{ 
+          content: `${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 
+          colSpan: 2, 
+          styles: { 
+            fillColor: [240, 240, 240] as [number, number, number], 
+            fontStyle: 'bold' as const, 
+            halign: 'left' as const, 
+            textColor: [0, 0, 0] as [number, number, number],
+            fontSize: 10
+          } 
+        }]];
         
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 0);
-        doc.text(`${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 3);
+        const body = category.items.map(item => [item.name, '']);
         
-        yPosition += 8;
-        
-        const cardStartY = yPosition;
-        
-        // Itens da categoria
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(40, 40, 40);
-        
-        const checkboxSize = 6; // 6mm = maior e mais visível
-        const checkboxX = pageWidth - 20 - checkboxSize;
-        const lineHeight = 4; // altura de cada linha de texto
-        const minRowHeight = 6; // altura mínima por item
-        
-        category.items.forEach((item) => {
-          if (yPosition > pageHeight - 15) {
-            doc.addPage();
-            yPosition = 15;
+        // Renderizar tabela com autoTable
+        autoTable(doc, {
+          startY: yPosition,
+          head,
+          body,
+          theme: 'plain',
+          styles: {
+            font: 'helvetica',
+            fontSize: 9,
+            textColor: [40, 40, 40] as [number, number, number],
+            cellPadding: { top: 1.5, bottom: 1.5, left: 4, right: 4 },
+            overflow: 'linebreak',
+            lineColor: [220, 220, 220] as [number, number, number],
+            lineWidth: 0.3
+          },
+          headStyles: {
+            cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }
+          },
+          columnStyles: {
+            0: { cellWidth: 'auto' },   // Descrição ocupa o espaço restante
+            1: { cellWidth: 8 }         // Coluna do checkbox largura fixa
+          },
+          margin: { left: 15, right: 15, bottom: 20 },
+          tableLineColor: [220, 220, 220] as [number, number, number],
+          tableLineWidth: 0.3,
+          didParseCell: (data) => {
+            // Indentação de acessórios na coluna de descrição
+            if (data.section === 'body' && data.column.index === 0) {
+              const item = category.items[data.row.index];
+              if (item?.isAccessory && data.cell.styles.cellPadding) {
+                const currentPadding = data.cell.styles.cellPadding;
+                if (typeof currentPadding === 'object' && !Array.isArray(currentPadding)) {
+                  data.cell.styles.cellPadding = { 
+                    top: currentPadding.top ?? 1.5,
+                    bottom: currentPadding.bottom ?? 1.5,
+                    left: 12,
+                    right: currentPadding.right ?? 4
+                  };
+                }
+              }
+            }
+          },
+          didDrawCell: (data) => {
+            // Desenhar checkbox centralizado na célula da coluna 1
+            if (data.section === 'body' && data.column.index === 1) {
+              const size = 6; // 6mm
+              const x = data.cell.x + (data.cell.width - size) / 2;
+              const y = data.cell.y + (data.cell.height - size) / 2;
+              doc.setDrawColor(80, 80, 80);
+              doc.setLineWidth(0.4);
+              doc.rect(x, y, size, size);
+            }
           }
-          
-          // Indentação mais clara para acessórios
-          const xStart = item.isAccessory ? 25 : 18;
-          
-          // Texto do item
-          const itemText = item.name;
-          const maxWidth = checkboxX - xStart - 6;
-          const lines = doc.splitTextToSize(itemText, maxWidth);
-          
-          // Calcular altura da linha baseado no número de linhas
-          const rowHeight = Math.max(minRowHeight, lines.length * lineHeight);
-          
-          // Calcular o topo do bloco do item
-          const rowTop = yPosition - lineHeight;
-          
-          // Centralizar checkbox verticalmente no bloco
-          const checkboxY = rowTop + (rowHeight - checkboxSize) / 2;
-          doc.setDrawColor(80, 80, 80);
-          doc.setLineWidth(0.4);
-          doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize);
-          
-          // Nome do item
-          doc.text(lines, xStart, yPosition);
-          
-          // Avançar pela altura calculada
-          yPosition += rowHeight;
         });
         
-        // Borda do card
-        doc.setDrawColor(220, 220, 220);
-        doc.setLineWidth(0.3);
-        doc.rect(15, cardStartY - 2, pageWidth - 30, yPosition - cardStartY + 2);
-        
-        yPosition += 5;
+        // Atualizar yPosition após a tabela
+        yPosition = (doc as any).lastAutoTable.finalY + 5;
       });
       
       // === RODAPÉ EM TODAS AS PÁGINAS ===
