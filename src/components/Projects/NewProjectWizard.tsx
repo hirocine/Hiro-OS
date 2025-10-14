@@ -391,10 +391,21 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
                 </div>
                 <div className="p-3 space-y-2 overflow-y-auto h-80">
                   {selectedEquipment.map(equipment => (
-                    <div key={equipment.id} className="flex items-center justify-between p-2 border rounded bg-primary/5">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{equipment.name}</div>
-                        <div className="text-xs text-muted-foreground">{equipment.brand}</div>
+                    <div 
+                      key={equipment.id} 
+                      className={cn(
+                        "flex items-center justify-between p-2 border rounded transition-all duration-200",
+                        "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
+                      )}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">{equipment.name}</div>
+                          <div className="text-xs text-muted-foreground">{equipment.brand}</div>
+                        </div>
                       </div>
                       <Button
                         size="sm"
