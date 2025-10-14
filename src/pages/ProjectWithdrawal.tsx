@@ -567,7 +567,7 @@ export default function ProjectWithdrawal() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(0, 0, 0);
-        doc.text(`${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 4);
+        doc.text(`${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 3);
         
         yPosition += 8;
         
@@ -580,6 +580,8 @@ export default function ProjectWithdrawal() {
         
         const checkboxSize = 6; // 6mm = maior e mais visível
         const checkboxX = pageWidth - 20 - checkboxSize;
+        const lineHeight = 4; // altura de cada linha de texto
+        const minRowHeight = 6; // altura mínima por item
         
         category.items.forEach((item) => {
           if (yPosition > pageHeight - 15) {
@@ -595,9 +597,14 @@ export default function ProjectWithdrawal() {
           const maxWidth = checkboxX - xStart - 6;
           const lines = doc.splitTextToSize(itemText, maxWidth);
           
-          // Desenhar checkbox alinhado com a primeira linha do texto
-          // O checkbox deve estar centralizado verticalmente com o texto
-          const checkboxY = yPosition - 3;
+          // Calcular altura da linha baseado no número de linhas
+          const rowHeight = Math.max(minRowHeight, lines.length * lineHeight);
+          
+          // Calcular o topo do bloco do item
+          const rowTop = yPosition - lineHeight;
+          
+          // Centralizar checkbox verticalmente no bloco
+          const checkboxY = rowTop + (rowHeight - checkboxSize) / 2;
           doc.setDrawColor(80, 80, 80);
           doc.setLineWidth(0.4);
           doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize);
@@ -605,7 +612,8 @@ export default function ProjectWithdrawal() {
           // Nome do item
           doc.text(lines, xStart, yPosition);
           
-          yPosition += Math.max(6, lines.length * 4);
+          // Avançar pela altura calculada
+          yPosition += rowHeight;
         });
         
         // Borda do card
