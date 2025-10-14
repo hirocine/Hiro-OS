@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
@@ -25,6 +26,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarData } from '@/lib/avatarUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { generateProjectPDF, PDFProjectData } from '@/lib/pdfGenerator';
+import { Equipment } from '@/types/equipment';
 
 import { AdminOnly } from '@/components/RoleGuard';
 
@@ -293,6 +296,95 @@ export default function ProjectDetails() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!project || !projectEquipment) return;
+    
+    try {
+      const pdfData = transformProjectDataForPDF();
+      await generateProjectPDF(pdfData);
+      
+      toast({
+        title: "PDF gerado com sucesso",
+        description: "O documento foi baixado para o seu dispositivo.",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível gerar o documento.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const transformProjectDataForPDF = (): PDFProjectData => {
+    const categorizedEquipment: PDFProjectData['selectedEquipment'] = {
+      cameras: [],
+      lenses: [],
+      cameraAccessories: [],
+      tripods: [],
+      lights: [],
+      lightModifiers: [],
+      machinery: [],
+      electrical: [],
+      storage: [],
+      computers: []
+    };
+
+    // Agrupar equipamentos por categoria
+    projectEquipment.forEach(eq => {
+      const equipment = eq as unknown as Equipment;
+      
+      if (equipment.category === 'camera' && equipment.subcategory === 'Câmera') {
+        // Buscar acessórios desta câmera
+        const accessories = projectEquipment
+          .filter(acc => (acc as unknown as Equipment).parentId === equipment.id)
+          .map(acc => acc as unknown as Equipment);
+        
+        categorizedEquipment.cameras.push({
+          camera: equipment,
+          accessories: accessories
+        });
+      } else if (equipment.category === 'camera' && equipment.subcategory === 'Lente') {
+        categorizedEquipment.lenses.push(equipment);
+      } else if (equipment.category === 'camera' && 
+                 ['Acessórios', 'Bateria', 'Cabo', 'Carregador', 'Case', 'Filtro', 'Monitor', 'Transmissão', 'Cage'].includes(equipment.subcategory || '')) {
+        categorizedEquipment.cameraAccessories.push(equipment);
+      } else if ((equipment.category === 'accessories' && equipment.subcategory === 'Tripé de Câmera') ||
+                 (equipment.category === 'camera' && equipment.subcategory === 'Estabilizador')) {
+        categorizedEquipment.tripods.push(equipment);
+      } else if (equipment.category === 'lighting' && equipment.subcategory === 'Luz') {
+        categorizedEquipment.lights.push(equipment);
+      } else if (equipment.category === 'lighting' && 
+                 ['Modificador de Luz', 'Tripé de Luz'].includes(equipment.subcategory || '')) {
+        categorizedEquipment.lightModifiers.push(equipment);
+      } else if (equipment.category === 'accessories' && equipment.subcategory === 'Maquinária') {
+        categorizedEquipment.machinery.push(equipment);
+      } else if (equipment.category === 'accessories' && 
+                 ['Cabo', 'Elétrica'].includes(equipment.subcategory || '')) {
+        categorizedEquipment.electrical.push(equipment);
+      } else if (equipment.category === 'storage' && 
+                 ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD'].includes(equipment.subcategory || '')) {
+        categorizedEquipment.storage.push(equipment);
+      } else if (equipment.category === 'accessories' && equipment.subcategory === 'Computador') {
+        categorizedEquipment.computers.push(equipment);
+      }
+    });
+
+    return {
+      projectNumber: project.projectNumber,
+      company: project.company,
+      projectName: project.name,
+      responsibleName: project.responsibleName,
+      responsibleDepartment: project.department,
+      withdrawalDate: project.withdrawalDate ? new Date(project.withdrawalDate) : undefined,
+      returnDate: project.expectedEndDate ? new Date(project.expectedEndDate) : undefined,
+      separationDate: project.separationDate ? new Date(project.separationDate) : undefined,
+      recordingType: project.recordingType,
+      selectedEquipment: categorizedEquipment
+    };
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'active': return 'default';
@@ -355,7 +447,27 @@ export default function ProjectDetails() {
           </div>
         </div>
 
-        <DropdownMenu>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  disabled={!projectEquipment || projectEquipment.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar PDF
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Gerar PDF com lista de equipamentos</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <MoreHorizontal className="h-4 w-4" />
@@ -395,6 +507,7 @@ export default function ProjectDetails() {
             </AdminOnly>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
 
       {/* Timeline */}
