@@ -420,8 +420,6 @@ export default function ProjectDetails() {
           <ProjectTimeline 
             currentStep={project.step}
             stepHistory={project.stepHistory}
-            onStepClick={handleUpdateStep}
-            isProjectActive={project.status === 'active'}
             projectStatus={project.status}
           />
         </CardContent>

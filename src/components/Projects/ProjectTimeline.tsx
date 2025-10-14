@@ -8,12 +8,10 @@ interface ProjectTimelineProps {
   currentStep: ProjectStep;
   stepHistory: Array<{ step: ProjectStep; timestamp: string; notes?: string }>;
   className?: string;
-  onStepClick?: (step: ProjectStep) => void;
-  isProjectActive?: boolean;
   projectStatus?: ProjectStatus;
 }
 
-export function ProjectTimeline({ currentStep, stepHistory, className, onStepClick, isProjectActive = false, projectStatus }: ProjectTimelineProps) {
+export function ProjectTimeline({ currentStep, stepHistory, className, projectStatus }: ProjectTimelineProps) {
   const getCurrentStepIndex = () => stepOrder.indexOf(currentStep);
   const currentStepIndex = getCurrentStepIndex();
 
@@ -32,18 +30,6 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
   const getStepDate = (step: ProjectStep) => {
     const historyItem = stepHistory.find(h => h.step === step);
     return historyItem ? new Date(historyItem.timestamp).toLocaleDateString('pt-BR') : null;
-  };
-
-  const isStepClickable = (stepIndex: number) => {
-    if (!isProjectActive || !onStepClick) return false;
-    // Only allow clicking on the immediate next step
-    return stepIndex === currentStepIndex + 1;
-  };
-
-  const handleStepClick = (step: ProjectStep, stepIndex: number) => {
-    if (isStepClickable(stepIndex)) {
-      onStepClick(step);
-    }
   };
 
   return (
@@ -69,7 +55,6 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           const status = getStepStatus(index);
             const Icon = status === 'completed' ? Check : stepIcons[step];
           const stepDate = getStepDate(step);
-          const clickable = isStepClickable(index);
 
           return (
             <div key={step} className="flex flex-col items-center relative z-10 animate-fade-in min-w-0 flex-1">
@@ -80,12 +65,9 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                   {
                     "bg-green-500 border-green-500 text-white": status === 'completed',
                     "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                    "border-border text-muted-foreground": status === 'pending' && !clickable,
-                    "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
+                    "border-border text-muted-foreground": status === 'pending'
                   }
                 )}
-                onClick={() => handleStepClick(step, index)}
-                title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
               >
                 {status === 'current' && (
                   <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
@@ -103,17 +85,11 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                     "text-sm font-medium transition-colors duration-200 break-words leading-tight",
                     {
                       "text-foreground": status === 'completed' || status === 'current',
-                      "text-muted-foreground": status === 'pending' && !clickable,
-                      "text-primary": status === 'pending' && clickable
+                      "text-muted-foreground": status === 'pending'
                     }
                   )}
                 >
                   {stepLabels[step]}
-                  {clickable && (
-                    <div className="text-xs text-primary/70 mt-1 font-normal">
-                      Clique para avançar
-                    </div>
-                  )}
                 </div>
 
                 {/* Step Date */}
@@ -135,7 +111,6 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
           const status = getStepStatus(index);
           const Icon = status === 'completed' ? Check : stepIcons[step];
           const stepDate = getStepDate(step);
-          const clickable = isStepClickable(index);
 
           return (
             <div key={step} className="relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
@@ -147,12 +122,9 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                     {
                       "bg-green-500 border-green-500 text-white": status === 'completed',
                       "bg-background border-primary text-primary ring-2 ring-primary/20": status === 'current',
-                      "border-border text-muted-foreground": status === 'pending' && !clickable,
-                      "border-primary border-dashed text-primary hover:bg-primary/5 cursor-pointer": status === 'pending' && clickable
+                      "border-border text-muted-foreground": status === 'pending'
                     }
                   )}
-                  onClick={() => handleStepClick(step, index)}
-                  title={clickable ? `Clique para avançar para ${stepLabels[step]}` : undefined}
                 >
                   {status === 'current' && (
                     <span className="pointer-events-none absolute inset-[3px] rounded-full bg-primary/10" aria-hidden />
@@ -170,17 +142,11 @@ export function ProjectTimeline({ currentStep, stepHistory, className, onStepCli
                       "font-medium transition-colors duration-200 text-base leading-tight",
                       {
                         "text-foreground": status === 'completed' || status === 'current',
-                        "text-muted-foreground": status === 'pending' && !clickable,
-                        "text-primary": status === 'pending' && clickable
+                        "text-muted-foreground": status === 'pending'
                       }
                     )}
                   >
                     {stepLabels[step]}
-                    {clickable && (
-                      <div className="text-sm text-primary/70 mt-1 font-normal">
-                        Toque para avançar
-                      </div>
-                    )}
                   </div>
                   {stepDate && (
                     <div className="text-sm text-muted-foreground mt-1 font-normal">
