@@ -362,111 +362,362 @@ export default function ProjectWithdrawal() {
       
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
       const margin = 20;
       let yPosition = margin;
       
-      doc.setFontSize(20);
-      doc.text('Lista de Equipamentos - Retirada', margin, yPosition);
-      yPosition += 15;
+      // HIRO Logo base64 (simplified representation - in production use actual base64)
+      const logoData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       
-      doc.setFontSize(12);
-      doc.text(`Projeto: ${data.projectNumber} - ${data.projectName}`, margin, yPosition);
-      yPosition += 8;
-      doc.text(`Empresa: ${data.company}`, margin, yPosition);
-      yPosition += 8;
+      // Helper function for header
+      const addHeader = () => {
+        try {
+          doc.addImage(logoData, 'PNG', margin, yPosition, 25, 25);
+        } catch (e) {
+          // Skip logo if fails
+        }
+        
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(40, 40, 40);
+        doc.text('LISTA DE EQUIPAMENTOS', pageWidth / 2, yPosition + 10, { align: 'center' });
+        
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.text('RETIRADA DE PROJETO', pageWidth / 2, yPosition + 18, { align: 'center' });
+        
+        // Line separator
+        doc.setDrawColor(100, 200, 100);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPosition + 25, pageWidth - margin, yPosition + 25);
+        
+        return yPosition + 30;
+      };
+      
+      // Helper function for footer
+      const addFooter = (pageNum: number) => {
+        const footerY = pageHeight - 15;
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        
+        const timestamp = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        doc.text(`Documento gerado em: ${timestamp}`, margin, footerY);
+        doc.text(`Página ${pageNum}`, pageWidth - margin - 20, footerY);
+      };
+      
+      // Add header
+      yPosition = addHeader();
+      yPosition += 5;
+      
+      // === SEÇÃO DE IDENTIFICAÇÃO ===
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('📋 IDENTIFICAÇÃO DO PROJETO', margin + 3, yPosition + 5.5);
+      yPosition += 12;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(40, 40, 40);
+      
+      doc.text(`Número: ${data.projectNumber}`, margin + 3, yPosition);
+      yPosition += 6;
+      doc.text(`Empresa: ${data.company}`, margin + 3, yPosition);
+      yPosition += 6;
+      doc.text(`Projeto: ${data.projectName}`, margin + 3, yPosition);
+      yPosition += 6;
+      doc.text(`Tipo de Gravação: ${data.recordingType}`, margin + 3, yPosition);
+      yPosition += 10;
+      
+      // === SEÇÃO DE RESPONSÁVEIS ===
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('👤 RESPONSÁVEIS', margin + 3, yPosition + 5.5);
+      yPosition += 12;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
       
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
-      doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, margin, yPosition);
-      yPosition += 8;
+      doc.text(`Responsável pelo Projeto: ${responsibleUser?.display_name || 'N/A'}`, margin + 3, yPosition);
+      if (responsibleUser?.department) {
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`  Departamento: ${responsibleUser.department}`, margin + 3, yPosition + 5);
+        yPosition += 5;
+      }
+      yPosition += 6;
+      
+      const withdrawalUser = users.find(user => user.id === data.withdrawalUserId);
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Retirada por: ${withdrawalUser?.display_name || 'Mesmo responsável'}`, margin + 3, yPosition);
+      yPosition += 10;
+      
+      // === SEÇÃO DE CRONOGRAMA ===
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('📅 CRONOGRAMA', margin + 3, yPosition + 5.5);
+      yPosition += 12;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      if (data.separationDate) {
+        doc.text(`Separação: ${format(data.separationDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
+        yPosition += 6;
+      }
       
       if (data.withdrawalDate) {
-        doc.text(`Data de Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
-        yPosition += 8;
+        doc.text(`Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
+        yPosition += 6;
       }
       
       if (data.returnDate) {
-        doc.text(`Data de Devolução: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin, yPosition);
-        yPosition += 8;
-      }
-      
-      doc.text(`Tipo de Gravação: ${data.recordingType}`, margin, yPosition);
-      yPosition += 15;
-      
-      const tableData: string[][] = [];
-      
-      data.selectedEquipment.cameras.forEach(selectedCamera => {
-        tableData.push([
-          'Câmeras',
-          selectedCamera.camera.name || 'N/A',
-          selectedCamera.camera.brand || 'N/A',
-          'Principal',
-          ''
-        ]);
+        doc.text(`Devolução Prevista: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
+        yPosition += 6;
         
-        selectedCamera.accessories.forEach(accessory => {
-          tableData.push([
-            'Câmeras',
-            accessory.name || 'N/A',
-            accessory.brand || 'N/A',
-            'Acessório',
-            selectedCamera.camera.name || 'N/A'
-          ]);
-        });
-      });
+        // Calculate days of use
+        if (data.withdrawalDate) {
+          const days = Math.ceil((data.returnDate.getTime() - data.withdrawalDate.getTime()) / (1000 * 60 * 60 * 24));
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(100, 200, 100);
+          doc.text(`Período de uso: ${days} dia${days !== 1 ? 's' : ''}`, margin + 3, yPosition);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(40, 40, 40);
+          yPosition += 6;
+        }
+      }
+      yPosition += 8;
       
-      const categories = [
-        { items: data.selectedEquipment.lenses, category: 'Lentes' },
-        { items: data.selectedEquipment.cameraAccessories, category: 'Acessórios de Câmera' },
-        { items: data.selectedEquipment.tripods, category: 'Tripés' },
-        { items: data.selectedEquipment.lights, category: 'Iluminação' },
-        { items: data.selectedEquipment.lightModifiers, category: 'Modificadores de Luz' },
-        { items: data.selectedEquipment.machinery, category: 'Maquinário' },
-        { items: data.selectedEquipment.electrical, category: 'Elétrica' },
-        { items: data.selectedEquipment.storage, category: 'Armazenamento' },
-        { items: data.selectedEquipment.computers, category: 'Computadores' }
+      // === EQUIPAMENTOS POR CATEGORIA ===
+      const categoryData = [
+        { 
+          title: '📷 CÂMERAS', 
+          icon: '📷',
+          items: data.selectedEquipment.cameras,
+          type: 'cameras'
+        },
+        { 
+          title: '🔍 LENTES', 
+          icon: '🔍',
+          items: data.selectedEquipment.lenses,
+          type: 'lenses'
+        },
+        { 
+          title: '🎥 ACESSÓRIOS DE CÂMERA', 
+          icon: '🎥',
+          items: data.selectedEquipment.cameraAccessories,
+          type: 'accessories'
+        },
+        { 
+          title: '📐 TRIPÉS E ESTABILIZADORES', 
+          icon: '📐',
+          items: data.selectedEquipment.tripods,
+          type: 'tripods'
+        },
+        { 
+          title: '💡 ILUMINAÇÃO', 
+          icon: '💡',
+          items: data.selectedEquipment.lights,
+          type: 'lights'
+        },
+        { 
+          title: '🎨 MODIFICADORES DE LUZ', 
+          icon: '🎨',
+          items: data.selectedEquipment.lightModifiers,
+          type: 'modifiers'
+        },
+        { 
+          title: '⚙️ MAQUINÁRIO', 
+          icon: '⚙️',
+          items: data.selectedEquipment.machinery,
+          type: 'machinery'
+        },
+        { 
+          title: '⚡ ELÉTRICA', 
+          icon: '⚡',
+          items: data.selectedEquipment.electrical,
+          type: 'electrical'
+        },
+        { 
+          title: '💾 ARMAZENAMENTO', 
+          icon: '💾',
+          items: data.selectedEquipment.storage,
+          type: 'storage'
+        },
+        { 
+          title: '💻 COMPUTADORES', 
+          icon: '💻',
+          items: data.selectedEquipment.computers,
+          type: 'computers'
+        }
       ];
       
-      categories.forEach(({ items, category }) => {
-        items.forEach(item => {
-          tableData.push([
-            category,
-            item.name || 'N/A',
-            item.brand || 'N/A',
-            'Principal',
-            ''
-          ]);
-        });
-      });
+      let totalItems = 0;
+      const categorySummary: { name: string; count: number }[] = [];
       
-      (doc as any).autoTable({
-        head: [['Categoria', 'Nome', 'Marca', 'Tipo', 'Relacionado a']],
-        body: tableData,
-        startY: yPosition,
-        margin: { left: margin, right: margin },
-        styles: {
-          fontSize: 10,
-          cellPadding: 3
-        },
-        headStyles: {
-          fillColor: [66, 139, 202],
-          textColor: 255,
-          fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245]
+      categoryData.forEach(({ title, items, type }) => {
+        if (items.length === 0) return;
+        
+        // Check if new page needed
+        if (yPosition > pageHeight - 60) {
+          addFooter(1);
+          doc.addPage();
+          yPosition = addHeader();
+          yPosition += 5;
         }
+        
+        const categoryCount = type === 'cameras' 
+          ? items.reduce((sum: number, cam: any) => sum + 1 + cam.accessories.length, 0)
+          : items.length;
+        
+        totalItems += categoryCount;
+        categorySummary.push({ name: title.replace(/[📷🔍🎥📐💡🎨⚙️⚡💾💻]/g, '').trim(), count: categoryCount });
+        
+        // Category header
+        doc.setFillColor(100, 200, 100);
+        doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${title} (${categoryCount} ${categoryCount === 1 ? 'item' : 'itens'})`, margin + 3, yPosition + 5.5);
+        yPosition += 12;
+        
+        // Items
+        if (type === 'cameras') {
+          items.forEach((selectedCamera: any) => {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(40, 40, 40);
+            doc.text(`• ${selectedCamera.camera.name} - ${selectedCamera.camera.brand}`, margin + 5, yPosition);
+            yPosition += 5;
+            
+            selectedCamera.accessories.forEach((acc: any) => {
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(80, 80, 80);
+              doc.text(`   ↳ ${acc.name} - ${acc.brand}`, margin + 7, yPosition);
+              yPosition += 5;
+            });
+            
+            yPosition += 2;
+          });
+        } else {
+          items.forEach((item: any) => {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(40, 40, 40);
+            doc.text(`• ${item.name} - ${item.brand}`, margin + 5, yPosition);
+            yPosition += 5;
+          });
+        }
+        
+        yPosition += 5;
       });
       
-      const finalY = (doc as any).lastAutoTable.finalY + 10;
-      doc.setFontSize(12);
-      doc.text(`Total de itens: ${tableData.length}`, margin, finalY);
+      // === SEÇÃO DE RESUMO ===
+      if (yPosition > pageHeight - 80) {
+        addFooter(1);
+        doc.addPage();
+        yPosition = addHeader();
+        yPosition += 5;
+      }
       
-      const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy')}.pdf`;
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('📊 RESUMO', margin + 3, yPosition + 5.5);
+      yPosition += 15;
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(100, 200, 100);
+      doc.text(`Total de Equipamentos: ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`, margin + 3, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(40, 40, 40);
+      doc.text('Por Categoria:', margin + 3, yPosition);
+      yPosition += 6;
+      
+      categorySummary.forEach(({ name, count }) => {
+        doc.text(`  • ${name}: ${count} ${count === 1 ? 'item' : 'itens'}`, margin + 5, yPosition);
+        yPosition += 5;
+      });
+      
+      yPosition += 10;
+      
+      // === CHECKLIST DE CONFERÊNCIA ===
+      if (yPosition > pageHeight - 100) {
+        addFooter(1);
+        doc.addPage();
+        yPosition = addHeader();
+        yPosition += 5;
+      }
+      
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('✓ CHECKLIST DE CONFERÊNCIA', margin + 3, yPosition + 5.5);
+      yPosition += 15;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      // Separação
+      doc.setFont('helvetica', 'bold');
+      doc.text('Separação:', margin + 3, yPosition);
+      yPosition += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
+      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
+      yPosition += 10;
+      
+      // Retirada
+      doc.setFont('helvetica', 'bold');
+      doc.text('Retirada:', margin + 3, yPosition);
+      yPosition += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
+      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
+      yPosition += 6;
+      doc.text('Assinatura: _______________________________', margin + 5, yPosition);
+      yPosition += 10;
+      
+      // Devolução
+      doc.setFont('helvetica', 'bold');
+      doc.text('Devolução:', margin + 3, yPosition);
+      yPosition += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
+      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
+      yPosition += 6;
+      doc.text('Assinatura: _______________________________', margin + 5, yPosition);
+      
+      // Add footer
+      addFooter(1);
+      
+      // Save PDF
+      const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
       doc.save(fileName);
       
       enhancedToast.success({
         title: "PDF Gerado",
-        description: "Lista de equipamentos baixada com sucesso!"
+        description: "Lista de equipamentos profissional baixada com sucesso!"
       });
       
     } catch (error) {
