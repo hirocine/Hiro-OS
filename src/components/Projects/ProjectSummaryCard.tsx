@@ -65,16 +65,16 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
               </p>
             )}
             
-            {/* Project Name and Status Badge */}
-            <div className="flex items-start gap-2 mb-2">
-              <h3 className="font-semibold text-xl leading-tight group-hover:text-primary transition-colors truncate flex-1">
+            {/* Project Name with inline badges */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h3 className="font-semibold text-xl leading-tight group-hover:text-primary transition-colors">
                 {project.name}
               </h3>
-              <Badge variant={getStatusVariant(project.status)} className="shrink-0">
+              <Badge variant={getStatusVariant(project.status)} className="shrink-0 text-xs">
                 {getStatusLabel(project.status)}
               </Badge>
               {isOverdue && (
-                <Badge variant="destructive" className="shrink-0">
+                <Badge variant="destructive" className="shrink-0 text-xs">
                   Atrasado
                 </Badge>
               )}
@@ -94,7 +94,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
+                className="shrink-0 ml-2 h-8 w-8 p-0"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -132,31 +132,14 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         </div>
 
         <div onClick={handleViewDetails}>
-          {/* Current Step - Compact Line */}
-          <div className="flex items-center justify-between py-3 mb-5 border-y border-border/50">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Status Atual
-              </span>
-              <Badge 
-                variant={stepColors[project.step] as any}
-                className="text-sm"
-              >
-                {stepLabels[project.step]}
-              </Badge>
-            </div>
-            
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className="text-xs h-8 opacity-60 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewDetails();
-              }}
+          {/* Current Step Badge */}
+          <div className="mb-4">
+            <Badge 
+              variant={stepColors[project.step] as any}
+              className="text-sm px-3 py-1"
             >
               {stepLabels[project.step]}
-            </Button>
+            </Badge>
           </div>
 
           {/* Project Info Grid */}
