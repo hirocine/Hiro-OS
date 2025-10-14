@@ -363,361 +363,253 @@ export default function ProjectWithdrawal() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
-      const margin = 20;
-      let yPosition = margin;
+      let yPosition = 15;
       
-      // HIRO Logo base64 (simplified representation - in production use actual base64)
-      const logoData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      // === CABEÇALHO (apenas primeira página) ===
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text('HIRO FILMS', 15, yPosition);
       
-      // Helper function for header
-      const addHeader = () => {
-        try {
-          doc.addImage(logoData, 'PNG', margin, yPosition, 25, 25);
-        } catch (e) {
-          // Skip logo if fails
-        }
-        
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(40, 40, 40);
-        doc.text('LISTA DE EQUIPAMENTOS', pageWidth / 2, yPosition + 10, { align: 'center' });
-        
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.text('RETIRADA DE PROJETO', pageWidth / 2, yPosition + 18, { align: 'center' });
-        
-        // Line separator
-        doc.setDrawColor(100, 200, 100);
-        doc.setLineWidth(0.5);
-        doc.line(margin, yPosition + 25, pageWidth - margin, yPosition + 25);
-        
-        return yPosition + 30;
-      };
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Resumo de Projeto Audio Visual', pageWidth / 2, yPosition + 2, { align: 'center' });
       
-      // Helper function for footer
-      const addFooter = (pageNum: number) => {
-        const footerY = pageHeight - 15;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        
-        const timestamp = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-        doc.text(`Documento gerado em: ${timestamp}`, margin, footerY);
-        doc.text(`Página ${pageNum}`, pageWidth - margin - 20, footerY);
-      };
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.line(15, yPosition + 6, pageWidth - 15, yPosition + 6);
       
-      // Add header
-      yPosition = addHeader();
+      yPosition = 28;
+      
+      // === INFORMAÇÕES DO PROJETO (bloco compacto) ===
+      const responsibleUser = users.find(user => user.id === data.responsibleUserId);
+      const projectFullName = `${data.projectNumber} - ${data.company}: ${data.projectName}`;
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text(projectFullName, 15, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, 15, yPosition);
       yPosition += 5;
       
-      // === SEÇÃO DE IDENTIFICAÇÃO ===
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('📋 IDENTIFICAÇÃO DO PROJETO', margin + 3, yPosition + 5.5);
-      yPosition += 12;
+      doc.text(`Tipo de Gravação: ${data.recordingType || 'Não informado'}`, 15, yPosition);
+      yPosition += 5;
       
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(40, 40, 40);
+      // Datas
+      const separationDate = data.separationDate ? format(data.separationDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
+      const withdrawalDate = data.withdrawalDate ? format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
+      const returnDate = data.returnDate ? format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
       
-      doc.text(`Número: ${data.projectNumber}`, margin + 3, yPosition);
-      yPosition += 6;
-      doc.text(`Empresa: ${data.company}`, margin + 3, yPosition);
-      yPosition += 6;
-      doc.text(`Projeto: ${data.projectName}`, margin + 3, yPosition);
-      yPosition += 6;
-      doc.text(`Tipo de Gravação: ${data.recordingType}`, margin + 3, yPosition);
-      yPosition += 10;
+      doc.text(`Separação: ${separationDate}  |  Retirada: ${withdrawalDate}  |  Devolução: ${returnDate}`, 15, yPosition);
       
-      // === SEÇÃO DE RESPONSÁVEIS ===
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('👤 RESPONSÁVEIS', margin + 3, yPosition + 5.5);
-      yPosition += 12;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      
-      const responsibleUser = users.find(user => user.id === data.responsibleUserId);
-      doc.text(`Responsável pelo Projeto: ${responsibleUser?.display_name || 'N/A'}`, margin + 3, yPosition);
-      if (responsibleUser?.department) {
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`  Departamento: ${responsibleUser.department}`, margin + 3, yPosition + 5);
-        yPosition += 5;
-      }
-      yPosition += 6;
-      
-      const withdrawalUser = users.find(user => user.id === data.withdrawalUserId);
-      doc.setFontSize(10);
-      doc.setTextColor(40, 40, 40);
-      doc.text(`Retirada por: ${withdrawalUser?.display_name || 'Mesmo responsável'}`, margin + 3, yPosition);
-      yPosition += 10;
-      
-      // === SEÇÃO DE CRONOGRAMA ===
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('📅 CRONOGRAMA', margin + 3, yPosition + 5.5);
-      yPosition += 12;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      
-      if (data.separationDate) {
-        doc.text(`Separação: ${format(data.separationDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
-        yPosition += 6;
-      }
-      
-      if (data.withdrawalDate) {
-        doc.text(`Retirada: ${format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
-        yPosition += 6;
-      }
-      
-      if (data.returnDate) {
-        doc.text(`Devolução Prevista: ${format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR })}`, margin + 3, yPosition);
-        yPosition += 6;
-        
-        // Calculate days of use
-        if (data.withdrawalDate) {
-          const days = Math.ceil((data.returnDate.getTime() - data.withdrawalDate.getTime()) / (1000 * 60 * 60 * 24));
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(100, 200, 100);
-          doc.text(`Período de uso: ${days} dia${days !== 1 ? 's' : ''}`, margin + 3, yPosition);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(40, 40, 40);
-          yPosition += 6;
-        }
+      // Dias de uso
+      if (data.withdrawalDate && data.returnDate) {
+        const days = Math.ceil((data.returnDate.getTime() - data.withdrawalDate.getTime()) / (1000 * 60 * 60 * 24));
+        doc.setFont('helvetica', 'bold');
+        doc.text(`  (${days} ${days === 1 ? 'dia' : 'dias'} de uso)`, pageWidth / 2 + 10, yPosition);
+        doc.setFont('helvetica', 'normal');
       }
       yPosition += 8;
       
-      // === EQUIPAMENTOS POR CATEGORIA ===
-      const categoryData = [
-        { 
-          title: '📷 CÂMERAS', 
-          icon: '📷',
-          items: data.selectedEquipment.cameras,
-          type: 'cameras'
-        },
-        { 
-          title: '🔍 LENTES', 
-          icon: '🔍',
-          items: data.selectedEquipment.lenses,
-          type: 'lenses'
-        },
-        { 
-          title: '🎥 ACESSÓRIOS DE CÂMERA', 
-          icon: '🎥',
-          items: data.selectedEquipment.cameraAccessories,
-          type: 'accessories'
-        },
-        { 
-          title: '📐 TRIPÉS E ESTABILIZADORES', 
-          icon: '📐',
-          items: data.selectedEquipment.tripods,
-          type: 'tripods'
-        },
-        { 
-          title: '💡 ILUMINAÇÃO', 
-          icon: '💡',
-          items: data.selectedEquipment.lights,
-          type: 'lights'
-        },
-        { 
-          title: '🎨 MODIFICADORES DE LUZ', 
-          icon: '🎨',
-          items: data.selectedEquipment.lightModifiers,
-          type: 'modifiers'
-        },
-        { 
-          title: '⚙️ MAQUINÁRIO', 
-          icon: '⚙️',
-          items: data.selectedEquipment.machinery,
-          type: 'machinery'
-        },
-        { 
-          title: '⚡ ELÉTRICA', 
-          icon: '⚡',
-          items: data.selectedEquipment.electrical,
-          type: 'electrical'
-        },
-        { 
-          title: '💾 ARMAZENAMENTO', 
-          icon: '💾',
-          items: data.selectedEquipment.storage,
-          type: 'storage'
-        },
-        { 
-          title: '💻 COMPUTADORES', 
-          icon: '💻',
-          items: data.selectedEquipment.computers,
-          type: 'computers'
-        }
-      ];
+      // === PREPARAR DADOS DE EQUIPAMENTOS ===
+      const categoriesData: Array<{
+        name: string;
+        emoji: string;
+        items: Array<{ name: string; isAccessory: boolean; checkboxX?: number }>;
+      }> = [];
       
-      let totalItems = 0;
-      const categorySummary: { name: string; count: number }[] = [];
-      
-      categoryData.forEach(({ title, items, type }) => {
-        if (items.length === 0) return;
-        
-        // Check if new page needed
-        if (yPosition > pageHeight - 60) {
-          addFooter(1);
-          doc.addPage();
-          yPosition = addHeader();
-          yPosition += 5;
-        }
-        
-        const categoryCount = type === 'cameras' 
-          ? items.reduce((sum: number, cam: any) => sum + 1 + cam.accessories.length, 0)
-          : items.length;
-        
-        totalItems += categoryCount;
-        categorySummary.push({ name: title.replace(/[📷🔍🎥📐💡🎨⚙️⚡💾💻]/g, '').trim(), count: categoryCount });
-        
-        // Category header
-        doc.setFillColor(100, 200, 100);
-        doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text(`${title} (${categoryCount} ${categoryCount === 1 ? 'item' : 'itens'})`, margin + 3, yPosition + 5.5);
-        yPosition += 12;
-        
-        // Items
-        if (type === 'cameras') {
-          items.forEach((selectedCamera: any) => {
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(40, 40, 40);
-            doc.text(`• ${selectedCamera.camera.name} - ${selectedCamera.camera.brand}`, margin + 5, yPosition);
-            yPosition += 5;
-            
-            selectedCamera.accessories.forEach((acc: any) => {
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(80, 80, 80);
-              doc.text(`   ↳ ${acc.name} - ${acc.brand}`, margin + 7, yPosition);
-              yPosition += 5;
+      // Câmeras
+      if (data.selectedEquipment.cameras.length > 0) {
+        const cameraItems: Array<{ name: string; isAccessory: boolean }> = [];
+        data.selectedEquipment.cameras.forEach((selectedCamera) => {
+          cameraItems.push({ 
+            name: `${selectedCamera.camera.name} - ${selectedCamera.camera.brand}`, 
+            isAccessory: false 
+          });
+          selectedCamera.accessories.forEach((acc) => {
+            cameraItems.push({ 
+              name: `${acc.name} - ${acc.brand}`, 
+              isAccessory: true 
             });
-            
-            yPosition += 2;
           });
-        } else {
-          items.forEach((item: any) => {
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(40, 40, 40);
-            doc.text(`• ${item.name} - ${item.brand}`, margin + 5, yPosition);
-            yPosition += 5;
-          });
+        });
+        categoriesData.push({ name: 'CÂMERAS', emoji: '📷', items: cameraItems });
+      }
+      
+      // Lentes
+      if (data.selectedEquipment.lenses.length > 0) {
+        const items = data.selectedEquipment.lenses.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'LENTES', emoji: '🔍', items });
+      }
+      
+      // Acessórios de Câmera
+      if (data.selectedEquipment.cameraAccessories.length > 0) {
+        const items = data.selectedEquipment.cameraAccessories.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'ACESSÓRIOS DE CÂMERA', emoji: '🎥', items });
+      }
+      
+      // Tripés
+      if (data.selectedEquipment.tripods.length > 0) {
+        const items = data.selectedEquipment.tripods.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'TRIPÉS E ESTABILIZADORES', emoji: '🎬', items });
+      }
+      
+      // Iluminação
+      if (data.selectedEquipment.lights.length > 0) {
+        const items = data.selectedEquipment.lights.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'ILUMINAÇÃO', emoji: '💡', items });
+      }
+      
+      // Modificadores
+      if (data.selectedEquipment.lightModifiers.length > 0) {
+        const items = data.selectedEquipment.lightModifiers.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'MODIFICADORES DE LUZ', emoji: '⚡', items });
+      }
+      
+      // Maquinário
+      if (data.selectedEquipment.machinery.length > 0) {
+        const items = data.selectedEquipment.machinery.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'MAQUINÁRIO', emoji: '🔧', items });
+      }
+      
+      // Elétrica
+      if (data.selectedEquipment.electrical.length > 0) {
+        const items = data.selectedEquipment.electrical.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'ELÉTRICA', emoji: '🔌', items });
+      }
+      
+      // Armazenamento
+      if (data.selectedEquipment.storage.length > 0) {
+        const items = data.selectedEquipment.storage.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'ARMAZENAMENTO', emoji: '💾', items });
+      }
+      
+      // Computadores
+      if (data.selectedEquipment.computers.length > 0) {
+        const items = data.selectedEquipment.computers.map(item => ({ 
+          name: `${item.name} - ${item.brand}`, 
+          isAccessory: false 
+        }));
+        categoriesData.push({ name: 'COMPUTADORES', emoji: '💻', items });
+      }
+      
+      // === RENDERIZAR CATEGORIAS COM CHECKBOXES ===
+      categoriesData.forEach((category) => {
+        // Verificar se precisa de nova página
+        if (yPosition > pageHeight - 30) {
+          doc.addPage();
+          yPosition = 15;
         }
         
-        yPosition += 5;
+        // Cabeçalho da categoria (card header)
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, yPosition - 1, pageWidth - 30, 6, 'F');
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${category.emoji} ${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 17, yPosition + 3);
+        
+        yPosition += 7;
+        
+        // Borda do card
+        const cardStartY = yPosition;
+        
+        // Itens da categoria
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(40, 40, 40);
+        
+        category.items.forEach((item) => {
+          if (yPosition > pageHeight - 15) {
+            doc.addPage();
+            yPosition = 15;
+          }
+          
+          const xStart = item.isAccessory ? 24 : 18;
+          const checkboxX = pageWidth - 22;
+          
+          // Texto do item
+          const itemText = item.name;
+          const maxWidth = checkboxX - xStart - 5;
+          const lines = doc.splitTextToSize(itemText, maxWidth);
+          
+          // Desenhar checkbox à direita
+          doc.setDrawColor(100, 100, 100);
+          doc.setLineWidth(0.3);
+          doc.rect(checkboxX, yPosition - 2.5, 4, 4);
+          
+          // Nome do item
+          doc.text(lines, xStart, yPosition);
+          
+          yPosition += Math.max(4, lines.length * 3.5);
+        });
+        
+        // Borda do card
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.rect(15, cardStartY - 1, pageWidth - 30, yPosition - cardStartY + 1);
+        
+        yPosition += 4;
       });
       
-      // === SEÇÃO DE RESUMO ===
-      if (yPosition > pageHeight - 80) {
-        addFooter(1);
-        doc.addPage();
-        yPosition = addHeader();
-        yPosition += 5;
+      // === RODAPÉ EM TODAS AS PÁGINAS ===
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
+          15,
+          pageHeight - 8
+        );
+        doc.text(
+          `Página ${i} de ${totalPages}`,
+          pageWidth - 15,
+          pageHeight - 8,
+          { align: 'right' }
+        );
       }
       
-      doc.setFillColor(240, 240, 240);
-      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('📊 RESUMO', margin + 3, yPosition + 5.5);
-      yPosition += 15;
-      
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(100, 200, 100);
-      doc.text(`Total de Equipamentos: ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`, margin + 3, yPosition);
-      yPosition += 10;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(40, 40, 40);
-      doc.text('Por Categoria:', margin + 3, yPosition);
-      yPosition += 6;
-      
-      categorySummary.forEach(({ name, count }) => {
-        doc.text(`  • ${name}: ${count} ${count === 1 ? 'item' : 'itens'}`, margin + 5, yPosition);
-        yPosition += 5;
-      });
-      
-      yPosition += 10;
-      
-      // === CHECKLIST DE CONFERÊNCIA ===
-      if (yPosition > pageHeight - 100) {
-        addFooter(1);
-        doc.addPage();
-        yPosition = addHeader();
-        yPosition += 5;
-      }
-      
-      doc.setFillColor(240, 240, 240);
-      doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 60, 60);
-      doc.text('✓ CHECKLIST DE CONFERÊNCIA', margin + 3, yPosition + 5.5);
-      yPosition += 15;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      
-      // Separação
-      doc.setFont('helvetica', 'bold');
-      doc.text('Separação:', margin + 3, yPosition);
-      yPosition += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
-      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
-      yPosition += 10;
-      
-      // Retirada
-      doc.setFont('helvetica', 'bold');
-      doc.text('Retirada:', margin + 3, yPosition);
-      yPosition += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
-      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
-      yPosition += 6;
-      doc.text('Assinatura: _______________________________', margin + 5, yPosition);
-      yPosition += 10;
-      
-      // Devolução
-      doc.setFont('helvetica', 'bold');
-      doc.text('Devolução:', margin + 3, yPosition);
-      yPosition += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.text('Conferido por: ____________________________', margin + 5, yPosition);
-      doc.text('Data: ___/___/______', pageWidth - margin - 40, yPosition);
-      yPosition += 6;
-      doc.text('Assinatura: _______________________________', margin + 5, yPosition);
-      
-      // Add footer
-      addFooter(1);
-      
-      // Save PDF
-      const fileName = `Lista_Equipamentos_${data.projectNumber}_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
+      // Salvar PDF
+      const fileName = `Resumo_Projeto_${data.projectNumber}_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
       doc.save(fileName);
       
       enhancedToast.success({
         title: "PDF Gerado",
-        description: "Lista de equipamentos profissional baixada com sucesso!"
+        description: "Resumo do projeto baixado com sucesso!"
       });
       
     } catch (error) {
