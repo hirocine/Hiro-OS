@@ -128,8 +128,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
         item.item.category === 'camera' && 
         item.item.subcategory === 'Câmera' &&
         item.item.itemType === 'main' && 
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
+        item.item.status === 'available'
       );
   };
 
@@ -139,8 +138,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'camera' && 
         item.item.subcategory === 'Lente' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lenses.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -152,8 +150,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'camera' && 
         cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameraAccessories.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -164,8 +161,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         ((item.item.category === 'accessories' && item.item.subcategory === 'Tripé de Câmera') ||
          (item.item.category === 'camera' && item.item.subcategory === 'Estabilizador')) &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.tripods.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -176,8 +172,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'lighting' && 
         item.item.subcategory === 'Luz' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lights.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -189,8 +184,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'lighting' && 
         lightModifierSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lightModifiers.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -201,8 +195,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'accessories' && 
         item.item.subcategory === 'Maquinária' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.machinery.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -213,8 +206,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'accessories' && 
         (item.item.subcategory === 'Cabo' || item.item.subcategory === 'Elétrica') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.electrical.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -226,8 +218,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'storage' && 
         storageSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.storage.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
@@ -238,8 +229,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       .filter(item => 
         item.item.category === 'accessories' && 
         item.item.subcategory === 'Computador' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.computers.some(selected => selected.id === item.item.id)
+        item.item.status === 'available'
       )
       .map(item => item.item);
   };
