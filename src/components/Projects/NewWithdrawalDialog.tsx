@@ -1123,16 +1123,32 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                     </div>
                   ) : (
                      <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                      {getAvailableCameras().map((cameraHierarchy) => (
+                      {getAvailableCameras().map((cameraHierarchy) => {
+                        const isSelected = data.selectedEquipment.cameras.some(
+                          selected => selected.camera.id === cameraHierarchy.item.id
+                        );
+                        return (
                       <Card 
                         key={cameraHierarchy.item.id}
-                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
-                        onClick={() => handleCameraSelect(cameraHierarchy)}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-accent/50 hover-scale hover:border-primary/30 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleCameraSelect(cameraHierarchy)}
                       >
                           <CardContent className="p-4 h-full">
                             <div className="flex items-center gap-3 h-full">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                {cameraHierarchy.item.image ? (
+                              <div className={cn(
+                                "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                                isSelected 
+                                  ? "bg-green-500/10 border border-green-500/30" 
+                                  : "bg-primary/10"
+                              )}>
+                                {isSelected ? (
+                                  <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                ) : cameraHierarchy.item.image ? (
                                   <img 
                                     src={cameraHierarchy.item.image} 
                                     alt={cameraHierarchy.item.name}
@@ -1170,19 +1186,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleCameraSelect(cameraHierarchy);
+                                    if (!isSelected) handleCameraSelect(cameraHierarchy);
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                                 </div>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1331,16 +1358,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).map((lens) => (
+                    {filterEquipmentBySearch(getAvailableLenses(), searchFilters.lenses).map((lens) => {
+                      const isSelected = data.selectedEquipment.lenses.some(l => l.id === lens.id);
+                      return (
                       <Card 
                         key={lens.id}
-                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
-                        onClick={() => handleEquipmentSelect(lens, 'lenses')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-accent/50 hover-scale hover:border-primary/30 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(lens, 'lenses')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {lens.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : lens.image ? (
                                 <img 
                                   src={lens.image} 
                                   alt={lens.name}
@@ -1367,22 +1408,33 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                     {lens.brand}
                                   </p>
                                 </div>
-                                <Button
+                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(lens, 'lenses');
+                                    if (!isSelected) handleEquipmentSelect(lens, 'lenses');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1501,16 +1553,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).map((accessory) => (
+                    {filterEquipmentBySearch(getAvailableCameraAccessories(), searchFilters.cameraAccessories).map((accessory) => {
+                      const isSelected = data.selectedEquipment.cameraAccessories.some(a => a.id === accessory.id);
+                      return (
                       <Card 
                         key={accessory.id}
-                        className="cursor-pointer hover:bg-accent/50 transition-all hover-scale border-2 hover:border-primary/30 h-24 bg-card"
-                        onClick={() => handleEquipmentSelect(accessory, 'cameraAccessories')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-accent/50 hover-scale hover:border-primary/30 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(accessory, 'cameraAccessories')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {accessory.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : accessory.image ? (
                                 <img 
                                   src={accessory.image} 
                                   alt={accessory.name}
@@ -1540,19 +1606,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(accessory, 'cameraAccessories');
+                                    if (!isSelected) handleEquipmentSelect(accessory, 'cameraAccessories');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1655,16 +1732,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableTripods().map((tripod) => (
+                    {getAvailableTripods().map((tripod) => {
+                      const isSelected = data.selectedEquipment.tripods.some(t => t.id === tripod.id);
+                      return (
                       <Card 
                         key={tripod.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(tripod, 'tripods')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(tripod, 'tripods')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {tripod.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : tripod.image ? (
                                 <img 
                                   src={tripod.image} 
                                   alt={tripod.name}
@@ -1694,19 +1785,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(tripod, 'tripods');
+                                    if (!isSelected) handleEquipmentSelect(tripod, 'tripods');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1808,16 +1910,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableLights().map((light) => (
+                    {getAvailableLights().map((light) => {
+                      const isSelected = data.selectedEquipment.lights.some(l => l.id === light.id);
+                      return (
                       <Card 
                         key={light.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(light, 'lights')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(light, 'lights')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {light.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : light.image ? (
                                 <img 
                                   src={light.image} 
                                   alt={light.name}
@@ -1847,19 +1963,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(light, 'lights');
+                                    if (!isSelected) handleEquipmentSelect(light, 'lights');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1961,16 +2088,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableLightModifiers().map((modifier) => (
+                    {getAvailableLightModifiers().map((modifier) => {
+                      const isSelected = data.selectedEquipment.lightModifiers.some(m => m.id === modifier.id);
+                      return (
                       <Card 
                         key={modifier.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(modifier, 'lightModifiers')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(modifier, 'lightModifiers')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {modifier.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : modifier.image ? (
                                 <img 
                                   src={modifier.image} 
                                   alt={modifier.name}
@@ -2000,19 +2141,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(modifier, 'lightModifiers');
+                                    if (!isSelected) handleEquipmentSelect(modifier, 'lightModifiers');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2114,16 +2266,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableMachinery().map((machine) => (
+                    {getAvailableMachinery().map((machine) => {
+                      const isSelected = data.selectedEquipment.machinery.some(m => m.id === machine.id);
+                      return (
                       <Card 
                         key={machine.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(machine, 'machinery')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(machine, 'machinery')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {machine.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : machine.image ? (
                                 <img 
                                   src={machine.image} 
                                   alt={machine.name}
@@ -2153,19 +2319,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(machine, 'machinery');
+                                    if (!isSelected) handleEquipmentSelect(machine, 'machinery');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2267,16 +2444,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableElectrical().map((electrical) => (
+                    {getAvailableElectrical().map((electrical) => {
+                      const isSelected = data.selectedEquipment.electrical.some(e => e.id === electrical.id);
+                      return (
                       <Card 
                         key={electrical.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(electrical, 'electrical')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(electrical, 'electrical')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {electrical.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : electrical.image ? (
                                 <img 
                                   src={electrical.image} 
                                   alt={electrical.name}
@@ -2306,19 +2497,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(electrical, 'electrical');
+                                    if (!isSelected) handleEquipmentSelect(electrical, 'electrical');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2420,16 +2622,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableStorage().map((storage) => (
+                    {getAvailableStorage().map((storage) => {
+                      const isSelected = data.selectedEquipment.storage.some(s => s.id === storage.id);
+                      return (
                       <Card 
                         key={storage.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(storage, 'storage')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(storage, 'storage')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {storage.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : storage.image ? (
                                 <img 
                                   src={storage.image} 
                                   alt={storage.name}
@@ -2459,19 +2675,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(storage, 'storage');
+                                    if (!isSelected) handleEquipmentSelect(storage, 'storage');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2573,16 +2800,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                   </div>
                 ) : (
                   <div className="space-y-3 h-[500px] overflow-y-auto flex-1">
-                    {getAvailableComputers().map((computer) => (
+                    {getAvailableComputers().map((computer) => {
+                      const isSelected = data.selectedEquipment.computers.some(c => c.id === computer.id);
+                      return (
                       <Card 
                         key={computer.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20 h-24"
-                        onClick={() => handleEquipmentSelect(computer, 'computers')}
+                        className={cn(
+                          "transition-all border-2 h-24",
+                          isSelected
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-md cursor-default"
+                            : "cursor-pointer hover:bg-muted/50 hover:border-primary/20 bg-card"
+                        )}
+                        onClick={() => !isSelected && handleEquipmentSelect(computer, 'computers')}
                       >
                         <CardContent className="p-4 h-full">
                           <div className="flex items-center gap-3 h-full">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {computer.image ? (
+                            <div className={cn(
+                              "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                              isSelected 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-primary/10"
+                            )}>
+                              {isSelected ? (
+                                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              ) : computer.image ? (
                                 <img 
                                   src={computer.image} 
                                   alt={computer.name}
@@ -2612,19 +2853,30 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
                                 <Button
                                   type="button"
                                   size="sm"
+                                  variant={isSelected ? "default" : "outline"}
+                                  disabled={isSelected}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEquipmentSelect(computer, 'computers');
+                                    if (!isSelected) handleEquipmentSelect(computer, 'computers');
                                   }}
+                                  className={isSelected ? "bg-green-600 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-600" : ""}
                                 >
-                                  Selecionar
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-3 w-3 mr-1" />
+                                      Selecionado
+                                    </>
+                                  ) : (
+                                    "Selecionar"
+                                  )}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
