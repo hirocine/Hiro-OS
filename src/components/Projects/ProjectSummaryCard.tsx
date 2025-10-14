@@ -37,34 +37,65 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
     navigate(`/projects/${project.id}`);
   };
 
+  const getStepBorderColor = (step: string) => {
+    const colors: Record<string, string> = {
+      'pending_separation': 'border-l-step-separation',
+      'ready_for_pickup': 'border-l-step-pickup',
+      'in_use': 'border-l-step-use',
+      'pending_verification': 'border-l-step-verification',
+      'office_receipt': 'border-l-step-receipt',
+      'verified': 'border-l-step-verified'
+    };
+    return colors[step] || 'border-l-primary';
+  };
+
   return (
-    <Card className="hover:shadow-elegant transition-all duration-300 cursor-pointer group">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1" onClick={handleViewDetails}>
-            <div className="flex items-center space-x-2 mb-2">
-              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+    <Card className={cn(
+      "hover:shadow-lg hover:scale-[1.01] transition-all duration-300 cursor-pointer group border-l-4 overflow-hidden",
+      getStepBorderColor(project.step)
+    )}>
+      <CardContent className="p-5 md:p-6">
+        {/* Header with project info and menu */}
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex-1 min-w-0" onClick={handleViewDetails}>
+            {/* Project Number */}
+            {project.projectNumber && (
+              <p className="text-xs font-medium text-muted-foreground/70 mb-1">
+                Nº {project.projectNumber}
+              </p>
+            )}
+            
+            {/* Project Name and Status Badge */}
+            <div className="flex items-start gap-2 mb-2">
+              <h3 className="font-semibold text-xl leading-tight group-hover:text-primary transition-colors truncate flex-1">
                 {project.name}
               </h3>
-              <Badge variant={getStatusVariant(project.status)}>
+              <Badge variant={getStatusVariant(project.status)} className="shrink-0">
                 {getStatusLabel(project.status)}
               </Badge>
-              {isOverdue && <Badge variant="destructive">Atrasado</Badge>}
+              {isOverdue && (
+                <Badge variant="destructive" className="shrink-0">
+                  Atrasado
+                </Badge>
+              )}
             </div>
             
-            {(project.company || project.projectNumber) && (
-              <p className="text-sm text-muted-foreground mb-3 truncate">
-                {project.company && project.projectNumber 
-                  ? `${project.company} • Nº ${project.projectNumber}`
-                  : project.company || `Nº ${project.projectNumber}`
-                }
+            {/* Company */}
+            {project.company && (
+              <p className="text-sm text-muted-foreground/80 truncate">
+                {project.company}
               </p>
             )}
           </div>
 
+          {/* Action Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -101,70 +132,78 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         </div>
 
         <div onClick={handleViewDetails}>
-          {/* Current Step Badge */}
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="text-sm text-muted-foreground">Status atual:</div>
-            <Badge 
-              variant={stepColors[project.step] as any}
-              className="text-xs"
-            >
-              {stepLabels[project.step]}
-            </Badge>
+          {/* Current Step - Highlighted Section */}
+          <div className="bg-accent/30 rounded-lg p-3 mb-5 border border-accent/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Status Atual
+              </span>
+              <Badge 
+                variant={stepColors[project.step] as any}
+                className="text-sm"
+              >
+                {stepLabels[project.step]}
+              </Badge>
+            </div>
           </div>
 
           {/* Project Info Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <User className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className="font-medium truncate">{project.responsibleName}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            {/* Responsible */}
+            <div className="flex items-start gap-3">
+              <User className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{project.responsibleName}</p>
                 {project.department && (
-                  <div className="text-muted-foreground text-xs truncate">{project.department}</div>
+                  <p className="text-xs text-muted-foreground/70 truncate">{project.department}</p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className="font-medium">{project.equipmentCount} equipamentos</div>
-                <div className="text-muted-foreground text-xs">Vinculados</div>
+            {/* Equipment Count */}
+            <div className="flex items-start gap-3">
+              <Package className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{project.equipmentCount} equipamentos</p>
+                <p className="text-xs text-muted-foreground/70">Vinculados</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className="font-medium">
+            {/* Start Date */}
+            <div className="flex items-start gap-3">
+              <Calendar className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">
                   {new Date(project.startDate).toLocaleDateString('pt-BR')}
-                </div>
-                <div className="text-muted-foreground text-xs">Data de início</div>
+                </p>
+                <p className="text-xs text-muted-foreground/70">Data de início</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className={cn(
-                  "font-medium",
+            {/* End Date */}
+            <div className="flex items-start gap-3">
+              <Clock className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className={cn(
+                  "text-sm font-medium",
                   isOverdue && "text-destructive"
                 )}>
                   {project.actualEndDate 
                     ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
                     : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
                   }
-                </div>
-                <div className="text-muted-foreground text-xs">
+                </p>
+                <p className="text-xs text-muted-foreground/70">
                   {project.actualEndDate ? 'Finalizado em' : 'Previsão de fim'}
-                </div>
+                </p>
               </div>
             </div>
           </div>
 
           {/* Description */}
           {project.description && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground line-clamp-2">
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground/80 line-clamp-2">
                 {project.description}
               </p>
             </div>
@@ -172,12 +211,12 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         </div>
 
         {/* Action Button */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-5 pt-4 border-t">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleViewDetails}
-            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
           >
             <Eye className="mr-2 h-4 w-4" />
             Ver Projeto
