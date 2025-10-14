@@ -48,7 +48,6 @@ interface WithdrawalData {
   withdrawalTime?: string;
   recordingType: string;
   selectedEquipment: {
-    cameraQuantity: number;
     cameras: SelectedCamera[];
     lenses: Equipment[];
     cameraAccessories: Equipment[];
@@ -95,7 +94,6 @@ export default function ProjectWithdrawal() {
     separationDate: undefined,
     recordingType: '',
     selectedEquipment: {
-      cameraQuantity: 1,
       cameras: [],
       lenses: [],
       cameraAccessories: [],
@@ -251,23 +249,6 @@ export default function ProjectWithdrawal() {
     );
   };
 
-  const handleCameraQuantityChange = (quantity: number) => {
-    const selectedCameras = data.selectedEquipment.cameras;
-    
-    if (quantity < selectedCameras.length) {
-      const newCameras = selectedCameras.slice(0, quantity);
-      updateField('selectedEquipment', {
-        ...data.selectedEquipment,
-        cameraQuantity: quantity,
-        cameras: newCameras,
-      });
-    } else {
-      updateField('selectedEquipment', {
-        ...data.selectedEquipment,
-        cameraQuantity: quantity,
-      });
-    }
-  };
 
   const handleCameraSelect = (cameraHierarchy: { item: Equipment; accessories: Equipment[] }) => {
     const newSelectedCamera: SelectedCamera = {
@@ -293,7 +274,7 @@ export default function ProjectWithdrawal() {
   };
 
   const handleEquipmentSelect = (equipment: Equipment, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras' || type === 'cameraQuantity') return;
+    if (type === 'cameras') return;
     
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     updateField('selectedEquipment', {
@@ -303,7 +284,7 @@ export default function ProjectWithdrawal() {
   };
 
   const handleEquipmentDeselect = (equipmentId: string, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras' || type === 'cameraQuantity') return;
+    if (type === 'cameras') return;
     
     const currentEquipment = data.selectedEquipment[type] as Equipment[];
     const updatedEquipment = currentEquipment.filter(item => item.id !== equipmentId);
@@ -618,7 +599,7 @@ export default function ProjectWithdrawal() {
       case 4:
         return data.recordingType !== '';
       case 5:
-        return data.selectedEquipment.cameras.length === data.selectedEquipment.cameraQuantity;
+        return data.selectedEquipment.cameras.length > 0;
       case 6:
       case 7:
       case 8:
@@ -1073,38 +1054,8 @@ export default function ProjectWithdrawal() {
       title: 'Câmeras',
       content: (
         <div className="space-y-4">
-          <div>
-            <Label>Quantidade de Câmeras</Label>
-            <div className="flex items-center gap-2 mt-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleCameraQuantityChange(Math.max(1, data.selectedEquipment.cameraQuantity - 1))}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Input
-                type="number"
-                min={1}
-                max={10}
-                value={data.selectedEquipment.cameraQuantity}
-                onChange={(e) => handleCameraQuantityChange(parseInt(e.target.value) || 1)}
-                className="w-20 text-center h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleCameraQuantityChange(Math.min(10, data.selectedEquipment.cameraQuantity + 1))}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label>Câmeras Selecionadas ({data.selectedEquipment.cameras.length}/{data.selectedEquipment.cameraQuantity})</Label>
+            <Label>Câmeras Selecionadas ({data.selectedEquipment.cameras.length})</Label>
             {data.selectedEquipment.cameras.map(({ camera, accessories }) => (
               <Card key={camera.id}>
                 <CardHeader className="pb-3">
@@ -1157,9 +1108,8 @@ export default function ProjectWithdrawal() {
             ))}
           </div>
 
-          {data.selectedEquipment.cameras.length < data.selectedEquipment.cameraQuantity && (
-            <div className="space-y-2">
-              <Label>Câmeras Disponíveis</Label>
+          <div className="space-y-2">
+            <Label>Câmeras Disponíveis</Label>
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {getAvailableCameras().length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
@@ -1191,7 +1141,6 @@ export default function ProjectWithdrawal() {
                 )}
               </div>
             </div>
-          )}
         </div>
       )
     },
