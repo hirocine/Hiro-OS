@@ -399,7 +399,7 @@ export default function ProjectWithdrawal() {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      doc.text('Resumo de Projeto Audio Visual', pageWidth / 2, yPosition + 12, { align: 'center' });
+      doc.text('Resumo de Projeto Audio Visual', 38, yPosition + 12, { align: 'left' });
       
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.3);
@@ -410,7 +410,6 @@ export default function ProjectWithdrawal() {
       yPosition = headerLineY + 6;
       
       // === INFORMAÇÕES DO PROJETO (layout melhorado) ===
-      const projectInfoStartX = 38; // Posição X após o logo (logo termina em ~35mm)
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       const projectFullName = `${data.projectNumber} - ${data.company}: ${data.projectName}`;
       
@@ -418,9 +417,9 @@ export default function ProjectWithdrawal() {
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      const maxWidth = pageWidth - projectInfoStartX - 15; // margem direita de 15mm
+      const maxWidth = pageWidth - 30; // 15mm margem esquerda + 15mm direita
       const projectNameLines = doc.splitTextToSize(projectFullName, maxWidth);
-      doc.text(projectNameLines, projectInfoStartX, yPosition);
+      doc.text(projectNameLines, 15, yPosition);
       
       // Avançar Y baseado no número de linhas
       const lineStep = 5;
@@ -430,12 +429,12 @@ export default function ProjectWithdrawal() {
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60);
-      doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, projectInfoStartX, yPosition);
+      doc.text(`Responsável: ${responsibleUser?.display_name || 'N/A'}`, 15, yPosition);
       yPosition += 5;
       
       // Tipo de Gravação (sem emojis)
       const recordingTypeClean = stripEmojis(data.recordingType || 'Não informado');
-      doc.text(`Tipo de Gravação: ${recordingTypeClean}`, projectInfoStartX, yPosition);
+      doc.text(`Tipo de Gravação: ${recordingTypeClean}`, 15, yPosition);
       yPosition += 5;
       
       // Datas
@@ -443,14 +442,14 @@ export default function ProjectWithdrawal() {
       const withdrawalDate = data.withdrawalDate ? format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
       const returnDate = data.returnDate ? format(data.returnDate, 'dd/MM/yyyy', { locale: ptBR }) : '-';
       
-      doc.text(`Separação: ${separationDate}  |  Retirada: ${withdrawalDate}  |  Devolução: ${returnDate}`, projectInfoStartX, yPosition);
+      doc.text(`Separação: ${separationDate}  |  Retirada: ${withdrawalDate}  |  Devolução: ${returnDate}`, 15, yPosition);
       yPosition += 5;
       
       // Dias de uso (linha própria)
       if (data.withdrawalDate && data.returnDate) {
         const days = Math.ceil((data.returnDate.getTime() - data.withdrawalDate.getTime()) / (1000 * 60 * 60 * 24));
         doc.setFont('helvetica', 'bold');
-        doc.text(`(${days} ${days === 1 ? 'dia' : 'dias'} de uso)`, projectInfoStartX, yPosition);
+        doc.text(`(${days} ${days === 1 ? 'dia' : 'dias'} de uso)`, 15, yPosition);
         doc.setFont('helvetica', 'normal');
       }
       yPosition += 8;
