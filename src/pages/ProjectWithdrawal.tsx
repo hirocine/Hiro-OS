@@ -454,7 +454,21 @@ export default function ProjectWithdrawal() {
       }
       yPosition += 8;
       
-      // === PREPARAR DADOS DE EQUIPAMENTOS (SEM EMOJIS) ===
+      // === PREPARAR DADOS DE EQUIPAMENTOS ===
+      // Mapeamento de ícones por categoria
+      const categoryIcons: Record<string, string> = {
+        'CÂMERAS': '📷',
+        'LENTES': '🔍',
+        'ACESSÓRIOS DE CÂMERA': '⚙️',
+        'TRIPÉS E ESTABILIZADORES': '📐',
+        'ILUMINAÇÃO': '💡',
+        'MODIFICADORES DE LUZ': '📊',
+        'MAQUINÁRIO': '🔧',
+        'ELÉTRICA': '⚡',
+        'ARMAZENAMENTO': '💾',
+        'COMPUTADORES': '💻'
+      };
+      
       const categoriesData: Array<{
         name: string;
         items: Array<{ name: string; isAccessory: boolean }>;
@@ -568,8 +582,9 @@ export default function ProjectWithdrawal() {
         }
         
         // Preparar dados para autoTable
+        const icon = categoryIcons[category.name] || '📦';
         const head = [[{ 
-          content: `${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 
+          content: `${icon} ${category.name} (${category.items.length} ${category.items.length === 1 ? 'item' : 'itens'})`, 
           colSpan: 2, 
           styles: { 
             fillColor: [240, 240, 240] as [number, number, number], 
