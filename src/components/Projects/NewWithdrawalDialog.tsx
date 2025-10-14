@@ -1091,11 +1091,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 5:
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold">Seleção de Câmeras</h3>
-              <p className="text-sm text-muted-foreground mt-1">Selecione todas as câmeras necessárias para o projeto</p>
-            </div>
-            
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Available Cameras */}
@@ -1290,11 +1285,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 6:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto animate-fade-in">
-            <div>
-              <h3 className="text-lg font-semibold">Seleção de Lentes</h3>
-              <p className="text-sm text-muted-foreground mt-1">Selecione as lentes que serão usadas (opcional)</p>
-            </div>
-            
             {/* Search Input */}
             <div className="space-y-2">
               <Label htmlFor="search-lenses">Buscar lentes</Label>
@@ -1465,11 +1455,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 7:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto animate-fade-in">
-            <div>
-              <h3 className="text-lg font-semibold">Acessórios de Câmera</h3>
-              <p className="text-sm text-muted-foreground mt-1">Selecione acessórios adicionais (opcional)</p>
-            </div>
-            
             {/* Search Input */}
             <div className="space-y-2">
               <Label htmlFor="search-accessories">Buscar acessórios</Label>
@@ -1640,8 +1625,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 8:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Tripé e Movimento</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Tripods */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -1795,8 +1778,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 9:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Luz</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Lights */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -1950,8 +1931,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 10:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Modificadores de Luz</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Light Modifiers */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -2105,8 +2084,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 11:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Maquinária</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Machinery */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -2260,8 +2237,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 12:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Elétrica</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Electrical */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -2415,8 +2390,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 13:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Armazenamento/Log</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Storage */}
               <div className="flex-1 flex flex-col min-h-0">
@@ -2570,8 +2543,6 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
       case 14:
         return (
           <div className="space-y-6 flex-1 overflow-y-auto">
-            <h3 className="text-lg font-semibold">Computador</h3>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Available Computers */}
               <div className="flex-1 flex flex-col min-h-0">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
 import { Equipment, EquipmentCategory } from '@/types/equipment';
@@ -326,14 +327,13 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
         const selectedEquipment = getSelectedEquipment(equipmentStep.category);
         
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{equipmentStep.title}</h3>
-            
+          <div className="space-y-2">
             <div className="grid grid-cols-2 gap-4 h-96">
               {/* Available Equipment */}
               <div className="border rounded-lg">
-                <div className="p-3 border-b bg-muted/50">
-                  <h4 className="font-medium">Disponíveis ({availableEquipment.length})</h4>
+                <div className="p-3 border-b bg-muted/50 flex items-center gap-2">
+                  <h4 className="font-medium">{equipmentStep.title} - Disponíveis</h4>
+                  <Badge variant="secondary">{availableEquipment.length}</Badge>
                 </div>
                 <div className="p-3 space-y-2 overflow-y-auto h-80">
                   {availableEquipment.map(equipment => (
@@ -356,8 +356,10 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
 
               {/* Selected Equipment */}
               <div className="border rounded-lg">
-                <div className="p-3 border-b bg-muted/50">
-                  <h4 className="font-medium">Selecionados ({selectedEquipment.length})</h4>
+                <div className="p-3 border-b bg-muted/50 flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <h4 className="font-medium">Selecionados</h4>
+                  <Badge variant="default">{selectedEquipment.length}</Badge>
                 </div>
                 <div className="p-3 space-y-2 overflow-y-auto h-80">
                   {selectedEquipment.map(equipment => (
