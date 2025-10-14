@@ -132,9 +132,9 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         </div>
 
         <div onClick={handleViewDetails}>
-          {/* Current Step - Highlighted Section */}
-          <div className="bg-accent/30 rounded-lg p-3 mb-5 border border-accent/20">
-            <div className="flex items-center justify-between">
+          {/* Current Step - Compact Line */}
+          <div className="flex items-center justify-between py-3 mb-5 border-y border-border/50">
+            <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Status Atual
               </span>
@@ -145,6 +145,18 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
                 {stepLabels[project.step]}
               </Badge>
             </div>
+            
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className="text-xs h-8 opacity-60 hover:opacity-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewDetails();
+              }}
+            >
+              {stepLabels[project.step]}
+            </Button>
           </div>
 
           {/* Project Info Grid */}
