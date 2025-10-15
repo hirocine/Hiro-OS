@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { SSDStatus } from './useSSDs';
+import { useUserRole } from './useUserRole';
 
 import { ProjectAllocation } from '@/components/SSD/ProjectAllocationList';
 
@@ -19,6 +20,7 @@ export function useSSDDetails(ssd: Equipment | null) {
   const [allocations, setAllocations] = useState<ProjectAllocation[]>([]);
   const [externalLoan, setExternalLoan] = useState<SSDExternalLoan | null>(null);
   const [loading, setLoading] = useState(false);
+  const { logAuditEntry } = useUserRole();
 
   useEffect(() => {
     if (ssd?.id) {
@@ -140,6 +142,24 @@ export function useSSDDetails(ssd: Equipment | null) {
           .eq('id', externalLoan.id);
       }
 
+      // Log de auditoria
+      await logAuditEntry(
+        'update_ssd_details',
+        'equipments',
+        ssd.id,
+        {
+          internal_user_id: ssd.internal_user_id,
+          allocations: allocations,
+          external_loan: externalLoan
+        },
+        {
+          internal_user_id: internalUserId,
+          status: status,
+          allocations: allocationsData,
+          external_loan: externalLoanData
+        }
+      );
+      
       toast.success('SSD atualizado com sucesso!');
       return true;
     } catch (error) {

@@ -11,6 +11,7 @@ export function useProjects() {
   const [filters, setFilters] = useState<ProjectFilters>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { logAuditEntry } = useUserRole();
 
   // Fetch projects from Supabase
   useEffect(() => {
