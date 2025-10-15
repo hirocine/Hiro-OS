@@ -69,12 +69,6 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps
   const freeSpace = (ssd.capacity || 0) - allocatedSpace;
   const shouldShowFreeSpace = (kanbanStatus === 'in_use' || kanbanStatus === 'loaned') && ssd.capacity;
   
-  // Determinar variante da badge
-  const getFreeSpaceVariant = () => {
-    if (!ssd.capacity) return 'success';
-    return freeSpace < ssd.capacity * 0.2 ? 'destructive' : 'success';
-  };
-  
   return (
     <Card 
       className={cn(
@@ -108,7 +102,7 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps
                 )}
                 {shouldShowFreeSpace && (
                   <Badge 
-                    variant={getFreeSpaceVariant()}
+                    variant="outline"
                     className="shrink-0 text-[10px]"
                   >
                     {freeSpace.toFixed(0)} GB de {ssd.capacity} GB
