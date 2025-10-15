@@ -171,9 +171,37 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   };
 
   const parseCurrencyInput = (value: string): number => {
-    if (!value) return 0;
-    const numStr = value.replace(/[^\d,.-]/g, '').replace(',', '.');
-    const num = parseFloat(numStr);
+    if (!value || value.trim() === '') return 0;
+    
+    // Remove tudo exceto dígitos, vírgula e ponto
+    let cleaned = value.replace(/[^\d,.-]/g, '');
+    
+    // Trata diferentes formatos:
+    // "1.500,00" (BR) → 1500.00
+    // "1500.00" (US) → 1500.00
+    // "1500,00" (BR sem milhar) → 1500.00
+    // "4" → 4.00
+    // "4.5" → 4.50
+    
+    // Se tem vírgula E ponto, assume formato BR (ponto=milhar, vírgula=decimal)
+    if (cleaned.includes('.') && cleaned.includes(',')) {
+      cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+    }
+    // Se tem apenas vírgula, assume como decimal
+    else if (cleaned.includes(',')) {
+      cleaned = cleaned.replace(',', '.');
+    }
+    // Se tem apenas ponto, verifica se é milhar ou decimal
+    else if (cleaned.includes('.')) {
+      const parts = cleaned.split('.');
+      // Se tem mais de 3 dígitos após o ponto, é separador de milhar
+      if (parts.length === 2 && parts[1].length > 2) {
+        cleaned = cleaned.replace(/\./g, '');
+      }
+      // Senão, é decimal, deixa como está
+    }
+    
+    const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
   };
 

@@ -70,6 +70,12 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const [showLoanDateCalendar, setShowLoanDateCalendar] = useState(false);
   const [showReturnDateCalendar, setShowReturnDateCalendar] = useState(false);
 
+  // Estados para controlar edição dos campos monetários
+  const [editingValue, setEditingValue] = useState<string>('');
+  const [editingDepreciatedValue, setEditingDepreciatedValue] = useState<string>('');
+  const [isEditingValue, setIsEditingValue] = useState(false);
+  const [isEditingDepreciatedValue, setIsEditingDepreciatedValue] = useState(false);
+
   // Handlers para seleção de datas
   const handlePurchaseDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -249,6 +255,40 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (value && value.length > 0 && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       updateField(field, '');
     }
+  };
+
+  // Handlers para campos monetários - Valor de Compra
+  const handleValueFocus = () => {
+    setIsEditingValue(true);
+    const rawValue = formData.value ? formData.value.toString() : '';
+    setEditingValue(rawValue);
+  };
+
+  const handleValueBlur = () => {
+    setIsEditingValue(false);
+    const parsed = parseCurrencyInput(editingValue);
+    updateField('value', parsed);
+  };
+
+  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingValue(e.target.value);
+  };
+
+  // Handlers para campos monetários - Valor Depreciado
+  const handleDepreciatedValueFocus = () => {
+    setIsEditingDepreciatedValue(true);
+    const rawValue = formData.depreciatedValue ? formData.depreciatedValue.toString() : '';
+    setEditingDepreciatedValue(rawValue);
+  };
+
+  const handleDepreciatedValueBlur = () => {
+    setIsEditingDepreciatedValue(false);
+    const parsed = parseCurrencyInput(editingDepreciatedValue);
+    updateField('depreciatedValue', parsed);
+  };
+
+  const handleDepreciatedValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingDepreciatedValue(e.target.value);
   };
 
   // Helper para mapear categoria para variante de badge
@@ -841,10 +881,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <Label htmlFor="value" className="text-sm font-medium">Valor de Compra</Label>
           <Input
             id="value"
-            value={formData.value ? formatCurrency(formData.value) : ''}
-            onChange={(e) => updateField('value', parseCurrencyInput(e.target.value))}
+            value={isEditingValue ? editingValue : (formData.value ? formatCurrency(formData.value) : '')}
+            onChange={handleValueChange}
+            onFocus={handleValueFocus}
+            onBlur={handleValueBlur}
             className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
             placeholder="R$ 0,00"
+            inputMode="decimal"
           />
         </div>
 
@@ -852,10 +895,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <Label htmlFor="depreciatedValue" className="text-sm font-medium">Valor Depreciado</Label>
           <Input
             id="depreciatedValue"
-            value={formData.depreciatedValue ? formatCurrency(formData.depreciatedValue) : ''}
-            onChange={(e) => updateField('depreciatedValue', parseCurrencyInput(e.target.value))}
+            value={isEditingDepreciatedValue ? editingDepreciatedValue : (formData.depreciatedValue ? formatCurrency(formData.depreciatedValue) : '')}
+            onChange={handleDepreciatedValueChange}
+            onFocus={handleDepreciatedValueFocus}
+            onBlur={handleDepreciatedValueBlur}
             className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
             placeholder="R$ 0,00"
+            inputMode="decimal"
           />
         </div>
 
