@@ -4,15 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SSDStatus } from '@/hooks/useSSDs';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 interface SSDCardProps {
   ssd: Equipment;
   isDragging?: boolean;
   kanbanStatus?: SSDStatus;
   onClick?: () => void;
+  allocatedSpace?: number;
 }
 
 const getKanbanStatusVariant = (status: SSDStatus) => {
@@ -37,40 +35,8 @@ const getKanbanStatusLabel = (status: SSDStatus) => {
   }
 };
 
-export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps) => {
-  const [allocatedSpace, setAllocatedSpace] = useState(0);
-
-  // Buscar alocações ao montar o componente
-  useEffect(() => {
-    const fetchAllocations = async () => {
-      if (!ssd.id || !ssd.capacity) return;
-      
-      // Só busca se estiver em uso (interno ou externo)
-      if (kanbanStatus !== 'in_use' && kanbanStatus !== 'loaned') return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('ssd_allocations')
-          .select('allocated_gb')
-          .eq('ssd_id', ssd.id);
-
-        if (error) throw error;
-        
-        const total = (data || []).reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
-        setAllocatedSpace(total);
-      } catch (error) {
-        logger.error('Failed to fetch SSD allocations', {
-          module: 'ssd',
-          data: { ssdId: ssd.id },
-          error
-        });
-      }
-    };
-
-    fetchAllocations();
-  }, [ssd.id, ssd.capacity, kanbanStatus]);
-
-  // Calcular espaço livre
+export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace = 0 }: SSDCardProps) => {
+  // Calcular espaço livre (agora vem das props)
   const freeSpace = (ssd.capacity || 0) - allocatedSpace;
   const shouldShowFreeSpace = (kanbanStatus === 'in_use' || kanbanStatus === 'loaned') && ssd.capacity;
   

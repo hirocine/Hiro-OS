@@ -13,6 +13,15 @@ export interface SSDsByStatus {
   loaned: Equipment[];
 }
 
+export interface SSDAllocation {
+  ssd_id: string;
+  allocated_gb: number;
+}
+
+export interface SSDAllocationsMap {
+  [ssdId: string]: number;
+}
+
 // Helper function to detect if an item is a drive (SSD/HD)
 const isDrive = (item: any): boolean => {
   const searchText = `${item.subcategory || ''} ${item.name || ''} ${item.custom_category || ''}`.toLowerCase();
@@ -33,6 +42,7 @@ const isDrive = (item: any): boolean => {
 
 export const useSSDs = () => {
   const [ssds, setSSDs] = useState<Equipment[]>([]);
+  const [ssdAllocations, setSSDAllocations] = useState<SSDAllocationsMap>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { logAuditEntry } = useUserRole();
@@ -74,6 +84,26 @@ export const useSSDs = () => {
       }));
       
       setSSDs(transformedData as Equipment[]);
+
+      // Buscar todas as alocações em batch (otimização N+1)
+      if (transformedData.length > 0) {
+        const { data: allocationsData, error: allocError } = await supabase
+          .from('ssd_allocations')
+          .select('ssd_id, allocated_gb')
+          .in('ssd_id', transformedData.map(ssd => ssd.id));
+
+        if (!allocError && allocationsData) {
+          // Agrupar alocações por SSD ID
+          const allocationsMap: SSDAllocationsMap = {};
+          allocationsData.forEach((alloc: SSDAllocation) => {
+            if (!allocationsMap[alloc.ssd_id]) {
+              allocationsMap[alloc.ssd_id] = 0;
+            }
+            allocationsMap[alloc.ssd_id] += alloc.allocated_gb || 0;
+          });
+          setSSDAllocations(allocationsMap);
+        }
+      }
     } catch (error) {
       toast({
         title: "Erro ao carregar SSDs",
@@ -343,6 +373,7 @@ export const useSSDs = () => {
   return {
     ssds,
     ssdsByStatus,
+    ssdAllocations,
     loading,
     updateSSDStatus,
     updateSSDOrder,

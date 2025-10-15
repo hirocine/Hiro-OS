@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 const SSDs = () => {
-  const { ssds, ssdsByStatus, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
+  const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
@@ -141,6 +141,7 @@ const SSDs = () => {
       <div className="mt-6">
         <SSDKanbanBoard
           ssdsByStatus={ssdsByStatus}
+          ssdAllocations={ssdAllocations}
           onStatusChange={updateSSDStatus}
           onReorder={updateSSDOrder}
           onUpdate={refetch}

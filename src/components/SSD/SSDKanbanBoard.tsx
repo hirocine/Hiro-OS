@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { SSDCard } from './SSDCard';
-import { SSDStatus } from '@/hooks/useSSDs';
+import { SSDStatus, SSDAllocationsMap } from '@/hooks/useSSDs';
 import { SSDDetailsDialog } from './SSDDetailsDialog';
 import {
   DndContext,
@@ -28,6 +28,7 @@ interface SSDKanbanBoardProps {
     in_use: Equipment[];
     loaned: Equipment[];
   };
+  ssdAllocations: SSDAllocationsMap;
   onStatusChange: (ssdId: string, newStatus: SSDStatus) => void;
   onReorder: (ssdId: string, newStatus: SSDStatus, targetIndex: number) => void;
   onUpdate: () => void;
@@ -36,10 +37,11 @@ interface SSDKanbanBoardProps {
 interface SortableCardProps {
   ssd: Equipment;
   kanbanStatus: SSDStatus;
+  allocatedSpace: number;
   onCardClick: (ssd: Equipment) => void;
 }
 
-const SortableCard = ({ ssd, kanbanStatus, onCardClick }: SortableCardProps) => {
+const SortableCard = ({ ssd, kanbanStatus, allocatedSpace, onCardClick }: SortableCardProps) => {
   const {
     attributes,
     listeners,
@@ -73,6 +75,7 @@ const SortableCard = ({ ssd, kanbanStatus, onCardClick }: SortableCardProps) => 
         ssd={ssd} 
         isDragging={isDragging} 
         kanbanStatus={kanbanStatus}
+        allocatedSpace={allocatedSpace}
         onClick={() => onCardClick(ssd)}
       />
     </div>
@@ -84,10 +87,11 @@ interface KanbanColumnProps {
   status: SSDStatus;
   ssds: Equipment[];
   count: number;
+  ssdAllocations: SSDAllocationsMap;
   onCardClick: (ssd: Equipment) => void;
 }
 
-const KanbanColumn = ({ title, status, ssds, count, onCardClick }: KanbanColumnProps) => {
+const KanbanColumn = ({ title, status, ssds, count, ssdAllocations, onCardClick }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${status}`,
   });
@@ -133,6 +137,7 @@ const KanbanColumn = ({ title, status, ssds, count, onCardClick }: KanbanColumnP
                   key={ssd.id} 
                   ssd={ssd} 
                   kanbanStatus={status}
+                  allocatedSpace={ssdAllocations[ssd.id] || 0}
                   onCardClick={onCardClick}
                 />
               ))
@@ -144,7 +149,7 @@ const KanbanColumn = ({ title, status, ssds, count, onCardClick }: KanbanColumnP
   );
 };
 
-export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpdate }: SSDKanbanBoardProps) => {
+export const SSDKanbanBoard = ({ ssdsByStatus, ssdAllocations, onStatusChange, onReorder, onUpdate }: SSDKanbanBoardProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedSSD, setSelectedSSD] = useState<Equipment | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -262,6 +267,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
             status="available"
             ssds={ssdsByStatus.available}
             count={ssdsByStatus.available.length}
+            ssdAllocations={ssdAllocations}
             onCardClick={handleCardClick}
           />
           <KanbanColumn
@@ -269,6 +275,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
             status="in_use"
             ssds={ssdsByStatus.in_use}
             count={ssdsByStatus.in_use.length}
+            ssdAllocations={ssdAllocations}
             onCardClick={handleCardClick}
           />
           <KanbanColumn
@@ -276,6 +283,7 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
             status="loaned"
             ssds={ssdsByStatus.loaned}
             count={ssdsByStatus.loaned.length}
+            ssdAllocations={ssdAllocations}
             onCardClick={handleCardClick}
           />
         </div>
@@ -287,7 +295,12 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
               transition-all duration-200 ease-out
               motion-reduce:transition-none motion-reduce:rotate-0 motion-reduce:scale-100
             ">
-              <SSDCard ssd={activeSSD} isDragging={false} kanbanStatus={activeStatus} />
+              <SSDCard 
+                ssd={activeSSD} 
+                isDragging={false} 
+                kanbanStatus={activeStatus}
+                allocatedSpace={ssdAllocations[activeSSD.id] || 0}
+              />
             </div>
           ) : null}
         </DragOverlay>
