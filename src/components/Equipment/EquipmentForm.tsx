@@ -13,9 +13,11 @@ import { Badge } from '@/components/ui/badge';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Loader2, Upload, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon } from 'lucide-react';
+import { Loader2, Upload, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface EquipmentFormProps {
   formData: Omit<Equipment, 'id'>;
@@ -51,12 +53,17 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   handleImageRemove,
 }) => {
   const isMobile = useIsMobile();
-  const { getSubcategoriesForCategory, loading: categoriesLoading } = useCategories();
+  const { getSubcategoriesForCategory, loading: categoriesLoading, addCustomCategory, refetch } = useCategories();
 
   // Estados para controlar os popovers de data
   const [showPurchaseDateCalendar, setShowPurchaseDateCalendar] = useState(false);
   const [showReceiveDateCalendar, setShowReceiveDateCalendar] = useState(false);
   const [showMaintenanceDateCalendar, setShowMaintenanceDateCalendar] = useState(false);
+
+  // Estados para controlar o dialog de nova subcategoria
+  const [showNewSubcategoryDialog, setShowNewSubcategoryDialog] = useState(false);
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
+  const [isCreatingSubcategory, setIsCreatingSubcategory] = useState(false);
 
   // Handlers para seleção de datas
   const handlePurchaseDateSelect = (date: Date | undefined) => {
@@ -77,6 +84,54 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (date) {
       updateField('lastMaintenance', format(date, 'yyyy-MM-dd'));
       setShowMaintenanceDateCalendar(false);
+    }
+  };
+
+  // Handler para mudança de subcategoria
+  const handleSubcategoryChange = (value: string) => {
+    if (value === '__CREATE_NEW__') {
+      setShowNewSubcategoryDialog(true);
+      setNewSubcategoryName('');
+    } else {
+      updateField('subcategory', value);
+    }
+  };
+
+  // Handler para criar nova subcategoria
+  const handleCreateSubcategory = async () => {
+    if (!newSubcategoryName.trim() || !formData.category) return;
+    
+    setIsCreatingSubcategory(true);
+    
+    try {
+      const result = await addCustomCategory(
+        formData.category,
+        newSubcategoryName.trim()
+      );
+      
+      if (result.success) {
+        // Atualizar o campo com a nova subcategoria
+        updateField('subcategory', newSubcategoryName.trim());
+        
+        // Recarregar categorias
+        await refetch();
+        
+        // Fechar dialog
+        setShowNewSubcategoryDialog(false);
+        setNewSubcategoryName('');
+        
+        toast.success('Subcategoria criada', {
+          description: `"${newSubcategoryName.trim()}" foi adicionada com sucesso.`
+        });
+      } else {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+    } catch (error: any) {
+      toast.error('Erro ao criar subcategoria', {
+        description: error.message || 'Tente novamente.'
+      });
+    } finally {
+      setIsCreatingSubcategory(false);
     }
   };
 
@@ -442,7 +497,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Label>
           <Select
             value={formData.subcategory || ''}
-            onValueChange={(value) => updateField('subcategory', value)}
+            onValueChange={handleSubcategoryChange}
             disabled={categoriesLoading || !formData.category}
           >
             <SelectTrigger id="subcategory" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
@@ -454,6 +509,22 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                   {sub}
                 </SelectItem>
               ))}
+              
+              {/* Separador */}
+              {getSubcategoriesForCategory(formData.category).length > 0 && (
+                <div className="border-t my-1" />
+              )}
+              
+              {/* Opção de criar nova */}
+              <SelectItem 
+                value="__CREATE_NEW__" 
+                className="text-primary font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Criar nova subcategoria
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -791,6 +862,83 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       {renderLinksCard()}
       {renderFinancialCard()}
       {renderDatesSection()}
+
+      {/* Dialog para criar nova subcategoria */}
+      <Dialog open={showNewSubcategoryDialog} onOpenChange={setShowNewSubcategoryDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Nova Subcategoria</DialogTitle>
+            <DialogDescription>
+              Adicione uma nova subcategoria personalizada para {formData.category ? getCategoryLabel(formData.category) : 'a categoria selecionada'}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Categoria selecionada (read-only) */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                Categoria
+              </Label>
+              <div className="mt-1.5">
+                <Badge variant="neutral" className="gap-1.5">
+                  {formData.category && getCategoryIcon(formData.category)}
+                  {formData.category && getCategoryLabel(formData.category)}
+                </Badge>
+              </div>
+            </div>
+            
+            {/* Input para nome da subcategoria */}
+            <div>
+              <Label htmlFor="new-subcategory" className="text-sm font-medium">
+                Nome da Subcategoria <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="new-subcategory"
+                placeholder="Ex: Lente Grande Angular, Tripé Profissional..."
+                value={newSubcategoryName}
+                onChange={(e) => setNewSubcategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newSubcategoryName.trim()) {
+                    handleCreateSubcategory();
+                  }
+                }}
+                disabled={isCreatingSubcategory}
+                autoFocus
+                className="mt-1.5"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowNewSubcategoryDialog(false);
+                setNewSubcategoryName('');
+              }}
+              disabled={isCreatingSubcategory}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateSubcategory}
+              disabled={!newSubcategoryName.trim() || isCreatingSubcategory}
+            >
+              {isCreatingSubcategory ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Criar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Actions */}
       <MobileFriendlyFormActions>
