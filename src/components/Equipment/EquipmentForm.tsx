@@ -584,6 +584,23 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Item Principal (condicional - só para acessórios) */}
+        {formData.itemType === 'accessory' && (
+          <div>
+            <Label htmlFor="parentId" className="text-sm font-medium">
+              Item Principal
+            </Label>
+            <Autocomplete
+              options={getMainItemsAsOptions()}
+              value={formData.parentId || 'none'}
+              onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
+              placeholder="Pesquise por número ou nome"
+              allowCustomValue={false}
+              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
+            />
+          </div>
+        )}
+
         {/* Status */}
         <div>
           <Label htmlFor="status" className="text-sm font-medium">
@@ -629,23 +646,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             </SelectContent>
           </Select>
         </div>
-        
-        {/* Item Principal (condicional - só para acessórios) */}
-        {formData.itemType === 'accessory' && (
-          <div>
-            <Label htmlFor="parentId" className="text-sm font-medium">
-              Item Principal
-            </Label>
-            <Autocomplete
-              options={getMainItemsAsOptions()}
-              value={formData.parentId || 'none'}
-              onValueChange={(value) => updateField('parentId', value === 'none' ? '' : value)}
-              placeholder="Pesquise por número ou nome"
-              allowCustomValue={false}
-              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-            />
-          </div>
-        )}
 
         {/* Capacidade (condicional para storage) */}
         {formData.category === 'storage' && (
