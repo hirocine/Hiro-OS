@@ -68,16 +68,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validação básica
-    if (!formData.name.trim() || !formData.brand.trim()) {
-      enhancedToast.error({
-        title: 'Campos obrigatórios',
-        description: 'Nome e marca são obrigatórios.'
-      });
-      return;
-    }
-
-    // Validação básica
+    // Validação de campos obrigatórios
     if (!formData.name?.trim() || !formData.brand?.trim() || !formData.category) {
       enhancedToast.error({
         title: 'Campos obrigatórios',
