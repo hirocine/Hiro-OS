@@ -4,6 +4,7 @@ import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { SSDStatus } from './useSSDs';
 import { useUserRole } from './useUserRole';
+import { logger } from '@/lib/logger';
 
 import { ProjectAllocation } from '@/components/SSD/ProjectAllocationList';
 
@@ -53,7 +54,11 @@ export function useSSDDetails(ssd: Equipment | null) {
       if (loanError) throw loanError;
       setExternalLoan(loanData);
     } catch (error) {
-      console.error('Erro ao buscar detalhes do SSD:', error);
+      logger.error('Failed to fetch SSD details', {
+        module: 'ssd',
+        data: { ssdId: ssd.id },
+        error
+      });
       toast.error('Erro ao carregar detalhes do SSD');
     } finally {
       setLoading(false);
@@ -163,7 +168,11 @@ export function useSSDDetails(ssd: Equipment | null) {
       toast.success('SSD atualizado com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar SSD:', error);
+      logger.error('Failed to update SSD', {
+        module: 'ssd',
+        data: { ssdId: ssd.id },
+        error
+      });
       toast.error('Erro ao atualizar SSD');
       return false;
     } finally {

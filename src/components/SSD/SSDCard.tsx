@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { SSDStatus } from '@/hooks/useSSDs';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface SSDCardProps {
   ssd: Equipment;
@@ -58,7 +59,11 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps
         const total = (data || []).reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
         setAllocatedSpace(total);
       } catch (error) {
-        console.error('Erro ao buscar alocações:', error);
+        logger.error('Failed to fetch SSD allocations', {
+          module: 'ssd',
+          data: { ssdId: ssd.id },
+          error
+        });
       }
     };
 

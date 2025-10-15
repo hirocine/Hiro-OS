@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface SecurityScanResult {
   scanId: string;
@@ -59,7 +60,11 @@ export function useSecurityScanning() {
       const { data, error } = await supabase.rpc('run_complete_security_scan');
       
       if (error) {
-        console.error('Security scan error:', error);
+        logger.error('Security scan failed', {
+          module: 'security',
+          action: 'run_security_scan',
+          error
+        });
         toast.error('Erro ao executar scan de segurança: ' + error.message);
         return null;
       }
@@ -106,7 +111,11 @@ export function useSecurityScanning() {
 
       return null;
     } catch (error) {
-      console.error('Unexpected error during security scan:', error);
+      logger.error('Unexpected security scan error', {
+        module: 'security',
+        action: 'run_security_scan',
+        error
+      });
       toast.error('Erro inesperado durante o scan de segurança');
       return null;
     } finally {
@@ -121,7 +130,11 @@ export function useSecurityScanning() {
       const { data, error } = await supabase.rpc('get_security_dashboard');
       
       if (error) {
-        console.error('Security dashboard error:', error);
+        logger.error('Failed to load security dashboard', {
+          module: 'security',
+          action: 'get_security_dashboard',
+          error
+        });
         toast.error('Erro ao carregar dashboard de segurança: ' + error.message);
         return null;
       }
@@ -155,7 +168,11 @@ export function useSecurityScanning() {
 
       return null;
     } catch (error) {
-      console.error('Unexpected error loading security dashboard:', error);
+      logger.error('Unexpected dashboard error', {
+        module: 'security',
+        action: 'get_security_dashboard',
+        error
+      });
       toast.error('Erro inesperado ao carregar dashboard de segurança');
       return null;
     } finally {
@@ -175,7 +192,12 @@ export function useSecurityScanning() {
         .eq('id', alertId);
 
       if (error) {
-        console.error('Error resolving security alert:', error);
+        logger.error('Failed to resolve security alert', {
+          module: 'security',
+          action: 'resolve_alert',
+          data: { alertId },
+          error
+        });
         toast.error('Erro ao resolver alerta de segurança');
         return false;
       }
@@ -183,7 +205,12 @@ export function useSecurityScanning() {
       toast.success('Alerta de segurança resolvido');
       return true;
     } catch (error) {
-      console.error('Unexpected error resolving alert:', error);
+      logger.error('Unexpected resolve alert error', {
+        module: 'security',
+        action: 'resolve_alert',
+        data: { alertId },
+        error
+      });
       toast.error('Erro inesperado ao resolver alerta');
       return false;
     }

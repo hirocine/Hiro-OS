@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { logger } from '@/lib/logger';
 
 interface UseResponsiveDialogStateOptions {
   onClose?: () => void;
@@ -43,7 +44,10 @@ export function useResponsiveDialogState(options: UseResponsiveDialogStateOption
       }
     } catch (error) {
       // Error should be handled by the action itself
-      console.error('Dialog action failed:', error);
+      logger.error('Dialog action failed', {
+        module: 'ui',
+        error
+      });
     } finally {
       setIsLoading(false);
     }

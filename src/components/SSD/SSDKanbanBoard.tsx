@@ -186,8 +186,6 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    console.log('🎯 Drag ended:', { activeId, overId });
-
     // Find which column the active SSD is currently in
     let currentStatus: SSDStatus | null = null;
     if (ssdsByStatus.available.some(s => s.id === activeId)) currentStatus = 'available';
@@ -195,11 +193,8 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
     else if (ssdsByStatus.loaned.some(s => s.id === activeId)) currentStatus = 'loaned';
 
     if (!currentStatus) {
-      console.log('❌ Dragged SSD not found in any column');
       return;
     }
-
-    console.log('📍 Current status:', currentStatus);
 
     // Determine the target status and index
     let newStatus: SSDStatus | null = null;
@@ -209,11 +204,9 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
     if (overId.startsWith('column-')) {
       newStatus = overId.replace('column-', '') as SSDStatus;
       targetIndex = ssdsByStatus[newStatus].length;
-      console.log('🎯 Dropped on column header:', { newStatus, targetIndex });
     } else if (overId.startsWith('placeholder-')) {
       newStatus = overId.replace('placeholder-', '') as SSDStatus;
       targetIndex = 0;
-      console.log('🎯 Dropped on placeholder:', { newStatus, targetIndex });
     } else {
       // Dropped on another SSD - find which column it belongs to
       if (ssdsByStatus.available.some(s => s.id === overId)) {
@@ -226,26 +219,20 @@ export const SSDKanbanBoard = ({ ssdsByStatus, onStatusChange, onReorder, onUpda
         newStatus = 'loaned';
         targetIndex = ssdsByStatus.loaned.findIndex(s => s.id === overId);
       }
-      console.log('🎯 Dropped on SSD:', { newStatus, targetIndex });
     }
 
     if (!newStatus || targetIndex < 0) {
-      console.log('❌ Could not determine target column');
       return;
     }
 
     // Handle status change (moved to different column)
     if (currentStatus !== newStatus) {
-      console.log('✅ Status change detected:', { from: currentStatus, to: newStatus });
       onStatusChange(activeId, newStatus);
     } else {
       // Handle reordering within same column
       const currentIndex = ssdsByStatus[currentStatus].findIndex(s => s.id === activeId);
       if (currentIndex !== targetIndex) {
-        console.log('✅ Reordering in same column:', { from: currentIndex, to: targetIndex });
         onReorder(activeId, currentStatus, targetIndex);
-      } else {
-        console.log('ℹ️ No change needed');
       }
     }
   };

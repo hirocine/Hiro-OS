@@ -308,7 +308,11 @@ export default function ProjectDetails() {
         description: "O documento foi baixado para o seu dispositivo.",
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      logger.error('PDF generation failed', {
+        module: 'projects',
+        data: { projectId: project.id },
+        error
+      });
       toast({
         title: "Erro ao gerar PDF",
         description: "Não foi possível gerar o documento.",
