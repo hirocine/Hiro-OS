@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, ValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { ProjectDbRow, ProjectDbInsert, ProjectDbUpdate } from '@/types/database';
+import { useUserRole } from './useUserRole';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -275,6 +276,20 @@ export function useProjects() {
         
         setProjects(prev => [...prev, projectData]);
         
+        // Log de auditoria
+        await logAuditEntry(
+          'create_project',
+          'projects',
+          data.id,
+          undefined,
+          {
+            name: data.name,
+            status: data.status,
+            step: data.step,
+            responsible_name: data.responsible_name
+          }
+        );
+        
         logger.apiResponse('POST', '/projects', true, { projectId: data.id });
         
         return projectData;
@@ -321,8 +336,23 @@ export function useProjects() {
         throw new DatabaseError(`Failed to update project: ${error.message}`, 'update', 'projects');
       }
 
+      const oldProject = projects.find(p => p.id === id);
+
       setProjects(prev =>
         prev.map(project => project.id === id ? { ...project, ...updates } : project)
+      );
+      
+      // Log de auditoria
+      await logAuditEntry(
+        'update_project',
+        'projects',
+        id,
+        oldProject ? {
+          name: oldProject.name,
+          status: oldProject.status,
+          step: oldProject.step
+        } : undefined,
+        updates
       );
       
       logger.database('update', 'projects', true);
@@ -333,22 +363,48 @@ export function useProjects() {
       : { success: true, data: undefined };
   };
 
-  const completeProject = (projectId: string, notes?: string) => {
+  const completeProject = async (projectId: string, notes?: string) => {
+    const project = projects.find(p => p.id === projectId);
     const completionDate = new Date().toISOString().split('T')[0];
-    updateProject(projectId, {
+    
+    await updateProject(projectId, {
       status: 'completed',
       actualEndDate: completionDate,
       notes: notes
     });
+    
+    // Log de auditoria
+    await logAuditEntry(
+      'complete_project',
+      'projects',
+      projectId,
+      project ? { status: project.status } : undefined,
+      {
+        status: 'completed',
+        actual_end_date: completionDate,
+        notes: notes
+      }
+    );
   };
 
-  const archiveProject = (projectId: string) => {
-    updateProject(projectId, {
+  const archiveProject = async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    
+    await updateProject(projectId, {
       status: 'archived'
     });
+    
+    // Log de auditoria
+    await logAuditEntry(
+      'archive_project',
+      'projects',
+      projectId,
+      project ? { status: project.status } : undefined,
+      { status: 'archived' }
+    );
   };
 
-  const updateProjectStep = (projectId: string, newStep: ProjectStep, notes?: string) => {
+  const updateProjectStep = async (projectId: string, newStep: ProjectStep, notes?: string) => {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
@@ -369,7 +425,19 @@ export function useProjects() {
       updates.actualEndDate = new Date().toISOString().split('T')[0];
     }
 
-    updateProject(projectId, updates);
+    await updateProject(projectId, updates);
+    
+    // Log de auditoria
+    await logAuditEntry(
+      'update_project_step',
+      'projects',
+      projectId,
+      project ? { step: project.step } : undefined,
+      {
+        step: newStep,
+        notes: notes
+      }
+    );
   };
 
   return {

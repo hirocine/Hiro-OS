@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { useToast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
+import { useUserRole } from './useUserRole';
 
 export type SSDStatus = 'available' | 'in_use' | 'loaned';
 
@@ -34,6 +35,7 @@ export const useSSDs = () => {
   const [ssds, setSSDs] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { logAuditEntry } = useUserRole();
 
   const fetchSSDs = async (silent = false) => {
     try {
@@ -176,6 +178,8 @@ export const useSSDs = () => {
       }
       
       // Optimistic update - update local state immediately
+      const oldSsd = ssds.find(s => s.id === ssdId);
+      
       setSSDs(prevSSDs => 
         prevSSDs.map(ssd => 
           ssd.id === ssdId 
@@ -191,6 +195,27 @@ export const useSSDs = () => {
         .eq('id', ssdId);
 
       if (error) throw error;
+      
+      // Log de auditoria
+      const getStatusFromOrder = (order?: number): SSDStatus => {
+        if (!order || order < 1000) return 'available';
+        if (order >= 1000 && order < 2000) return 'in_use';
+        return 'loaned';
+      };
+      
+      await logAuditEntry(
+        'update_ssd_status',
+        'equipments',
+        ssdId,
+        oldSsd ? { 
+          display_order: oldSsd.displayOrder,
+          status: getStatusFromOrder(oldSsd.displayOrder)
+        } : undefined,
+        {
+          display_order: newDisplayOrder,
+          status: newStatus
+        }
+      );
       
       toast({
         title: "Status atualizado",
@@ -271,6 +296,32 @@ export const useSSDs = () => {
           .eq('id', update.id);
 
         if (error) throw error;
+      }
+
+      // Log de auditoria apenas se mudou de coluna
+      const oldSsd = ssds.find(s => s.id === ssdId);
+      const getStatusFromOrder = (order?: number): SSDStatus => {
+        if (!order || order < 1000) return 'available';
+        if (order >= 1000 && order < 2000) return 'in_use';
+        return 'loaned';
+      };
+      
+      const oldStatusForLog = oldSsd ? getStatusFromOrder(oldSsd.displayOrder) : null;
+      
+      if (oldStatusForLog && oldStatusForLog !== newStatus) {
+        await logAuditEntry(
+          'reorder_ssd',
+          'equipments',
+          ssdId,
+          {
+            display_order: oldSsd?.displayOrder,
+            status: oldStatusForLog
+          },
+          {
+            display_order: baseDisplayOrder + targetIndex,
+            status: newStatus
+          }
+        );
       }
 
       toast({

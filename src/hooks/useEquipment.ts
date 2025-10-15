@@ -5,6 +5,7 @@ import { naturalSort } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
+import { useUserRole } from './useUserRole';
 
 export interface UseEquipmentReturn {
   equipment: Equipment[];
@@ -35,6 +36,8 @@ export function useEquipment(): UseEquipmentReturn {
   const [filters, setFilters] = useState<EquipmentFilters>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
+  const { logAuditEntry } = useUserRole();
 
   // Fetch equipment from Supabase
   useEffect(() => {
@@ -385,7 +388,20 @@ export function useEquipment(): UseEquipmentReturn {
       };
       
       setEquipment(prev => [...prev, equipmentData]);
-      logger.userAction('equipment_created', JSON.stringify({ equipmentId: data.id, name: data.name }));
+      
+      // Log de auditoria
+      await logAuditEntry(
+        'create_equipment',
+        'equipments',
+        data.id,
+        undefined,
+        {
+          name: data.name,
+          category: data.category,
+          brand: data.brand,
+          status: data.status
+        }
+      );
       
       return equipmentData;
     });
@@ -439,11 +455,24 @@ export function useEquipment(): UseEquipmentReturn {
         throw createDatabaseError('Erro ao atualizar equipamento', error.message);
       }
 
+      const oldEquipment = equipment.find(eq => eq.id === id);
+
       setEquipment(prev => 
         prev.map(item => item.id === id ? { ...item, ...updates } : item)
       );
 
-      logger.userAction('equipment_updated', JSON.stringify({ equipmentId: id }));
+      // Log de auditoria
+      await logAuditEntry(
+        'update_equipment',
+        'equipments',
+        id,
+        oldEquipment ? {
+          name: oldEquipment.name,
+          category: oldEquipment.category,
+          status: oldEquipment.status
+        } : undefined,
+        updates
+      );
     });
 
     if (result.error) {
@@ -454,6 +483,8 @@ export function useEquipment(): UseEquipmentReturn {
 
   const deleteEquipment = async (id: string): Promise<Result<void>> => {
     const result = await wrapAsync(async () => {
+      const deletedEquipment = equipment.find(eq => eq.id === id);
+      
       const { error } = await supabase
         .from('equipments')
         .delete()
@@ -464,7 +495,18 @@ export function useEquipment(): UseEquipmentReturn {
       }
 
       setEquipment(prev => prev.filter(item => item.id !== id));
-      logger.userAction('equipment_deleted', JSON.stringify({ equipmentId: id }));
+      
+      // Log de auditoria
+      await logAuditEntry(
+        'delete_equipment',
+        'equipments',
+        id,
+        deletedEquipment ? {
+          name: deletedEquipment.name,
+          category: deletedEquipment.category
+        } : undefined,
+        undefined
+      );
     });
 
     return result.data !== undefined 
@@ -508,6 +550,8 @@ export function useEquipment(): UseEquipmentReturn {
         throw createDatabaseError('Erro ao converter para acessório', error.message);
       }
 
+      const oldEquipment = equipment.find(eq => eq.id === equipmentId);
+
       // Update local state
       setEquipment(prev => 
         prev.map(item => 
@@ -517,7 +561,20 @@ export function useEquipment(): UseEquipmentReturn {
         )
       );
 
-      logger.userAction('equipment_converted_to_accessory', JSON.stringify({ equipmentId, parentId }));
+      // Log de auditoria
+      await logAuditEntry(
+        'convert_to_accessory',
+        'equipments',
+        equipmentId,
+        oldEquipment ? {
+          item_type: oldEquipment.itemType,
+          parent_id: oldEquipment.parentId
+        } : undefined,
+        {
+          item_type: 'accessory',
+          parent_id: parentId
+        }
+      );
     });
 
     return result.data !== undefined 
