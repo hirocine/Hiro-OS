@@ -268,8 +268,8 @@ export const SSDDetailsDialog = ({
             </div>
           )}
 
-          {/* Alocações de Projetos (apenas para interno) */}
-          {status === 'in_use' && ssd.capacity && (
+          {/* Alocações de Projetos */}
+          {(status === 'in_use' || status === 'loaned') && ssd.capacity && (
             <div className="p-4 border rounded-lg">
               <ProjectAllocationList
                 allocations={projectAllocations}
@@ -280,7 +280,7 @@ export const SSDDetailsDialog = ({
           )}
 
           {/* Resumo de Capacidade */}
-          {status === 'in_use' && ssd.capacity && (
+          {(status === 'in_use' || status === 'loaned') && ssd.capacity && (
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
               <span className="text-sm font-medium">Espaço Livre</span>
               <Badge variant={freeSpace < ssd.capacity * 0.2 ? 'destructive' : 'success'}>
