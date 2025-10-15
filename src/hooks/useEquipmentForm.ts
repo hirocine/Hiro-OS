@@ -77,6 +77,40 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       return;
     }
 
+    // Validação básica
+    if (!formData.name?.trim() || !formData.brand?.trim() || !formData.category) {
+      enhancedToast.error({
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha nome, marca e categoria.'
+      });
+      return;
+    }
+
+    // Validação de campos de empréstimo quando status é 'loaned'
+    if (formData.status === 'loaned') {
+      if (!formData.currentBorrower?.trim()) {
+        enhancedToast.error({
+          title: 'Erro de validação',
+          description: 'Informe para quem o equipamento foi emprestado.'
+        });
+        return;
+      }
+      if (!formData.lastLoanDate) {
+        enhancedToast.error({
+          title: 'Erro de validação',
+          description: 'Informe a data do empréstimo.'
+        });
+        return;
+      }
+      if (!formData.expectedReturnDate) {
+        enhancedToast.error({
+          title: 'Erro de validação',
+          description: 'Informe a data esperada de devolução.'
+        });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     
     try {

@@ -65,6 +65,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [isCreatingSubcategory, setIsCreatingSubcategory] = useState(false);
 
+  // Estados para controlar campos de empréstimo
+  const [showLoanFields, setShowLoanFields] = useState(formData.status === 'loaned');
+  const [showLoanDateCalendar, setShowLoanDateCalendar] = useState(false);
+  const [showReturnDateCalendar, setShowReturnDateCalendar] = useState(false);
+
   // Handlers para seleção de datas
   const handlePurchaseDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -84,6 +89,34 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (date) {
       updateField('lastMaintenance', format(date, 'yyyy-MM-dd'));
       setShowMaintenanceDateCalendar(false);
+    }
+  };
+
+  // Handlers para datas de empréstimo
+  const handleLoanDateSelect = (date: Date | undefined) => {
+    if (date) {
+      updateField('lastLoanDate', format(date, 'yyyy-MM-dd'));
+      setShowLoanDateCalendar(false);
+    }
+  };
+
+  const handleExpectedReturnDateSelect = (date: Date | undefined) => {
+    if (date) {
+      updateField('expectedReturnDate', format(date, 'yyyy-MM-dd'));
+      setShowReturnDateCalendar(false);
+    }
+  };
+
+  // Handler para mudança de status
+  const handleStatusChange = (value: EquipmentStatus) => {
+    updateField('status', value);
+    setShowLoanFields(value === 'loaned');
+    
+    // Limpar campos de empréstimo se não for mais 'loaned'
+    if (value !== 'loaned') {
+      updateField('currentBorrower', '');
+      updateField('lastLoanDate', '');
+      updateField('expectedReturnDate', '');
     }
   };
 
@@ -249,10 +282,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   };
 
   // Helper para obter variante do badge de status
-  const getStatusBadgeVariant = (status: EquipmentStatus): 'success' | 'warning' => {
-    const variants: Record<EquipmentStatus, 'success' | 'warning'> = {
+  const getStatusBadgeVariant = (status: EquipmentStatus): 'success' | 'warning' | 'neutral' => {
+    const variants: Record<EquipmentStatus, 'success' | 'warning' | 'neutral'> = {
       available: 'success',
-      maintenance: 'warning'
+      maintenance: 'warning',
+      loaned: 'neutral'
     };
     return variants[status] || 'success';
   };
@@ -261,7 +295,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const getStatusIcon = (status: EquipmentStatus) => {
     const icons: Record<EquipmentStatus, JSX.Element> = {
       available: <Check className="w-3 h-3" />,
-      maintenance: <Wrench className="w-3 h-3" />
+      maintenance: <Wrench className="w-3 h-3" />,
+      loaned: <Package className="w-3 h-3" />
     };
     return icons[status] || <Check className="w-3 h-3" />;
   };
@@ -270,7 +305,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const getStatusLabel = (status: EquipmentStatus): string => {
     const labels: Record<EquipmentStatus, string> = {
       available: 'Disponível',
-      maintenance: 'Em Manutenção'
+      maintenance: 'Em Manutenção',
+      loaned: 'Emprestado'
     };
     return labels[status];
   };
@@ -536,7 +572,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Label>
           <Select 
             value={formData.status} 
-            onValueChange={(value: EquipmentStatus) => updateField('status', value)}
+            onValueChange={handleStatusChange}
           >
             <SelectTrigger id="status" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
               <SelectValue>
@@ -560,6 +596,14 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                   <Badge variant="warning" className="gap-1.5">
                     <Wrench className="w-3 h-3" />
                     Em Manutenção
+                  </Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="loaned">
+                <div className="flex items-center gap-2">
+                  <Badge variant="neutral" className="gap-1.5">
+                    <Package className="w-3 h-3" />
+                    Emprestado
                   </Badge>
                 </div>
               </SelectItem>
@@ -852,6 +896,132 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     </Card>
   );
 
+  // Card: Informações de Empréstimo (condicional)
+  const renderLoanFieldsCard = () => {
+    if (!showLoanFields) return null;
+    
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Package className="w-4 h-4 text-primary" />
+            Informações de Empréstimo
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Para quem foi emprestado */}
+          <div>
+            <Label htmlFor="currentBorrower" className="text-sm font-medium">
+              Para quem foi emprestado? <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="currentBorrower"
+              type="text"
+              value={formData.currentBorrower || ''}
+              onChange={(e) => updateField('currentBorrower', e.target.value)}
+              placeholder="Nome da pessoa ou departamento"
+              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
+              required={formData.status === 'loaned'}
+            />
+          </div>
+
+          {/* Data de empréstimo */}
+          <div>
+            <Label htmlFor="lastLoanDate" className="text-sm font-medium">
+              Data de Empréstimo <span className="text-destructive">*</span>
+            </Label>
+            <Popover 
+              open={showLoanDateCalendar} 
+              onOpenChange={setShowLoanDateCalendar}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  id="lastLoanDate"
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal mt-1.5",
+                    !formData.lastLoanDate && "text-muted-foreground",
+                    isMobile ? "h-10" : "h-9"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.lastLoanDate 
+                    ? format(new Date(formData.lastLoanDate), 'dd/MM/yyyy')
+                    : "Selecione a data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.lastLoanDate ? new Date(formData.lastLoanDate) : undefined}
+                  onSelect={handleLoanDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Data de devolução esperada */}
+          <div>
+            <Label htmlFor="expectedReturnDate" className="text-sm font-medium">
+              Data de Devolução Esperada <span className="text-destructive">*</span>
+            </Label>
+            <Popover 
+              open={showReturnDateCalendar} 
+              onOpenChange={setShowReturnDateCalendar}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  id="expectedReturnDate"
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal mt-1.5",
+                    !formData.expectedReturnDate && "text-muted-foreground",
+                    isMobile ? "h-10" : "h-9"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.expectedReturnDate 
+                    ? format(new Date(formData.expectedReturnDate), 'dd/MM/yyyy')
+                    : "Selecione a data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.expectedReturnDate ? new Date(formData.expectedReturnDate) : undefined}
+                  onSelect={handleExpectedReturnDateSelect}
+                  initialFocus
+                  disabled={(date) => {
+                    // Impedir seleção de datas anteriores à data de empréstimo
+                    if (formData.lastLoanDate) {
+                      return date < new Date(formData.lastLoanDate);
+                    }
+                    return false;
+                  }}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Alerta informativo */}
+          <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+            <p className="flex items-start gap-2">
+              <Package className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>
+                Este equipamento ficará marcado como emprestado até que o status seja alterado manualmente.
+              </span>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <MobileFriendlyForm onSubmit={onSubmit} className="space-y-6">
       {/* Hero Card: Foto + Campos Principais */}
@@ -861,6 +1031,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       {renderStatusCard()}
       {renderLinksCard()}
       {renderFinancialCard()}
+      {renderLoanFieldsCard()}
       {renderDatesSection()}
 
       {/* Dialog para criar nova subcategoria */}

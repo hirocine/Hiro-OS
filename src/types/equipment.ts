@@ -1,6 +1,6 @@
 export type EquipmentCategory = 'camera' | 'audio' | 'lighting' | 'accessories' | 'storage';
 
-export type EquipmentStatus = 'available' | 'maintenance';
+export type EquipmentStatus = 'available' | 'maintenance' | 'loaned';
 
 export type EquipmentItemType = 'main' | 'accessory';
 
@@ -31,6 +31,7 @@ export interface Equipment {
   currentLoanId?: string;
   currentBorrower?: string;
   lastLoanDate?: string;
+  expectedReturnDate?: string;
   capacity?: number;
   displayOrder?: number;
   internal_user_id?: string;

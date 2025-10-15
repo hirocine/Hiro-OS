@@ -136,6 +136,7 @@ export type Database = {
           depreciated_value: number | null
           description: string | null
           display_order: number | null
+          expected_return_date: string | null
           id: string
           image: string | null
           internal_user_id: string | null
@@ -167,6 +168,7 @@ export type Database = {
           depreciated_value?: number | null
           description?: string | null
           display_order?: number | null
+          expected_return_date?: string | null
           id?: string
           image?: string | null
           internal_user_id?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           depreciated_value?: number | null
           description?: string | null
           display_order?: number | null
+          expected_return_date?: string | null
           id?: string
           image?: string | null
           internal_user_id?: string | null
