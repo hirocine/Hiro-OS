@@ -647,6 +647,120 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Informações de Empréstimo (condicionais) */}
+        {showLoanFields && (
+          <>
+            {/* Para quem foi emprestado */}
+            <div>
+              <Label htmlFor="currentBorrower" className="text-sm font-medium">
+                Para quem foi emprestado? <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="currentBorrower"
+                type="text"
+                value={formData.currentBorrower || ''}
+                onChange={(e) => updateField('currentBorrower', e.target.value)}
+                placeholder="Nome da pessoa ou departamento"
+                className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
+                required={formData.status === 'loaned'}
+              />
+            </div>
+
+            {/* Data de empréstimo */}
+            <div>
+              <Label htmlFor="lastLoanDate" className="text-sm font-medium">
+                Data de Empréstimo <span className="text-destructive">*</span>
+              </Label>
+              <Popover 
+                open={showLoanDateCalendar} 
+                onOpenChange={setShowLoanDateCalendar}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    id="lastLoanDate"
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-1.5",
+                      !formData.lastLoanDate && "text-muted-foreground",
+                      isMobile ? "h-10" : "h-9"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.lastLoanDate 
+                      ? format(new Date(formData.lastLoanDate), 'dd/MM/yyyy')
+                      : "Selecione a data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.lastLoanDate ? new Date(formData.lastLoanDate) : undefined}
+                    onSelect={handleLoanDateSelect}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Data de devolução esperada */}
+            <div>
+              <Label htmlFor="expectedReturnDate" className="text-sm font-medium">
+                Data de Devolução Esperada <span className="text-destructive">*</span>
+              </Label>
+              <Popover 
+                open={showReturnDateCalendar} 
+                onOpenChange={setShowReturnDateCalendar}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    id="expectedReturnDate"
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-1.5",
+                      !formData.expectedReturnDate && "text-muted-foreground",
+                      isMobile ? "h-10" : "h-9"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.expectedReturnDate 
+                      ? format(new Date(formData.expectedReturnDate), 'dd/MM/yyyy')
+                      : "Selecione a data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.expectedReturnDate ? new Date(formData.expectedReturnDate) : undefined}
+                    onSelect={handleExpectedReturnDateSelect}
+                    initialFocus
+                    disabled={(date) => {
+                      // Impedir seleção de datas anteriores à data de empréstimo
+                      if (formData.lastLoanDate) {
+                        return date < new Date(formData.lastLoanDate);
+                      }
+                      return false;
+                    }}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Alerta informativo */}
+            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+              <p className="flex items-start gap-2">
+                <Package className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  Este equipamento ficará marcado como emprestado até que o status seja alterado manualmente.
+                </span>
+              </p>
+            </div>
+          </>
+        )}
+
         {/* Capacidade (condicional para storage) */}
         {formData.category === 'storage' && (
           <div>
@@ -896,131 +1010,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     </Card>
   );
 
-  // Card: Informações de Empréstimo (condicional)
-  const renderLoanFieldsCard = () => {
-    if (!showLoanFields) return null;
-    
-    return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Package className="w-4 h-4 text-primary" />
-            Informações de Empréstimo
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Para quem foi emprestado */}
-          <div>
-            <Label htmlFor="currentBorrower" className="text-sm font-medium">
-              Para quem foi emprestado? <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="currentBorrower"
-              type="text"
-              value={formData.currentBorrower || ''}
-              onChange={(e) => updateField('currentBorrower', e.target.value)}
-              placeholder="Nome da pessoa ou departamento"
-              className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}
-              required={formData.status === 'loaned'}
-            />
-          </div>
-
-          {/* Data de empréstimo */}
-          <div>
-            <Label htmlFor="lastLoanDate" className="text-sm font-medium">
-              Data de Empréstimo <span className="text-destructive">*</span>
-            </Label>
-            <Popover 
-              open={showLoanDateCalendar} 
-              onOpenChange={setShowLoanDateCalendar}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  id="lastLoanDate"
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal mt-1.5",
-                    !formData.lastLoanDate && "text-muted-foreground",
-                    isMobile ? "h-10" : "h-9"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.lastLoanDate 
-                    ? format(new Date(formData.lastLoanDate), 'dd/MM/yyyy')
-                    : "Selecione a data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.lastLoanDate ? new Date(formData.lastLoanDate) : undefined}
-                  onSelect={handleLoanDateSelect}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Data de devolução esperada */}
-          <div>
-            <Label htmlFor="expectedReturnDate" className="text-sm font-medium">
-              Data de Devolução Esperada <span className="text-destructive">*</span>
-            </Label>
-            <Popover 
-              open={showReturnDateCalendar} 
-              onOpenChange={setShowReturnDateCalendar}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  id="expectedReturnDate"
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal mt-1.5",
-                    !formData.expectedReturnDate && "text-muted-foreground",
-                    isMobile ? "h-10" : "h-9"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.expectedReturnDate 
-                    ? format(new Date(formData.expectedReturnDate), 'dd/MM/yyyy')
-                    : "Selecione a data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.expectedReturnDate ? new Date(formData.expectedReturnDate) : undefined}
-                  onSelect={handleExpectedReturnDateSelect}
-                  initialFocus
-                  disabled={(date) => {
-                    // Impedir seleção de datas anteriores à data de empréstimo
-                    if (formData.lastLoanDate) {
-                      return date < new Date(formData.lastLoanDate);
-                    }
-                    return false;
-                  }}
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Alerta informativo */}
-          <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-            <p className="flex items-start gap-2">
-              <Package className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>
-                Este equipamento ficará marcado como emprestado até que o status seja alterado manualmente.
-              </span>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
 
   return (
     <MobileFriendlyForm onSubmit={onSubmit} className="space-y-6">
@@ -1031,7 +1020,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       {renderStatusCard()}
       {renderLinksCard()}
       {renderFinancialCard()}
-      {renderLoanFieldsCard()}
       {renderDatesSection()}
 
       {/* Dialog para criar nova subcategoria */}
