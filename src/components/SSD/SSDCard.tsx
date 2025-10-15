@@ -2,8 +2,10 @@ import { Equipment } from '@/types/equipment';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
-import { cn, formatCapacity } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { SSDStatus } from '@/hooks/useSSDs';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SSDCardProps {
   ssd: Equipment;
@@ -35,8 +37,43 @@ const getKanbanStatusLabel = (status: SSDStatus) => {
 };
 
 export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps) => {
-  const isSSD = ssd.subcategory?.toLowerCase().includes('ssd');
-  const isHD = ssd.subcategory?.toLowerCase().includes('hd');
+  const [allocatedSpace, setAllocatedSpace] = useState(0);
+
+  // Buscar alocações ao montar o componente
+  useEffect(() => {
+    const fetchAllocations = async () => {
+      if (!ssd.id || !ssd.capacity) return;
+      
+      // Só busca se estiver em uso (interno ou externo)
+      if (kanbanStatus !== 'in_use' && kanbanStatus !== 'loaned') return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('ssd_allocations')
+          .select('allocated_gb')
+          .eq('ssd_id', ssd.id);
+
+        if (error) throw error;
+        
+        const total = (data || []).reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
+        setAllocatedSpace(total);
+      } catch (error) {
+        console.error('Erro ao buscar alocações:', error);
+      }
+    };
+
+    fetchAllocations();
+  }, [ssd.id, ssd.capacity, kanbanStatus]);
+
+  // Calcular espaço livre
+  const freeSpace = (ssd.capacity || 0) - allocatedSpace;
+  const shouldShowFreeSpace = (kanbanStatus === 'in_use' || kanbanStatus === 'loaned') && ssd.capacity;
+  
+  // Determinar variante da badge
+  const getFreeSpaceVariant = () => {
+    if (!ssd.capacity) return 'success';
+    return freeSpace < ssd.capacity * 0.2 ? 'destructive' : 'success';
+  };
   
   return (
     <Card 
@@ -69,12 +106,12 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick }: SSDCardProps
                     #{ssd.patrimonyNumber}
                   </Badge>
                 )}
-                {ssd.capacity && (
+                {shouldShowFreeSpace && (
                   <Badge 
-                    variant="default" 
+                    variant={getFreeSpaceVariant()}
                     className="shrink-0 text-[10px]"
                   >
-                    {formatCapacity(ssd.capacity)}
+                    {freeSpace.toFixed(0)} GB de {ssd.capacity} GB
                   </Badge>
                 )}
                 {kanbanStatus && (
