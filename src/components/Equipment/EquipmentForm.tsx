@@ -565,6 +565,25 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Select>
         </div>
 
+        {/* Tipo de Item */}
+        <div>
+          <Label htmlFor="itemType" className="text-sm font-medium">
+            Tipo de Item <span className="text-destructive">*</span>
+          </Label>
+          <Select 
+            value={formData.itemType} 
+            onValueChange={(value: 'main' | 'accessory') => updateField('itemType', value)}
+          >
+            <SelectTrigger id="itemType" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="main">Item Principal</SelectItem>
+              <SelectItem value="accessory">Acessório</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Status */}
         <div>
           <Label htmlFor="status" className="text-sm font-medium">
@@ -607,25 +626,6 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                   </Badge>
                 </div>
               </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Tipo de Item */}
-        <div>
-          <Label htmlFor="itemType" className="text-sm font-medium">
-            Tipo de Item <span className="text-destructive">*</span>
-          </Label>
-          <Select 
-            value={formData.itemType} 
-            onValueChange={(value: 'main' | 'accessory') => updateField('itemType', value)}
-          >
-            <SelectTrigger id="itemType" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="main">Item Principal</SelectItem>
-              <SelectItem value="accessory">Acessório</SelectItem>
             </SelectContent>
           </Select>
         </div>
