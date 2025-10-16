@@ -37,9 +37,9 @@ export function RoleGuard({
 }
 
 // Specific guards for common use cases
-export function AdminOnly({ children, fallback, showLoading = true }: { children: ReactNode; fallback?: ReactNode; showLoading?: boolean }) {
+export function AdminOnly({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
   return (
-    <RoleGuard allowedRoles={['admin']} fallback={fallback} showLoading={showLoading}>
+    <RoleGuard allowedRoles={['admin']} fallback={fallback}>
       {children}
     </RoleGuard>
   );

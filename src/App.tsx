@@ -1,10 +1,9 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AdminOnly } from "./components/RoleGuard";
 import Dashboard from "./pages/Dashboard";
 import Equipment from "./pages/Equipment";
 import AddEquipment from "./pages/AddEquipment";
@@ -46,23 +45,11 @@ const App = () => (
             <Route path="projects/:id/separation" element={<ProjectSeparation />} />
             <Route path="projects/:id/verification" element={<ProjectVerification />} />
             <Route path="projects/:id/withdrawal" element={<ProjectWithdrawal />} />
-            <Route path="reports" element={
-              <AdminOnly fallback={<Navigate to="/" replace />}>
-                <Reports />
-              </AdminOnly>
-            } />
+            <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
             
-            <Route path="admin" element={
-              <AdminOnly fallback={<Navigate to="/" replace />}>
-                <Admin />
-              </AdminOnly>
-            } />
-            <Route path="security" element={
-              <AdminOnly fallback={<Navigate to="/" replace />}>
-                <SecurityAdmin />
-              </AdminOnly>
-            } />
+            <Route path="admin" element={<Admin />} />
+            <Route path="security" element={<SecurityAdmin />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

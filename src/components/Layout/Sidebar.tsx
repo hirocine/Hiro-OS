@@ -18,19 +18,24 @@ const navigation: NavigationItem[] = [
     icon: LayoutDashboard,
   },
   {
-    name: 'Projetos',
-    href: '/projects',
-    icon: FolderOpen,
-  },
-  {
     name: 'Inventário',
     href: '/equipment',
     icon: Package,
   },
   {
-    name: 'Controle de SSDs',
+    name: 'SSDs',
     href: '/ssds',
     icon: HardDrive,
+  },
+  {
+    name: 'Projetos',
+    href: '/projects',
+    icon: FolderOpen,
+  },
+  {
+    name: 'Relatórios',
+    href: '/reports',
+    icon: BarChart3,
   },
 ];
 
@@ -39,12 +44,6 @@ const adminNavigation: NavigationItem[] = [
     name: 'Administração',
     href: '/admin',
     icon: Settings,
-    adminOnly: true,
-  },
-  {
-    name: 'Relatórios',
-    href: '/reports',
-    icon: BarChart3,
     adminOnly: true,
   },
   {
