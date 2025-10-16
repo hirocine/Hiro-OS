@@ -1,4 +1,4 @@
-import { Home, Package, FolderKanban, FileText, Settings, HardDrive } from 'lucide-react';
+import { Home, Package, FolderKanban, FileText, Settings, HardDrive, Shield } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -21,14 +21,15 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Inventário', href: '/equipment', icon: Package },
-  { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Projetos', href: '/projects', icon: FolderKanban },
-  { name: 'Relatórios', href: '/reports', icon: FileText },
+  { name: 'Inventário', href: '/equipment', icon: Package },
+  { name: 'Controle de SSDs', href: '/ssds', icon: HardDrive },
 ];
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Admin', href: '/admin', icon: Settings, adminOnly: true },
+  { name: 'Relatórios', href: '/reports', icon: FileText, adminOnly: true },
+  { name: 'Segurança', href: '/security', icon: Shield, adminOnly: true },
 ];
 
 export function DesktopSidebar() {
