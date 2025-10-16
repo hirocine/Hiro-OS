@@ -12,7 +12,7 @@ import { ptBR } from 'date-fns/locale';
 import { useEffect } from 'react';
 
 export function SecurityDashboard() {
-  const { isAdmin } = useUserRole();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { 
     alerts, 
     metrics, 
@@ -33,6 +33,14 @@ export function SecurityDashboard() {
       getSecurityDashboard();
     }
   }, [isAdmin, getSecurityDashboard]);
+
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
