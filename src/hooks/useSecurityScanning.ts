@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -123,7 +123,10 @@ export function useSecurityScanning() {
     }
   };
 
-  const getSecurityDashboard = async (): Promise<SecurityDashboard | null> => {
+  const getSecurityDashboard = useCallback(async (): Promise<SecurityDashboard | null> => {
+    // Evitar múltiplas requisições simultâneas
+    if (loading) return dashboardData;
+    
     setLoading(true);
     
     try {
@@ -135,7 +138,6 @@ export function useSecurityScanning() {
           action: 'get_security_dashboard',
           error
         });
-        toast.error('Erro ao carregar dashboard de segurança: ' + error.message);
         return null;
       }
 
@@ -173,12 +175,11 @@ export function useSecurityScanning() {
         action: 'get_security_dashboard',
         error
       });
-      toast.error('Erro inesperado ao carregar dashboard de segurança');
       return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, dashboardData]);
 
   const resolveSecurityAlert = async (alertId: string): Promise<boolean> => {
     try {

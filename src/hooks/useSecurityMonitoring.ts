@@ -30,7 +30,7 @@ export function useSecurityMonitoring() {
   const [loading, setLoading] = useState(false);
 
   const fetchSecurityData = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!isAdmin || loading) return;
 
     try {
       setLoading(true);
@@ -188,10 +188,16 @@ export function useSecurityMonitoring() {
     };
   }, [isAdmin, fetchSecurityData]);
 
-  // Buscar dados iniciais
+  // Buscar dados iniciais apenas 1 vez
   useEffect(() => {
-    fetchSecurityData();
-  }, [fetchSecurityData]);
+    let mounted = true;
+    
+    if (isAdmin && mounted) {
+      fetchSecurityData();
+    }
+    
+    return () => { mounted = false; };
+  }, [isAdmin]);
 
   return {
     alerts,

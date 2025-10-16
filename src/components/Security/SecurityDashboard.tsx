@@ -9,7 +9,8 @@ import { Shield, AlertTriangle, CheckCircle, Users, Database, Activity, Trending
 import { SecurityScanCard } from './SecurityScanCard';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function SecurityDashboard() {
   const { isAdmin, loading: roleLoading } = useUserRole();
@@ -23,16 +24,34 @@ export function SecurityDashboard() {
   } = useSecurityMonitoring();
 
   const { 
-    dashboardData, 
+    dashboardData,
+    loading: dashboardLoading,
     getSecurityDashboard 
   } = useSecurityScanning();
 
-  // Load dashboard data on component mount
+  const [dashboardError, setDashboardError] = useState(false);
+
+  // Carregar dados apenas 1 vez no mount
   useEffect(() => {
-    if (isAdmin) {
-      getSecurityDashboard();
-    }
-  }, [isAdmin, getSecurityDashboard]);
+    let mounted = true;
+    
+    const loadDashboard = async () => {
+      if (isAdmin && mounted) {
+        const result = await getSecurityDashboard();
+        
+        if (!result && mounted) {
+          setDashboardError(true);
+          toast.error('Erro ao carregar dashboard de segurança', {
+            description: 'Verifique as configurações do Supabase'
+          });
+        }
+      }
+    };
+    
+    loadDashboard();
+    
+    return () => { mounted = false; };
+  }, [isAdmin]);
 
   if (roleLoading) {
     return (
@@ -53,7 +72,26 @@ export function SecurityDashboard() {
     );
   }
 
-  if (loading) {
+  // Error boundary visual
+  if (dashboardError && !dashboardLoading && !dashboardData) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          Não foi possível carregar o dashboard de segurança.
+          <br />
+          <strong>Possíveis causas:</strong>
+          <ul className="list-disc list-inside mt-2 text-sm">
+            <li>Função <code>get_security_dashboard</code> não existe no Supabase</li>
+            <li>Permissões RLS incorretas</li>
+            <li>Erro de conexão com o banco de dados</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (loading || dashboardLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(6)].map((_, i) => (
