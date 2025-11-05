@@ -28,7 +28,7 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, Lock, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function CategoryManagement() {
@@ -403,43 +403,30 @@ export function CategoryManagement() {
                       <Badge variant="secondary">
                         {cat.subcategories.length} {cat.subcategories.length === 1 ? 'subcategoria' : 'subcategorias'}
                       </Badge>
-                      
-                      {cat.isCustom ? (
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-                          Customizada
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="gap-1">
-                          <Lock className="h-3 w-3" />
-                          Sistema
-                        </Badge>
-                      )}
                     </div>
 
-                    {cat.isCustom && (
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDialog('category', cat.categoryName);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDeleteDialog('category', cat.categoryName);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditDialog('category', cat.categoryName);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteDialog('category', cat.categoryName);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <CollapsibleContent>
@@ -455,49 +442,39 @@ export function CategoryManagement() {
                             {sub.usageCount > 0 && (
                               <Badge variant="outline">{sub.usageCount} equipamentos</Badge>
                             )}
-                            {!sub.isCustom && (
-                              <Badge variant="outline" className="gap-1 text-xs">
-                                <Lock className="h-2 w-2" />
-                                Sistema
-                              </Badge>
-                            )}
                           </div>
 
-                          {sub.isCustom && (
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
 
-                      {cat.isCustom && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => {
-                            setSelectedCategory(cat.categoryName);
-                            setShowAddSubcategoryDialog(true);
-                          }}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Adicionar Subcategoria
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          setSelectedCategory(cat.categoryName);
+                          setShowAddSubcategoryDialog(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar Subcategoria
+                      </Button>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
@@ -582,7 +559,6 @@ export function CategoryManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   {hierarchy
-                    .filter(cat => cat.isCustom)
                     .map((cat) => (
                       <SelectItem key={cat.categoryName} value={cat.categoryName}>
                         {cat.categoryName}

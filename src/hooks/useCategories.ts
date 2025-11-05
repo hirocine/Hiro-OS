@@ -142,8 +142,7 @@ export function useCategories() {
       const { error } = await supabase
         .from('equipment_categories')
         .update({ category: newCategoryName })
-        .eq('category', oldCategoryName)
-        .eq('is_custom', true);
+        .eq('category', oldCategoryName);
       
       if (error) {
         logger.database('update', 'equipment_categories', false, error);
@@ -190,8 +189,7 @@ export function useCategories() {
       const { error } = await supabase
         .from('equipment_categories')
         .delete()
-        .eq('category', categoryName)
-        .eq('is_custom', true);
+        .eq('category', categoryName);
       
       if (error) {
         logger.database('delete', 'equipment_categories', false, error);
@@ -232,7 +230,6 @@ export function useCategories() {
           subcategory: newSubcategory
         })
         .eq('id', categoryId)
-        .eq('is_custom', true) // Only allow updating custom categories
         .select()
         .single();
 
@@ -268,8 +265,7 @@ export function useCategories() {
       const { error } = await supabase
         .from('equipment_categories')
         .delete()
-        .eq('id', categoryId)
-        .eq('is_custom', true); // Only allow deleting custom categories
+        .eq('id', categoryId);
 
       if (error) {
         logger.database('delete', 'equipment_categories', false, error);
