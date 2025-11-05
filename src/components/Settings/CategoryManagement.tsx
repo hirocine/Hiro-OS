@@ -357,22 +357,10 @@ export function CategoryManagement() {
                 className="pl-9"
               />
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowAddCategoryDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Categoria
-              </Button>
-              <Button 
-                variant="secondary" 
-                onClick={() => {
-                  setSelectedCategory(null);
-                  setShowAddSubcategoryDialog(true);
-                }}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Subcategoria
-              </Button>
-            </div>
+          <Button onClick={() => setShowAddCategoryDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova
+          </Button>
           </div>
 
           <div className="space-y-2">
