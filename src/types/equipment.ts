@@ -95,3 +95,15 @@ export interface EquipmentHierarchy {
   item: Equipment;
   accessories: Equipment[];
 }
+
+export interface CategoryHierarchy {
+  categoryName: string;
+  categoryId: string | null;
+  isCustom: boolean;
+  subcategories: Array<{
+    id: string;
+    name: string;
+    isCustom: boolean;
+    usageCount: number;
+  }>;
+}

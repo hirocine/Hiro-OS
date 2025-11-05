@@ -19,7 +19,7 @@ export type Database = {
           action: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -32,7 +32,7 @@ export type Database = {
           action: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -45,7 +45,7 @@ export type Database = {
           action?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -104,7 +104,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_custom: boolean | null
-          subcategory: string
+          subcategory: string | null
         }
         Insert: {
           category: string
@@ -112,7 +112,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_custom?: boolean | null
-          subcategory: string
+          subcategory?: string | null
         }
         Update: {
           category?: string
@@ -120,7 +120,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_custom?: boolean | null
-          subcategory?: string
+          subcategory?: string | null
         }
         Relationships: []
       }
@@ -743,7 +743,7 @@ export type Database = {
     }
     Functions: {
       audit_data_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           policy_name: string
           potential_exposure: string
@@ -756,7 +756,7 @@ export type Database = {
         Returns: Json
       }
       check_password_security: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           priority: string
           recommendation: string
@@ -765,7 +765,7 @@ export type Database = {
         }[]
       }
       check_password_security_settings: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           current_status: string
           priority: string
@@ -794,20 +794,11 @@ export type Database = {
         }
         Returns: string
       }
-      deactivate_user: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      detect_suspicious_activity: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      finalize_security_improvements: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      deactivate_user: { Args: { _user_id: string }; Returns: boolean }
+      detect_suspicious_activity: { Args: never; Returns: undefined }
+      finalize_security_improvements: { Args: never; Returns: Json }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_equipment_project_count: {
@@ -868,7 +859,7 @@ export type Database = {
         }[]
       }
       get_safe_equipment_list: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           brand: string
           category: string
@@ -898,12 +889,9 @@ export type Database = {
           value: number
         }[]
       }
-      get_security_dashboard: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_security_dashboard: { Args: never; Returns: Json }
       get_users_for_admin: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avatar_url: string
           created_at: string
@@ -926,10 +914,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_storage_device: {
-        Args: { _equipment_id: string }
-        Returns: boolean
-      }
+      is_storage_device: { Args: { _equipment_id: string }; Returns: boolean }
       log_audit_entry: {
         Args: {
           _action: string
@@ -958,24 +943,15 @@ export type Database = {
         }
         Returns: undefined
       }
-      manual_sync_equipment_status: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      mark_all_notifications_as_read: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      manual_sync_equipment_status: { Args: never; Returns: undefined }
+      mark_all_notifications_as_read: { Args: never; Returns: number }
       mark_notification_as_read: {
         Args: { _notification_id: string }
         Returns: undefined
       }
-      monitor_contact_access: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      monitor_contact_access: { Args: never; Returns: undefined }
       run_complete_security_scan: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           critical_issues: number
           high_issues: number
@@ -987,14 +963,8 @@ export type Database = {
           vulnerabilities_found: number
         }[]
       }
-      run_security_maintenance: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      sanitize_audit_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      run_security_maintenance: { Args: never; Returns: undefined }
+      sanitize_audit_logs: { Args: never; Returns: undefined }
       user_can_access_equipment: {
         Args: { equipment_id: string }
         Returns: boolean

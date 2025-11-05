@@ -1,14 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -17,64 +13,161 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Lock, Search } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, Lock, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function CategoryManagement() {
-  const { categories, loading, addCustomCategory, updateCategory, deleteCategory, getCategoryUsageCount } = useCategories();
+  const { 
+    categories,
+    loading,
+    getCategoriesHierarchy,
+    addCategoryOnly,
+    addSubcategory,
+    updateCategory,
+    renameCategory,
+    deleteSubcategory,
+    deleteCategoryWithSubcategories,
+    getCategoryUsageCount,
+    refetch
+  } = useCategories();
+
   const { toast } = useToast();
-  
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  
+  // Dialogs state
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
-  const [selectedCategory, setSelectedCategory] = useState<{
-    id: string;
-    category: string;
-    subcategory: string;
+  // Form state
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<{
+    type: 'category' | 'subcategory';
+    id?: string;
+    categoryName: string;
+    subcategoryName?: string;
   } | null>(null);
   
-  const [usageCount, setUsageCount] = useState(0);
-  
-  const [formData, setFormData] = useState({
-    category: '',
-    subcategory: ''
-  });
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'category' | 'subcategory';
+    id?: string;
+    name: string;
+    categoryName?: string;
+    usageCount: number;
+  } | null>(null);
 
-  const filteredCategories = categories.filter(cat => 
-    cat.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.subcategory.toLowerCase().includes(searchTerm.toLowerCase())
+  const hierarchy = getCategoriesHierarchy();
+  
+  const filteredHierarchy = hierarchy.filter(cat => 
+    cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cat.subcategories.some(sub => sub.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleAdd = async () => {
-    if (!formData.category || !formData.subcategory) {
+  const toggleCategory = (categoryName: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryName)) {
+        newSet.delete(categoryName);
+      } else {
+        newSet.add(categoryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Expand all quando tiver filtro
+  useEffect(() => {
+    if (searchTerm) {
+      setExpandedCategories(new Set(filteredHierarchy.map(cat => cat.categoryName)));
+    }
+  }, [searchTerm]);
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
       toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha categoria e subcategoria',
+        title: 'Nome obrigatório',
+        description: 'Digite o nome da categoria',
         variant: 'destructive'
       });
       return;
     }
 
-    const result = await addCustomCategory(formData.category, formData.subcategory);
-    
+    const result = newSubcategoryName.trim()
+      ? await addSubcategory(newCategoryName, newSubcategoryName)
+      : await addCategoryOnly(newCategoryName);
+
     if (result.success) {
       toast({
-        title: 'Categoria adicionada',
-        description: `${formData.category} - ${formData.subcategory} foi criada com sucesso`
+        title: 'Sucesso',
+        description: newSubcategoryName 
+          ? 'Categoria e subcategoria criadas com sucesso' 
+          : 'Categoria criada com sucesso'
       });
-      setShowAddDialog(false);
-      setFormData({ category: '', subcategory: '' });
+      setShowAddCategoryDialog(false);
+      setNewCategoryName('');
+      setNewSubcategoryName('');
+      refetch();
     } else {
       toast({
-        title: 'Erro ao adicionar categoria',
+        title: 'Erro',
+        description: result.error,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleAddSubcategoryToExisting = async () => {
+    if (!selectedCategory) {
+      toast({
+        title: 'Categoria obrigatória',
+        description: 'Selecione uma categoria antes de adicionar a subcategoria',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!newSubcategoryName.trim()) {
+      toast({
+        title: 'Subcategoria obrigatória',
+        description: 'Digite o nome da subcategoria',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const result = await addSubcategory(selectedCategory, newSubcategoryName);
+
+    if (result.success) {
+      toast({
+        title: 'Sucesso',
+        description: 'Subcategoria adicionada com sucesso'
+      });
+      setShowAddSubcategoryDialog(false);
+      setSelectedCategory(null);
+      setNewSubcategoryName('');
+      refetch();
+    } else {
+      toast({
+        title: 'Erro',
         description: result.error,
         variant: 'destructive'
       });
@@ -82,71 +175,152 @@ export function CategoryManagement() {
   };
 
   const handleEdit = async () => {
-    if (!selectedCategory || !formData.category || !formData.subcategory) return;
+    if (!editingItem) return;
 
-    const result = await updateCategory(
-      selectedCategory.id,
-      formData.category,
-      formData.subcategory
-    );
-    
-    if (result.success) {
-      toast({
-        title: 'Categoria atualizada',
-        description: 'A categoria foi atualizada com sucesso'
-      });
-      setShowEditDialog(false);
-      setSelectedCategory(null);
-      setFormData({ category: '', subcategory: '' });
+    if (editingItem.type === 'category') {
+      if (!newCategoryName.trim()) {
+        toast({
+          title: 'Nome obrigatório',
+          description: 'Digite o novo nome da categoria',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const result = await renameCategory(editingItem.categoryName, newCategoryName);
+      
+      if (result.success) {
+        toast({
+          title: 'Sucesso',
+          description: 'Categoria renomeada com sucesso'
+        });
+        setShowEditDialog(false);
+        setEditingItem(null);
+        setNewCategoryName('');
+        refetch();
+      } else {
+        toast({
+          title: 'Erro',
+          description: result.error,
+          variant: 'destructive'
+        });
+      }
     } else {
-      toast({
-        title: 'Erro ao atualizar categoria',
-        description: result.error,
-        variant: 'destructive'
-      });
+      if (!newSubcategoryName.trim()) {
+        toast({
+          title: 'Nome obrigatório',
+          description: 'Digite o novo nome da subcategoria',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const result = await updateCategory(
+        editingItem.id!,
+        editingItem.categoryName,
+        newSubcategoryName
+      );
+
+      if (result.success) {
+        toast({
+          title: 'Sucesso',
+          description: 'Subcategoria renomeada com sucesso'
+        });
+        setShowEditDialog(false);
+        setEditingItem(null);
+        setNewSubcategoryName('');
+        refetch();
+      } else {
+        toast({
+          title: 'Erro',
+          description: result.error,
+          variant: 'destructive'
+        });
+      }
     }
   };
 
-  const openEditDialog = (cat: typeof categories[0]) => {
-    setSelectedCategory({
-      id: cat.id,
-      category: cat.category,
-      subcategory: cat.subcategory
+  const openEditDialog = (
+    type: 'category' | 'subcategory',
+    categoryName: string,
+    subcategoryName?: string,
+    subcategoryId?: string
+  ) => {
+    setEditingItem({
+      type,
+      id: subcategoryId,
+      categoryName,
+      subcategoryName
     });
-    setFormData({
-      category: cat.category,
-      subcategory: cat.subcategory
-    });
+    
+    if (type === 'category') {
+      setNewCategoryName(categoryName);
+    } else {
+      setNewSubcategoryName(subcategoryName || '');
+    }
+    
     setShowEditDialog(true);
   };
 
-  const openDeleteDialog = async (cat: typeof categories[0]) => {
-    const count = await getCategoryUsageCount(cat.category, cat.subcategory);
-    setUsageCount(count);
-    setSelectedCategory({
-      id: cat.id,
-      category: cat.category,
-      subcategory: cat.subcategory
+  const openDeleteDialog = async (
+    type: 'category' | 'subcategory',
+    categoryName: string,
+    subcategoryName?: string,
+    subcategoryId?: string
+  ) => {
+    let usageCount = 0;
+    
+    if (type === 'subcategory' && subcategoryName) {
+      usageCount = await getCategoryUsageCount(categoryName, subcategoryName);
+    } else {
+      // Count total usage for entire category
+      const cat = hierarchy.find(c => c.categoryName === categoryName);
+      if (cat) {
+        const counts = await Promise.all(
+          cat.subcategories.map(sub => getCategoryUsageCount(categoryName, sub.name))
+        );
+        usageCount = counts.reduce((sum, count) => sum + count, 0);
+      }
+    }
+
+    setDeleteTarget({
+      type,
+      id: subcategoryId,
+      name: subcategoryName || categoryName,
+      categoryName: type === 'subcategory' ? categoryName : undefined,
+      usageCount
     });
+    
     setShowDeleteDialog(true);
   };
 
   const handleDelete = async () => {
-    if (!selectedCategory) return;
+    if (!deleteTarget) return;
 
-    const result = await deleteCategory(selectedCategory.id);
-    
+    if (deleteTarget.usageCount > 0) {
+      toast({
+        title: 'Não é possível deletar',
+        description: `${deleteTarget.usageCount} equipamentos usam esta ${deleteTarget.type === 'category' ? 'categoria' : 'subcategoria'}`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const result = deleteTarget.type === 'category'
+      ? await deleteCategoryWithSubcategories(deleteTarget.name)
+      : await deleteSubcategory(deleteTarget.id!);
+
     if (result.success) {
       toast({
-        title: 'Categoria deletada',
-        description: 'A categoria foi removida com sucesso'
+        title: 'Sucesso',
+        description: `${deleteTarget.type === 'category' ? 'Categoria' : 'Subcategoria'} deletada com sucesso`
       });
       setShowDeleteDialog(false);
-      setSelectedCategory(null);
-      setUsageCount(0);
+      setDeleteTarget(null);
+      refetch();
     } else {
       toast({
-        title: 'Erro ao deletar categoria',
+        title: 'Erro',
         description: result.error,
         variant: 'destructive'
       });
@@ -156,28 +330,26 @@ export function CategoryManagement() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
+        <CardContent className="pt-6 flex justify-center">
+          <Loader2 className="h-6 w-6 animate-spin" />
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gerenciamento de Categorias</CardTitle>
-        <CardDescription>
-          Adicione, edite ou remova categorias e subcategorias de equipamentos
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 flex-1 max-w-sm">
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Gerenciamento de Categorias</CardTitle>
+          <CardDescription>
+            Organize categorias e subcategorias de forma hierárquica
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar categorias..."
                 value={searchTerm}
@@ -185,171 +357,354 @@ export function CategoryManagement() {
                 className="pl-9"
               />
             </div>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowAddCategoryDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Categoria
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setShowAddSubcategoryDialog(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Subcategoria
+              </Button>
+            </div>
           </div>
-          <Button onClick={() => setShowAddDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Categoria
-          </Button>
-        </div>
 
-        {filteredCategories.length === 0 ? (
-          <EmptyState
-            icon={Search}
-            title="Nenhuma categoria encontrada"
-            description={searchTerm ? "Tente ajustar os filtros de busca" : "Adicione sua primeira categoria personalizada"}
-            action={!searchTerm ? {
-              label: "Adicionar Categoria",
-              onClick: () => setShowAddDialog(true)
-            } : undefined}
-          />
-        ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Subcategoria</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.map((cat) => (
-                  <TableRow key={cat.id}>
-                    <TableCell>
+          <div className="space-y-2">
+            {filteredHierarchy.map((cat) => {
+              const isExpanded = expandedCategories.has(cat.categoryName);
+              
+              return (
+                <Collapsible
+                  key={cat.categoryName}
+                  open={isExpanded}
+                  onOpenChange={() => toggleCategory(cat.categoryName)}
+                >
+                  <div className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-2 flex-1">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <ChevronRight
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              isExpanded && "rotate-90"
+                            )}
+                          />
+                        </Button>
+                      </CollapsibleTrigger>
+                      
+                      <Folder className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{cat.categoryName}</span>
+                      <Badge variant="secondary">
+                        {cat.subcategories.length} {cat.subcategories.length === 1 ? 'subcategoria' : 'subcategorias'}
+                      </Badge>
+                      
                       {cat.isCustom ? (
-                        <Badge variant="secondary">Customizada</Badge>
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                          Customizada
+                        </Badge>
                       ) : (
                         <Badge variant="outline" className="gap-1">
                           <Lock className="h-3 w-3" />
                           Sistema
                         </Badge>
                       )}
-                    </TableCell>
-                    <TableCell className="font-medium">{cat.category}</TableCell>
-                    <TableCell>{cat.subcategory}</TableCell>
-                    <TableCell className="text-right">
-                      {cat.isCustom ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(cat)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openDeleteDialog(cat)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Bloqueado</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+                    </div>
 
-      {/* Add Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                    {cat.isCustom && (
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog('category', cat.categoryName);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDeleteDialog('category', cat.categoryName);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <CollapsibleContent>
+                    <div className="ml-8 mt-2 space-y-1">
+                      {cat.subcategories.map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>{sub.name}</span>
+                            {sub.usageCount > 0 && (
+                              <Badge variant="outline">{sub.usageCount} equipamentos</Badge>
+                            )}
+                            {!sub.isCustom && (
+                              <Badge variant="outline" className="gap-1 text-xs">
+                                <Lock className="h-2 w-2" />
+                                Sistema
+                              </Badge>
+                            )}
+                          </div>
+
+                          {sub.isCustom && (
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {cat.isCustom && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedCategory(cat.categoryName);
+                            setShowAddSubcategoryDialog(true);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar Subcategoria
+                        </Button>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+
+            {filteredHierarchy.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma categoria encontrada
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog: Nova Categoria Principal */}
+      <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Nova Categoria</DialogTitle>
+            <DialogTitle>Nova Categoria Principal</DialogTitle>
             <DialogDescription>
-              Crie uma nova categoria e subcategoria para seus equipamentos
+              Crie uma nova categoria. Você pode adicionar uma subcategoria agora ou depois.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria *</Label>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="category">Nome da Categoria *</Label>
               <Input
                 id="category"
-                placeholder="Ex: Drone, Estabilizador..."
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                placeholder="Ex: Drone, Estabilizador, Monitor..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="subcategory">Subcategoria *</Label>
+            
+            <div>
+              <Label htmlFor="subcategory">Subcategoria (opcional)</Label>
               <Input
                 id="subcategory"
                 placeholder="Ex: FPV, Racing, Gimbal..."
-                value={formData.subcategory}
-                onChange={(e) => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
+                value={newSubcategoryName}
+                onChange={(e) => setNewSubcategoryName(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Deixe em branco para criar apenas a categoria
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCategoryDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddCategory}>Criar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Adicionar Subcategoria */}
+      <Dialog open={showAddSubcategoryDialog} onOpenChange={setShowAddSubcategoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar Subcategoria</DialogTitle>
+            <DialogDescription>
+              {selectedCategory 
+                ? `Adicionar subcategoria à categoria "${selectedCategory}"`
+                : 'Adicionar subcategoria a uma categoria existente'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="select-category">Categoria *</Label>
+              <Select
+                value={selectedCategory || ''}
+                onValueChange={setSelectedCategory}
+                disabled={!!selectedCategory}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {hierarchy
+                    .filter(cat => cat.isCustom)
+                    .map((cat) => (
+                      <SelectItem key={cat.categoryName} value={cat.categoryName}>
+                        {cat.categoryName}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="new-subcategory">Nome da Subcategoria *</Label>
+              <Input
+                id="new-subcategory"
+                placeholder="Ex: FPV, Racing, Gimbal..."
+                value={newSubcategoryName}
+                onChange={(e) => setNewSubcategoryName(e.target.value)}
               />
             </div>
           </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowAddSubcategoryDialog(false);
+                setSelectedCategory(null);
+                setNewSubcategoryName('');
+              }}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleAdd}>
+            <Button 
+              onClick={handleAddSubcategoryToExisting}
+              disabled={!selectedCategory}
+            >
               Adicionar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
+      {/* Dialog: Editar */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Categoria</DialogTitle>
+            <DialogTitle>
+              {editingItem?.type === 'category' ? 'Renomear Categoria' : 'Renomear Subcategoria'}
+            </DialogTitle>
             <DialogDescription>
-              Atualize o nome da categoria ou subcategoria
+              {editingItem?.type === 'category'
+                ? 'Isso irá renomear todas as subcategorias e equipamentos associados'
+                : `Renomear subcategoria da categoria "${editingItem?.categoryName}"`}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Categoria *</Label>
-              <Input
-                id="edit-category"
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              />
+          
+          {editingItem?.type === 'category' ? (
+            <div className="space-y-4">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Atenção: Isso irá atualizar todos os equipamentos desta categoria
+                </AlertDescription>
+              </Alert>
+              <div>
+                <Label htmlFor="edit-category">Novo Nome da Categoria *</Label>
+                <Input
+                  id="edit-category"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-subcategory">Subcategoria *</Label>
-              <Input
-                id="edit-subcategory"
-                value={formData.subcategory}
-                onChange={(e) => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
-              />
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <Label>Categoria</Label>
+                <Input value={editingItem?.categoryName || ''} disabled />
+              </div>
+              <div>
+                <Label htmlFor="edit-subcategory">Novo Nome da Subcategoria *</Label>
+                <Input
+                  id="edit-subcategory"
+                  value={newSubcategoryName}
+                  onChange={(e) => setNewSubcategoryName(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowEditDialog(false);
+                setEditingItem(null);
+                setNewCategoryName('');
+                setNewSubcategoryName('');
+              }}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleEdit}>
-              Salvar Alterações
-            </Button>
+            <Button onClick={handleEdit}>Salvar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Dialog: Deletar */}
       <ConfirmationDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="Deletar Categoria?"
+        onConfirm={handleDelete}
+        title={`Deletar ${deleteTarget?.type === 'category' ? 'Categoria' : 'Subcategoria'}?`}
         description={
-          usageCount > 0
-            ? `Esta categoria está sendo usada por ${usageCount} equipamento(s). Ao deletar, esses equipamentos precisarão ser recategorizados.`
-            : `Tem certeza que deseja deletar a categoria "${selectedCategory?.category} - ${selectedCategory?.subcategory}"?`
+          deleteTarget?.usageCount && deleteTarget.usageCount > 0
+            ? `Esta ${deleteTarget.type === 'category' ? 'categoria' : 'subcategoria'} está sendo usada por ${deleteTarget.usageCount} equipamentos e não pode ser deletada.`
+            : deleteTarget?.type === 'category'
+            ? `Deletar a categoria "${deleteTarget?.name}" irá remover todas as suas subcategorias. Tem certeza?`
+            : `Tem certeza que deseja deletar a subcategoria "${deleteTarget?.name}"?`
         }
         confirmText="Deletar"
         variant="destructive"
-        onConfirm={handleDelete}
       />
-    </Card>
+    </>
   );
 }
