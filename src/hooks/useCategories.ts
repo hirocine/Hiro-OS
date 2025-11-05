@@ -102,11 +102,100 @@ export function useCategories() {
     fetchCategories();
   }, []);
 
+  const updateCategory = async (
+    categoryId: string,
+    newCategory: string,
+    newSubcategory: string
+  ): Promise<Result<EquipmentCategoryData>> => {
+    logger.userAction('update_category', undefined, { categoryId, newCategory, newSubcategory });
+    
+    const result = await wrapAsync(async () => {
+      const { data, error } = await supabase
+        .from('equipment_categories')
+        .update({
+          category: newCategory,
+          subcategory: newSubcategory
+        })
+        .eq('id', categoryId)
+        .eq('is_custom', true) // Only allow updating custom categories
+        .select()
+        .single();
+
+      if (error) {
+        logger.database('update', 'equipment_categories', false, error);
+        throw new DatabaseError(`Failed to update category: ${error.message}`, 'update', 'equipment_categories');
+      }
+
+      const updatedCategory: EquipmentCategoryData = {
+        id: data.id,
+        category: data.category,
+        subcategory: data.subcategory,
+        isCustom: data.is_custom,
+        createdAt: data.created_at,
+        createdBy: data.created_by
+      };
+
+      setCategories(prev => prev.map(cat => cat.id === categoryId ? updatedCategory : cat));
+      logger.database('update', 'equipment_categories', true);
+      
+      return updatedCategory;
+    });
+
+    return result.error 
+      ? { success: false, error: result.error.message }
+      : { success: true, data: result.data! };
+  };
+
+  const deleteCategory = async (categoryId: string): Promise<Result<void>> => {
+    logger.userAction('delete_category', undefined, { categoryId });
+    
+    const result = await wrapAsync(async () => {
+      const { error } = await supabase
+        .from('equipment_categories')
+        .delete()
+        .eq('id', categoryId)
+        .eq('is_custom', true); // Only allow deleting custom categories
+
+      if (error) {
+        logger.database('delete', 'equipment_categories', false, error);
+        throw new DatabaseError(`Failed to delete category: ${error.message}`, 'delete', 'equipment_categories');
+      }
+
+      setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+      logger.database('delete', 'equipment_categories', true);
+    });
+
+    return result.error 
+      ? { success: false, error: result.error.message }
+      : { success: true, data: undefined };
+  };
+
+  const getCategoryUsageCount = async (category: string, subcategory: string): Promise<number> => {
+    const { data, error } = await supabase
+      .from('equipments')
+      .select('id', { count: 'exact', head: true })
+      .eq('category', category)
+      .eq('subcategory', subcategory);
+
+    if (error) {
+      logger.error('Failed to get category usage count', { 
+        module: 'categories', 
+        error: error.message 
+      });
+      return 0;
+    }
+
+    return data?.length || 0;
+  };
+
   return {
     categories,
     loading,
     getSubcategoriesForCategory,
     addCustomCategory,
+    updateCategory,
+    deleteCategory,
+    getCategoryUsageCount,
     refetch: fetchCategories
   };
 }

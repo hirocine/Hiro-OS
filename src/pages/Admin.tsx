@@ -14,13 +14,14 @@ import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
+import { CategoryManagement } from '@/components/Settings/CategoryManagement';
 import { adminDebug } from '@/lib/debug';
 import { logger } from '@/lib/logger';
 
@@ -332,6 +333,10 @@ export default function Admin() {
             <Activity className="h-4 w-4" />
             Logs de Auditoria
           </TabsTrigger>
+          <TabsTrigger value="categories" className="flex items-center gap-2">
+            <Tags className="h-4 w-4" />
+            Categorias
+          </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notificações
@@ -552,6 +557,10 @@ export default function Admin() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-4">
+          <CategoryManagement />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
