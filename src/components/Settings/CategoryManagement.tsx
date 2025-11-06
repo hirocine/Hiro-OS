@@ -111,20 +111,15 @@ export function CategoryManagement() {
       return;
     }
 
-    const result = newSubcategoryName.trim()
-      ? await addSubcategory(newCategoryName, newSubcategoryName)
-      : await addCategoryOnly(newCategoryName);
+    const result = await addCategoryOnly(newCategoryName);
 
     if (result.success) {
       toast({
         title: 'Sucesso',
-        description: newSubcategoryName 
-          ? 'Categoria e subcategoria criadas com sucesso' 
-          : 'Categoria criada com sucesso'
+        description: 'Categoria criada com sucesso'
       });
       setShowAddCategoryDialog(false);
       setNewCategoryName('');
-      setNewSubcategoryName('');
       refetch();
     } else {
       toast({
@@ -484,7 +479,7 @@ export function CategoryManagement() {
           <DialogHeader>
             <DialogTitle>Nova Categoria Principal</DialogTitle>
             <DialogDescription>
-              Crie uma nova categoria. Você pode adicionar uma subcategoria agora ou depois.
+              Crie uma nova categoria principal. Adicione subcategorias depois através do botão dentro de cada categoria.
             </DialogDescription>
           </DialogHeader>
           
@@ -497,19 +492,6 @@ export function CategoryManagement() {
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
               />
-            </div>
-            
-            <div>
-              <Label htmlFor="subcategory">Subcategoria (opcional)</Label>
-              <Input
-                id="subcategory"
-                placeholder="Ex: FPV, Racing, Gimbal..."
-                value={newSubcategoryName}
-                onChange={(e) => setNewSubcategoryName(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Deixe em branco para criar apenas a categoria
-              </p>
             </div>
           </div>
 
