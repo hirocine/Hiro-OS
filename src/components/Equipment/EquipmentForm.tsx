@@ -53,7 +53,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   handleImageRemove,
 }) => {
   const isMobile = useIsMobile();
-  const { getSubcategoriesForCategory, loading: categoriesLoading, addCustomCategory, refetch } = useCategories();
+  const { getSubcategoriesForCategory, getCategoriesHierarchy, loading: categoriesLoading, addCustomCategory, refetch } = useCategories();
 
   // Estados para controlar os popovers de data
   const [showPurchaseDateCalendar, setShowPurchaseDateCalendar] = useState(false);
@@ -64,6 +64,11 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const [showNewSubcategoryDialog, setShowNewSubcategoryDialog] = useState(false);
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [isCreatingSubcategory, setIsCreatingSubcategory] = useState(false);
+
+  // Estados para controlar o dialog de nova categoria
+  const [showNewCategoryDialog, setShowNewCategoryDialog] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   // Estados para controlar campos de empréstimo
   const [showLoanFields, setShowLoanFields] = useState(formData.status === 'loaned');
@@ -126,6 +131,18 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     }
   };
 
+  // Handler para mudança de categoria
+  const handleCategoryChange = (value: string) => {
+    if (value === '__CREATE_NEW__') {
+      setShowNewCategoryDialog(true);
+      setNewCategoryName('');
+    } else {
+      updateField('category', value);
+      // Limpar subcategoria ao trocar de categoria
+      updateField('subcategory', '');
+    }
+  };
+
   // Handler para mudança de subcategoria
   const handleSubcategoryChange = (value: string) => {
     if (value === '__CREATE_NEW__') {
@@ -171,6 +188,44 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       });
     } finally {
       setIsCreatingSubcategory(false);
+    }
+  };
+
+  // Handler para criar nova categoria
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    setIsCreatingCategory(true);
+    
+    try {
+      const result = await addCustomCategory(
+        newCategoryName.trim(),
+        null // Sem subcategoria inicial
+      );
+      
+      if (result.success) {
+        // Atualizar o campo com a nova categoria
+        updateField('category', newCategoryName.trim());
+        
+        // Recarregar categorias
+        await refetch();
+        
+        // Fechar dialog
+        setShowNewCategoryDialog(false);
+        setNewCategoryName('');
+        
+        toast.success('Categoria criada', {
+          description: `"${newCategoryName.trim()}" foi adicionada com sucesso.`
+        });
+      } else {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+    } catch (error: any) {
+      toast.error('Erro ao criar categoria', {
+        description: error.message || 'Tente novamente.'
+      });
+    } finally {
+      setIsCreatingCategory(false);
     }
   };
 
@@ -298,27 +353,32 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
 
   // Helper para mapear categoria para ícone
   const getCategoryIcon = (category: EquipmentCategory) => {
-    const icons = {
+    const icons: Record<string, any> = {
       camera: Camera,
+      'câmera': Camera,
       audio: Mic,
+      'áudio': Mic,
       lighting: Lightbulb,
+      'iluminação': Lightbulb,
       accessories: Wrench,
-      storage: HardDrive
+      'acessórios': Wrench,
+      storage: HardDrive,
+      'armazenamento': HardDrive
     };
-    const IconComponent = icons[category];
-    return IconComponent ? <IconComponent className="w-3 h-3" /> : null;
+    const IconComponent = icons[category.toLowerCase()];
+    return IconComponent ? <IconComponent className="w-3 h-3" /> : <Package className="w-3 h-3" />;
   };
 
   // Helper para traduzir categoria
   const getCategoryLabel = (category: EquipmentCategory) => {
-    const labels = {
+    const labels: Record<string, string> = {
       camera: 'Câmera',
       audio: 'Áudio',
       lighting: 'Iluminação',
       accessories: 'Acessórios',
       storage: 'Armazenamento'
     };
-    return labels[category];
+    return labels[category] || category; // Retorna o nome original se não estiver na lista
   };
 
   // Helper para obter variante do badge de status
@@ -509,57 +569,32 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </Label>
           <Select 
             value={formData.category} 
-            onValueChange={(value: EquipmentCategory) => updateField('category', value)}
+            onValueChange={handleCategoryChange}
           >
             <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              {formData.category ? (
-                <Badge variant="neutral" className="gap-1.5">
-                  {getCategoryIcon(formData.category)}
-                  {getCategoryLabel(formData.category)}
-                </Badge>
-              ) : (
-                <SelectValue placeholder="Selecione uma categoria" />
-              )}
+              <SelectValue placeholder="Selecione uma categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="camera">
+              {/* Categorias do banco de dados */}
+              {getCategoriesHierarchy().map((cat) => (
+                <SelectItem key={cat.categoryName} value={cat.categoryName}>
+                  {cat.categoryName}
+                </SelectItem>
+              ))}
+              
+              {/* Separador */}
+              {getCategoriesHierarchy().length > 0 && (
+                <div className="border-t my-1" />
+              )}
+              
+              {/* Opção de criar nova */}
+              <SelectItem 
+                value="__CREATE_NEW__" 
+                className="text-primary font-medium"
+              >
                 <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Camera className="w-3 h-3" />
-                    Câmera
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="audio">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Mic className="w-3 h-3" />
-                    Áudio
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="lighting">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Lightbulb className="w-3 h-3" />
-                    Iluminação
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="accessories">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <Wrench className="w-3 h-3" />
-                    Acessórios
-                  </Badge>
-                </div>
-              </SelectItem>
-              <SelectItem value="storage">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="gap-1.5">
-                    <HardDrive className="w-3 h-3" />
-                    Armazenamento
-                  </Badge>
+                  <Plus className="h-4 w-4" />
+                  Criar nova categoria
                 </div>
               </SelectItem>
             </SelectContent>
@@ -1139,6 +1174,59 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                   <Plus className="mr-2 h-4 w-4" />
                   Criar
                 </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para criar nova categoria */}
+      <Dialog open={showNewCategoryDialog} onOpenChange={setShowNewCategoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova Categoria</DialogTitle>
+            <DialogDescription>
+              Crie uma nova categoria para o equipamento.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-category">Nome da Categoria *</Label>
+              <Input
+                id="new-category"
+                placeholder="Ex: Computadores, Drones, Monitores..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newCategoryName.trim()) {
+                    e.preventDefault();
+                    handleCreateCategory();
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowNewCategoryDialog(false)}
+              disabled={isCreatingCategory}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateCategory}
+              disabled={isCreatingCategory || !newCategoryName.trim()}
+            >
+              {isCreatingCategory ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                'Criar'
               )}
             </Button>
           </DialogFooter>

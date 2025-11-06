@@ -1,4 +1,4 @@
-export type EquipmentCategory = 'camera' | 'audio' | 'lighting' | 'accessories' | 'storage';
+export type EquipmentCategory = string;
 
 export type EquipmentStatus = 'available' | 'maintenance' | 'loaned';
 
