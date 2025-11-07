@@ -631,7 +631,7 @@ export default function ProjectWithdrawal() {
   };
 
   // Calcular TOTAL_STEPS dinamicamente
-  const TOTAL_STEPS = 5 + DYNAMIC_STEPS.length + 9 + 1; // 5 fixos iniciais + dinâmicos + 9 fixos de equipamento + 1 resumo
+  const TOTAL_STEPS = 5 + DYNAMIC_STEPS.length + 1; // 5 fixos iniciais + dinâmicos + 1 resumo
 
   // Navigation functions
   const nextStep = () => {
@@ -677,8 +677,9 @@ export default function ProjectWithdrawal() {
   };
 
   const shouldShowSkipButton = (): boolean => {
-    if (currentStep < 6 || currentStep >= TOTAL_STEPS) return false;
-    return true; // All equipment steps are optional
+    // Permitir pular apenas nos steps de equipamento (6 em diante, exceto resumo)
+    if (currentStep < 6 || currentStep === TOTAL_STEPS) return false;
+    return true;
   };
 
   const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
@@ -690,25 +691,11 @@ export default function ProjectWithdrawal() {
       return titles[currentStep - 1] || '';
     }
     
-    // Steps dinâmicos (6 até 5 + DYNAMIC_STEPS.length)
     const dynamicStepIndex = currentStep - 6;
     if (dynamicStepIndex >= 0 && dynamicStepIndex < DYNAMIC_STEPS.length) {
       return DYNAMIC_STEPS[dynamicStepIndex].title;
     }
     
-    // Steps fixos de equipamento (após dinâmicos)
-    const fixedEquipmentStepIndex = currentStep - 6 - DYNAMIC_STEPS.length;
-    const fixedTitles = [
-      'Lentes', 'Acessórios de Câmera', 'Tripés e Estabilizadores', 
-      'Iluminação', 'Modificadores de Luz', 'Maquinário', 
-      'Elétrica', 'Armazenamento', 'Computadores'
-    ];
-    
-    if (fixedEquipmentStepIndex >= 0 && fixedEquipmentStepIndex < fixedTitles.length) {
-      return fixedTitles[fixedEquipmentStepIndex];
-    }
-    
-    // Step final de resumo
     return 'Revisão e Confirmação';
   };
 
@@ -1274,112 +1261,23 @@ export default function ProjectWithdrawal() {
       )
     },
     {
-      title: 'Lentes',
-      content: renderEquipmentSelectionStep(
-        'Lentes',
-        <Video className="h-5 w-5" />,
-        'lenses',
-        getAvailableLenses,
-        'lenses'
-      )
-    },
-    {
-      title: 'Acessórios de Câmera',
-      content: renderEquipmentSelectionStep(
-        'Acessórios de Câmera',
-        <Settings className="h-5 w-5" />,
-        'cameraAccessories',
-        getAvailableCameraAccessories,
-        'cameraAccessories'
-      )
-    },
-    {
-      title: 'Tripés e Estabilizadores',
-      content: renderEquipmentSelectionStep(
-        'Tripés e Estabilizadores',
-        <Package className="h-5 w-5" />,
-        'tripods',
-        getAvailableTripods,
-        'tripods'
-      )
-    },
-    {
-      title: 'Iluminação',
-      content: renderEquipmentSelectionStep(
-        'Iluminação',
-        <Lightbulb className="h-5 w-5" />,
-        'lights',
-        getAvailableLights,
-        'lights'
-      )
-    },
-    {
-      title: 'Modificadores de Luz',
-      content: renderEquipmentSelectionStep(
-        'Modificadores de Luz',
-        <Cog className="h-5 w-5" />,
-        'lightModifiers',
-        getAvailableLightModifiers,
-        'lightModifiers'
-      )
-    },
-    {
-      title: 'Maquinário',
-      content: renderEquipmentSelectionStep(
-        'Maquinário',
-        <Wrench className="h-5 w-5" />,
-        'machinery',
-        getAvailableMachinery,
-        'machinery'
-      )
-    },
-    {
-      title: 'Elétrica',
-      content: renderEquipmentSelectionStep(
-        'Elétrica',
-        <Zap className="h-5 w-5" />,
-        'electrical',
-        getAvailableElectrical,
-        'electrical'
-      )
-    },
-    {
-      title: 'Armazenamento',
-      content: renderEquipmentSelectionStep(
-        'Armazenamento',
-        <HardDrive className="h-5 w-5" />,
-        'storage',
-        getAvailableStorage,
-        'storage'
-      )
-    },
-    {
-      title: 'Computadores',
-      content: renderEquipmentSelectionStep(
-        'Computadores',
-        <Monitor className="h-5 w-5" />,
-        'computers',
-        getAvailableComputers,
-        'computers'
-      )
-    },
-    {
       title: 'Resumo',
       content: (() => {
         const responsibleName = users.find(u => u.id === data.responsibleUserId)?.display_name || '';
         const withdrawalUserName = users.find(u => u.id === data.withdrawalUserId)?.display_name || '';
         
+        // Gerar CATEGORIES dinamicamente baseado em DYNAMIC_STEPS
+        const dynamicCategories = DYNAMIC_STEPS.map((step, index) => ({
+          key: step.key,
+          name: step.title,
+          icon: <Package className="h-5 w-5" />,
+          stepNumber: 6 + index
+        }));
+
+        // Adicionar câmeras como primeira categoria (step 5)
         const CATEGORIES = [
-          { key: 'cameras', name: 'Câmeras', icon: <Camera className="h-5 w-5" />, stepNumber: 6 },
-          { key: 'lenses', name: 'Lentes', icon: <Aperture className="h-5 w-5" />, stepNumber: 7 },
-          { key: 'cameraAccessories', name: 'Acessórios de Câmera', icon: <Settings className="h-5 w-5" />, stepNumber: 8 },
-          { key: 'tripods', name: 'Tripés e Estabilizadores', icon: <Move3d className="h-5 w-5" />, stepNumber: 9 },
-          { key: 'lights', name: 'Iluminação', icon: <Lightbulb className="h-5 w-5" />, stepNumber: 10 },
-          { key: 'lightModifiers', name: 'Modificadores de Luz', icon: <Layers className="h-5 w-5" />, stepNumber: 11 },
-          { key: 'machinery', name: 'Maquinário', icon: <Wrench className="h-5 w-5" />, stepNumber: 12 },
-          { key: 'electrical', name: 'Elétrica', icon: <Zap className="h-5 w-5" />, stepNumber: 13 },
-          { key: 'storage', name: 'Armazenamento', icon: <HardDrive className="h-5 w-5" />, stepNumber: 14 },
-          { key: 'computers', name: 'Computadores', icon: <Monitor className="h-5 w-5" />, stepNumber: 15 },
+          { key: 'cameras', name: 'Câmeras', icon: <Camera className="h-5 w-5" />, stepNumber: 5 },
+          ...dynamicCategories
         ];
 
         const totalEquipment = flattenSelectedEquipment().length;
@@ -1641,7 +1539,7 @@ export default function ProjectWithdrawal() {
   const renderStep = () => {
     // Steps fixos iniciais (1-5)
     if (currentStep <= 5) {
-      return currentStepData?.content;
+      return steps[currentStep - 1]?.content;
     }
     
     // Steps dinâmicos (6 até 5 + DYNAMIC_STEPS.length)
@@ -1652,15 +1550,8 @@ export default function ProjectWithdrawal() {
       return renderDynamicEquipmentStep(stepMeta.key, stepMeta.title, availableItems);
     }
     
-    // Steps fixos de equipamento (após dinâmicos): índices 5-13 do array steps (Lentes até Computadores)
-    const fixedEquipmentStepIndex = currentStep - 6 - DYNAMIC_STEPS.length;
-    if (fixedEquipmentStepIndex >= 0 && fixedEquipmentStepIndex < 9) {
-      // steps[5] = Lentes, steps[6] = Acessórios Câmera, ..., steps[13] = Computadores
-      return steps[5 + fixedEquipmentStepIndex]?.content;
-    }
-    
-    // Step final de resumo (steps[14])
-    return steps[14]?.content;
+    // Step final de resumo (steps[5] - novo índice após remoção dos 9 steps fixos)
+    return steps[5]?.content;
   };
 
   // Loading state enquanto categorias carregam
