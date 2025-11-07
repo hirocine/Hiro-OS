@@ -1718,7 +1718,7 @@ export default function ProjectWithdrawal() {
             <div className="flex justify-between items-center text-xs md:text-sm font-medium">
               <span className="text-muted-foreground flex items-center gap-2">
                 <span className="hidden sm:inline">Progresso:</span>
-                <span className="font-semibold text-foreground">Etapa {currentStep}/15</span>
+                <span className="font-semibold text-foreground">Etapa {currentStep}/{TOTAL_STEPS}</span>
               </span>
               <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
             </div>
@@ -1768,7 +1768,7 @@ export default function ProjectWithdrawal() {
         aria-live="polite" 
         className="sr-only"
       >
-        Etapa {currentStep} de 15: {getStepTitle()}
+        Etapa {currentStep} de {TOTAL_STEPS}: {getStepTitle()}
       </div>
 
       {/* Footer Fixo com Shadow e Melhor Hierarquia */}
@@ -1796,7 +1796,7 @@ export default function ProjectWithdrawal() {
                 Cancelar
               </Button>
 
-              {currentStep === 15 ? (
+              {currentStep === TOTAL_STEPS ? (
                 <>
                   <Button 
                     variant="outline" 
