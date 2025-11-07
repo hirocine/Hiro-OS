@@ -17,8 +17,8 @@ export function useCategories() {
       const { data, error } = await supabase
         .from('equipment_categories')
         .select('*')
-        .order('category', { ascending: true })
-        .order('subcategory', { ascending: true });
+        .order('category_order', { ascending: true })
+        .order('subcategory_order', { ascending: true });
 
       if (error) {
         logger.database('select', 'equipment_categories', false, error);
@@ -31,7 +31,9 @@ export function useCategories() {
         subcategory: item.subcategory,
         isCustom: item.is_custom,
         createdAt: item.created_at,
-        createdBy: item.created_by
+        createdBy: item.created_by,
+        categoryOrder: item.category_order,
+        subcategoryOrder: item.subcategory_order
       }));
 
       logger.database('select', 'equipment_categories', true);
@@ -58,7 +60,9 @@ export function useCategories() {
       const categoryData = {
         category,
         subcategory,
-        is_custom: true
+        is_custom: true,
+        category_order: 999,
+        subcategory_order: 999
       };
 
       const { data, error } = await supabase
@@ -78,7 +82,9 @@ export function useCategories() {
         subcategory: data.subcategory,
         isCustom: data.is_custom,
         createdAt: data.created_at,
-        createdBy: data.created_by
+        createdBy: data.created_by,
+        categoryOrder: data.category_order,
+        subcategoryOrder: data.subcategory_order
       };
 
       setCategories(prev => [...prev, newCategory]);
@@ -244,7 +250,9 @@ export function useCategories() {
         subcategory: data.subcategory,
         isCustom: data.is_custom,
         createdAt: data.created_at,
-        createdBy: data.created_by
+        createdBy: data.created_by,
+        categoryOrder: data.category_order,
+        subcategoryOrder: data.subcategory_order
       };
 
       setCategories(prev => prev.map(cat => cat.id === categoryId ? updatedCategory : cat));

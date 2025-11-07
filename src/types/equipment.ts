@@ -44,6 +44,8 @@ export interface EquipmentCategoryData {
   isCustom: boolean;
   createdAt: string;
   createdBy?: string;
+  categoryOrder?: number;
+  subcategoryOrder?: number;
 }
 
 export type SortableField = 'name' | 'brand' | 'category' | 'subcategory' | 'status' | 'value' | 'patrimonyNumber' | 'purchaseDate';

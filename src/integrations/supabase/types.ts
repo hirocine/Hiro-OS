@@ -100,27 +100,33 @@ export type Database = {
       equipment_categories: {
         Row: {
           category: string
+          category_order: number | null
           created_at: string | null
           created_by: string | null
           id: string
           is_custom: boolean | null
           subcategory: string | null
+          subcategory_order: number | null
         }
         Insert: {
           category: string
+          category_order?: number | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           is_custom?: boolean | null
           subcategory?: string | null
+          subcategory_order?: number | null
         }
         Update: {
           category?: string
+          category_order?: number | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           is_custom?: boolean | null
           subcategory?: string | null
+          subcategory_order?: number | null
         }
         Relationships: []
       }

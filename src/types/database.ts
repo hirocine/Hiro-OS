@@ -234,6 +234,8 @@ export interface EquipmentCategoryDbRow {
   is_custom: boolean;
   created_by?: EntityId;
   created_at: Timestamp;
+  category_order: number;
+  subcategory_order: number;
 }
 
 // Saved filter database types
