@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ import { Equipment } from '@/types/equipment';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCategories } from '@/hooks/useCategories';
 import { generateProjectPDF } from '@/lib/pdfGenerator';
 
 interface SelectedCamera {
@@ -60,6 +61,7 @@ interface WithdrawalData {
     storage: Equipment[];
     computers: Equipment[];
   };
+  dynamicSelection: Record<string, Equipment[]>;
 }
 
 const RECORDING_TYPES = [
@@ -76,6 +78,23 @@ const RECORDING_TYPES = [
   'Appetite Appeal 🍫',
   'Making Of 🎞️'
 ];
+
+// Mapeamento de nomes de categorias PT-BR para chaves do equipment.category
+const CATEGORY_TO_EQ_MAP: Record<string, 'camera' | 'lighting' | 'storage' | 'accessories'> = {
+  'Câmera': 'camera',
+  'Iluminação': 'lighting',
+  'Armazenamento': 'storage',
+  'Acessórios': 'accessories',
+  'Tripés e Movimento': 'accessories',
+  'Elétrica': 'accessories',
+  'Maquinária': 'accessories',
+  'Consumíveis': 'accessories',
+  'Tecnologia': 'accessories',
+  'Monitoração': 'accessories',
+  'Produção': 'accessories',
+  'Transmissão': 'accessories',
+  'Audio': 'accessories',
+};
 
 export default function ProjectWithdrawal() {
   const navigate = useNavigate();
@@ -106,6 +125,7 @@ export default function ProjectWithdrawal() {
       storage: [],
       computers: [],
     },
+    dynamicSelection: {},
   });
 
   const [searchFilters, setSearchFilters] = useState({
@@ -121,10 +141,144 @@ export default function ProjectWithdrawal() {
   });
 
   const { users, loading: usersLoading } = useUsers();
-  const { equipmentHierarchy, loading: equipmentLoading } = useEquipment();
+  const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
+  const { getCategoriesHierarchy, categories, loading: categoriesLoading } = useCategories();
+
+  // Gerar steps dinâmicos baseado nas categorias do banco
+  const DYNAMIC_STEPS = useMemo(() => {
+    const hierarchy = getCategoriesHierarchy();
+    const steps: Array<{
+      key: string;
+      title: string;
+      categoryName: string;
+      eqCategory: 'camera' | 'lighting' | 'storage' | 'accessories';
+      subcategory?: string;
+      order: number;
+    }> = [];
+    let order = 6; // Após os 5 primeiros steps fixos (Informações, Responsável, Datas, Tipo, Câmeras)
+
+    // Steps já cobertos pelo fluxo fixo existente
+    const covered = new Set([
+      'Câmera|Lente',
+      'Câmera|Cage', 'Câmera|Bateria', 'Câmera|Cabo', 'Câmera|Carregador', 
+      'Câmera|Case', 'Câmera|Filtro', 'Câmera|Monitor', 'Câmera|Transmissão',
+      'Câmera|Acessórios',
+      'Tripés e Movimento|Tripé de Câmera', 
+      'Câmera|Estabilizador',
+      'Iluminação|Luz',
+      'Iluminação|Modificador de Luz', 
+      'Iluminação|Tripé de Luz',
+      'Armazenamento|Cartão de Memória', 
+      'Armazenamento|Leitor de Cartão', 
+      'Armazenamento|SSD/HD',
+      'Armazenamento|SSD/HD Externo',
+      'Elétrica|Elétrica', 
+      'Acessórios|Cabo', 
+      'Acessórios|Elétrica',
+      'Maquinária|Maquinária', 
+      'Acessórios|Maquinária',
+      'Tecnologia|Computador', 
+      'Tecnologia|Notebook',
+      'Acessórios|Computador',
+    ]);
+
+    hierarchy.forEach(cat => {
+      const eqCategory = CATEGORY_TO_EQ_MAP[cat.categoryName] || 'accessories';
+
+      // Pular step 'Câmeras' principal (já temos step especial)
+      if (cat.categoryName === 'Câmera') {
+        cat.subcategories
+          .filter(sub => sub.name !== 'Câmera')
+          .forEach(sub => {
+            const key = `Câmera|${sub.name}`;
+            if (!covered.has(key)) {
+              steps.push({
+                key,
+                title: `Câmera - ${sub.name}`,
+                categoryName: 'Câmera',
+                eqCategory,
+                subcategory: sub.name,
+                order: order++,
+              });
+            }
+          });
+      } else {
+        if (cat.subcategories.length === 0) {
+          // Categoria sem subcategorias: um step único
+          const key = cat.categoryName;
+          if (!covered.has(key)) {
+            steps.push({
+              key,
+              title: cat.categoryName,
+              categoryName: cat.categoryName,
+              eqCategory,
+              subcategory: undefined,
+              order: order++,
+            });
+          }
+        } else {
+          // Categoria com subcategorias: um step por subcategoria
+          cat.subcategories.forEach(sub => {
+            const key = `${cat.categoryName}|${sub.name}`;
+            if (!covered.has(key)) {
+              steps.push({
+                key,
+                title: `${cat.categoryName} - ${sub.name}`,
+                categoryName: cat.categoryName,
+                eqCategory,
+                subcategory: sub.name,
+                order: order++,
+              });
+            }
+          });
+        }
+      }
+    });
+
+    return steps;
+  }, [categories, getCategoriesHierarchy]);
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
     setData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Helpers para gerenciar seleção dinâmica
+  const addDynamicItem = (key: string, item: Equipment) => {
+    setData(prev => ({
+      ...prev,
+      dynamicSelection: {
+        ...prev.dynamicSelection,
+        [key]: [...(prev.dynamicSelection[key] || []), item]
+      }
+    }));
+  };
+
+  const removeDynamicItem = (key: string, id: string) => {
+    setData(prev => ({
+      ...prev,
+      dynamicSelection: {
+        ...prev.dynamicSelection,
+        [key]: (prev.dynamicSelection[key] || []).filter(i => i.id !== id)
+      }
+    }));
+  };
+
+  const getDynamicItems = (key: string) => data.dynamicSelection[key] || [];
+
+  // Obter equipamentos disponíveis para um step dinâmico
+  const getAvailableByStep = (stepMeta: typeof DYNAMIC_STEPS[0]) => {
+    return allEquipment.filter(eq => {
+      if (eq.status !== 'available') return false;
+      if (getDynamicItems(stepMeta.key).some(item => item.id === eq.id)) return false;
+      
+      // Filtrar por subcategoria se existir
+      if (stepMeta.subcategory && eq.subcategory !== stepMeta.subcategory) return false;
+      
+      // Filtrar por categoria mapeada
+      if (eq.category !== stepMeta.eqCategory) return false;
+      
+      return true;
+    });
   };
 
   const getAvailableCameras = () => {
@@ -320,9 +474,11 @@ export default function ProjectWithdrawal() {
       computers
     } = data.selectedEquipment;
     
+    const dynamicCount = Object.values(data.dynamicSelection).reduce((sum, items) => sum + items.length, 0);
+    
     return cameras.length + lenses.length + cameraAccessories.length + 
            tripods.length + lights.length + lightModifiers.length + 
-           machinery.length + electrical.length + storage.length + computers.length;
+           machinery.length + electrical.length + storage.length + computers.length + dynamicCount;
   };
 
   const flattenSelectedEquipment = (): Equipment[] => {
@@ -342,6 +498,11 @@ export default function ProjectWithdrawal() {
     equipment.push(...data.selectedEquipment.electrical);
     equipment.push(...data.selectedEquipment.storage);
     equipment.push(...data.selectedEquipment.computers);
+    
+    // Adicionar itens da seleção dinâmica
+    Object.values(data.dynamicSelection).forEach(items => {
+      equipment.push(...items);
+    });
     
     return equipment;
   };
@@ -469,9 +630,12 @@ export default function ProjectWithdrawal() {
     }
   };
 
+  // Calcular TOTAL_STEPS dinamicamente
+  const TOTAL_STEPS = 5 + DYNAMIC_STEPS.length + 9 + 1; // 5 fixos iniciais + dinâmicos + 9 fixos de equipamento + 1 resumo
+
   // Navigation functions
   const nextStep = () => {
-    if (isStepValid() && currentStep < 15) {
+    if (isStepValid() && currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -507,110 +671,145 @@ export default function ProjectWithdrawal() {
         return data.recordingType !== '';
       case 5:
         return data.selectedEquipment.cameras.length > 0;
-      case 6:
-      case 7:
-      case 8:
-      case 9:
-      case 10:
-      case 11:
-      case 12:
-      case 13:
-      case 14:
-      case 15:
-        return true; // Optional steps and summary
       default:
-        return false;
+        return true; // Equipment selection steps and summary are optional
     }
   };
 
   const shouldShowSkipButton = (): boolean => {
-    if (currentStep < 6 || currentStep > 14) return false;
-    
-    const categoryMap: Record<number, keyof typeof data.selectedEquipment> = {
-      6: 'lenses',
-      7: 'cameraAccessories',
-      8: 'tripods',
-      9: 'lights',
-      10: 'lightModifiers',
-      11: 'machinery',
-      12: 'electrical',
-      13: 'storage',
-      14: 'computers'
-    };
-    
-    const category = categoryMap[currentStep];
-    if (!category) return false;
-    
-    const items = data.selectedEquipment[category];
-    return Array.isArray(items) && items.length === 0;
+    if (currentStep < 6 || currentStep >= TOTAL_STEPS) return false;
+    return true; // All equipment steps are optional
   };
 
-  const progressPercentage = (currentStep / 15) * 100;
+  const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
 
   // Função para obter o título do step atual
   const getStepTitle = (): string => {
-    const titles = [
-      'Informações do Projeto',
-      'Responsável',
-      'Datas',
-      'Tipo de Gravação',
-      'Câmeras',
-      'Lentes',
-      'Acessórios de Câmera',
-      'Tripés e Estabilizadores',
-      'Iluminação',
-      'Modificadores de Luz',
-      'Maquinário',
-      'Elétrica',
-      'Armazenamento',
-      'Computadores',
-      'Revisão e Confirmação'
+    if (currentStep <= 5) {
+      const titles = ['Informações do Projeto', 'Responsável', 'Datas', 'Tipo de Gravação', 'Câmeras'];
+      return titles[currentStep - 1] || '';
+    }
+    
+    // Steps dinâmicos (6 até 5 + DYNAMIC_STEPS.length)
+    const dynamicStepIndex = currentStep - 6;
+    if (dynamicStepIndex >= 0 && dynamicStepIndex < DYNAMIC_STEPS.length) {
+      return DYNAMIC_STEPS[dynamicStepIndex].title;
+    }
+    
+    // Steps fixos de equipamento (após dinâmicos)
+    const fixedEquipmentStepIndex = currentStep - 6 - DYNAMIC_STEPS.length;
+    const fixedTitles = [
+      'Lentes', 'Acessórios de Câmera', 'Tripés e Estabilizadores', 
+      'Iluminação', 'Modificadores de Luz', 'Maquinário', 
+      'Elétrica', 'Armazenamento', 'Computadores'
     ];
-    return titles[currentStep - 1] || '';
+    
+    if (fixedEquipmentStepIndex >= 0 && fixedEquipmentStepIndex < fixedTitles.length) {
+      return fixedTitles[fixedEquipmentStepIndex];
+    }
+    
+    // Step final de resumo
+    return 'Revisão e Confirmação';
   };
 
   // Função para obter a descrição do step atual
   const getStepDescription = (): string | null => {
-    const descriptions: Record<number, string> = {
-      1: 'Preencha as informações básicas do projeto de retirada',
-      2: 'Selecione o responsável pela retirada dos equipamentos',
-      3: 'Defina as datas de separação, retirada e devolução',
-      4: 'Informe o tipo de gravação que será realizada',
-      5: 'Selecione as câmeras e seus acessórios',
-      6: 'Adicione lentes necessárias (opcional)',
-      7: 'Adicione acessórios adicionais de câmera (opcional)',
-      8: 'Adicione tripés e estabilizadores (opcional)',
-      9: 'Adicione equipamentos de iluminação (opcional)',
-      10: 'Adicione modificadores de luz (opcional)',
-      11: 'Adicione maquinário necessário (opcional)',
-      12: 'Adicione equipamentos elétricos (opcional)',
-      13: 'Adicione dispositivos de armazenamento (opcional)',
-      14: 'Adicione computadores necessários (opcional)',
-      15: 'Revise todos os dados antes de criar a retirada'
-    };
-    return descriptions[currentStep] || null;
+    if (currentStep <= 5) {
+      const descriptions = [
+        'Preencha as informações básicas do projeto de retirada',
+        'Selecione o responsável pela retirada dos equipamentos',
+        'Defina as datas de separação, retirada e devolução',
+        'Informe o tipo de gravação que será realizada',
+        'Selecione as câmeras e seus acessórios'
+      ];
+      return descriptions[currentStep - 1] || null;
+    }
+    
+    if (currentStep === TOTAL_STEPS) {
+      return 'Revise todos os dados antes de criar a retirada';
+    }
+    
+    return 'Adicione equipamentos para este projeto (opcional)';
   };
 
   // Função para obter o ícone do step atual
   const getStepIcon = () => {
-    const icons = [
-      <FileText className="h-5 w-5 text-primary" />,
-      <User className="h-5 w-5 text-primary" />,
-      <Clock className="h-5 w-5 text-primary" />,
-      <Video className="h-5 w-5 text-primary" />,
-      <Camera className="h-5 w-5 text-primary" />,
-      <Aperture className="h-5 w-5 text-primary" />,
-      <LinkIcon className="h-5 w-5 text-primary" />,
-      <Move3d className="h-5 w-5 text-primary" />,
-      <Lightbulb className="h-5 w-5 text-primary" />,
-      <Layers className="h-5 w-5 text-primary" />,
-      <Settings className="h-5 w-5 text-primary" />,
-      <Zap className="h-5 w-5 text-primary" />,
-      <HardDrive className="h-5 w-5 text-primary" />,
-      <Monitor className="h-5 w-5 text-primary" />,
-      <Check className="h-5 w-5 text-primary" />
-    ];
-    return icons[currentStep - 1] || null;
+    if (currentStep <= 5) {
+      const icons = [
+        <FileText className="h-5 w-5 text-primary" />,
+        <User className="h-5 w-5 text-primary" />,
+        <Clock className="h-5 w-5 text-primary" />,
+        <Video className="h-5 w-5 text-primary" />,
+        <Camera className="h-5 w-5 text-primary" />
+      ];
+      return icons[currentStep - 1] || null;
+    }
+    
+    if (currentStep === TOTAL_STEPS) {
+      return <Check className="h-5 w-5 text-primary" />;
+    }
+    
+    return <Package className="h-5 w-5 text-primary" />;
+  };
+
+  const renderDynamicEquipmentStep = (stepKey: string, title: string, availableItems: Equipment[]) => {
+    const selectedItems = getDynamicItems(stepKey);
+    
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Package className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">{title}</h3>
+        </div>
+
+        {selectedItems.length > 0 && (
+          <div className="space-y-2">
+            <Label>Selecionados ({selectedItems.length})</Label>
+            {selectedItems.map((item) => (
+              <Card key={item.id} className="bg-green-50 dark:bg-green-950/20 border-green-500/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-600" />
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">{item.brand}</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => removeDynamicItem(stepKey, item.id)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label>Disponíveis</Label>
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            {availableItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhum equipamento disponível</p>
+            ) : (
+              availableItems.map((item) => (
+                <Card key={item.id} className="cursor-pointer hover:bg-accent" onClick={() => addDynamicItem(stepKey, item)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">{item.brand}</p>
+                      </div>
+                      <Plus className="h-4 w-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderEquipmentSelectionStep = (
@@ -1440,8 +1639,41 @@ export default function ProjectWithdrawal() {
   const currentStepData = steps[currentStep - 1];
 
   const renderStep = () => {
-    return currentStepData?.content;
+    // Steps fixos iniciais (1-5)
+    if (currentStep <= 5) {
+      return currentStepData?.content;
+    }
+    
+    // Steps dinâmicos (6 até 5 + DYNAMIC_STEPS.length)
+    const dynamicStepIndex = currentStep - 6;
+    if (dynamicStepIndex >= 0 && dynamicStepIndex < DYNAMIC_STEPS.length) {
+      const stepMeta = DYNAMIC_STEPS[dynamicStepIndex];
+      const availableItems = getAvailableByStep(stepMeta);
+      return renderDynamicEquipmentStep(stepMeta.key, stepMeta.title, availableItems);
+    }
+    
+    // Steps fixos de equipamento (após dinâmicos): índices 5-13 do array steps (Lentes até Computadores)
+    const fixedEquipmentStepIndex = currentStep - 6 - DYNAMIC_STEPS.length;
+    if (fixedEquipmentStepIndex >= 0 && fixedEquipmentStepIndex < 9) {
+      // steps[5] = Lentes, steps[6] = Acessórios Câmera, ..., steps[13] = Computadores
+      return steps[5 + fixedEquipmentStepIndex]?.content;
+    }
+    
+    // Step final de resumo (steps[14])
+    return steps[14]?.content;
   };
+
+  // Loading state enquanto categorias carregam
+  if (categoriesLoading && DYNAMIC_STEPS.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Carregando categorias...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
