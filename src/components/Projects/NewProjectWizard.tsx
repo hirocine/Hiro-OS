@@ -32,12 +32,12 @@ interface ProjectData {
 
 export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWizardProps) {
   const { allEquipment } = useEquipment();
-  const { getCategoriesHierarchy } = useCategories();
-  
-  // Gerar steps de equipamentos dinamicamente baseado nas categorias do banco
-  const categoriesHierarchy = getCategoriesHierarchy();
+  const { getCategoriesHierarchy, categories, loading: categoriesLoading } = useCategories();
 
+  // Gerar steps de equipamentos dinamicamente baseado nas categorias do banco
   const EQUIPMENT_STEPS = useMemo(() => {
+    const categoriesHierarchy = getCategoriesHierarchy(); // Chamar dentro do useMemo
+    
     const steps: Array<{
       category: string;
       title: string;
@@ -69,11 +69,27 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     });
     
     return steps;
-  }, [categoriesHierarchy]);
+  }, [categories, getCategoriesHierarchy]);
 
   const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1; // 6 dados + equipamentos + 1 confirmação
-  
+
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Loading state enquanto categorias carregam
+  if (categoriesLoading && EQUIPMENT_STEPS.length === 0) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto">
+          <DialogHeader>
+            <DialogTitle>Carregando categorias...</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   const [projectData, setProjectData] = useState<ProjectData>({
     name: '',
     description: '',
