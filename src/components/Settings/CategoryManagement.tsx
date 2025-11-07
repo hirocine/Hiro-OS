@@ -31,6 +31,30 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Função para retornar placeholder contextual baseado na categoria
+const getSubcategoryPlaceholder = (category: string | null): string => {
+  if (!category) return 'Ex: Digite o nome da subcategoria...';
+  
+  const placeholders: Record<string, string> = {
+    'Câmera': 'Ex: Lente, Cage, Filtro, Bateria...',
+    'Audio': 'Ex: Microfone, Gravador, Cabo, Braço Articulado...',
+    'Iluminação': 'Ex: Luz, Modificador de Luz, Rebatedor...',
+    'Acessórios': 'Ex: Bateria, Cabo, Case, Filtro...',
+    'Armazenamento': 'Ex: SSD/HD Externo, Cartão de Memória, Leitor...',
+    'Consumíveis': 'Ex: Fita Gaffer, Abraçadeiras, Pano Preto, Fita Crepe...',
+    'Elétrica': 'Ex: Caçapa, Extensão, Tomada, Cabo de Força...',
+    'Maquinária': 'Ex: Tripé de Câmera, Dolly, Grua...',
+    'Monitoração': 'Ex: Monitor, Transmissão, Gravador...',
+    'Produção': 'Ex: Cadeiras, Mesas, Comunicação, Tendas...',
+    'Tecnologia': 'Ex: Desktop, Notebook, Monitor, Mouse...',
+    'Transmissão': 'Ex: Mesa de Corte, Placa de Captura, Conversores...',
+    'Tripés e Movimento': 'Ex: Tripé, Estabilizador, Slider, Gimbal...',
+  };
+  
+  // Retorna o placeholder específico ou um genérico se a categoria não estiver no mapeamento
+  return placeholders[category] || `Ex: Subcategoria de ${category}...`;
+};
+
 export function CategoryManagement() {
   const { 
     categories,
@@ -542,7 +566,7 @@ export function CategoryManagement() {
               <Label htmlFor="new-subcategory">Nome da Subcategoria *</Label>
               <Input
                 id="new-subcategory"
-                placeholder="Ex: FPV, Racing, Gimbal..."
+                placeholder={getSubcategoryPlaceholder(selectedCategory)}
                 value={newSubcategoryName}
                 onChange={(e) => setNewSubcategoryName(e.target.value)}
               />
