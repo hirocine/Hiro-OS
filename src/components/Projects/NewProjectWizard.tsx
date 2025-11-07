@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
-import { Equipment, EquipmentCategory } from '@/types/equipment';
+import { useCategories } from '@/hooks/useCategories';
+import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -26,21 +27,52 @@ interface ProjectData {
   department: string;
   startDate: string;
   expectedEndDate: string;
-  selectedEquipment: Record<EquipmentCategory, Equipment[]>;
+  selectedEquipment: Record<string, Equipment[]>;
 }
 
-const EQUIPMENT_STEPS = [
-  { category: 'camera' as EquipmentCategory, title: 'Câmeras', step: 7 },
-  { category: 'camera' as EquipmentCategory, title: 'Lentes', step: 8, subcategory: 'lenses' },
-  { category: 'accessories' as EquipmentCategory, title: 'Tripés e Movimento', step: 9, subcategory: 'tripods' },
-  { category: 'accessories' as EquipmentCategory, title: 'Acessórios de Câmera', step: 10, subcategory: 'camera-accessories' },
-  { category: 'audio' as EquipmentCategory, title: 'Áudio', step: 11 },
-  { category: 'audio' as EquipmentCategory, title: 'Acessórios de Áudio', step: 12, subcategory: 'audio-accessories' },
-  { category: 'lighting' as EquipmentCategory, title: 'Iluminação', step: 13 },
-  { category: 'lighting' as EquipmentCategory, title: 'Acessórios de Iluminação', step: 14, subcategory: 'lighting-accessories' },
-];
-
 export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWizardProps) {
+  const { allEquipment } = useEquipment();
+  const { getCategoriesHierarchy } = useCategories();
+  
+  // Gerar steps de equipamentos dinamicamente baseado nas categorias do banco
+  const categoriesHierarchy = getCategoriesHierarchy();
+
+  const EQUIPMENT_STEPS = useMemo(() => {
+    const steps: Array<{
+      category: string;
+      title: string;
+      step: number;
+      subcategory?: string;
+    }> = [];
+    
+    let stepNumber = 7; // Começar após os 6 steps de dados do projeto
+    
+    categoriesHierarchy.forEach((categoryData) => {
+      if (categoryData.subcategories.length === 0) {
+        // Categoria sem subcategorias: criar 1 step
+        steps.push({
+          category: categoryData.categoryName,
+          title: categoryData.categoryName,
+          step: stepNumber++
+        });
+      } else {
+        // Categoria com subcategorias: criar 1 step por subcategoria
+        categoryData.subcategories.forEach((subcategory) => {
+          steps.push({
+            category: categoryData.categoryName,
+            title: `${categoryData.categoryName} - ${subcategory.name}`,
+            step: stepNumber++,
+            subcategory: subcategory.name
+          });
+        });
+      }
+    });
+    
+    return steps;
+  }, [categoriesHierarchy]);
+
+  const TOTAL_STEPS = 6 + EQUIPMENT_STEPS.length + 1; // 6 dados + equipamentos + 1 confirmação
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [projectData, setProjectData] = useState<ProjectData>({
     name: '',
@@ -50,71 +82,51 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     department: '',
     startDate: new Date().toISOString().split('T')[0],
     expectedEndDate: '',
-    selectedEquipment: {
-      camera: [],
-      audio: [],
-      lighting: [],
-      accessories: [],
-      storage: []
-    }
+    selectedEquipment: {}
   });
-
-  const { allEquipment } = useEquipment();
 
   const updateField = (field: keyof ProjectData, value: string) => {
     setProjectData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addEquipment = (equipment: Equipment, category: EquipmentCategory) => {
+  const addEquipment = (equipment: Equipment, category: string) => {
     setProjectData(prev => ({
       ...prev,
       selectedEquipment: {
         ...prev.selectedEquipment,
-        [category]: [...prev.selectedEquipment[category], equipment]
+        [category]: [...(prev.selectedEquipment[category] || []), equipment]
       }
     }));
   };
 
-  const removeEquipment = (equipmentId: string, category: EquipmentCategory) => {
+  const removeEquipment = (equipmentId: string, category: string) => {
     setProjectData(prev => ({
       ...prev,
       selectedEquipment: {
         ...prev.selectedEquipment,
-        [category]: prev.selectedEquipment[category].filter(eq => eq.id !== equipmentId)
+        [category]: (prev.selectedEquipment[category] || []).filter(eq => eq.id !== equipmentId)
       }
     }));
   };
 
-  const getAvailableEquipment = (category: EquipmentCategory, subcategory?: string) => {
+  const getAvailableEquipment = (category: string, subcategory?: string) => {
     return allEquipment.filter(eq => {
-      // Use simplified status - only show equipment that is actually available
+      // Apenas equipamentos disponíveis
       if (eq.status !== 'available') return false;
+      
+      // Filtrar por categoria
       if (eq.category !== category) return false;
       
-      // Simple subcategory filtering based on equipment name
-      if (subcategory) {
-        const name = eq.name.toLowerCase();
-        switch (subcategory) {
-          case 'lenses':
-            return name.includes('lente') || name.includes('lens');
-          case 'tripods':
-            return name.includes('tripé') || name.includes('tripod') || name.includes('steadicam') || name.includes('gimbal');
-          case 'camera-accessories':
-            return !name.includes('lente') && !name.includes('lens') && !name.includes('tripé') && !name.includes('tripod');
-          case 'audio-accessories':
-            return !name.includes('microfone') && !name.includes('gravador');
-          case 'lighting-accessories':
-            return !name.includes('led') && !name.includes('painel');
-          default:
-            return true;
-        }
+      // Filtrar por subcategoria (se especificada)
+      if (subcategory && eq.subcategory !== subcategory) {
+        return false;
       }
       
       return true;
     });
   };
 
-  const getSelectedEquipment = (category: EquipmentCategory) => {
+  const getSelectedEquipment = (category: string) => {
     return projectData.selectedEquipment[category] || [];
   };
 
@@ -131,7 +143,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
   };
 
   const nextStep = () => {
-    if (currentStep < 14) {
+    if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -176,13 +188,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
         department: '',
         startDate: new Date().toISOString().split('T')[0],
         expectedEndDate: '',
-        selectedEquipment: {
-          camera: [],
-          audio: [],
-          lighting: [],
-          accessories: [],
-          storage: []
-        }
+        selectedEquipment: {}
       });
       
       toast.success('Projeto criado com sucesso!');
@@ -280,7 +286,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
           </div>
         );
 
-      case 14:
+      case TOTAL_STEPS:
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold">Confirmação Final</h3>
@@ -428,7 +434,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] mx-auto overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Novo Projeto - Passo {currentStep} de 14</DialogTitle>
+          <DialogTitle>Novo Projeto - Passo {currentStep} de {TOTAL_STEPS}</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
@@ -436,7 +442,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
           <div className="w-full bg-muted rounded-full h-2 mb-6">
             <div 
               className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep / 14) * 100}%` }}
+              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
             />
           </div>
 
@@ -458,7 +464,7 @@ export function NewProjectWizard({ open, onOpenChange, onSubmit }: NewProjectWiz
               Cancelar
             </Button>
             
-            {currentStep === 14 ? (
+            {currentStep === TOTAL_STEPS ? (
               <Button onClick={handleSubmit}>
                 <Check className="h-4 w-4 mr-2" />
                 Finalizar
