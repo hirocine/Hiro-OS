@@ -441,10 +441,27 @@ export function useEquipment(): UseEquipmentReturn {
         capacity: updates.capacity
       };
 
-      // Remove undefined values
-      const cleanedUpdates = Object.fromEntries(
-        Object.entries(dbUpdates).filter(([, value]) => value !== undefined)
-      );
+      // Convert undefined to null for database (to clear fields)
+      // Only include fields that are present in the updates object
+      const cleanedUpdates: Record<string, any> = {};
+      for (const [key, value] of Object.entries(dbUpdates)) {
+        // Se o campo está presente em 'updates', incluímos no update
+        // Convertendo undefined para null para limpar o campo no banco
+        if (key in updates || key === 'parent_id') {
+          cleanedUpdates[key] = value === undefined ? null : value;
+        }
+      }
+
+      // Log de debug para verificar o que está sendo enviado
+      logger.debug('Updating equipment', {
+        module: 'equipment',
+        action: 'update_equipment',
+        data: {
+          equipmentId: id,
+          fieldsToUpdate: Object.keys(cleanedUpdates),
+          updates: cleanedUpdates
+        }
+      });
 
       const { error } = await supabase
         .from('equipments')

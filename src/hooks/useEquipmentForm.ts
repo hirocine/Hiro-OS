@@ -105,14 +105,20 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     setIsSubmitting(true);
     
     try {
-      // Sanitize data
+      // Sanitize data - using null explicitly for empty fields
       const sanitizedData = {
         ...formData,
-        parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : undefined,
-        subcategory: formData.subcategory?.trim() || undefined,
-        capacity: formData.capacity && formData.capacity > 0 ? formData.capacity : undefined,
-        value: formData.value && formData.value > 0 ? formData.value : undefined,
-        depreciatedValue: formData.depreciatedValue && formData.depreciatedValue > 0 ? formData.depreciatedValue : undefined
+        parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : null,
+        subcategory: formData.subcategory?.trim() || null,
+        customCategory: formData.customCategory?.trim() || null,
+        capacity: formData.capacity && formData.capacity > 0 ? formData.capacity : null,
+        value: formData.value && formData.value > 0 ? formData.value : null,
+        depreciatedValue: formData.depreciatedValue && formData.depreciatedValue > 0 ? formData.depreciatedValue : null,
+        serialNumber: formData.serialNumber?.trim() || null,
+        description: formData.description?.trim() || null,
+        receiveDate: formData.receiveDate || null,
+        store: formData.store?.trim() || null,
+        invoice: formData.invoice?.trim() || null,
       };
       
       if (equipmentId) {
