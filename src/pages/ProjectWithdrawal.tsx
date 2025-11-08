@@ -398,7 +398,6 @@ export default function ProjectWithdrawal() {
 
   // Render category with subcategories using accordion
   const renderCategoryWithSubcategories = (categoryStep: typeof CATEGORY_STEPS[0]) => {
-    // Find the grouped category data
     const groupedCategory = groupedCategories.find(gc => gc.key === categoryStep.key);
     
     if (!groupedCategory) {
@@ -409,42 +408,12 @@ export default function ProjectWithdrawal() {
       );
     }
 
-    const Icon = categoryStep.icon;
-    const totalSelected = groupedCategory.subcategories.reduce((sum, sub) => {
-      return sum + sub.equipment.reduce((subSum, eq) => {
-        return subSum + (data.selectedEquipment[eq.id] || 0);
-      }, 0);
-    }, 0);
-
     return (
-      <div className="space-y-6">
-        {/* Category Header */}
-        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Icon className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">{categoryStep.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                Selecione os equipamentos desta categoria
-              </p>
-            </div>
-          </div>
-          {totalSelected > 0 && (
-            <Badge variant="default" className="text-base px-4 py-2">
-              {totalSelected} selecionado{totalSelected > 1 ? 's' : ''}
-            </Badge>
-          )}
-        </div>
-
-        {/* Subcategory Accordion */}
-        <SubcategoryAccordion
-          subcategories={groupedCategory.subcategories as any}
-          selectedEquipment={data.selectedEquipment}
-          onEquipmentChange={handleEquipmentChange}
-        />
-      </div>
+      <SubcategoryAccordion
+        subcategories={groupedCategory.subcategories as any}
+        selectedEquipment={data.selectedEquipment}
+        onEquipmentChange={handleEquipmentChange}
+      />
     );
   };
 
