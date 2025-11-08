@@ -9,17 +9,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { getAvatarData } from "@/lib/avatarUtils";
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Minus, Plus, ChevronDown, ChevronUp, Lightbulb, Settings, Cog, Zap, HardDrive, Monitor, Wrench, Download, Video, Plug, Box, ArrowLeft, X, Building2, User, Clock, FileText, Aperture, Link as LinkIcon, Move3d, Layers, Loader2, Eye, Edit, AlertCircle, Calendar as CalendarIconLucide, Info } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Download, Video, ArrowLeft, X, Building2, User, Clock, FileText, Loader2, Edit, AlertCircle, Calendar as CalendarIconLucide, Layers } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { differenceInDays } from 'date-fns';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -30,13 +25,10 @@ import { Equipment } from '@/types/equipment';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useCategories } from '@/hooks/useCategories';
 import { generateProjectPDF } from '@/lib/pdfGenerator';
-
-interface SelectedCamera {
-  camera: Equipment;
-  accessories: Equipment[];
-}
+import { useGroupedCategories } from '@/hooks/useGroupedCategories';
+import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
+import { SubcategoryAccordion } from '@/components/Projects/SubcategoryAccordion';
 
 interface WithdrawalData {
   projectNumber: string;
@@ -49,19 +41,7 @@ interface WithdrawalData {
   separationDate: Date | undefined;
   withdrawalTime?: string;
   recordingType: string;
-  selectedEquipment: {
-    cameras: SelectedCamera[];
-    lenses: Equipment[];
-    cameraAccessories: Equipment[];
-    tripods: Equipment[];
-    lights: Equipment[];
-    lightModifiers: Equipment[];
-    machinery: Equipment[];
-    electrical: Equipment[];
-    storage: Equipment[];
-    computers: Equipment[];
-  };
-  dynamicSelection: Record<string, Equipment[]>;
+  selectedEquipment: Record<string, number>; // equipmentId -> quantity
 }
 
 const RECORDING_TYPES = [
@@ -79,30 +59,12 @@ const RECORDING_TYPES = [
   'Making Of 🎞️'
 ];
 
-// Mapeamento de nomes de categorias PT-BR para chaves do equipment.category
-const CATEGORY_TO_EQ_MAP: Record<string, 'camera' | 'lighting' | 'storage' | 'accessories'> = {
-  'Câmera': 'camera',
-  'Iluminação': 'lighting',
-  'Armazenamento': 'storage',
-  'Acessórios': 'accessories',
-  'Tripés e Movimento': 'accessories',
-  'Elétrica': 'accessories',
-  'Maquinária': 'accessories',
-  'Consumíveis': 'accessories',
-  'Tecnologia': 'accessories',
-  'Monitoração': 'accessories',
-  'Produção': 'accessories',
-  'Transmissão': 'accessories',
-  'Audio': 'accessories',
-};
-
 export default function ProjectWithdrawal() {
   const navigate = useNavigate();
   const { id: projectId } = useParams();
   const isMobile = useIsMobile();
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [expandedCameras, setExpandedCameras] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
@@ -113,395 +75,63 @@ export default function ProjectWithdrawal() {
     returnDate: undefined,
     separationDate: undefined,
     recordingType: '',
-    selectedEquipment: {
-      cameras: [],
-      lenses: [],
-      cameraAccessories: [],
-      tripods: [],
-      lights: [],
-      lightModifiers: [],
-      machinery: [],
-      electrical: [],
-      storage: [],
-      computers: [],
-    },
-    dynamicSelection: {},
-  });
-
-  const [searchFilters, setSearchFilters] = useState({
-    lenses: '',
-    cameraAccessories: '',
-    tripods: '',
-    lights: '',
-    lightModifiers: '',
-    machinery: '',
-    electrical: '',
-    storage: '',
-    computers: ''
+    selectedEquipment: {},
   });
 
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
-  const { getCategoriesHierarchy, categories, loading: categoriesLoading } = useCategories();
 
-  // Gerar steps dinâmicos baseado nas categorias do banco
-  const DYNAMIC_STEPS = useMemo(() => {
-    const hierarchy = getCategoriesHierarchy();
-    const steps: Array<{
-      key: string;
-      title: string;
-      categoryName: string;
-      eqCategory: 'camera' | 'lighting' | 'storage' | 'accessories';
-      subcategory?: string;
-      order: number;
-    }> = [];
-    let order = 6; // Após os 5 primeiros steps fixos (Informações, Responsável, Datas, Tipo, Câmeras)
+  // Group equipment by parent categories
+  const groupedCategories = useGroupedCategories(allEquipment);
 
-    // Steps já cobertos pelo fluxo fixo existente
-    const covered = new Set([
-      'Câmera|Lente',
-      'Câmera|Cage', 'Câmera|Bateria', 'Câmera|Cabo', 'Câmera|Carregador', 
-      'Câmera|Case', 'Câmera|Filtro', 'Câmera|Monitor', 'Câmera|Transmissão',
-      'Câmera|Acessórios',
-      'Tripés e Movimento|Tripé de Câmera', 
-      'Câmera|Estabilizador',
-      'Iluminação|Luz',
-      'Iluminação|Modificador de Luz', 
-      'Iluminação|Tripé de Luz',
-      'Armazenamento|Cartão de Memória', 
-      'Armazenamento|Leitor de Cartão', 
-      'Armazenamento|SSD/HD',
-      'Armazenamento|SSD/HD Externo',
-      'Elétrica|Elétrica', 
-      'Acessórios|Cabo', 
-      'Acessórios|Elétrica',
-      'Maquinária|Maquinária', 
-      'Acessórios|Maquinária',
-      'Tecnologia|Computador', 
-      'Tecnologia|Notebook',
-      'Acessórios|Computador',
-    ]);
+  // Create category steps from grouped categories
+  const CATEGORY_STEPS = useMemo(() => {
+    return groupedCategories.map((cat, index) => ({
+      key: cat.key,
+      title: cat.title,
+      icon: cat.icon,
+      order: index + 1,
+      subcategories: cat.subcategories
+    }));
+  }, [groupedCategories]);
 
-    hierarchy.forEach(cat => {
-      const eqCategory = CATEGORY_TO_EQ_MAP[cat.categoryName] || 'accessories';
-
-      // Pular step 'Câmeras' principal (já temos step especial)
-      if (cat.categoryName === 'Câmera') {
-        cat.subcategories
-          .filter(sub => sub.name !== 'Câmera')
-          .forEach(sub => {
-            const key = `Câmera|${sub.name}`;
-            if (!covered.has(key)) {
-              steps.push({
-                key,
-                title: `Câmera - ${sub.name}`,
-                categoryName: 'Câmera',
-                eqCategory,
-                subcategory: sub.name,
-                order: order++,
-              });
-            }
-          });
-      } else {
-        if (cat.subcategories.length === 0) {
-          // Categoria sem subcategorias: um step único
-          const key = cat.categoryName;
-          if (!covered.has(key)) {
-            steps.push({
-              key,
-              title: cat.categoryName,
-              categoryName: cat.categoryName,
-              eqCategory,
-              subcategory: undefined,
-              order: order++,
-            });
-          }
-        } else {
-          // Categoria com subcategorias: um step por subcategoria
-          cat.subcategories.forEach(sub => {
-            const key = `${cat.categoryName}|${sub.name}`;
-            if (!covered.has(key)) {
-              steps.push({
-                key,
-                title: `${cat.categoryName} - ${sub.name}`,
-                categoryName: cat.categoryName,
-                eqCategory,
-                subcategory: sub.name,
-                order: order++,
-              });
-            }
-          });
-        }
-      }
-    });
-
-    return steps;
-  }, [categories, getCategoriesHierarchy]);
+  // Calculate total steps: 5 initial fixed steps + category steps + 1 summary
+  const TOTAL_STEPS = 5 + CATEGORY_STEPS.length + 1;
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
     setData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Helpers para gerenciar seleção dinâmica
-  const addDynamicItem = (key: string, item: Equipment) => {
+  // Handle equipment quantity change
+  const handleEquipmentChange = (equipmentId: string, quantity: number) => {
     setData(prev => ({
       ...prev,
-      dynamicSelection: {
-        ...prev.dynamicSelection,
-        [key]: [...(prev.dynamicSelection[key] || []), item]
+      selectedEquipment: {
+        ...prev.selectedEquipment,
+        [equipmentId]: quantity
       }
     }));
   };
 
-  const removeDynamicItem = (key: string, id: string) => {
-    setData(prev => ({
-      ...prev,
-      dynamicSelection: {
-        ...prev.dynamicSelection,
-        [key]: (prev.dynamicSelection[key] || []).filter(i => i.id !== id)
-      }
-    }));
-  };
-
-  const getDynamicItems = (key: string) => data.dynamicSelection[key] || [];
-
-  // Obter equipamentos disponíveis para um step dinâmico
-  const getAvailableByStep = (stepMeta: typeof DYNAMIC_STEPS[0]) => {
-    return allEquipment.filter(eq => {
-      if (eq.status !== 'available') return false;
-      if (getDynamicItems(stepMeta.key).some(item => item.id === eq.id)) return false;
-      
-      // Filtrar por subcategoria se existir
-      if (stepMeta.subcategory && eq.subcategory !== stepMeta.subcategory) return false;
-      
-      // Filtrar por categoria mapeada
-      if (eq.category !== stepMeta.eqCategory) return false;
-      
-      return true;
-    });
-  };
-
-  const getAvailableCameras = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'camera' && 
-        item.item.subcategory === 'Câmera' &&
-        item.item.itemType === 'main' && 
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameras.some(selected => selected.camera.id === item.item.id)
-      );
-  };
-
-  const getAvailableLenses = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'camera' && 
-        item.item.subcategory === 'Lente' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lenses.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableCameraAccessories = () => {
-    const cameraAccessorySubcategories = ['Acessórios', 'Bateria', 'Cabo', 'Carregador', 'Case', 'Filtro', 'Monitor', 'Transmissão', 'Cage'];
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'camera' && 
-        cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.cameraAccessories.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableTripods = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        ((item.item.category === 'accessories' && item.item.subcategory === 'Tripé de Câmera') ||
-         (item.item.category === 'camera' && item.item.subcategory === 'Estabilizador')) &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.tripods.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableLights = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'lighting' && 
-        item.item.subcategory === 'Luz' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lights.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableLightModifiers = () => {
-    const lightModifierSubcategories = ['Modificador de Luz', 'Tripé de Luz'];
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'lighting' && 
-        lightModifierSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.lightModifiers.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableMachinery = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'accessories' && 
-        item.item.subcategory === 'Maquinária' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.machinery.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableElectrical = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'accessories' && 
-        (item.item.subcategory === 'Cabo' || item.item.subcategory === 'Elétrica') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.electrical.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableStorage = () => {
-    const storageSubcategories = ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD'];
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'storage' && 
-        storageSubcategories.includes(item.item.subcategory || '') &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.storage.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const getAvailableComputers = () => {
-    return equipmentHierarchy
-      .filter(item => 
-        item.item.category === 'accessories' && 
-        item.item.subcategory === 'Computador' &&
-        item.item.status === 'available' &&
-        !data.selectedEquipment.computers.some(selected => selected.id === item.item.id)
-      )
-      .map(item => item.item);
-  };
-
-  const filterEquipmentBySearch = (items: Equipment[], searchTerm: string) => {
-    if (!searchTerm.trim()) return items;
-    
-    const lowerSearch = searchTerm.toLowerCase();
-    return items.filter(item => 
-      item.name.toLowerCase().includes(lowerSearch) ||
-      item.brand.toLowerCase().includes(lowerSearch)
-    );
-  };
-
-
-  const handleCameraSelect = (cameraHierarchy: { item: Equipment; accessories: Equipment[] }) => {
-    const newSelectedCamera: SelectedCamera = {
-      camera: cameraHierarchy.item,
-      accessories: cameraHierarchy.accessories,
-    };
-
-    updateField('selectedEquipment', {
-      ...data.selectedEquipment,
-      cameras: [...data.selectedEquipment.cameras, newSelectedCamera],
-    });
-  };
-
-  const handleCameraDeselect = (cameraId: string) => {
-    const updatedCameras = data.selectedEquipment.cameras.filter(
-      selected => selected.camera.id !== cameraId
-    );
-    
-    updateField('selectedEquipment', {
-      ...data.selectedEquipment,
-      cameras: updatedCameras,
-    });
-  };
-
-  const handleEquipmentSelect = (equipment: Equipment, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras') return;
-    
-    const currentEquipment = data.selectedEquipment[type] as Equipment[];
-    updateField('selectedEquipment', {
-      ...data.selectedEquipment,
-      [type]: [...currentEquipment, equipment],
-    });
-  };
-
-  const handleEquipmentDeselect = (equipmentId: string, type: keyof WithdrawalData['selectedEquipment']) => {
-    if (type === 'cameras') return;
-    
-    const currentEquipment = data.selectedEquipment[type] as Equipment[];
-    const updatedEquipment = currentEquipment.filter(item => item.id !== equipmentId);
-    
-    updateField('selectedEquipment', {
-      ...data.selectedEquipment,
-      [type]: updatedEquipment,
-    });
-  };
-
-  const toggleAccessoriesExpansion = (cameraId: string) => {
-    const newExpanded = new Set(expandedCameras);
-    if (newExpanded.has(cameraId)) {
-      newExpanded.delete(cameraId);
-    } else {
-      newExpanded.add(cameraId);
-    }
-    setExpandedCameras(newExpanded);
-  };
-
+  // Get total equipment count
   const getTotalEquipmentCount = () => {
-    const {
-      cameras,
-      lenses,
-      cameraAccessories,
-      tripods,
-      lights,
-      lightModifiers,
-      machinery,
-      electrical,
-      storage,
-      computers
-    } = data.selectedEquipment;
-    
-    const dynamicCount = Object.values(data.dynamicSelection).reduce((sum, items) => sum + items.length, 0);
-    
-    return cameras.length + lenses.length + cameraAccessories.length + 
-           tripods.length + lights.length + lightModifiers.length + 
-           machinery.length + electrical.length + storage.length + computers.length + dynamicCount;
+    return Object.values(data.selectedEquipment).reduce((sum, qty) => sum + qty, 0);
   };
 
+  // Flatten selected equipment for submission
   const flattenSelectedEquipment = (): Equipment[] => {
     const equipment: Equipment[] = [];
     
-    data.selectedEquipment.cameras.forEach(({ camera, accessories }) => {
-      equipment.push(camera);
-      equipment.push(...accessories);
-    });
-    
-    equipment.push(...data.selectedEquipment.lenses);
-    equipment.push(...data.selectedEquipment.cameraAccessories);
-    equipment.push(...data.selectedEquipment.tripods);
-    equipment.push(...data.selectedEquipment.lights);
-    equipment.push(...data.selectedEquipment.lightModifiers);
-    equipment.push(...data.selectedEquipment.machinery);
-    equipment.push(...data.selectedEquipment.electrical);
-    equipment.push(...data.selectedEquipment.storage);
-    equipment.push(...data.selectedEquipment.computers);
-    
-    // Adicionar itens da seleção dinâmica
-    Object.values(data.dynamicSelection).forEach(items => {
-      equipment.push(...items);
+    Object.entries(data.selectedEquipment).forEach(([equipmentId, quantity]) => {
+      if (quantity > 0) {
+        const foundEquipment = allEquipment.find(eq => eq.id === equipmentId);
+        if (foundEquipment) {
+          // Add equipment 'quantity' times
+          for (let i = 0; i < quantity; i++) {
+            equipment.push(foundEquipment);
+          }
+        }
+      }
     });
     
     return equipment;
@@ -519,6 +149,38 @@ export default function ProjectWithdrawal() {
 
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       
+      // Convert selected equipment to the old format for PDF generation
+      const selectedEquipmentForPDF = {
+        cameras: [] as any[],
+        lenses: [] as Equipment[],
+        cameraAccessories: [] as Equipment[],
+        tripods: [] as Equipment[],
+        lights: [] as Equipment[],
+        lightModifiers: [] as Equipment[],
+        machinery: [] as Equipment[],
+        electrical: [] as Equipment[],
+        storage: [] as Equipment[],
+        computers: [] as Equipment[],
+      };
+
+      flattenSelectedEquipment().forEach(eq => {
+        if (eq.category === 'camera' && eq.subcategory === 'Câmera') {
+          selectedEquipmentForPDF.cameras.push({ camera: eq, accessories: [] });
+        } else if (eq.category === 'camera' && eq.subcategory === 'Lente') {
+          selectedEquipmentForPDF.lenses.push(eq);
+        } else if (eq.category === 'camera') {
+          selectedEquipmentForPDF.cameraAccessories.push(eq);
+        } else if (eq.category === 'lighting' && eq.subcategory === 'Luz') {
+          selectedEquipmentForPDF.lights.push(eq);
+        } else if (eq.category === 'lighting') {
+          selectedEquipmentForPDF.lightModifiers.push(eq);
+        } else if (eq.category === 'storage') {
+          selectedEquipmentForPDF.storage.push(eq);
+        } else {
+          selectedEquipmentForPDF.electrical.push(eq);
+        }
+      });
+      
       await generateProjectPDF({
         projectNumber: data.projectNumber,
         company: data.company,
@@ -529,7 +191,7 @@ export default function ProjectWithdrawal() {
         returnDate: data.returnDate,
         separationDate: data.separationDate,
         recordingType: data.recordingType,
-        selectedEquipment: data.selectedEquipment
+        selectedEquipment: selectedEquipmentForPDF
       });
       
       enhancedToast.success({
@@ -630,9 +292,6 @@ export default function ProjectWithdrawal() {
     }
   };
 
-  // Calcular TOTAL_STEPS dinamicamente
-  const TOTAL_STEPS = 5 + DYNAMIC_STEPS.length + 1; // 5 fixos iniciais + dinâmicos + 1 resumo
-
   // Navigation functions
   const nextStep = () => {
     if (isStepValid() && currentStep < TOTAL_STEPS) {
@@ -663,51 +322,48 @@ export default function ProjectWithdrawal() {
       case 2:
         return data.responsibleUserId !== '';
       case 3:
-        return data.withdrawalDate && 
-               data.returnDate && 
-               data.separationDate &&
+        return data.withdrawalDate !== undefined && 
+               data.returnDate !== undefined && 
+               data.separationDate !== undefined &&
                data.returnDate >= data.withdrawalDate;
       case 4:
         return data.recordingType !== '';
-      case 5:
-        return data.selectedEquipment.cameras.length > 0;
       default:
         return true; // Equipment selection steps and summary are optional
     }
   };
 
   const shouldShowSkipButton = (): boolean => {
-    // Permitir pular apenas nos steps de equipamento (6 em diante, exceto resumo)
-    if (currentStep < 6 || currentStep === TOTAL_STEPS) return false;
+    // Allow skipping only on equipment steps (6 onwards, except summary)
+    if (currentStep < 5 || currentStep === TOTAL_STEPS) return false;
     return true;
   };
 
   const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
 
-  // Função para obter o título do step atual
+  // Get step title
   const getStepTitle = (): string => {
-    if (currentStep <= 5) {
-      const titles = ['Informações do Projeto', 'Responsável', 'Datas', 'Tipo de Gravação', 'Câmeras'];
+    if (currentStep <= 4) {
+      const titles = ['Informações do Projeto', 'Responsável', 'Datas', 'Tipo de Gravação'];
       return titles[currentStep - 1] || '';
     }
     
-    const dynamicStepIndex = currentStep - 6;
-    if (dynamicStepIndex >= 0 && dynamicStepIndex < DYNAMIC_STEPS.length) {
-      return DYNAMIC_STEPS[dynamicStepIndex].title;
+    const categoryStepIndex = currentStep - 5;
+    if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
+      return CATEGORY_STEPS[categoryStepIndex].title;
     }
     
     return 'Revisão e Confirmação';
   };
 
-  // Função para obter a descrição do step atual
+  // Get step description
   const getStepDescription = (): string | null => {
-    if (currentStep <= 5) {
+    if (currentStep <= 4) {
       const descriptions = [
         'Preencha as informações básicas do projeto de retirada',
         'Selecione o responsável pela retirada dos equipamentos',
         'Defina as datas de separação, retirada e devolução',
-        'Informe o tipo de gravação que será realizada',
-        'Selecione as câmeras e seus acessórios'
+        'Informe o tipo de gravação que será realizada'
       ];
       return descriptions[currentStep - 1] || null;
     }
@@ -716,185 +372,86 @@ export default function ProjectWithdrawal() {
       return 'Revise todos os dados antes de criar a retirada';
     }
     
-    return 'Adicione equipamentos para este projeto (opcional)';
+    return 'Selecione os equipamentos desta categoria (opcional)';
   };
 
-  // Função para obter o ícone do step atual
+  // Get step icon
   const getStepIcon = () => {
-    if (currentStep <= 5) {
+    if (currentStep <= 4) {
       const icons = [
         <FileText className="h-5 w-5 text-primary" />,
         <User className="h-5 w-5 text-primary" />,
         <Clock className="h-5 w-5 text-primary" />,
-        <Video className="h-5 w-5 text-primary" />,
-        <Camera className="h-5 w-5 text-primary" />
+        <Video className="h-5 w-5 text-primary" />
       ];
       return icons[currentStep - 1] || null;
     }
     
-    if (currentStep === TOTAL_STEPS) {
-      return <Check className="h-5 w-5 text-primary" />;
+    const categoryStepIndex = currentStep - 5;
+    if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
+      const Icon = CATEGORY_STEPS[categoryStepIndex].icon;
+      return <Icon className="h-5 w-5 text-primary" />;
     }
     
-    return <Package className="h-5 w-5 text-primary" />;
+    return <Check className="h-5 w-5 text-primary" />;
   };
 
-  const renderDynamicEquipmentStep = (stepKey: string, title: string, availableItems: Equipment[]) => {
-    const selectedItems = getDynamicItems(stepKey);
+  // Render category with subcategories using accordion
+  const renderCategoryWithSubcategories = (categoryStep: typeof CATEGORY_STEPS[0]) => {
+    // Find the grouped category data
+    const groupedCategory = groupedCategories.find(gc => gc.key === categoryStep.key);
     
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Package className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">{title}</h3>
+    if (!groupedCategory) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Nenhum equipamento disponível nesta categoria</p>
         </div>
+      );
+    }
 
-        {selectedItems.length > 0 && (
-          <div className="space-y-2">
-            <Label>Selecionados ({selectedItems.length})</Label>
-            {selectedItems.map((item) => (
-              <Card key={item.id} className="bg-green-50 dark:bg-green-950/20 border-green-500/50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">{item.brand}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => removeDynamicItem(stepKey, item.id)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <Label>Disponíveis</Label>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {availableItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhum equipamento disponível</p>
-            ) : (
-              availableItems.map((item) => (
-                <Card key={item.id} className="cursor-pointer hover:bg-accent" onClick={() => addDynamicItem(stepKey, item)}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">{item.brand}</p>
-                      </div>
-                      <Plus className="h-4 w-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderEquipmentSelectionStep = (
-    title: string,
-    icon: React.ReactNode,
-    equipmentType: keyof WithdrawalData['selectedEquipment'],
-    getAvailableItems: () => Equipment[],
-    searchKey: keyof typeof searchFilters
-  ) => {
-    const selectedItems = data.selectedEquipment[equipmentType] as Equipment[];
-    const availableItems = filterEquipmentBySearch(getAvailableItems(), searchFilters[searchKey]);
+    const Icon = categoryStep.icon;
+    const totalSelected = groupedCategory.subcategories.reduce((sum, sub) => {
+      return sum + sub.equipment.reduce((subSum, eq) => {
+        return subSum + (data.selectedEquipment[eq.id] || 0);
+      }, 0);
+    }, 0);
 
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          {icon}
-          <h3 className="text-lg font-semibold">{title}</h3>
-        </div>
-
-        {selectedItems.length > 0 && (
-          <div className="space-y-2">
-            <Label>Selecionados ({selectedItems.length})</Label>
-            {selectedItems.map((item) => (
-              <Card 
-                key={item.id}
-                className={cn(
-                  "transition-all border",
-                  "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
-                )}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">{item.brand}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEquipmentDeselect(item.id, equipmentType)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <Label>Disponíveis</Label>
-          <Input
-            placeholder="Buscar por nome ou marca..."
-            value={searchFilters[searchKey]}
-            onChange={(e) => setSearchFilters(prev => ({ ...prev, [searchKey]: e.target.value }))}
-          />
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {availableItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum equipamento disponível
+      <div className="space-y-6">
+        {/* Category Header */}
+        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">{categoryStep.title}</h3>
+              <p className="text-sm text-muted-foreground">
+                Selecione os equipamentos desta categoria
               </p>
-            ) : (
-              availableItems.map((item) => (
-                <Card
-                  key={item.id}
-                  className="transition-all border cursor-pointer hover:bg-accent"
-                  onClick={() => handleEquipmentSelect(item, equipmentType)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">{item.brand}</p>
-                        </div>
-                      </div>
-                      <Plus className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+            </div>
           </div>
+          {totalSelected > 0 && (
+            <Badge variant="default" className="text-base px-4 py-2">
+              {totalSelected} selecionado{totalSelected > 1 ? 's' : ''}
+            </Badge>
+          )}
         </div>
+
+        {/* Subcategory Accordion */}
+        <SubcategoryAccordion
+          subcategories={groupedCategory.subcategories as any}
+          selectedEquipment={data.selectedEquipment}
+          onEquipmentChange={handleEquipmentChange}
+        />
       </div>
     );
   };
 
-  const steps = [
-    {
-      title: 'Informações do Projeto',
-      content: (
+  const renderStep = () => {
+    // Step 1: Project Information
+    if (currentStep === 1) {
+      return (
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="projectNumber" className="text-base font-semibold flex items-center gap-2">
@@ -972,40 +529,41 @@ export default function ProjectWithdrawal() {
             </div>
           )}
         </div>
-      )
-    },
-    {
-      title: 'Responsável',
-      content: (
+      );
+    }
+
+    // Step 2: Responsible Person
+    if (currentStep === 2) {
+      return (
         <div className="space-y-4">
           <div>
-            <Label htmlFor="responsible">Responsável *</Label>
+            <Label htmlFor="responsible" className="text-base font-semibold mb-2 block">
+              Responsável pela Retirada *
+            </Label>
             <Select 
               value={data.responsibleUserId} 
               onValueChange={(value) => updateField('responsibleUserId', value)}
-              disabled={usersLoading}
             >
-              <SelectTrigger>
-                <SelectValue placeholder={usersLoading ? "Carregando usuários..." : "Selecione o responsável"} />
+              <SelectTrigger id="responsible" className="h-12">
+                <SelectValue placeholder="Selecione o responsável" />
               </SelectTrigger>
               <SelectContent>
                 {users.map((user) => {
-                  const avatarData = getAvatarData(
-                    { 
-                      app_metadata: { provider: user.user_metadata?.provider || 'email' },
-                      user_metadata: user.user_metadata || {},
-                      email: user.email
-                    } as any,
-                    user.avatar_url,
-                    user.display_name
-                  );
+                  const displayName = user.display_name || user.email;
+                  const avatarUrl = user.avatar_url;
+                  const initials = displayName
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
                   
                   return (
                     <SelectItem key={user.id} value={user.id}>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={avatarData.url || undefined} alt={user.display_name || user.email} />
-                          <AvatarFallback>{avatarData.initials}</AvatarFallback>
+                          <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+                          <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col items-start">
                           <span className="font-medium">
@@ -1046,11 +604,12 @@ export default function ProjectWithdrawal() {
             ) : null;
           })()}
         </div>
-      )
-    },
-    {
-      title: 'Datas',
-      content: (
+      );
+    }
+
+    // Step 3: Dates
+    if (currentStep === 3) {
+      return (
         <div className="space-y-4">
           <div>
             <Label>Data de Separação *</Label>
@@ -1073,6 +632,7 @@ export default function ProjectWithdrawal() {
                   selected={data.separationDate}
                   onSelect={(date) => updateField('separationDate', date)}
                   locale={ptBR}
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -1099,6 +659,7 @@ export default function ProjectWithdrawal() {
                   selected={data.withdrawalDate}
                   onSelect={(date) => updateField('withdrawalDate', date)}
                   locale={ptBR}
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -1126,16 +687,18 @@ export default function ProjectWithdrawal() {
                   onSelect={(date) => updateField('returnDate', date)}
                   locale={ptBR}
                   disabled={(date) => data.withdrawalDate ? date < data.withdrawalDate : false}
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
           </div>
         </div>
-      )
-    },
-    {
-      title: 'Tipo de Gravação',
-      content: (
+      );
+    }
+
+    // Step 4: Recording Type
+    if (currentStep === 4) {
+      return (
         <div className="space-y-4">
           <Label>Tipo de Gravação *</Label>
           <Select 
@@ -1154,413 +717,235 @@ export default function ProjectWithdrawal() {
             </SelectContent>
           </Select>
         </div>
-      )
-    },
-    {
-      title: 'Câmeras',
-      content: (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Câmeras Selecionadas ({data.selectedEquipment.cameras.length})</Label>
-            {data.selectedEquipment.cameras.map(({ camera, accessories }) => (
-              <Card 
-                key={camera.id}
-                className={cn(
-                  "transition-all border",
-                  "bg-green-50 dark:bg-green-950/20 border-green-500/50 shadow-sm"
-                )}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-green-500/10 border border-green-500/30 rounded flex items-center justify-center flex-shrink-0">
-                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-sm">{camera.name}</CardTitle>
-                        <p className="text-xs text-muted-foreground">{camera.brand}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCameraDeselect(camera.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                {accessories.length > 0 && (
-                  <CardContent className="pt-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-between"
-                      onClick={() => toggleAccessoriesExpansion(camera.id)}
-                    >
-                      <span className="text-xs">
-                        {accessories.length} acessórios incluídos
-                      </span>
-                      {expandedCameras.has(camera.id) ? (
-                        <ChevronUp className="h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3" />
-                      )}
-                    </Button>
-                    {expandedCameras.has(camera.id) && (
-                      <div className="mt-2 space-y-1 pl-4">
-                        {accessories.map((acc) => (
-                          <p key={acc.id} className="text-xs text-muted-foreground">
-                            • {acc.name}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Câmeras Disponíveis</Label>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {getAvailableCameras().length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Nenhuma câmera disponível
-                  </p>
-                ) : (
-                  getAvailableCameras().map((cameraHierarchy) => (
-                    <Card
-                      key={cameraHierarchy.item.id}
-                      className="transition-all border cursor-pointer hover:bg-accent"
-                      onClick={() => handleCameraSelect(cameraHierarchy)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div>
-                              <p className="font-medium">{cameraHierarchy.item.name}</p>
-                              <p className="text-sm text-muted-foreground">{cameraHierarchy.item.brand}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {cameraHierarchy.accessories.length > 0 && (
-                              <Badge variant="secondary">+{cameraHierarchy.accessories.length}</Badge>
-                            )}
-                            <Plus className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-      )
-    },
-    {
-      title: 'Resumo',
-      content: (() => {
-        const responsibleName = users.find(u => u.id === data.responsibleUserId)?.display_name || '';
-        const withdrawalUserName = users.find(u => u.id === data.withdrawalUserId)?.display_name || '';
-        
-        // Gerar CATEGORIES dinamicamente baseado em DYNAMIC_STEPS
-        const dynamicCategories = DYNAMIC_STEPS.map((step, index) => ({
-          key: step.key,
-          name: step.title,
-          icon: <Package className="h-5 w-5" />,
-          stepNumber: 6 + index
-        }));
-
-        // Adicionar câmeras como primeira categoria (step 5)
-        const CATEGORIES = [
-          { key: 'cameras', name: 'Câmeras', icon: <Camera className="h-5 w-5" />, stepNumber: 5 },
-          ...dynamicCategories
-        ];
-
-        const totalEquipment = flattenSelectedEquipment().length;
-        const categoriesWithItems = CATEGORIES.filter(cat => {
-          const items = data.selectedEquipment[cat.key as keyof typeof data.selectedEquipment];
-          return Array.isArray(items) && items.length > 0;
-        }).length;
-
-        const durationDays = data.withdrawalDate && data.separationDate
-          ? Math.abs(differenceInDays(new Date(data.separationDate), new Date(data.withdrawalDate)))
-          : 0;
-
-        return (
-          <div className="space-y-6">
-            {/* Estatísticas em Destaque */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <Card className="border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <Package className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    </div>
-                    <p className="text-xl md:text-2xl font-bold">{totalEquipment}</p>
-                    <p className="text-xs text-muted-foreground">Equipamentos</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <Layers className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    </div>
-                    <p className="text-xl md:text-2xl font-bold">{categoriesWithItems}</p>
-                    <p className="text-xs text-muted-foreground">Categorias</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <CalendarIconLucide className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    </div>
-                    <p className="text-xl md:text-2xl font-bold">{durationDays}</p>
-                    <p className="text-xs text-muted-foreground">Dias</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    </div>
-                    <p className="text-xl md:text-2xl font-bold">#{data.projectNumber}</p>
-                    <p className="text-xs text-muted-foreground">Projeto</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Informações do Projeto */}
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg md:text-xl">
-                        {data.projectNumber} - {data.company}
-                      </CardTitle>
-                      <CardDescription className="text-sm md:text-base">
-                        {data.projectName}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => goToStep(1)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Responsável</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      {responsibleName}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Tipo de Gravação</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      {data.recordingType}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Data de Retirada</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <CalendarIconLucide className="h-4 w-4" />
-                      {data.withdrawalDate ? format(new Date(data.withdrawalDate), 'dd/MM/yyyy', { locale: ptBR }) : ''}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Quem Retira</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      {withdrawalUserName || 'Não especificado'}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Data de Separação</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <CalendarIconLucide className="h-4 w-4" />
-                      {data.separationDate ? format(new Date(data.separationDate), 'dd/MM/yyyy', { locale: ptBR }) : ''}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Horário</Label>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      {data.withdrawalTime || 'Não especificado'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Equipamentos por Categoria */}
-            {totalEquipment === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Package className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mb-4" />
-                  <h3 className="text-base md:text-lg font-semibold mb-2">
-                    Nenhum equipamento selecionado
-                  </h3>
-                  <p className="text-sm text-muted-foreground text-center max-w-md mb-4">
-                    Você ainda não selecionou nenhum equipamento para este projeto.
-                    Volte aos steps anteriores para adicionar equipamentos.
-                  </p>
-                  <Button variant="outline" onClick={() => goToStep(6)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Equipamentos
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <Accordion type="multiple" className="space-y-3">
-                {CATEGORIES.map((category) => {
-                  const items = data.selectedEquipment[category.key as keyof typeof data.selectedEquipment];
-                  if (!Array.isArray(items) || items.length === 0) return null;
-                  
-                  return (
-                    <AccordionItem value={category.key} key={category.key} className="border-none">
-                      <Card className="border-muted hover:border-primary/50 transition-colors">
-                        <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-4">
-                          <div className="flex items-center justify-between w-full pr-4">
-                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                {category.icon}
-                              </div>
-                              <div className="text-left">
-                                <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
-                                <p className="text-xs text-muted-foreground">
-                                  {items.length} {items.length === 1 ? 'item' : 'itens'}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="font-mono text-xs">
-                                {items.length}
-                              </Badge>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  goToStep(category.stepNumber);
-                                }}
-                              >
-                                <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-4 md:px-6 pb-4">
-                          <div className="space-y-2">
-                            {(category.key === 'cameras' ? (items as SelectedCamera[]).map(sc => sc.camera) : items as Equipment[]).map((item: any) => (
-                              <div 
-                                key={item.id}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                              >
-                                {item.image_url ? (
-                                  <img 
-                                    src={item.image_url} 
-                                    alt={item.name}
-                                    className="h-10 w-10 md:h-12 md:w-12 rounded object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-10 w-10 md:h-12 md:w-12 rounded bg-muted flex items-center justify-center">
-                                    <Package className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">{item.name}</p>
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>{item.brand}</span>
-                                    {item.patrimony_number && (
-                                      <>
-                                        <span>•</span>
-                                        <span className="font-mono">{item.patrimony_number}</span>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs hidden md:inline-flex">
-                                  {item.status === 'available' ? 'Disponível' : item.status}
-                                </Badge>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </Card>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            )}
-
-            {/* Ações Finais */}
-            {totalEquipment > 0 && (
-              <div className="flex flex-col gap-3 pt-6 border-t">
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Pronto para finalizar?</AlertTitle>
-                  <AlertDescription>
-                    Revise todas as informações antes de criar a retirada.
-                    Você poderá fazer alterações posteriormente se necessário.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-          </div>
-        );
-      })()
+      );
     }
-  ];
 
-  const currentStepData = steps[currentStep - 1];
+    // Steps 5 onwards: Category equipment selection
+    const categoryStepIndex = currentStep - 5;
+    if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
+      return renderCategoryWithSubcategories(CATEGORY_STEPS[categoryStepIndex]);
+    }
 
-  const renderStep = () => {
-    // Steps fixos iniciais (1-5)
-    if (currentStep <= 5) {
-      return steps[currentStep - 1]?.content;
-    }
-    
-    // Steps dinâmicos (6 até 5 + DYNAMIC_STEPS.length)
-    const dynamicStepIndex = currentStep - 6;
-    if (dynamicStepIndex >= 0 && dynamicStepIndex < DYNAMIC_STEPS.length) {
-      const stepMeta = DYNAMIC_STEPS[dynamicStepIndex];
-      const availableItems = getAvailableByStep(stepMeta);
-      return renderDynamicEquipmentStep(stepMeta.key, stepMeta.title, availableItems);
-    }
-    
-    // Step final de resumo (steps[5] - novo índice após remoção dos 9 steps fixos)
-    return steps[5]?.content;
+    // Final step: Summary
+    return renderSummary();
   };
 
-  // Loading state enquanto categorias carregam
-  if (categoriesLoading && DYNAMIC_STEPS.length === 0) {
+  const renderSummary = () => {
+    const responsibleName = users.find(u => u.id === data.responsibleUserId)?.display_name || '';
+    const totalEquipment = flattenSelectedEquipment().length;
+
+    // Generate summary categories based on CATEGORY_STEPS
+    const summaryCategories = CATEGORY_STEPS.map((cat, index) => {
+      const groupedCategory = groupedCategories.find(gc => gc.key === cat.key);
+      const categoryEquipment = groupedCategory?.subcategories.flatMap(sub => 
+        sub.equipment.filter(eq => (data.selectedEquipment[eq.id] || 0) > 0)
+      ) || [];
+
+      return {
+        key: cat.key,
+        name: cat.title,
+        icon: cat.icon,
+        stepNumber: 5 + index,
+        equipment: categoryEquipment
+      };
+    }).filter(cat => cat.equipment.length > 0);
+
+    const durationDays = data.withdrawalDate && data.returnDate
+      ? Math.abs(differenceInDays(new Date(data.returnDate), new Date(data.withdrawalDate)))
+      : 0;
+
+    return (
+      <div className="space-y-6">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <p className="text-xl md:text-2xl font-bold">{totalEquipment}</p>
+                <p className="text-xs text-muted-foreground">Equipamentos</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                  <Layers className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <p className="text-xl md:text-2xl font-bold">{summaryCategories.length}</p>
+                <p className="text-xs text-muted-foreground">Categorias</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                  <CalendarIconLucide className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <p className="text-xl md:text-2xl font-bold">{durationDays}</p>
+                <p className="text-xs text-muted-foreground">Dias</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <p className="text-xl md:text-2xl font-bold">#{data.projectNumber}</p>
+                <p className="text-xs text-muted-foreground">Projeto</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Project Information */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg md:text-xl">
+                    {data.projectNumber} - {data.company}
+                  </CardTitle>
+                  <CardDescription className="text-sm md:text-base">
+                    {data.projectName}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => goToStep(1)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Responsável</Label>
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {responsibleName}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Tipo de Gravação</Label>
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  {data.recordingType}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Data de Retirada</Label>
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <CalendarIconLucide className="h-4 w-4" />
+                  {data.withdrawalDate ? format(data.withdrawalDate, 'dd/MM/yyyy', { locale: ptBR }) : ''}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Equipment by Category */}
+        {summaryCategories.length > 0 && (
+          <Accordion type="multiple" className="space-y-2">
+            {summaryCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <AccordionItem key={category.key} value={category.key}>
+                  <Card>
+                    <AccordionTrigger className="px-4 hover:no-underline">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{category.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary">{category.equipment.length}</Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              goToStep(category.stepNumber);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="space-y-2 mt-2">
+                        {category.equipment.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between p-2 rounded-md bg-muted/30 text-sm"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {item.image && (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-8 h-8 rounded object-cover flex-shrink-0"
+                                />
+                              )}
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium truncate">{item.name}</span>
+                                <span className="text-xs text-muted-foreground truncate">
+                                  {item.brand} {item.subcategory && `• ${item.subcategory}`}
+                                </span>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              Qtd: {data.selectedEquipment[item.id]}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </Card>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        )}
+
+        {/* Final Actions */}
+        {totalEquipment > 0 && (
+          <div className="flex flex-col gap-3 pt-6 border-t">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Pronto para finalizar?</AlertTitle>
+              <AlertDescription>
+                Revise todas as informações antes de criar a retirada.
+                Você poderá fazer alterações posteriormente se necessário.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Loading state
+  if (equipmentLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Carregando categorias...</p>
+          <p className="text-sm text-muted-foreground">Carregando equipamentos...</p>
         </div>
       </div>
     );
@@ -1568,10 +953,9 @@ export default function ProjectWithdrawal() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header Fixo com Backdrop Blur */}
+      {/* Header */}
       <div className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 md:py-5">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <span 
               className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
@@ -1584,7 +968,6 @@ export default function ProjectWithdrawal() {
             <span className="text-foreground font-medium">Nova Retirada</span>
           </div>
           
-          {/* Título Principal */}
           <div className="flex items-start gap-3 mb-5">
             <Button 
               variant="ghost" 
@@ -1604,7 +987,6 @@ export default function ProjectWithdrawal() {
             </div>
           </div>
           
-          {/* Progress Bar Aprimorado */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-center text-xs md:text-sm font-medium">
               <span className="text-muted-foreground flex items-center gap-2">
@@ -1613,20 +995,12 @@ export default function ProjectWithdrawal() {
               </span>
               <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
             </div>
-            <div 
-              role="progressbar" 
-              aria-valuenow={progressPercentage} 
-              aria-valuemin={0} 
-              aria-valuemax={100}
-              aria-label={`Progresso: ${Math.round(progressPercentage)}% completo`}
-            >
-              <Progress value={progressPercentage} className="h-2.5" />
-            </div>
+            <Progress value={progressPercentage} className="h-2.5" />
           </div>
         </div>
       </div>
 
-      {/* Conteúdo Scrollável com Animação */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 md:py-8 max-w-3xl">
           <div 
@@ -1652,17 +1026,8 @@ export default function ProjectWithdrawal() {
           </div>
         </div>
       </div>
-      
-      {/* Aria Live Region para Acessibilidade */}
-      <div 
-        role="status" 
-        aria-live="polite" 
-        className="sr-only"
-      >
-        Etapa {currentStep} de {TOTAL_STEPS}: {getStepTitle()}
-      </div>
 
-      {/* Footer Fixo com Shadow e Melhor Hierarquia */}
+      {/* Footer */}
       <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 sticky bottom-0 shadow-elegant pb-safe">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -1671,7 +1036,6 @@ export default function ProjectWithdrawal() {
               onClick={prevStep}
               disabled={currentStep === 1}
               className="w-full sm:w-auto h-11 sm:h-10"
-              aria-label="Voltar para etapa anterior"
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
               Anterior
@@ -1682,7 +1046,6 @@ export default function ProjectWithdrawal() {
                 variant="outline" 
                 onClick={() => navigate('/projects')}
                 className="w-full sm:w-auto h-11 sm:h-10"
-                aria-label="Cancelar criação de retirada"
               >
                 Cancelar
               </Button>
@@ -1693,7 +1056,6 @@ export default function ProjectWithdrawal() {
                     variant="outline" 
                     onClick={generatePDF}
                     className="w-full sm:w-auto h-11 sm:h-10 border-primary/50 hover:bg-primary/5"
-                    aria-label="Baixar PDF da retirada"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Baixar PDF
@@ -1703,7 +1065,6 @@ export default function ProjectWithdrawal() {
                     disabled={isSubmitting}
                     className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 shadow-lg font-semibold"
                     size="lg"
-                    aria-label="Finalizar e criar retirada"
                   >
                     <Check className="h-5 w-5 mr-2" />
                     {isSubmitting ? 'Criando...' : 'Criar Retirada'}
@@ -1716,7 +1077,6 @@ export default function ProjectWithdrawal() {
                       variant="ghost"
                       onClick={nextStep}
                       className="w-full sm:w-auto h-11 sm:h-10 text-muted-foreground"
-                      aria-label="Pular esta categoria"
                     >
                       Pular categoria
                       <ChevronRight className="h-4 w-4 ml-2" />
@@ -1728,7 +1088,6 @@ export default function ProjectWithdrawal() {
                     disabled={!isStepValid()}
                     className="w-full sm:w-auto h-12 sm:h-10 bg-primary hover:bg-primary/90 font-semibold"
                     size="lg"
-                    aria-label="Avançar para próxima etapa"
                   >
                     Próximo
                     <ChevronRight className="h-4 w-4 ml-2" />
