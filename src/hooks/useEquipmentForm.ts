@@ -122,8 +122,18 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       };
       
       if (equipmentId) {
-        // Atualizar
-        await updateEquipment(equipmentId, sanitizedData);
+        // Atualizar equipamento existente
+        const result = await updateEquipment(equipmentId, sanitizedData);
+        
+        if (!result.success) {
+          enhancedToast.error({ 
+            title: 'Erro ao atualizar equipamento', 
+            description: result.error || 'Não foi possível salvar as alterações. Tente novamente.' 
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
         enhancedToast.success({
           title: 'Equipamento atualizado',
           description: 'As informações do equipamento foram atualizadas com sucesso.'

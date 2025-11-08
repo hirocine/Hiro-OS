@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder, EquipmentCategory } from '@/types/equipment';
+import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
 import { naturalSort } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -441,14 +441,44 @@ export function useEquipment(): UseEquipmentReturn {
         capacity: updates.capacity
       };
 
-      // Convert undefined to null for database (to clear fields)
-      // Only include fields that are present in the updates object
+      // Map snake_case database keys to camelCase Equipment properties
+      const keyMap: Record<string, keyof Partial<Equipment>> = {
+        name: 'name',
+        brand: 'brand',
+        category: 'category',
+        subcategory: 'subcategory',
+        custom_category: 'customCategory',
+        status: 'status',
+        item_type: 'itemType',
+        parent_id: 'parentId',
+        serial_number: 'serialNumber',
+        purchase_date: 'purchaseDate',
+        last_maintenance: 'lastMaintenance',
+        description: 'description',
+        image: 'image',
+        value: 'value',
+        patrimony_number: 'patrimonyNumber',
+        depreciated_value: 'depreciatedValue',
+        receive_date: 'receiveDate',
+        store: 'store',
+        invoice: 'invoice',
+        current_loan_id: 'currentLoanId',
+        current_borrower: 'currentBorrower',
+        last_loan_date: 'lastLoanDate',
+        expected_return_date: 'expectedReturnDate',
+        capacity: 'capacity',
+        display_order: 'displayOrder',
+        internal_user_id: 'internal_user_id',
+        simplified_status: 'simplifiedStatus'
+      };
+
+      // Convert undefined to null and only include fields present in updates
       const cleanedUpdates: Record<string, any> = {};
-      for (const [key, value] of Object.entries(dbUpdates)) {
-        // Se o campo está presente em 'updates', incluímos no update
-        // Convertendo undefined para null para limpar o campo no banco
-        if (key in updates || key === 'parent_id') {
-          cleanedUpdates[key] = value === undefined ? null : value;
+      for (const [dbKey, dbValue] of Object.entries(dbUpdates)) {
+        const camelKey = keyMap[dbKey] ?? (dbKey as keyof Partial<Equipment>);
+        // Only include if the camelCase property exists in updates (even if null)
+        if (camelKey in updates) {
+          cleanedUpdates[dbKey] = dbValue === undefined ? null : dbValue;
         }
       }
 
@@ -463,19 +493,68 @@ export function useEquipment(): UseEquipmentReturn {
         }
       });
 
-      const { error } = await supabase
+      // Abort if no fields to update
+      if (Object.keys(cleanedUpdates).length === 0) {
+        logger.warn('No fields to update', { 
+          module: 'equipment', 
+          action: 'update_equipment_empty',
+          data: { equipmentId: id }
+        });
+        return { success: false, error: 'Nenhum campo para atualizar' };
+      }
+
+      const { data, error } = await supabase
         .from('equipments')
         .update(cleanedUpdates)
-        .eq('id', id);
+        .eq('id', id)
+        .select('*')
+        .single();
 
       if (error) {
         throw createDatabaseError('Erro ao atualizar equipamento', error.message);
       }
 
+      if (!data) {
+        throw createDatabaseError('Nenhum dado retornado após atualização');
+      }
+
       const oldEquipment = equipment.find(eq => eq.id === id);
 
+      // Convert database response back to Equipment model
+      const updatedEquipment: Equipment = {
+        id: data.id,
+        name: data.name,
+        brand: data.brand,
+        category: data.category,
+        subcategory: data.subcategory,
+        customCategory: data.custom_category,
+        status: data.status as EquipmentStatus,
+        simplifiedStatus: data.simplified_status as 'available' | 'in_project' | undefined,
+        itemType: data.item_type as EquipmentItemType,
+        parentId: data.parent_id,
+        serialNumber: data.serial_number,
+        purchaseDate: data.purchase_date,
+        lastMaintenance: data.last_maintenance,
+        description: data.description,
+        image: data.image,
+        value: data.value,
+        patrimonyNumber: data.patrimony_number,
+        depreciatedValue: data.depreciated_value,
+        receiveDate: data.receive_date,
+        store: data.store,
+        invoice: data.invoice,
+        currentLoanId: data.current_loan_id,
+        currentBorrower: data.current_borrower,
+        lastLoanDate: data.last_loan_date,
+        expectedReturnDate: data.expected_return_date,
+        capacity: data.capacity,
+        displayOrder: data.display_order,
+        internal_user_id: data.internal_user_id
+      };
+
+      // Update local state with confirmed database data
       setEquipment(prev => 
-        prev.map(item => item.id === id ? { ...item, ...updates } : item)
+        prev.map(item => item.id === id ? updatedEquipment : item)
       );
 
       // Log de auditoria
