@@ -41,7 +41,7 @@ interface WithdrawalData {
   separationDate: Date | undefined;
   withdrawalTime?: string;
   recordingType: string;
-  selectedEquipment: Record<string, number>; // equipmentId -> quantity
+  selectedEquipment: string[]; // Array of equipment IDs
 }
 
 const RECORDING_TYPES = [
@@ -75,7 +75,7 @@ export default function ProjectWithdrawal() {
     returnDate: undefined,
     separationDate: undefined,
     recordingType: '',
-    selectedEquipment: {},
+    selectedEquipment: [],
   });
 
   const { users, loading: usersLoading } = useUsers();
@@ -102,39 +102,23 @@ export default function ProjectWithdrawal() {
     setData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Handle equipment quantity change
-  const handleEquipmentChange = (equipmentId: string, quantity: number) => {
-    setData(prev => ({
-      ...prev,
-      selectedEquipment: {
-        ...prev.selectedEquipment,
-        [equipmentId]: quantity
-      }
-    }));
-  };
-
-  // Get total equipment count
-  const getTotalEquipmentCount = () => {
-    return Object.values(data.selectedEquipment).reduce((sum, qty) => sum + qty, 0);
-  };
-
-  // Flatten selected equipment for submission
-  const flattenSelectedEquipment = (): Equipment[] => {
-    const equipment: Equipment[] = [];
-    
-    Object.entries(data.selectedEquipment).forEach(([equipmentId, quantity]) => {
-      if (quantity > 0) {
-        const foundEquipment = allEquipment.find(eq => eq.id === equipmentId);
-        if (foundEquipment) {
-          // Add equipment 'quantity' times
-          for (let i = 0; i < quantity; i++) {
-            equipment.push(foundEquipment);
-          }
-        }
-      }
+  // Handle equipment toggle (add/remove from selection)
+  const handleEquipmentToggle = (equipmentId: string) => {
+    setData(prev => {
+      const isSelected = prev.selectedEquipment.includes(equipmentId);
+      
+      return {
+        ...prev,
+        selectedEquipment: isSelected
+          ? prev.selectedEquipment.filter(id => id !== equipmentId)
+          : [...prev.selectedEquipment, equipmentId]
+      };
     });
-    
-    return equipment;
+  };
+
+  // Get selected equipment for submission
+  const flattenSelectedEquipment = (): Equipment[] => {
+    return allEquipment.filter(eq => data.selectedEquipment.includes(eq.id));
   };
 
   const generatePDF = async () => {
@@ -412,7 +396,7 @@ export default function ProjectWithdrawal() {
       <SubcategoryAccordion
         subcategories={groupedCategory.subcategories as any}
         selectedEquipment={data.selectedEquipment}
-        onEquipmentChange={handleEquipmentChange}
+        onEquipmentChange={handleEquipmentToggle}
       />
     );
   };
@@ -701,13 +685,13 @@ export default function ProjectWithdrawal() {
 
   const renderSummary = () => {
     const responsibleName = users.find(u => u.id === data.responsibleUserId)?.display_name || '';
-    const totalEquipment = flattenSelectedEquipment().length;
+    const totalEquipment = data.selectedEquipment.length;
 
     // Generate summary categories based on CATEGORY_STEPS
     const summaryCategories = CATEGORY_STEPS.map((cat, index) => {
       const groupedCategory = groupedCategories.find(gc => gc.key === cat.key);
       const categoryEquipment = groupedCategory?.subcategories.flatMap(sub => 
-        sub.equipment.filter(eq => (data.selectedEquipment[eq.id] || 0) > 0)
+        sub.equipment.filter(eq => data.selectedEquipment.includes(eq.id))
       ) || [];
 
       return {
@@ -877,9 +861,11 @@ export default function ProjectWithdrawal() {
                                 </span>
                               </div>
                             </div>
-                            <Badge variant="outline" className="text-xs">
-                              Qtd: {data.selectedEquipment[item.id]}
-                            </Badge>
+                            {item.patrimonyNumber && (
+                              <Badge variant="outline" className="text-xs">
+                                Pat. {item.patrimonyNumber}
+                              </Badge>
+                            )}
                           </div>
                         ))}
                       </div>

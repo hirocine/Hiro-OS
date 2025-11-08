@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Minus, Package } from 'lucide-react';
+import { Search, Plus, Package, Check } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -20,6 +20,7 @@ interface Equipment {
   subcategory?: string | null;
   status: string;
   image?: string;
+  patrimonyNumber?: string;
 }
 
 interface Subcategory {
@@ -31,8 +32,8 @@ interface Subcategory {
 
 interface SubcategoryAccordionProps {
   subcategories: Subcategory[];
-  selectedEquipment: Record<string, number>;
-  onEquipmentChange: (equipmentId: string, quantity: number) => void;
+  selectedEquipment: string[];
+  onEquipmentChange: (equipmentId: string) => void;
   className?: string;
 }
 
@@ -47,7 +48,7 @@ export function SubcategoryAccordion({
 
   // Calculate total selected count for badge
   const totalSelected = useMemo(() => {
-    return Object.values(selectedEquipment).reduce((sum, qty) => sum + qty, 0);
+    return selectedEquipment.length;
   }, [selectedEquipment]);
 
   // Filter equipment by search term for each subcategory
@@ -64,22 +65,12 @@ export function SubcategoryAccordion({
 
   // Count selected equipment in a subcategory
   const getSubcategorySelectedCount = (equipment: Equipment[]) => {
-    return equipment.reduce((count, eq) => {
-      return count + (selectedEquipment[eq.id] || 0);
-    }, 0);
+    return equipment.filter(eq => selectedEquipment.includes(eq.id)).length;
   };
 
-  // Handle increment/decrement
-  const handleIncrement = (equipmentId: string) => {
-    const currentQty = selectedEquipment[equipmentId] || 0;
-    onEquipmentChange(equipmentId, currentQty + 1);
-  };
-
-  const handleDecrement = (equipmentId: string) => {
-    const currentQty = selectedEquipment[equipmentId] || 0;
-    if (currentQty > 0) {
-      onEquipmentChange(equipmentId, currentQty - 1);
-    }
+  // Handle toggle (add/remove from selection)
+  const handleToggle = (equipmentId: string) => {
+    onEquipmentChange(equipmentId);
   };
 
   // Filter out empty subcategories
@@ -177,8 +168,7 @@ export function SubcategoryAccordion({
                   ) : (
                     <div className="space-y-2">
                       {filteredEquipment.map((equipment) => {
-                        const quantity = selectedEquipment[equipment.id] || 0;
-                        const isSelected = quantity > 0;
+                        const isSelected = selectedEquipment.includes(equipment.id);
 
                         return (
                           <div
@@ -203,42 +193,44 @@ export function SubcategoryAccordion({
                                 <span className="font-medium text-sm text-foreground truncate">
                                   {equipment.name}
                                 </span>
-                                <span className="text-xs text-muted-foreground truncate">
-                                  {equipment.brand}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground truncate">
+                                    {equipment.brand}
+                                  </span>
+                                  {equipment.patrimonyNumber && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">•</span>
+                                      <Badge variant="outline" className="text-xs px-1.5 py-0 h-5">
+                                        Pat. {equipment.patrimonyNumber}
+                                      </Badge>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
-                            {/* Quantity Controls */}
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleDecrement(equipment.id)}
-                                disabled={quantity === 0}
-                              >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-
-                              <span
-                                className={cn(
-                                  'w-8 text-center font-semibold text-sm',
-                                  isSelected ? 'text-primary' : 'text-muted-foreground'
-                                )}
-                              >
-                                {quantity}
-                              </span>
-
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleIncrement(equipment.id)}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {/* Add/Remove Button */}
+                            <Button
+                              variant={isSelected ? "default" : "outline"}
+                              size="sm"
+                              className={cn(
+                                "flex-shrink-0",
+                                isSelected && "bg-primary hover:bg-primary/90"
+                              )}
+                              onClick={() => handleToggle(equipment.id)}
+                            >
+                              {isSelected ? (
+                                <>
+                                  <Check className="h-4 w-4 mr-1" />
+                                  Adicionado
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Adicionar
+                                </>
+                              )}
+                            </Button>
                           </div>
                         );
                       })}
