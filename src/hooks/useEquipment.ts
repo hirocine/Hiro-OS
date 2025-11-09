@@ -801,29 +801,3 @@ export function useEquipment(): UseEquipmentReturn {
     fetchEquipment
   };
 }
-
-/**
- * Reset todas as categorias e subcategorias de TODOS os equipamentos
- * Define category e subcategory como NULL
- */
-export const resetAllEquipmentCategories = async (): Promise<number> => {
-  // Primeiro, contar quantos equipamentos existem
-  const { count } = await supabase
-    .from('equipments')
-    .select('*', { count: 'exact', head: true })
-    .neq('id', '00000000-0000-0000-0000-000000000000');
-
-  // Depois, fazer o update
-  const { error } = await supabase
-    .from('equipments')
-    .update({ category: null, subcategory: null })
-    .neq('id', '00000000-0000-0000-0000-000000000000');
-  
-  if (error) {
-    logger.error('Failed to reset equipment categories', { error });
-    throw error;
-  }
-  
-  logger.info('Equipment categories reset', { module: 'equipment', data: { count } });
-  return count || 0;
-};

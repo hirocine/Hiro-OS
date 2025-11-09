@@ -28,7 +28,7 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Função para retornar placeholder contextual baseado na categoria
@@ -70,16 +70,12 @@ export function CategoryManagement() {
     reorderSubcategory,
     syncOrdersWithMapping,
     refetch,
-    cleanDuplicateCategories,
-    resetCategoriesToDefault
+    cleanDuplicateCategories
   } = useCategories();
 
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [isCleaning, setIsCleaning] = useState(false);
-  const [showCleanupDialog, setShowCleanupDialog] = useState(false);
   
   // Dialogs state
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -266,71 +262,6 @@ export function CategoryManagement() {
     }
   };
 
-  const handleSyncOrders = async () => {
-    setIsSyncing(true);
-    
-    const result = await syncOrdersWithMapping();
-    
-    if (result.success) {
-      toast({
-        title: 'Ordens Sincronizadas',
-        description: 'As ordens foram sincronizadas com as definições padrão do sistema.'
-      });
-    } else {
-      toast({
-        title: 'Erro',
-        description: result.error || 'Erro ao sincronizar ordens.',
-        variant: 'destructive'
-      });
-    }
-    
-    setIsSyncing(false);
-  };
-  
-  const handleCleanDuplicates = async () => {
-    setIsCleaning(true);
-    setShowCleanupDialog(false);
-    
-    try {
-      // Importar função de reset de equipamentos
-      const { resetAllEquipmentCategories } = await import('@/hooks/useEquipment');
-      
-      // 1. Limpar equipamentos
-      const equipCount = await resetAllEquipmentCategories();
-      
-      // 2. Resetar categorias
-      const resetResult = await resetCategoriesToDefault();
-      
-      if (!resetResult.success) {
-        toast({
-          title: 'Erro',
-          description: resetResult.error || 'Erro ao resetar categorias.',
-          variant: 'destructive'
-        });
-        setIsCleaning(false);
-        return;
-      }
-      
-      const { inserted } = resetResult.data || { inserted: 0 };
-      
-      toast({
-        title: '✅ Reset completo executado',
-        description: `${equipCount} equipamentos limpos e ${inserted} categorias canônicas inseridas.`,
-        duration: 5000
-      });
-      
-      await refetch();
-    } catch (error: any) {
-      toast({
-        title: '❌ Erro no reset',
-        description: error?.message || 'Erro desconhecido',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsCleaning(false);
-    }
-  };
-
   const openEditDialog = (
     type: 'category' | 'subcategory',
     categoryName: string,
@@ -448,30 +379,6 @@ export function CategoryManagement() {
                 className="pl-9"
               />
             </div>
-            <Button 
-              onClick={handleSyncOrders} 
-              variant="outline"
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              Sincronizar Ordens
-            </Button>
-            <Button 
-              onClick={() => setShowCleanupDialog(true)}
-              variant="outline"
-              disabled={isCleaning}
-            >
-              {isCleaning ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4 mr-2" />
-              )}
-              🔄 Reset Total
-            </Button>
             <Button onClick={() => setShowAddCategoryDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nova
@@ -816,16 +723,6 @@ export function CategoryManagement() {
             : `Tem certeza que deseja deletar a subcategoria "${deleteTarget?.name}"?`
         }
         confirmText="Deletar"
-        variant="destructive"
-      />
-
-      <ConfirmationDialog
-        open={showCleanupDialog}
-        onOpenChange={setShowCleanupDialog}
-        onConfirm={handleCleanDuplicates}
-        title="🔄 Reset Total - Começar do Zero?"
-        description="Esta operação irá:\n• Limpar as categorias de TODOS os equipamentos (category = NULL, subcategory = NULL)\n• Deletar TODAS as categorias existentes no banco\n• Inserir apenas as categorias canônicas do sistema\n\n⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\nVocê terá que recategorizar os equipamentos manualmente depois."
-        confirmText={isCleaning ? 'Processando...' : '🔄 Executar Reset Total'}
         variant="destructive"
       />
     </>
