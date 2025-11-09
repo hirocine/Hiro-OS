@@ -5,8 +5,7 @@ import {
   CheckCircle, 
   AlertTriangle, 
   Wrench,
-  TrendingUp,
-  DollarSign
+  TrendingUp
 } from 'lucide-react';
 import { DashboardStats } from '@/types/equipment';
 import { formatCurrency } from '@/lib/utils';
@@ -45,10 +44,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       bgColor: 'bg-destructive/10',
     },
   ];
-
-  const categoryStats = Object.entries(stats.byCategory)
-    .filter(([_, count]) => count > 0)
-    .sort(([_, a], [__, b]) => b - a);
 
   if (isLoading) {
     return (
@@ -104,47 +99,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
           );
         })}
       </div>
-
-      {/* Category Distribution */}
-      {categoryStats.length > 0 && (
-        <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Distribuição por Categoria
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-              {categoryStats.map(([category, count]) => {
-                const percentage = Math.round((count / stats.total) * 100);
-                return (
-                  <div 
-                    key={category} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-card-foreground capitalize truncate">
-                        {category === 'camera' ? 'Câmeras' :
-                         category === 'audio' ? 'Áudio' :
-                         category === 'lighting' ? 'Iluminação' :
-                         category === 'accessories' ? 'Acessórios' :
-                         category === 'storage' ? 'Armazenamento' : category}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {count} itens ({percentage}%)
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="ml-2 text-xs">
-                      {formatCurrency(stats.valueByCategory[category] || 0)}
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
