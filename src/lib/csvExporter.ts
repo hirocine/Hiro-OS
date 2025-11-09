@@ -1,6 +1,5 @@
 import Papa from 'papaparse';
 import { Equipment } from '@/types/equipment';
-import { format } from 'date-fns';
 
 /**
  * Converte um equipamento para formato CSV row
@@ -15,15 +14,15 @@ export function equipmentToCSVRow(equipment: Equipment): Record<string, any> {
     'Tipo': equipment.itemType === 'main' ? 'Principal' : 'Acessório',
     'Número de Patrimônio': equipment.patrimonyNumber || '',
     'Número de Série': equipment.serialNumber || '',
-    'Data de Compra': equipment.purchaseDate ? format(new Date(equipment.purchaseDate), 'dd/MM/yyyy') : '',
-    'Data de Recebimento': equipment.receiveDate ? format(new Date(equipment.receiveDate), 'dd/MM/yyyy') : '',
+    'Data de Compra': equipment.purchaseDate || '',
+    'Data de Recebimento': equipment.receiveDate || '',
     'Valor': equipment.value?.toString() || '',
     'Valor Depreciado': equipment.depreciatedValue?.toString() || '',
     'Capacidade': equipment.capacity?.toString() || '',
     'Descrição': equipment.description || '',
     'Loja': equipment.store || '',
     'Nota Fiscal': equipment.invoice || '',
-    'Última Manutenção': equipment.lastMaintenance ? format(new Date(equipment.lastMaintenance), 'dd/MM/yyyy') : '',
+    'Última Manutenção': equipment.lastMaintenance || '',
     'URL da Imagem': equipment.image || '',
   };
 }

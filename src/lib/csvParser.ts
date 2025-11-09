@@ -26,6 +26,7 @@ const COLUMN_MAPPING = {
   'nome': 'name',
   'marca': 'brand',
   'categoria': 'category',
+  'subcategoria': 'subcategory',
   'tipo de item': 'itemType',
   'tipo item': 'itemType',
   'tipo': 'itemType',
@@ -46,10 +47,13 @@ const COLUMN_MAPPING = {
   'valor com depreciação': 'depreciatedValue',
   'valor depreciado': 'depreciatedValue',
   'data de recebimento': 'receiveDate',
+  'capacidade': 'capacity',
   'loja': 'store',
   'nfe ou recibo': 'invoice',
   'nfe': 'invoice',
-  'recibo': 'invoice'
+  'recibo': 'invoice',
+  'url da imagem': 'image',
+  'imagem': 'image'
 };
 
 const CATEGORY_MAPPING = {
@@ -103,11 +107,12 @@ function mapColumn(header: string): string | null {
   return COLUMN_MAPPING[normalized as keyof typeof COLUMN_MAPPING] || null;
 }
 
-function validateAndTransformCategory(value: string): EquipmentCategory | null {
+function validateAndTransformCategory(value: string): string | null {
   if (!value) return null;
   const normalized = normalizeKey(value);
   const mapped = CATEGORY_MAPPING[normalized as keyof typeof CATEGORY_MAPPING];
-  return VALID_CATEGORIES.includes(mapped as EquipmentCategory) ? mapped as EquipmentCategory : null;
+  // Accept any category - use mapped value if available, otherwise use original (custom category)
+  return mapped || value.trim();
 }
 
 function validateAndTransformStatus(value: string): EquipmentStatus | null {
@@ -148,13 +153,13 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
   }
 
 
-  // Validate and transform category
+  // Validate and transform category (accepts custom categories)
   const category = validateAndTransformCategory(row.category);
   if (!category) {
     errors.push({
       row: rowNumber,
       field: 'category',
-      message: `Categoria inválida. Valores aceitos: ${VALID_CATEGORIES.join(', ')}`,
+      message: 'Categoria é obrigatória',
       value: row.category
     });
   }
@@ -195,10 +200,17 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
       const cleanDate = dateStr.trim();
       let date: Date;
       
-      // Try parsing as ISO format first (YYYY-MM-DD)
-      if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+      // Try parsing as dd/MM/yyyy format (from export)
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleanDate)) {
+        const [day, month, year] = cleanDate.split('/');
+        date = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+      }
+      // Try parsing as ISO format (YYYY-MM-DD)
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
         date = new Date(cleanDate + 'T00:00:00.000Z');
-      } else {
+      }
+      // Fallback to standard Date parsing
+      else {
         date = new Date(cleanDate);
       }
       
@@ -206,7 +218,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
         errors.push({
           row: rowNumber,
           field: fieldName,
-          message: 'Data inválida (use formato YYYY-MM-DD)',
+          message: 'Data inválida (use formato YYYY-MM-DD ou dd/MM/yyyy)',
           value: dateStr
         });
         return null;
@@ -244,6 +256,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
 
   const value = validateNumber(row.value, 'value');
   const depreciatedValue = validateNumber(row.depreciatedValue, 'depreciatedValue');
+  const capacity = validateNumber(row.capacity, 'capacity');
 
   // Validate patrimony number uniqueness (basic format check)
   if (row.patrimonyNumber?.trim()) {
@@ -266,6 +279,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     name: row.name.trim(),
     brand: row.brand.trim(),
     category: category!,
+    subcategory: row.subcategory?.trim() || undefined,
     status: status!,
     itemType: itemType!,
     parentId,
@@ -278,6 +292,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     patrimonyNumber: row.patrimonyNumber?.trim() || undefined,
     depreciatedValue,
     receiveDate,
+    capacity,
     store: row.store?.trim() || undefined,
     invoice: row.invoice?.trim() || undefined,
     isExpanded: false,
@@ -505,6 +520,7 @@ export function generateTemplate(): string {
     'Nome',
     'Marca',
     'Categoria',
+    'Subcategoria',
     'Tipo de Item',
     'Item Principal',
     'Serial',
@@ -515,8 +531,10 @@ export function generateTemplate(): string {
     'Descrição',
     'Valor com Depreciação',
     'Data de Recebimento',
+    'Capacidade',
     'Loja',
-    'NFe ou Recibo'
+    'NFe ou Recibo',
+    'URL da Imagem'
   ];
 
   const exampleRows = [
@@ -525,6 +543,7 @@ export function generateTemplate(): string {
       'Kit Câmera Sony FX6',
       'Sony',
       'camera',
+      'Cinema',
       'Principal',
       '',
       'SN001',
@@ -535,14 +554,17 @@ export function generateTemplate(): string {
       'Kit completo de câmera profissional',
       '24000.00',
       '2024-01-10',
+      '',
       'Camera Store',
-      'NF-001234'
+      'NF-001234',
+      'https://example.com/images/fx6.jpg'
     ],
     [
       'PAT002',
       'Lente Sony 24-70mm',
       'Sony',
       'accessories',
+      'Lentes',
       'Acessório',
       'PAT001',
       'SN002',
@@ -553,26 +575,31 @@ export function generateTemplate(): string {
       'Lente zoom padrão',
       '4800.00',
       '2024-01-10',
+      '',
       'Camera Store',
-      'NF-001234'
+      'NF-001234',
+      ''
     ],
     [
       'PAT003',
-      'Tripé Manfrotto',
-      'Manfrotto',
-      'accessories',
-      'Acessório',
-      'PAT001',
+      'SSD Samsung 2TB',
+      'Samsung',
+      'SSD/HD',
+      'SSD',
+      'Principal',
+      '',
       'SN003',
       '800.00',
       'disponível',
       '2024-01-15',
       '',
-      'Tripé profissional em fibra de carbono',
+      'SSD NVMe de alta velocidade',
       '750.00',
       '2024-01-10',
-      'Camera Store',
-      'NF-001234'
+      '2000',
+      'Tech Store',
+      'NF-001235',
+      ''
     ]
   ];
 

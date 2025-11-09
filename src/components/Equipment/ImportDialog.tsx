@@ -115,7 +115,9 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
   const downloadTemplate = () => {
     const template = generateTemplate();
-    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    // Add BOM for UTF-8 encoding (ensures correct display of accents in Excel)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + template], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
