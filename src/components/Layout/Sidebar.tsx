@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield, HardDrive } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield, HardDrive, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -31,6 +31,11 @@ const navigation: NavigationItem[] = [
     name: 'Projetos',
     href: '/projects',
     icon: FolderOpen,
+  },
+  {
+    name: 'Acessos',
+    href: '/accesses',
+    icon: Key,
   },
 ];
 

@@ -22,6 +22,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const SecurityAdmin = lazy(() => import("./pages/SecurityAdmin"));
 const SSDs = lazy(() => import("./pages/SSDs"));
+const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="projects/:id/separation" element={<ProjectSeparation />} />
               <Route path="projects/:id/verification" element={<ProjectVerification />} />
               <Route path="projects/:id/withdrawal" element={<ProjectWithdrawal />} />
+              <Route path="accesses" element={<PlatformAccesses />} />
               <Route path="profile" element={<Profile />} />
               
               <Route path="admin" element={<Admin />} />
