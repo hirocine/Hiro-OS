@@ -154,7 +154,9 @@ export const PARENT_CATEGORIES: ParentCategoryConfig[] = [
 /**
  * Normaliza strings para comparação (remove acentos, espaços e converte para minúsculas)
  */
-export const normalizeString = (str: string): string => {
+export const normalizeString = (str: string | undefined | null): string => {
+  if (!str) return '';
+  
   return str
     .toLowerCase()
     .normalize('NFD')
@@ -166,7 +168,9 @@ export const normalizeString = (str: string): string => {
 /**
  * Encontra a categoria mãe correspondente baseado na categoria do equipamento
  */
-export const findParentCategory = (category: string): ParentCategoryConfig | undefined => {
+export const findParentCategory = (category: string | undefined | null): ParentCategoryConfig | undefined => {
+  if (!category) return undefined;
+  
   const normalized = normalizeString(category);
   
   return PARENT_CATEGORIES.find(parentCat => {
@@ -185,8 +189,10 @@ export const findParentCategory = (category: string): ParentCategoryConfig | und
  */
 export const findSubcategory = (
   parentCategory: ParentCategoryConfig,
-  subcategory: string
+  subcategory: string | undefined | null
 ): SubcategoryConfig | undefined => {
+  if (!subcategory) return undefined;
+  
   const normalized = normalizeString(subcategory);
   
   return parentCategory.subcategories.find(sub => {
