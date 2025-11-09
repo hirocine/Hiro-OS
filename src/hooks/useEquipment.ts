@@ -65,7 +65,7 @@ export function useEquipment(): UseEquipmentReturn {
         id: String(item.id || ''),
         name: String(item.name || 'Nome não informado'),
         brand: String(item.brand || 'Marca não informada'),
-        category: (item.category || 'accessories') as Equipment['category'],
+        category: item.category || undefined,
         subcategory: item.subcategory || undefined,
         customCategory: item.custom_category || undefined,
         status: item.status === 'maintenance' ? 'maintenance' : 'available',

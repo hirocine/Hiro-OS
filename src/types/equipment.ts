@@ -8,7 +8,7 @@ export interface Equipment {
   id: string;
   name: string;
   brand: string;
-  category: EquipmentCategory;
+  category?: EquipmentCategory;
   subcategory?: string;
   customCategory?: string;
   status: EquipmentStatus;

@@ -5,7 +5,7 @@ import { EquipmentCategoryData } from '@/types/equipment';
 interface Equipment {
   id: string;
   name: string;
-  category: string;
+  category?: string;
   subcategory?: string | null;
   status: string;
   [key: string]: any;
