@@ -2,6 +2,13 @@ import '@testing-library/jest-dom'
 import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
+// Mock Supabase channel
+const mockChannel = {
+  on: vi.fn().mockReturnThis(),
+  subscribe: vi.fn().mockReturnThis(),
+  unsubscribe: vi.fn()
+}
+
 // Mock Supabase client
 const mockSupabaseClient = {
   from: vi.fn(() => ({
@@ -24,7 +31,9 @@ const mockSupabaseClient = {
       data: { subscription: { unsubscribe: vi.fn() } }
     }))
   },
-  rpc: vi.fn(() => Promise.resolve({ data: null, error: null }))
+  rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  channel: vi.fn(() => mockChannel),
+  removeChannel: vi.fn()
 }
 
 // Mock the Supabase client module
