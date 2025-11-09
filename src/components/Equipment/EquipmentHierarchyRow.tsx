@@ -175,7 +175,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
         {/* Categoria */}
         <div className="col-span-1 flex items-center text-sm min-w-0 overflow-hidden">
           <span className="truncate">
-            {categoryLabels[equipment.category]}
+            {equipment.category}
           </span>
         </div>
 

@@ -306,7 +306,7 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
               )}
               {filters.category && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  {categoryLabels[filters.category as keyof typeof categoryLabels]}
+                  {filters.category}
                   <X 
                     className="h-3 w-3 cursor-pointer hover:text-destructive" 
                     onClick={() => updateFilter('category', undefined)}

@@ -216,7 +216,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
               <TooltipTrigger asChild>
                 <div className="cursor-default">
                   <span className="text-sm truncate block">
-                    {categoryLabels[equipment.category]}
+                    {equipment.category}
                   </span>
                   {equipment.subcategory && (
                     <span className="text-xs text-muted-foreground truncate block">
@@ -227,7 +227,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
               </TooltipTrigger>
               <TooltipContent>
                 <div>
-                  <p>{categoryLabels[equipment.category]}</p>
+                  <p>{equipment.category}</p>
                   {equipment.subcategory && (
                     <p className="text-xs text-muted-foreground">{equipment.subcategory}</p>
                   )}

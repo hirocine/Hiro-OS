@@ -62,7 +62,7 @@ export function EquipmentCard({
         <div className="text-sm text-muted-foreground space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">Categoria:</span>
-            {categoryLabels[equipment.category]}
+            {equipment.category}
           </div>
           
           {equipment.patrimonyNumber && (
