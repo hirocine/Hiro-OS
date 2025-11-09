@@ -55,50 +55,15 @@ export function useCategories() {
   };
 
   const addCustomCategory = async (category: string, subcategory: string | null): Promise<Result<EquipmentCategoryData>> => {
-    logger.userAction('create_custom_category', undefined, { category, subcategory });
+    logger.userAction('create_category', undefined, { category, subcategory });
     
     const result = await wrapAsync(async () => {
-      // Verificar se corresponde a uma categoria canônica
-      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
-      let finalCategory = category;
-      let finalSubcategory = subcategory;
-      let isCustom = true;
-      let categoryOrder = 999;
-      let subcategoryOrder = 999;
-
-      // Buscar match com categoria pai
-      const parentMatch = PARENT_CATEGORIES.find(p => 
-        normalizeString(p.key) === normalizeString(category) ||
-        normalizeString(p.title) === normalizeString(category)
-      );
-
-      if (parentMatch) {
-        finalCategory = parentMatch.title;
-        categoryOrder = parentMatch.order;
-        
-        // Se tem subcategoria, buscar match
-        if (subcategory) {
-          const subMatch = parentMatch.subcategories.find(s =>
-            normalizeString(s.key) === normalizeString(subcategory) ||
-            normalizeString(s.name) === normalizeString(subcategory)
-          );
-          
-          if (subMatch) {
-            finalSubcategory = subMatch.name;
-            subcategoryOrder = subMatch.order;
-            isCustom = false;
-          }
-        } else {
-          isCustom = false;
-        }
-      }
-
       const categoryData = {
-        category: finalCategory,
-        subcategory: finalSubcategory,
-        is_custom: isCustom,
-        category_order: categoryOrder,
-        subcategory_order: subcategoryOrder
+        category: category,
+        subcategory: subcategory,
+        is_custom: false,
+        category_order: 999,
+        subcategory_order: 999
       };
 
       const { data, error } = await supabase
@@ -198,22 +163,9 @@ export function useCategories() {
     logger.userAction('rename_category', undefined, { oldCategoryName, newCategoryName });
     
     const result = await wrapAsync(async () => {
-      // Verificar se o novo nome corresponde a uma categoria canônica
-      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
-      let finalNewName = newCategoryName;
-      
-      const parentMatch = PARENT_CATEGORIES.find(p => 
-        normalizeString(p.key) === normalizeString(newCategoryName) ||
-        normalizeString(p.title) === normalizeString(newCategoryName)
-      );
-
-      if (parentMatch) {
-        finalNewName = parentMatch.title;
-      }
-
       const { error } = await supabase
         .from('equipment_categories')
-        .update({ category: finalNewName })
+        .update({ category: newCategoryName })
         .eq('category', oldCategoryName);
       
       if (error) {
@@ -223,7 +175,7 @@ export function useCategories() {
 
       await supabase
         .from('equipments')
-        .update({ category: finalNewName })
+        .update({ category: newCategoryName })
         .eq('category', oldCategoryName);
 
       await fetchCategories();
@@ -659,8 +611,8 @@ export function useCategories() {
       for (const [key, items] of groups) {
         if (items.length <= 1) continue; // não há duplicados
 
-        // Escolher vencedor (preferir o que não é custom, depois o mais antigo)
-        const winner = items.find(i => !i.isCustom) || items.sort((a, b) => 
+        // Escolher vencedor (o mais antigo)
+        const winner = items.sort((a, b) => 
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )[0];
         const losers = items.filter(i => i.id !== winner.id);
