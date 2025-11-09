@@ -511,11 +511,11 @@ export function useEquipment(): UseEquipmentReturn {
         .single();
 
       if (error) {
-        throw createDatabaseError('Erro ao atualizar equipamento', error.message);
+        throw createDatabaseError(`Erro ao atualizar equipamento: ${error.message}`, 'update', 'equipments');
       }
 
       if (!data) {
-        throw createDatabaseError('Nenhum dado retornado após atualização');
+        throw createDatabaseError('Nenhum dado retornado após atualização', 'update', 'equipments');
       }
 
       const oldEquipment = equipment.find(eq => eq.id === id);
