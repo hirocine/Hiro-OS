@@ -414,72 +414,44 @@ export function useEquipment(): UseEquipmentReturn {
 
   const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
     const result = await wrapAsync(async () => {
-      // Convert camelCase to snake_case for database
-      const dbUpdates = {
-        name: updates.name,
-        brand: updates.brand,
-        category: updates.category,
-        subcategory: updates.subcategory,
-        custom_category: updates.customCategory,
-        status: updates.status,
-        item_type: updates.itemType,
-        parent_id: updates.parentId || null,
-        serial_number: updates.serialNumber,
-        purchase_date: updates.purchaseDate,
-        last_maintenance: updates.lastMaintenance,
-        description: updates.description,
-        image: updates.image,
-        value: updates.value,
-        patrimony_number: updates.patrimonyNumber,
-        depreciated_value: updates.depreciatedValue,
-        receive_date: updates.receiveDate,
-        store: updates.store,
-        invoice: updates.invoice,
-        current_loan_id: updates.currentLoanId,
-        current_borrower: updates.currentBorrower,
-        last_loan_date: updates.lastLoanDate,
-        capacity: updates.capacity
-      };
-
-      // Map snake_case database keys to camelCase Equipment properties
-      const keyMap: Record<string, keyof Partial<Equipment>> = {
+      // Map camelCase Equipment properties to snake_case database columns
+      const camelToSnake: Record<string, string> = {
+        customCategory: 'custom_category',
+        itemType: 'item_type',
+        parentId: 'parent_id',
+        serialNumber: 'serial_number',
+        purchaseDate: 'purchase_date',
+        lastMaintenance: 'last_maintenance',
+        patrimonyNumber: 'patrimony_number',
+        depreciatedValue: 'depreciated_value',
+        receiveDate: 'receive_date',
+        currentLoanId: 'current_loan_id',
+        currentBorrower: 'current_borrower',
+        lastLoanDate: 'last_loan_date',
+        expectedReturnDate: 'expected_return_date',
+        simplifiedStatus: 'simplified_status',
+        displayOrder: 'display_order',
+        internal_user_id: 'internal_user_id',
+        // Fields with same name in camelCase and snake_case
         name: 'name',
         brand: 'brand',
         category: 'category',
         subcategory: 'subcategory',
-        custom_category: 'customCategory',
-        status: 'status',
-        item_type: 'itemType',
-        parent_id: 'parentId',
-        serial_number: 'serialNumber',
-        purchase_date: 'purchaseDate',
-        last_maintenance: 'lastMaintenance',
         description: 'description',
         image: 'image',
         value: 'value',
-        patrimony_number: 'patrimonyNumber',
-        depreciated_value: 'depreciatedValue',
-        receive_date: 'receiveDate',
         store: 'store',
         invoice: 'invoice',
-        current_loan_id: 'currentLoanId',
-        current_borrower: 'currentBorrower',
-        last_loan_date: 'lastLoanDate',
-        expected_return_date: 'expectedReturnDate',
         capacity: 'capacity',
-        display_order: 'displayOrder',
-        internal_user_id: 'internal_user_id',
-        simplified_status: 'simplifiedStatus'
+        status: 'status'
       };
 
-      // Convert undefined to null and only include fields present in updates
+      // Build cleanedUpdates by iterating ONLY over fields present in updates
       const cleanedUpdates: Record<string, any> = {};
-      for (const [dbKey, dbValue] of Object.entries(dbUpdates)) {
-        const camelKey = keyMap[dbKey] ?? (dbKey as keyof Partial<Equipment>);
-        // Only include if the camelCase property exists in updates (even if null)
-        if (camelKey in updates) {
-          cleanedUpdates[dbKey] = dbValue === undefined ? null : dbValue;
-        }
+      for (const [camelKey, value] of Object.entries(updates)) {
+        const dbKey = camelToSnake[camelKey] ?? camelKey;
+        // Convert undefined and empty strings to null for proper database storage
+        cleanedUpdates[dbKey] = (value === undefined || value === '') ? null : value;
       }
 
       // Log de debug para verificar o que está sendo enviado
@@ -488,8 +460,7 @@ export function useEquipment(): UseEquipmentReturn {
         action: 'update_equipment',
         data: {
           equipmentId: id,
-          fieldsToUpdate: Object.keys(cleanedUpdates),
-          updates: cleanedUpdates
+          cleanedUpdates
         }
       });
 
@@ -500,7 +471,7 @@ export function useEquipment(): UseEquipmentReturn {
           action: 'update_equipment_empty',
           data: { equipmentId: id }
         });
-        return { success: false, error: 'Nenhum campo para atualizar' };
+        throw createValidationError('Nenhuma alteração detectada');
       }
 
       const { data, error } = await supabase
@@ -556,6 +527,9 @@ export function useEquipment(): UseEquipmentReturn {
       setEquipment(prev => 
         prev.map(item => item.id === id ? updatedEquipment : item)
       );
+
+      // Refetch to ensure complete consistency with database
+      await fetchEquipment();
 
       // Log de auditoria
       await logAuditEntry(
