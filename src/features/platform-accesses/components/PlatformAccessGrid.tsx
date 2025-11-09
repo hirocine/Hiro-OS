@@ -129,7 +129,6 @@ export function PlatformAccessGrid() {
               key={access.id}
               access={access}
               onEdit={handleEdit}
-              onDelete={handleDelete}
               onToggleFavorite={toggleFavorite}
               onCopyPassword={copyPassword}
               onCopyUsername={copyUsername}

@@ -1,4 +1,4 @@
-import { Star, ExternalLink, Copy, Pencil, Trash2 } from 'lucide-react';
+import { Star, ExternalLink, Copy, Pencil } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 interface PlatformAccessCardProps {
   access: PlatformAccess;
   onEdit: (access: PlatformAccess) => void;
-  onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onCopyPassword: (id: string) => void;
   onCopyUsername: (username: string) => void;
@@ -18,7 +17,6 @@ interface PlatformAccessCardProps {
 export function PlatformAccessCard({
   access,
   onEdit,
-  onDelete,
   onToggleFavorite,
   onCopyPassword,
   onCopyUsername,
@@ -146,14 +144,6 @@ export function PlatformAccessCard({
         >
           <Pencil className="h-4 w-4 mr-2" />
           Editar
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => onDelete(access.id)}
-          className="text-destructive hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </Card>
