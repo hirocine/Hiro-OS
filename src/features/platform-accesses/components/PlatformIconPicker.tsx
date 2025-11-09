@@ -67,6 +67,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
         <Label className="text-sm text-muted-foreground mb-2 block">Carregar Ícone da Plataforma</Label>
         <div className="flex items-center gap-2">
           <Button
+            type="button"
             variant="outline"
             className="w-full"
             disabled={uploading}
