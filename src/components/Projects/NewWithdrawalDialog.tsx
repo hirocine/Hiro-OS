@@ -20,7 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useUsers } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
-import { useEquipment } from '@/hooks/useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { Equipment } from '@/types/equipment';
 import { logger } from '@/lib/logger';
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
 import { AddSSDDialog } from '@/components/SSD/AddSSDDialog';
-import { useSSDs } from '@/hooks/useSSDs';
+import { useSSDs } from '@/features/ssds';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 

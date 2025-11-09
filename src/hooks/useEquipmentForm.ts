@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
-import { useEquipment } from '@/hooks/useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';

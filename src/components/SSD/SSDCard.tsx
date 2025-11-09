@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SSDStatus } from '@/hooks/useSSDs';
+import { SSDStatus } from '@/features/ssds';
 
 interface SSDCardProps {
   ssd: Equipment;

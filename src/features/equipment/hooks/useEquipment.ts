@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import { queryKeys } from '@/lib/queryClient';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface UseEquipmentReturn {
   equipment: Equipment[];

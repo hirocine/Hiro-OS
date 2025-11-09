@@ -9,8 +9,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
-import { useProjectDetails } from '@/hooks/useProjectDetails';
-import { useProjectEquipment, getEquipmentBreakdown } from '@/hooks/useProjectEquipment';
+import { useProjectDetails } from '@/features/projects';
+import { useProjectEquipment, getEquipmentBreakdown } from '@/features/projects';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { SeparationDialog } from '@/components/Projects/SeparationDialog';

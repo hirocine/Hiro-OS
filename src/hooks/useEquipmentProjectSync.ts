@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEquipment } from './useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { logger } from '@/lib/logger';
 
 /**

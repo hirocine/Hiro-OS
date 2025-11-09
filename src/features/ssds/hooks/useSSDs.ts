@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { useToast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import { queryKeys } from '@/lib/queryClient';
 
 export type SSDStatus = 'available' | 'in_use' | 'loaned';

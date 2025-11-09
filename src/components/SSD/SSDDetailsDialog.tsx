@@ -26,8 +26,8 @@ import { ptBR } from 'date-fns/locale';
 import { cn, formatCapacity } from '@/lib/utils';
 import { capitalizeNames } from '@/lib/stringUtils';
 import { useUsers } from '@/hooks/useUsers';
-import { useSSDDetails, SSDExternalLoan } from '@/hooks/useSSDDetails';
-import { SSDStatus } from '@/hooks/useSSDs';
+import { useSSDDetails, SSDExternalLoan } from '@/features/ssds/hooks/useSSDDetails';
+import { SSDStatus } from '@/features/ssds';
 import { ProjectAllocationList, ProjectAllocation } from './ProjectAllocationList';
 import { Badge } from '@/components/ui/badge';
 

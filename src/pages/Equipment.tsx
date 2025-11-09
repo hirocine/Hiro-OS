@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { usePageLayout } from '@/hooks/usePageLayout';
-import { useEquipment } from '@/hooks/useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';

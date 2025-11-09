@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectStep, ProjectStatus, StepChange } from '@/types/project';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, NotFoundError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';

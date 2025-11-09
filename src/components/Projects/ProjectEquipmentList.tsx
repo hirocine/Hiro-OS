@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, AlertTriangle, HardDrive, ChevronDown, ChevronUp } from "lucide-react";
-import { useProjectEquipment } from "@/hooks/useProjectEquipment";
+import { useProjectEquipment } from "@/features/projects";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReminderDialog } from '@/components/Equipment/ReminderDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';

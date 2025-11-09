@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { useEquipment } from '@/hooks/useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { useCategories } from '@/hooks/useCategories';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';

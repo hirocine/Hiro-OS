@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, ValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { ProjectDbRow, ProjectDbInsert, ProjectDbUpdate } from '@/types/database';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import { queryKeys } from '@/lib/queryClient';
 
 // Fetch function

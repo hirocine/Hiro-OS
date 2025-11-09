@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loan, LoanFilters, LoanStats } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, NotFoundError, AuthorizationError } from '@/lib/errors';
 import type { LoanDbRow, LoanDbInsert, LoanDbUpdate } from '@/types/database';

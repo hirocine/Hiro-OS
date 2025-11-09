@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useEquipment } from '../useEquipment'
+import { useEquipment } from '@/features/equipment'
 import { supabase } from '@/integrations/supabase/client'
 import { createMockEquipment } from '@/test/utils/test-utils'
 

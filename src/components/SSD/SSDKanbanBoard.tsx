@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Equipment } from '@/types/equipment';
 import { SSDCard } from './SSDCard';
-import { SSDStatus, SSDAllocationsMap } from '@/hooks/useSSDs';
+import { SSDStatus, SSDAllocationsMap } from '@/features/ssds';
 import { SSDDetailsDialog } from './SSDDetailsDialog';
 import {
   DndContext,

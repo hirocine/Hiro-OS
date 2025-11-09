@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Equipment } from '@/types/equipment';
-import { SSDStatus } from '@/hooks/useSSDs';
+import { SSDStatus } from '@/features/ssds';
 import { SSDCard } from './SSDCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

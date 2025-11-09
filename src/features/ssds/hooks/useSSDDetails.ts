@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { SSDStatus } from './useSSDs';
-import { useUserRole } from './useUserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import { logger } from '@/lib/logger';
 
 import { ProjectAllocation } from '@/components/SSD/ProjectAllocationList';

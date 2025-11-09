@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
-import { useProjects } from '@/hooks/useProjects';
+import { useProjects } from '@/features/projects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';

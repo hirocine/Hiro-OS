@@ -2,7 +2,7 @@ import { StatsCard } from '@/components/Dashboard/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { useEquipment } from '@/hooks/useEquipment';
+import { useEquipment } from '@/features/equipment';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3, Layers } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
