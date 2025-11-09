@@ -289,22 +289,40 @@ export function CategoryManagement() {
   
   const handleCleanDuplicates = async () => {
     setIsCleaning(true);
-    const result = await cleanDuplicateCategories();
-    if (result.success) {
-      const removed = result.data?.removed || 0;
-      const updated = result.data?.updatedEquipments || 0;
+    setShowCleanupDialog(false);
+    
+    // Fase 1: Limpar e normalizar
+    const cleanResult = await cleanDuplicateCategories();
+    if (!cleanResult.success) {
       toast({
-        title: 'Limpeza concluída',
-        description: `${removed} duplicados removidos • ${updated} equipamentos atualizados`
+        title: 'Erro',
+        description: cleanResult.error || 'Erro ao limpar e normalizar categorias.',
+        variant: 'destructive'
+      });
+      setIsCleaning(false);
+      return;
+    }
+    
+    const { removed, updatedEquipments, updatedCategories } = cleanResult.data || { removed: 0, updatedEquipments: 0, updatedCategories: 0 };
+    
+    // Fase 2: Sincronizar ordens
+    const syncResult = await syncOrdersWithMapping();
+    
+    if (syncResult.success) {
+      toast({
+        title: 'Limpeza e Normalização Concluída',
+        description: `✓ ${updatedCategories} categorias normalizadas\n✓ ${removed} duplicados removidos\n✓ ${updatedEquipments} equipamentos migrados`,
+        duration: 5000
       });
       await refetch();
     } else {
       toast({
-        title: 'Erro',
-        description: result.error || 'Erro ao limpar duplicados.',
+        title: 'Normalização concluída, erro na sincronização',
+        description: `${updatedCategories} categorias normalizadas, ${removed} duplicados removidos, mas erro ao sincronizar ordens.`,
         variant: 'destructive'
       });
     }
+    
     setIsCleaning(false);
   };
 
@@ -447,7 +465,7 @@ export function CategoryManagement() {
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
-              Limpar Duplicados
+              Limpar & Normalizar
             </Button>
             <Button onClick={() => setShowAddCategoryDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -800,9 +818,9 @@ export function CategoryManagement() {
         open={showCleanupDialog}
         onOpenChange={setShowCleanupDialog}
         onConfirm={handleCleanDuplicates}
-        title="Limpar duplicados de categorias?"
-        description="Isso migrará equipamentos para nomes canônicos e removerá entradas duplicadas. Esta ação não pode ser desfeita."
-        confirmText={isCleaning ? 'Limpando...' : 'Limpar'}
+        title="Limpar & Normalizar Categorias?"
+        description="Esta operação irá:\n• Normalizar nomes de categorias para o padrão (ex: 'camera' → 'Câmera')\n• Remover entradas duplicadas\n• Migrar equipamentos para as categorias corretas\n• Sincronizar ordens com o sistema\n\nEsta ação não pode ser desfeita."
+        confirmText={isCleaning ? 'Processando...' : 'Limpar & Normalizar'}
         variant="destructive"
       />
     </>

@@ -58,12 +58,47 @@ export function useCategories() {
     logger.userAction('create_custom_category', undefined, { category, subcategory });
     
     const result = await wrapAsync(async () => {
+      // Verificar se corresponde a uma categoria canônica
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      let finalCategory = category;
+      let finalSubcategory = subcategory;
+      let isCustom = true;
+      let categoryOrder = 999;
+      let subcategoryOrder = 999;
+
+      // Buscar match com categoria pai
+      const parentMatch = PARENT_CATEGORIES.find(p => 
+        normalizeString(p.key) === normalizeString(category) ||
+        normalizeString(p.title) === normalizeString(category)
+      );
+
+      if (parentMatch) {
+        finalCategory = parentMatch.title;
+        categoryOrder = parentMatch.order;
+        
+        // Se tem subcategoria, buscar match
+        if (subcategory) {
+          const subMatch = parentMatch.subcategories.find(s =>
+            normalizeString(s.key) === normalizeString(subcategory) ||
+            normalizeString(s.name) === normalizeString(subcategory)
+          );
+          
+          if (subMatch) {
+            finalSubcategory = subMatch.name;
+            subcategoryOrder = subMatch.order;
+            isCustom = false;
+          }
+        } else {
+          isCustom = false;
+        }
+      }
+
       const categoryData = {
-        category,
-        subcategory,
-        is_custom: true,
-        category_order: 999,
-        subcategory_order: 999
+        category: finalCategory,
+        subcategory: finalSubcategory,
+        is_custom: isCustom,
+        category_order: categoryOrder,
+        subcategory_order: subcategoryOrder
       };
 
       const { data, error } = await supabase
@@ -100,9 +135,12 @@ export function useCategories() {
   };
 
   const getCategoriesHierarchy = (): CategoryHierarchy[] => {
+    // Agrupar por chave normalizada para evitar duplicatas visuais
     const grouped = categories.reduce((acc, cat) => {
-      if (!acc[cat.category]) {
-        acc[cat.category] = {
+      const normalizedKey = normalizeString(cat.category);
+      
+      if (!acc[normalizedKey]) {
+        acc[normalizedKey] = {
           categoryName: cat.category,
           categoryId: null,
           isCustom: cat.isCustom,
@@ -111,16 +149,24 @@ export function useCategories() {
       }
       
       if (cat.subcategory) {
-        acc[cat.category].subcategories.push({
-          id: cat.id,
-          name: cat.subcategory,
-          isCustom: cat.isCustom,
-          usageCount: 0,
-          order: cat.subcategoryOrder || 999
-        });
+        // Evitar duplicar subcategorias
+        const subNormKey = normalizeString(cat.subcategory);
+        const existingSub = acc[normalizedKey].subcategories.find(s => 
+          normalizeString(s.name) === subNormKey
+        );
+        
+        if (!existingSub) {
+          acc[normalizedKey].subcategories.push({
+            id: cat.id,
+            name: cat.subcategory,
+            isCustom: cat.isCustom,
+            usageCount: 0,
+            order: cat.subcategoryOrder || 999
+          });
+        }
       } else {
-        acc[cat.category].categoryId = cat.id;
-        acc[cat.category].isCustom = cat.isCustom;
+        acc[normalizedKey].categoryId = cat.id;
+        acc[normalizedKey].isCustom = cat.isCustom;
       }
       
       return acc;
@@ -152,9 +198,22 @@ export function useCategories() {
     logger.userAction('rename_category', undefined, { oldCategoryName, newCategoryName });
     
     const result = await wrapAsync(async () => {
+      // Verificar se o novo nome corresponde a uma categoria canônica
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      let finalNewName = newCategoryName;
+      
+      const parentMatch = PARENT_CATEGORIES.find(p => 
+        normalizeString(p.key) === normalizeString(newCategoryName) ||
+        normalizeString(p.title) === normalizeString(newCategoryName)
+      );
+
+      if (parentMatch) {
+        finalNewName = parentMatch.title;
+      }
+
       const { error } = await supabase
         .from('equipment_categories')
-        .update({ category: newCategoryName })
+        .update({ category: finalNewName })
         .eq('category', oldCategoryName);
       
       if (error) {
@@ -164,7 +223,7 @@ export function useCategories() {
 
       await supabase
         .from('equipments')
-        .update({ category: newCategoryName })
+        .update({ category: finalNewName })
         .eq('category', oldCategoryName);
 
       await fetchCategories();
@@ -451,10 +510,14 @@ export function useCategories() {
     }
   };
 
-  // Limpa entradas duplicadas de categorias/subcategorias (normalização) e migra equipamentos
-  const cleanDuplicateCategories = async (): Promise<Result<{ removed: number; updatedEquipments: number }>> => {
+  /**
+   * Limpa e normaliza categorias em duas fases:
+   * Fase A - Normalização: atualiza todos os registros para nomes canônicos
+   * Fase B - Deduplicação: remove entradas duplicadas e migra equipamentos
+   */
+  const cleanDuplicateCategories = async (): Promise<Result<{ removed: number; updatedEquipments: number; updatedCategories: number }>> => {
     try {
-      logger.info('Clean duplicates - start', { module: 'categories' });
+      logger.info('Clean & Normalize - start', { module: 'categories' });
 
       // Buscar do banco para garantir dados mais recentes
       const { data, error } = await supabase
@@ -477,74 +540,159 @@ export function useCategories() {
         subcategoryOrder: item.subcategory_order
       })) as EquipmentCategoryData[];
 
-      // Agrupar por categoria/subcategoria normalizada (apenas subcategorias, foco do problema)
+      // Carregar mapping
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+
+      // === FASE A: NORMALIZAÇÃO ===
+      logger.info('Phase A - Normalization', { module: 'categories' });
+      let updatedCategories = 0;
+
+      for (const row of rows) {
+        const parentMatch = PARENT_CATEGORIES.find(p => 
+          normalizeString(p.key) === normalizeString(row.category) ||
+          normalizeString(p.title) === normalizeString(row.category)
+        );
+
+        if (parentMatch) {
+          let needsUpdate = false;
+          const updates: any = {};
+
+          // Normalizar nome da categoria
+          if (row.category !== parentMatch.title) {
+            updates.category = parentMatch.title;
+            needsUpdate = true;
+          }
+
+          // Normalizar ordem da categoria
+          if ((row.categoryOrder ?? 999) !== parentMatch.order) {
+            updates.category_order = parentMatch.order;
+            needsUpdate = true;
+          }
+
+          // Se tem subcategoria, normalizar também
+          if (row.subcategory) {
+            const subMatch = parentMatch.subcategories.find(s =>
+              normalizeString(s.key) === normalizeString(row.subcategory!) ||
+              normalizeString(s.name) === normalizeString(row.subcategory!)
+            );
+
+            if (subMatch) {
+              if (row.subcategory !== subMatch.name) {
+                updates.subcategory = subMatch.name;
+                needsUpdate = true;
+              }
+              if ((row.subcategoryOrder ?? 999) !== subMatch.order) {
+                updates.subcategory_order = subMatch.order;
+                needsUpdate = true;
+              }
+              if (row.isCustom) {
+                updates.is_custom = false;
+                needsUpdate = true;
+              }
+            }
+          } else {
+            // Categoria sem subcategoria - marcar como não custom se bater com mapping
+            if (row.isCustom) {
+              updates.is_custom = false;
+              needsUpdate = true;
+            }
+          }
+
+          // Aplicar atualizações se necessário
+          if (needsUpdate) {
+            const { error: updateErr } = await supabase
+              .from('equipment_categories')
+              .update(updates)
+              .eq('id', row.id);
+
+            if (updateErr) {
+              logger.error('Failed to normalize category', { error: updateErr, data: { id: row.id, updates } });
+            } else {
+              updatedCategories += 1;
+              logger.debug('Normalized category', { module: 'categories', data: { id: row.id, from: row.category, to: updates.category || row.category } });
+            }
+          }
+        }
+      }
+
+      logger.info('Phase A - Done', { module: 'categories', data: { updatedCategories } });
+
+      // === FASE B: DEDUPLICAÇÃO ===
+      logger.info('Phase B - Deduplication', { module: 'categories' });
+      
+      // Re-buscar dados após normalização
+      const { data: freshData, error: freshError } = await supabase
+        .from('equipment_categories')
+        .select('*');
+      
+      if (freshError) {
+        logger.error('Failed to re-fetch categories', { error: freshError });
+        return { success: false, error: 'Falha ao re-buscar categorias' };
+      }
+
+      const freshRows = (freshData as EquipmentCategoryDbRow[]).map(item => ({
+        id: item.id,
+        category: item.category,
+        subcategory: item.subcategory,
+        isCustom: item.is_custom,
+        createdAt: item.created_at,
+        createdBy: item.created_by,
+        categoryOrder: item.category_order,
+        subcategoryOrder: item.subcategory_order
+      })) as EquipmentCategoryData[];
+
+      // Agrupar por categoria/subcategoria normalizada
       const groups = new Map<string, EquipmentCategoryData[]>();
-      for (const r of rows) {
-        if (!r.subcategory) continue; // focar em subcategorias
-        const key = `${normalizeString(r.category)}::${normalizeString(r.subcategory)}`;
+      for (const r of freshRows) {
+        const key = r.subcategory 
+          ? `${normalizeString(r.category)}::${normalizeString(r.subcategory)}`
+          : `${normalizeString(r.category)}::∅`;
         const arr = groups.get(key) || [];
         arr.push(r);
         groups.set(key, arr);
       }
 
-      // Carregar mapping
-      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
-
       const losersToDelete: string[] = [];
       let updatedEquipments = 0;
 
-      // Processar cada grupo
+      // Processar cada grupo com duplicados
       for (const [key, items] of groups) {
         if (items.length <= 1) continue; // não há duplicados
-        const [normCat, normSub] = key.split('::');
 
-        // Encontrar categoria/subcategoria canônica no mapping
-        const parent = PARENT_CATEGORIES.find(pc => 
-          normalizeString(pc.key) === normCat || normalizeString(pc.title) === normCat
-        );
-        const sub = parent?.subcategories.find(sc => 
-          normalizeString(sc.key) === normSub || normalizeString(sc.name) === normSub
-        );
-
-        // Definir nomes/ordens canônicos
-        const canonicalCategory = parent ? parent.title : items[0].category;
-        const canonicalSub = sub ? sub.name : items[0].subcategory!;
-        const canonicalCatOrder = parent ? parent.order : (items[0].categoryOrder ?? 999);
-        const canonicalSubOrder = sub ? sub.order : (items[0].subcategoryOrder ?? 999);
-
-        // Escolher vencedor (se já existir com nomes canônicos, usa ele; senão, primeiro)
-        const winner = items.find(i => i.category === canonicalCategory && i.subcategory === canonicalSub) || items[0];
+        // Escolher vencedor (preferir o que não é custom, depois o mais antigo)
+        const winner = items.find(i => !i.isCustom) || items.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )[0];
         const losers = items.filter(i => i.id !== winner.id);
 
-        // Atualizar equipamentos que usam qualquer perdedor para os nomes canônicos
-        for (const l of losers) {
+        logger.debug('Duplicate group found', { 
+          module: 'categories', 
+          data: { key, total: items.length, winner: winner.id, losers: losers.length } 
+        });
+
+        // Migrar equipamentos dos perdedores para o vencedor
+        for (const loser of losers) {
           const { error: upErr, data: upData } = await supabase
             .from('equipments')
-            .update({ category: canonicalCategory, subcategory: canonicalSub })
-            .eq('category', l.category)
-            .eq('subcategory', l.subcategory!)
-            .select('id');
-          if (upErr) {
-            logger.error('Failed to migrate equipments on cleanup', { error: upErr, data: { from: { c: l.category, s: l.subcategory }, to: { c: canonicalCategory, s: canonicalSub } } });
-          } else {
-            updatedEquipments += upData?.length || 0;
-          }
-        }
-
-        // Garantir que o vencedor tenha os nomes/ordens canônicos
-        if (winner.category !== canonicalCategory || winner.subcategory !== canonicalSub || (winner.subcategoryOrder ?? 999) !== canonicalSubOrder || (winner.categoryOrder ?? 999) !== canonicalCatOrder) {
-          const { error: winErr } = await supabase
-            .from('equipment_categories')
-            .update({
-              category: canonicalCategory,
-              subcategory: canonicalSub,
-              category_order: canonicalCatOrder,
-              subcategory_order: canonicalSubOrder,
-              is_custom: false
+            .update({ 
+              category: winner.category, 
+              subcategory: winner.subcategory 
             })
-            .eq('id', winner.id);
-          if (winErr) {
-            logger.error('Failed to update winner on cleanup', { error: winErr, data: { id: winner.id } });
+            .eq('category', loser.category)
+            .eq('subcategory', loser.subcategory)
+            .select('id');
+
+          if (upErr) {
+            logger.error('Failed to migrate equipments', { 
+              error: upErr, 
+              data: { from: { c: loser.category, s: loser.subcategory }, to: { c: winner.category, s: winner.subcategory } } 
+            });
+          } else {
+            const migratedCount = upData?.length || 0;
+            updatedEquipments += migratedCount;
+            if (migratedCount > 0) {
+              logger.debug('Migrated equipments', { module: 'categories', data: { count: migratedCount } });
+            }
           }
         }
 
@@ -560,19 +708,32 @@ export function useCategories() {
           .delete()
           .in('id', losersToDelete)
           .select('id');
+        
         if (delErr) {
           logger.error('Failed to delete duplicate categories', { error: delErr, data: { ids: losersToDelete.length } });
         } else {
           removed = delData?.length || 0;
+          logger.info('Deleted duplicates', { module: 'categories', data: { removed } });
         }
       }
 
+      logger.info('Phase B - Done', { module: 'categories', data: { removed, updatedEquipments } });
+
+      // Refetch após limpeza
       await fetchCategories();
-      logger.info('Clean duplicates - done', { module: 'categories', data: { removed, updatedEquipments } });
-      return { success: true, data: { removed, updatedEquipments } };
+      
+      logger.info('Clean & Normalize - complete', { 
+        module: 'categories', 
+        data: { updatedCategories, removed, updatedEquipments } 
+      });
+
+      return { 
+        success: true, 
+        data: { removed, updatedEquipments, updatedCategories } 
+      };
     } catch (e) {
-      logger.error('Clean duplicates - error', { error: e });
-      return { success: false, error: 'Erro ao limpar duplicados' };
+      logger.error('Clean & Normalize - error', { error: e });
+      return { success: false, error: 'Erro ao limpar e normalizar categorias' };
     }
   };
   return {
