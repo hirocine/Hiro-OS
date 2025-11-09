@@ -33,7 +33,8 @@ import { PlatformIconPicker } from './PlatformIconPicker';
 import type { PlatformAccess, PlatformAccessForm, PlatformCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
 
-const formSchema = z.object({
+// Schema para criação (senha obrigatória)
+const createSchema = z.object({
   platformName: z.string()
     .trim()
     .min(1, 'Nome da plataforma é obrigatório')
@@ -66,6 +67,40 @@ const formSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+// Schema para edição (senha opcional)
+const editSchema = z.object({
+  platformName: z.string()
+    .trim()
+    .min(1, 'Nome da plataforma é obrigatório')
+    .max(100, 'Nome muito longo'),
+  platformIconUrl: z.string().optional(),
+  platformUrl: z.string()
+    .trim()
+    .url('URL inválida')
+    .max(500, 'URL muito longa'),
+  username: z.string()
+    .trim()
+    .min(1, 'Usuário/email é obrigatório')
+    .max(255, 'Usuário muito longo'),
+  password: z.string()
+    .max(1000, 'Senha muito longa')
+    .optional(),
+  notes: z.string()
+    .max(1000, 'Notas muito longas')
+    .optional(),
+  category: z.enum([
+    'development',
+    'infrastructure',
+    'design',
+    'communication',
+    'analytics',
+    'storage',
+    'other',
+  ]),
+  isFavorite: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+
 interface PlatformAccessDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -79,8 +114,8 @@ export function PlatformAccessDialog({
   onSubmit,
   editingAccess,
 }: PlatformAccessDialogProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof createSchema>>({
+    resolver: zodResolver(editingAccess ? editSchema : createSchema),
     defaultValues: {
       platformName: '',
       platformIconUrl: '',
@@ -123,9 +158,16 @@ export function PlatformAccessDialog({
     }
   }, [editingAccess, form, open]);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createSchema>) => {
     try {
-      await onSubmit(values as PlatformAccessForm);
+      const submitData = { ...values };
+      
+      // Se estiver editando e a senha estiver vazia, não enviar o campo
+      if (editingAccess && !submitData.password) {
+        delete submitData.password;
+      }
+      
+      await onSubmit(submitData as PlatformAccessForm);
       form.reset();
       onOpenChange(false);
     } catch (error) {
@@ -255,12 +297,12 @@ export function PlatformAccessDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Senha * {editingAccess && '(deixe em branco para manter)'}
+                      Senha {!editingAccess && '*'} {editingAccess && '(deixe em branco para manter)'}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="password"
-                        placeholder={editingAccess ? '••••••••' : 'Senha'}
+                        type="text"
+                        placeholder={editingAccess ? 'Digite para alterar...' : 'Digite a senha'}
                         {...field}
                       />
                     </FormControl>
