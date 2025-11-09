@@ -389,6 +389,51 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_accesses: {
+        Row: {
+          category: Database["public"]["Enums"]["platform_category"] | null
+          created_at: string | null
+          encrypted_password: string
+          id: string
+          is_favorite: boolean | null
+          notes: string | null
+          platform_icon_url: string | null
+          platform_name: string
+          platform_url: string
+          updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["platform_category"] | null
+          created_at?: string | null
+          encrypted_password: string
+          id?: string
+          is_favorite?: boolean | null
+          notes?: string | null
+          platform_icon_url?: string | null
+          platform_name: string
+          platform_url: string
+          updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["platform_category"] | null
+          created_at?: string | null
+          encrypted_password?: string
+          id?: string
+          is_favorite?: boolean | null
+          notes?: string | null
+          platform_icon_url?: string | null
+          platform_name?: string
+          platform_url?: string
+          updated_at?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1022,6 +1067,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      platform_category:
+        | "development"
+        | "infrastructure"
+        | "design"
+        | "communication"
+        | "analytics"
+        | "storage"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1150,6 +1203,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      platform_category: [
+        "development",
+        "infrastructure",
+        "design",
+        "communication",
+        "analytics",
+        "storage",
+        "other",
+      ],
     },
   },
 } as const

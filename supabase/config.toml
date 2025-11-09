@@ -66,6 +66,9 @@ import_map = "supabase/functions/import_map.json"
 [functions.process-equipment-images]
 verify_jwt = true
 
+[functions.manage-password]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 policy = "per_worker"
