@@ -69,13 +69,17 @@ export function CategoryManagement() {
     getCategoryUsageCount,
     reorderSubcategory,
     syncOrdersWithMapping,
-    refetch
+    refetch,
+    // novo: limpeza de duplicados
+    cleanDuplicateCategories
   } = useCategories();
 
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [showCleanupDialog, setShowCleanupDialog] = useState(false);
   
   // Dialogs state
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -282,6 +286,27 @@ export function CategoryManagement() {
     
     setIsSyncing(false);
   };
+  
+  const handleCleanDuplicates = async () => {
+    setIsCleaning(true);
+    const result = await cleanDuplicateCategories();
+    if (result.success) {
+      const removed = result.data?.removed || 0;
+      const updated = result.data?.updatedEquipments || 0;
+      toast({
+        title: 'Limpeza concluída',
+        description: `${removed} duplicados removidos • ${updated} equipamentos atualizados`
+      });
+      await refetch();
+    } else {
+      toast({
+        title: 'Erro',
+        description: result.error || 'Erro ao limpar duplicados.',
+        variant: 'destructive'
+      });
+    }
+    setIsCleaning(false);
+  };
 
   const openEditDialog = (
     type: 'category' | 'subcategory',
@@ -411,6 +436,18 @@ export function CategoryManagement() {
                 <RefreshCw className="h-4 w-4 mr-2" />
               )}
               Sincronizar Ordens
+            </Button>
+            <Button 
+              onClick={() => setShowCleanupDialog(true)}
+              variant="outline"
+              disabled={isCleaning}
+            >
+              {isCleaning ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Limpar Duplicados
             </Button>
             <Button onClick={() => setShowAddCategoryDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -756,6 +793,16 @@ export function CategoryManagement() {
             : `Tem certeza que deseja deletar a subcategoria "${deleteTarget?.name}"?`
         }
         confirmText="Deletar"
+        variant="destructive"
+      />
+
+      <ConfirmationDialog
+        open={showCleanupDialog}
+        onOpenChange={setShowCleanupDialog}
+        onConfirm={handleCleanDuplicates}
+        title="Limpar duplicados de categorias?"
+        description="Isso migrará equipamentos para nomes canônicos e removerá entradas duplicadas. Esta ação não pode ser desfeita."
+        confirmText={isCleaning ? 'Limpando...' : 'Limpar'}
         variant="destructive"
       />
     </>
