@@ -134,7 +134,7 @@ export function PlatformAccessCard({
           className="flex-1"
         >
           <ExternalLink className="h-4 w-4 mr-2" />
-          Abrir
+          Link
         </Button>
         <Button
           variant="outline"
