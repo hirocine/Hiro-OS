@@ -395,6 +395,7 @@ export type Database = {
           created_at: string | null
           encrypted_password: string
           id: string
+          is_active: boolean
           is_favorite: boolean | null
           notes: string | null
           platform_icon_url: string | null
@@ -409,6 +410,7 @@ export type Database = {
           created_at?: string | null
           encrypted_password: string
           id?: string
+          is_active?: boolean
           is_favorite?: boolean | null
           notes?: string | null
           platform_icon_url?: string | null
@@ -423,6 +425,7 @@ export type Database = {
           created_at?: string | null
           encrypted_password?: string
           id?: string
+          is_active?: boolean
           is_favorite?: boolean | null
           notes?: string | null
           platform_icon_url?: string | null

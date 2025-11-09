@@ -157,6 +157,7 @@ export function usePlatformAccesses() {
           notes: form.notes,
           category: form.category,
           is_favorite: form.isFavorite || false,
+          is_active: form.isActive ?? true,
           user_id: user.id
         })
         .select()
@@ -216,6 +217,7 @@ export function usePlatformAccesses() {
         notes: updates.notes,
         category: updates.category,
         is_favorite: updates.isFavorite,
+        is_active: updates.isActive,
       };
 
       // Remove undefined values
@@ -400,6 +402,24 @@ export function usePlatformAccesses() {
     }
   });
 
+  // Copy username to clipboard
+  const copyUsername = useCallback(async (username: string) => {
+    try {
+      await navigator.clipboard.writeText(username);
+      toast.success('Usuário copiado!');
+      
+      logger.info('Username copied successfully', {
+        module: 'platform-accesses',
+      });
+    } catch (error) {
+      logger.error('Failed to copy username', {
+        module: 'platform-accesses',
+        error
+      });
+      toast.error('Erro ao copiar usuário');
+    }
+  }, []);
+
   return {
     accesses: filteredAccesses,
     stats,
@@ -411,6 +431,7 @@ export function usePlatformAccesses() {
     updateAccess: updateAccess.mutateAsync,
     deleteAccess: deleteAccess.mutateAsync,
     copyPassword,
+    copyUsername,
     toggleFavorite: toggleFavorite.mutateAsync,
   };
 }

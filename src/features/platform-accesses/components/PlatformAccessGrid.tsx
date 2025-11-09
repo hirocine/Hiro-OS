@@ -28,6 +28,7 @@ export function PlatformAccessGrid() {
     updateAccess,
     deleteAccess,
     copyPassword,
+    copyUsername,
     toggleFavorite,
   } = usePlatformAccesses();
 
@@ -131,6 +132,7 @@ export function PlatformAccessGrid() {
               onDelete={handleDelete}
               onToggleFavorite={toggleFavorite}
               onCopyPassword={copyPassword}
+              onCopyUsername={copyUsername}
             />
           ))}
         </div>

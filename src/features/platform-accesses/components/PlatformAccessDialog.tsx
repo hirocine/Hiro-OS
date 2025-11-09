@@ -63,6 +63,7 @@ const formSchema = z.object({
     'other',
   ]),
   isFavorite: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 interface PlatformAccessDialogProps {
@@ -89,6 +90,7 @@ export function PlatformAccessDialog({
       notes: '',
       category: 'other',
       isFavorite: false,
+      isActive: true,
     },
   });
 
@@ -104,6 +106,7 @@ export function PlatformAccessDialog({
         notes: editingAccess.notes || '',
         category: editingAccess.category,
         isFavorite: editingAccess.is_favorite,
+        isActive: editingAccess.is_active,
       });
     } else {
       form.reset({
@@ -115,6 +118,7 @@ export function PlatformAccessDialog({
         notes: '',
         category: 'other',
         isFavorite: false,
+        isActive: true,
       });
     }
   }, [editingAccess, form, open]);
@@ -296,6 +300,28 @@ export function PlatformAccessDialog({
                     <FormLabel className="text-base">Marcar como Favorito</FormLabel>
                     <FormDescription>
                       Acessos favoritos aparecem primeiro na lista
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Status */}
+            <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Status</FormLabel>
+                    <FormDescription>
+                      {field.value ? 'Acesso está ativo' : 'Acesso está inativo'}
                     </FormDescription>
                   </div>
                   <FormControl>

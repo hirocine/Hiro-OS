@@ -18,6 +18,7 @@ export interface PlatformAccess {
   notes?: string;
   category: PlatformCategory;
   is_favorite: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
   // Creator info from JOIN
@@ -34,6 +35,7 @@ export interface PlatformAccessForm {
   notes?: string;
   category: PlatformCategory;
   isFavorite?: boolean;
+  isActive?: boolean;
 }
 
 export interface PlatformAccessFilters {
