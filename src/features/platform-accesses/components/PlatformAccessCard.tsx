@@ -33,7 +33,7 @@ export function PlatformAccessCard({
       "border-2 hover:border-primary/50",
       !access.is_active && "opacity-60"
     )}>
-      {/* Header com Favorite + Status + Category */}
+      {/* Header com Favorite + Category + Status */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-2">
           <Button
@@ -51,12 +51,12 @@ export function PlatformAccessCard({
               )}
             />
           </Button>
-          <Badge variant={access.is_active ? "success" : "secondary"}>
-            {access.is_active ? "Ativo" : "Inativo"}
+          <Badge className={cn("text-xs", CATEGORY_COLORS[access.category])}>
+            {CATEGORY_LABELS[access.category]}
           </Badge>
         </div>
-        <Badge className={cn("text-xs", CATEGORY_COLORS[access.category])}>
-          {CATEGORY_LABELS[access.category]}
+        <Badge variant={access.is_active ? "success" : "secondary"}>
+          {access.is_active ? "Ativo" : "Inativo"}
         </Badge>
       </div>
 
