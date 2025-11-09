@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { useToast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useUserRole } from './useUserRole';
+import { queryKeys } from '@/lib/queryClient';
 
 export type SSDStatus = 'available' | 'in_use' | 'loaned';
 
@@ -40,85 +42,76 @@ const isDrive = (item: any): boolean => {
   return hasDrive && !isExcluded;
 };
 
+// Fetch SSDs function
+const fetchSSDs = async (): Promise<{ ssds: Equipment[], allocations: SSDAllocationsMap }> => {
+  const { data, error } = await supabase
+    .from('equipments')
+    .select('*')
+    .eq('category', 'storage')
+    .order('display_order', { ascending: true, nullsFirst: false })
+    .order('name');
+
+  if (error) throw error;
+    
+  // Filter client-side for drives only
+  const driveData = (data || []).filter(isDrive);
+  
+  // Transform data to match Equipment interface
+  const transformedData = driveData.map(item => ({
+    ...item,
+    itemType: item.item_type as 'main' | 'accessory',
+    simplifiedStatus: item.simplified_status as 'available' | 'in_project',
+    currentLoanId: item.current_loan_id,
+    currentBorrower: item.current_borrower,
+    lastLoanDate: item.last_loan_date,
+    serialNumber: item.serial_number,
+    purchaseDate: item.purchase_date,
+    lastMaintenance: item.last_maintenance,
+    patrimonyNumber: item.patrimony_number,
+    depreciatedValue: item.depreciated_value,
+    receiveDate: item.receive_date,
+    customCategory: item.custom_category,
+    parentId: item.parent_id,
+    displayOrder: item.display_order
+  })) as Equipment[];
+
+  // Fetch all allocations in batch
+  let allocationsMap: SSDAllocationsMap = {};
+  if (transformedData.length > 0) {
+    const { data: allocationsData, error: allocError } = await supabase
+      .from('ssd_allocations')
+      .select('ssd_id, allocated_gb')
+      .in('ssd_id', transformedData.map(ssd => ssd.id));
+
+    if (!allocError && allocationsData) {
+      allocationsData.forEach((alloc: SSDAllocation) => {
+        if (!allocationsMap[alloc.ssd_id]) {
+          allocationsMap[alloc.ssd_id] = 0;
+        }
+        allocationsMap[alloc.ssd_id] += alloc.allocated_gb || 0;
+      });
+    }
+  }
+
+  return { ssds: transformedData, allocations: allocationsMap };
+};
+
 export const useSSDs = () => {
-  const [ssds, setSSDs] = useState<Equipment[]>([]);
-  const [ssdAllocations, setSSDAllocations] = useState<SSDAllocationsMap>({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { logAuditEntry } = useUserRole();
 
-  const fetchSSDs = async (silent = false) => {
-    try {
-      if (!silent) {
-        setLoading(true);
-      }
-      const { data, error } = await supabase
-        .from('equipments')
-      .select('*')
-      .eq('category', 'storage')
-      .order('display_order', { ascending: true, nullsFirst: false })
-      .order('name');
+  // Query for fetching SSDs
+  const { data, isLoading: loading } = useQuery({
+    queryKey: queryKeys.ssds.all,
+    queryFn: fetchSSDs,
+  });
 
-    if (error) throw error;
-      
-      // Filter client-side for drives only
-      const driveData = (data || []).filter(isDrive);
-      
-      // Transform data to match Equipment interface
-      const transformedData = driveData.map(item => ({
-        ...item,
-        itemType: item.item_type as 'main' | 'accessory',
-        simplifiedStatus: item.simplified_status as 'available' | 'in_project',
-        currentLoanId: item.current_loan_id,
-        currentBorrower: item.current_borrower,
-        lastLoanDate: item.last_loan_date,
-        serialNumber: item.serial_number,
-        purchaseDate: item.purchase_date,
-        lastMaintenance: item.last_maintenance,
-        patrimonyNumber: item.patrimony_number,
-        depreciatedValue: item.depreciated_value,
-        receiveDate: item.receive_date,
-        customCategory: item.custom_category,
-        parentId: item.parent_id,
-        displayOrder: item.display_order
-      }));
-      
-      setSSDs(transformedData as Equipment[]);
+  const ssds = data?.ssds || [];
+  const ssdAllocations = data?.allocations || {};
 
-      // Buscar todas as alocações em batch (otimização N+1)
-      if (transformedData.length > 0) {
-        const { data: allocationsData, error: allocError } = await supabase
-          .from('ssd_allocations')
-          .select('ssd_id, allocated_gb')
-          .in('ssd_id', transformedData.map(ssd => ssd.id));
-
-        if (!allocError && allocationsData) {
-          // Agrupar alocações por SSD ID
-          const allocationsMap: SSDAllocationsMap = {};
-          allocationsData.forEach((alloc: SSDAllocation) => {
-            if (!allocationsMap[alloc.ssd_id]) {
-              allocationsMap[alloc.ssd_id] = 0;
-            }
-            allocationsMap[alloc.ssd_id] += alloc.allocated_gb || 0;
-          });
-          setSSDAllocations(allocationsMap);
-        }
-      }
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar SSDs",
-        description: "Não foi possível carregar os SSDs.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Real-time subscription
   useEffect(() => {
-    fetchSSDs();
-    
-    // Debounce timer for realtime updates
     let debounceTimer: NodeJS.Timeout;
     
     // Subscribe to realtime changes for storage equipment
@@ -136,7 +129,7 @@ export const useSSDs = () => {
           // Debounce realtime updates to avoid multiple rapid refetches
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
-            fetchSSDs(true); // Silent refetch
+            queryClient.invalidateQueries({ queryKey: queryKeys.ssds.all });
           }, 300);
         }
       )
@@ -146,11 +139,10 @@ export const useSSDs = () => {
       clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
 
   const ssdsByStatus = useMemo<SSDsByStatus>(() => {
     // Para SSDs/HDs, o status é baseado EXCLUSIVAMENTE no Kanban (display_order)
-    // NÃO consideramos currentLoanId ou simplifiedStatus, pois eles vêm de Projetos
     const result: SSDsByStatus = {
       available: [],
       in_use: [],
@@ -159,7 +151,6 @@ export const useSSDs = () => {
 
     ssds.forEach(ssd => {
       // Determinar status baseado na posição do Kanban (display_order)
-      // Valores menores = Available, médios = In Use, maiores = Loaned
       if (ssd.displayOrder !== undefined) {
         if (ssd.displayOrder < 1000) {
           result.available.push(ssd);
@@ -189,34 +180,20 @@ export const useSSDs = () => {
     return result;
   }, [ssds]);
 
-  const updateSSDStatus = async (ssdId: string, newStatus: SSDStatus) => {
-    // Store previous state for rollback
-    const previousSSDs = [...ssds];
-    
-    try {
-      // Para SSDs, o status é determinado APENAS pela posição no Kanban (display_order)
-      // Não modificamos simplified_status ou current_loan_id pois eles são gerenciados por Projetos
-      
+  // Mutation for updating SSD status
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ ssdId, newStatus }: { ssdId: string, newStatus: SSDStatus }) => {
       // Determinar o novo display_order baseado no status
       let newDisplayOrder: number;
       if (newStatus === 'available') {
-        newDisplayOrder = 0; // Início da primeira coluna
+        newDisplayOrder = 0;
       } else if (newStatus === 'in_use') {
-        newDisplayOrder = 1000; // Início da segunda coluna
-      } else { // loaned
-        newDisplayOrder = 2000; // Início da terceira coluna
+        newDisplayOrder = 1000;
+      } else {
+        newDisplayOrder = 2000;
       }
       
-      // Optimistic update - update local state immediately
       const oldSsd = ssds.find(s => s.id === ssdId);
-      
-      setSSDs(prevSSDs => 
-        prevSSDs.map(ssd => 
-          ssd.id === ssdId 
-            ? { ...ssd, displayOrder: newDisplayOrder }
-            : ssd
-        )
-      );
 
       // Update only display_order in database
       const { error } = await supabase
@@ -247,78 +224,61 @@ export const useSSDs = () => {
         }
       );
       
+      return { ssdId, newDisplayOrder };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ssds.all });
       toast({
         title: "Status atualizado",
         description: "Status do SSD atualizado com sucesso."
       });
-    } catch (error) {
-      // Rollback on error
-      setSSDs(previousSSDs);
-      
+    },
+    onError: () => {
       toast({
         title: "Erro ao atualizar status",
         description: "Não foi possível atualizar o status do SSD.",
         variant: "destructive"
       });
-    }
-  };
+    },
+  });
 
-  const updateSSDOrder = async (ssdId: string, newStatus: SSDStatus, targetIndex: number) => {
-    const ssdToUpdate = ssds.find(s => s.id === ssdId);
-    if (!ssdToUpdate) return;
+  // Mutation for updating SSD order
+  const updateOrderMutation = useMutation({
+    mutationFn: async ({ ssdId, newStatus, targetIndex }: { ssdId: string, newStatus: SSDStatus, targetIndex: number }) => {
+      const ssdToUpdate = ssds.find(s => s.id === ssdId);
+      if (!ssdToUpdate) throw new Error('SSD not found');
 
-    const previousSSDs = [...ssds];
+      // Determinar base display_order para cada coluna
+      const baseDisplayOrder = newStatus === 'available' ? 0 : newStatus === 'in_use' ? 1000 : 2000;
 
-    // Para SSDs, não modificamos simplified_status ou currentLoanId
-    // Apenas atualizamos display_order baseado na posição no Kanban
-    
-    // Determinar base display_order para cada coluna
-    const baseDisplayOrder = newStatus === 'available' ? 0 : newStatus === 'in_use' ? 1000 : 2000;
+      // Get target column SSDs
+      const targetColumnKey = newStatus;
+      const targetColumnSsds = [...ssdsByStatus[targetColumnKey]];
+      
+      // Find which column the SSD is currently in
+      const oldStatus: SSDStatus = 
+        (ssdToUpdate.displayOrder || 0) < 1000 ? 'available' :
+        (ssdToUpdate.displayOrder || 0) < 2000 ? 'in_use' : 'loaned';
+      
+      let reorderedSsds: Equipment[];
+      if (oldStatus !== newStatus) {
+        // Moving to different column - insert at target position
+        const updatedSsd = { ...ssdToUpdate };
+        reorderedSsds = [...targetColumnSsds];
+        reorderedSsds.splice(targetIndex, 0, updatedSsd);
+      } else {
+        // Reordering within same column
+        const currentIndex = targetColumnSsds.findIndex(s => s.id === ssdId);
+        reorderedSsds = arrayMove(targetColumnSsds, currentIndex, targetIndex);
+      }
 
-    // Get target column SSDs (before any changes)
-    const targetColumnKey = newStatus;
-    const targetColumnSsds = [...ssdsByStatus[targetColumnKey]];
-    
-    // Find which column the SSD is currently in
-    const oldStatus: SSDStatus = 
-      (ssdToUpdate.displayOrder || 0) < 1000 ? 'available' :
-      (ssdToUpdate.displayOrder || 0) < 2000 ? 'in_use' : 'loaned';
-    
-    let reorderedSsds: Equipment[];
-    if (oldStatus !== newStatus) {
-      // Moving to different column - insert at target position
-      const updatedSsd = { ...ssdToUpdate };
-      reorderedSsds = [...targetColumnSsds];
-      reorderedSsds.splice(targetIndex, 0, updatedSsd);
-    } else {
-      // Reordering within same column
-      const currentIndex = targetColumnSsds.findIndex(s => s.id === ssdId);
-      reorderedSsds = arrayMove(targetColumnSsds, currentIndex, targetIndex);
-    }
+      // Recalculate display_order for all SSDs in target column
+      const updates = reorderedSsds.map((ssd, index) => ({
+        id: ssd.id,
+        display_order: baseDisplayOrder + index
+      }));
 
-    // Recalculate display_order for all SSDs in target column
-    const updates = reorderedSsds.map((ssd, index) => ({
-      id: ssd.id,
-      display_order: baseDisplayOrder + index
-    }));
-
-    // Optimistic update
-    setSSDs(prev => {
-      const newSsds = [...prev];
-      updates.forEach(update => {
-        const index = newSsds.findIndex(s => s.id === update.id);
-        if (index !== -1) {
-          newSsds[index] = {
-            ...newSsds[index],
-            displayOrder: update.display_order
-          };
-        }
-      });
-      return newSsds;
-    });
-
-    try {
-      // Batch update all affected SSDs - only display_order
+      // Batch update all affected SSDs
       for (const update of updates) {
         const { error } = await supabase
           .from('equipments')
@@ -354,20 +314,30 @@ export const useSSDs = () => {
         );
       }
 
+      return updates;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ssds.all });
       toast({
         title: "Ordem atualizada",
         description: "A ordem dos SSDs foi atualizada com sucesso."
       });
-    } catch (error) {
-      // Rollback on error
-      setSSDs(previousSSDs);
-      
+    },
+    onError: () => {
       toast({
         title: "Erro ao atualizar ordem",
         description: "Não foi possível atualizar a ordem dos SSDs.",
         variant: "destructive"
       });
-    }
+    },
+  });
+
+  const updateSSDStatus = (ssdId: string, newStatus: SSDStatus) => {
+    updateStatusMutation.mutate({ ssdId, newStatus });
+  };
+
+  const updateSSDOrder = (ssdId: string, newStatus: SSDStatus, targetIndex: number) => {
+    updateOrderMutation.mutate({ ssdId, newStatus, targetIndex });
   };
 
   return {
@@ -377,6 +347,6 @@ export const useSSDs = () => {
     loading,
     updateSSDStatus,
     updateSSDOrder,
-    refetch: fetchSSDs
+    refetch: () => queryClient.invalidateQueries({ queryKey: queryKeys.ssds.all })
   };
 };

@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, ProjectFilters, ProjectStats, ProjectStep, StepChange, ProjectStatus } from '@/types/project';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -6,64 +7,52 @@ import { handleLegacyError, DatabaseError, ValidationError, wrapAsync } from '@/
 import type { Result } from '@/types/common';
 import type { ProjectDbRow, ProjectDbInsert, ProjectDbUpdate } from '@/types/database';
 import { useUserRole } from './useUserRole';
+import { queryKeys } from '@/lib/queryClient';
+
+// Fetch function
+const fetchProjects = async (): Promise<Project[]> => {
+  logger.apiCall('GET', '/projects');
+  
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logger.database('select', 'projects', false, error);
+    throw new DatabaseError(`Failed to fetch projects: ${error.message}`, 'select', 'projects');
+  }
+
+  // Transform database data to match Project interface
+  const projectData = (data as ProjectDbRow[] || []).map((item): Project => ({
+    ...item,
+    startDate: item.start_date,
+    expectedEndDate: item.expected_end_date,
+    actualEndDate: item.actual_end_date,
+    responsibleName: item.responsible_name,
+    responsibleEmail: item.responsible_email,
+    equipmentCount: item.equipment_count || 0,
+    loanIds: item.loan_ids || [],
+    stepHistory: Array.isArray(item.step_history) ? (item.step_history as unknown) as StepChange[] : [],
+  }));
+  
+  logger.database('select', 'projects', true);
+  logger.apiResponse('GET', '/projects', true, { count: projectData.length });
+  
+  return projectData;
+};
 
 export function useProjects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [filters, setFilters] = useState<ProjectFilters>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const { logAuditEntry } = useUserRole();
+  const [filters, setFilters] = useState<ProjectFilters>({});
 
-  // Fetch projects from Supabase
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  // Query for fetching projects
+  const { data: projects = [], isLoading: loading, error } = useQuery({
+    queryKey: queryKeys.projects.all,
+    queryFn: fetchProjects,
+  });
 
-  const fetchProjects = async () => {
-    logger.apiCall('GET', '/projects');
-    
-    const result = await wrapAsync(async () => {
-      setLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        logger.database('select', 'projects', false, error);
-        throw new DatabaseError(`Failed to fetch projects: ${error.message}`, 'select', 'projects');
-      }
-
-      // Transform database data to match Project interface
-      const projectData = (data as ProjectDbRow[] || []).map((item): Project => ({
-        ...item,
-        startDate: item.start_date,
-        expectedEndDate: item.expected_end_date,
-        actualEndDate: item.actual_end_date,
-        responsibleName: item.responsible_name,
-        responsibleEmail: item.responsible_email,
-        equipmentCount: item.equipment_count || 0,
-        loanIds: item.loan_ids || [],
-        stepHistory: Array.isArray(item.step_history) ? (item.step_history as unknown) as StepChange[] : [],
-      }));
-      
-      logger.database('select', 'projects', true);
-      logger.apiResponse('GET', '/projects', true, { count: projectData.length });
-      
-      setProjects(projectData);
-      return projectData;
-    });
-
-    if (result.error) {
-      setError(result.error.message);
-    }
-    
-    setLoading(false);
-  };
-
-  // Projects without client-side auto-updates to prevent inconsistencies
   const updatedProjects = useMemo(() => {
     return projects;
   }, [projects]);
@@ -111,10 +100,11 @@ export function useProjects() {
     };
   }, [updatedProjects]);
 
-  const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>, selectedEquipment?: unknown[]): Promise<Result<Project>> => {
-    logger.userAction('create_project', undefined, { projectName: newProject.name });
-    
-    const result = await wrapAsync(async () => {
+  // Mutation for adding project
+  const addProjectMutation = useMutation({
+    mutationFn: async ({ newProject, selectedEquipment }: { newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>, selectedEquipment?: unknown[] }): Promise<Project> => {
+      logger.userAction('create_project', undefined, { projectName: newProject.name });
+      
       // Validate required fields
       if (!newProject.name || !newProject.startDate || !newProject.expectedEndDate || !newProject.responsibleName) {
         logger.warn('Project creation attempted with missing required fields', {
@@ -274,8 +264,6 @@ export function useProjects() {
           withdrawalTime: data.withdrawal_time
         };
         
-        setProjects(prev => [...prev, projectData]);
-        
         // Log de auditoria
         await logAuditEntry(
           'create_project',
@@ -296,17 +284,18 @@ export function useProjects() {
       }
 
       throw new DatabaseError('Project creation returned no data', 'insert', 'projects');
-    });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loans.all });
+    },
+  });
 
-    return result.error 
-      ? { success: false, error: result.error.message }
-      : { success: true, data: result.data! };
-  };
-
-  const updateProject = async (id: string, updates: Partial<Project>): Promise<Result<void>> => {
-    logger.userAction('update_project', undefined, { projectId: id, updates });
-    
-    const result = await wrapAsync(async () => {
+  // Mutation for updating project
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Project> }): Promise<void> => {
+      logger.userAction('update_project', undefined, { projectId: id, updates });
+      
       // Transform updates to database format
       const dbUpdates: Partial<ProjectDbUpdate> = {};
       if (updates.startDate) dbUpdates.start_date = updates.startDate;
@@ -337,10 +326,6 @@ export function useProjects() {
       }
 
       const oldProject = projects.find(p => p.id === id);
-
-      setProjects(prev =>
-        prev.map(project => project.id === id ? { ...project, ...updates } : project)
-      );
       
       // Log de auditoria
       await logAuditEntry(
@@ -356,11 +341,28 @@ export function useProjects() {
       );
       
       logger.database('update', 'projects', true);
-    });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
+    },
+  });
 
-    return result.error 
-      ? { success: false, error: result.error.message }
-      : { success: true, data: undefined };
+  const addProject = async (newProject: Omit<Project, 'id' | 'step' | 'stepHistory'>, selectedEquipment?: unknown[]): Promise<Result<Project>> => {
+    try {
+      const data = await addProjectMutation.mutateAsync({ newProject, selectedEquipment });
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  };
+
+  const updateProject = async (id: string, updates: Partial<Project>): Promise<Result<void>> => {
+    try {
+      await updateProjectMutation.mutateAsync({ id, updates });
+      return { success: true, data: undefined };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
   };
 
   const completeProject = async (projectId: string, notes?: string) => {
@@ -447,12 +449,12 @@ export function useProjects() {
     setFilters,
     stats,
     loading,
-    error,
+    error: error?.message || null,
     addProject,
     updateProject,
     updateProjectStep,
     completeProject,
     archiveProject,
-    fetchProjects
+    fetchProjects: () => queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
   };
 }

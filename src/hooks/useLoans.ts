@@ -1,66 +1,60 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loan, LoanFilters, LoanStats } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from './useUserRole';
 import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, NotFoundError, AuthorizationError } from '@/lib/errors';
 import type { LoanDbRow, LoanDbInsert, LoanDbUpdate } from '@/types/database';
+import { queryKeys } from '@/lib/queryClient';
+
+// Fetch loans function
+const fetchLoans = async (isAdmin: boolean): Promise<Loan[]> => {
+  // Only admins can access loan data
+  if (!isAdmin) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('loans')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logger.database('select', 'loans', false, error);
+    throw error;
+  }
+
+  // Transform database data to match Loan interface
+  const loanData = (data as LoanDbRow[] || []).map((item): Loan => ({
+    id: item.id,
+    equipmentId: item.equipment_id,
+    equipmentName: item.equipment_name,
+    borrowerName: item.borrower_name,
+    project: item.project,
+    loanDate: item.loan_date,
+    expectedReturnDate: item.expected_return_date,
+    actualReturnDate: item.actual_return_date,
+    status: item.status,
+    notes: item.notes,
+    returnCondition: item.return_condition,
+    returnNotes: item.return_notes
+  }));
+  
+  return loanData;
+};
 
 export function useLoans() {
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [filters, setFilters] = useState<LoanFilters>({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const [filters, setFilters] = useState<LoanFilters>({});
 
-  // Fetch loans from Supabase (admin only)
-  useEffect(() => {
-    if (!roleLoading) {
-      fetchLoans();
-    }
-  }, [isAdmin, roleLoading]);
-
-  const fetchLoans = async () => {
-    try {
-      setLoading(true);
-      
-      // Only admins can access loan data
-      if (!isAdmin) {
-        setLoans([]);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('loans')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        logger.database('select', 'loans', false, error);
-        return;
-      }
-
-      // Transform database data to match Loan interface
-      const loanData = (data as LoanDbRow[] || []).map((item): Loan => ({
-        id: item.id,
-        equipmentId: item.equipment_id,
-        equipmentName: item.equipment_name,
-        borrowerName: item.borrower_name,
-        project: item.project,
-        loanDate: item.loan_date,
-        expectedReturnDate: item.expected_return_date,
-        actualReturnDate: item.actual_return_date,
-        status: item.status,
-        notes: item.notes,
-        returnCondition: item.return_condition,
-        returnNotes: item.return_notes
-      }));
-      setLoans(loanData);
-    } catch (error) {
-      logger.database('select', 'loans', false, error as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Query for fetching loans
+  const { data: loans = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.loans.all,
+    queryFn: () => fetchLoans(isAdmin),
+    enabled: !roleLoading, // Only fetch when role is loaded
+  });
 
   // Update overdue status based on current date
   const updatedLoans = useMemo(() => {
@@ -72,19 +66,19 @@ export function useLoans() {
   }, [loans]);
 
   const filteredLoans = useMemo(() => {
-      return updatedLoans.filter((loan) => {
-        if (filters.status && loan.status !== filters.status) return false;
-        if (filters.borrower) {
-          const searchTerm = filters.borrower.toLowerCase();
-          if (!loan.borrowerName?.toLowerCase().includes(searchTerm)) return false;
-        }
-        if (filters.equipment) {
-          const searchTerm = filters.equipment.toLowerCase();
-          if (!loan.equipmentName?.toLowerCase().includes(searchTerm)) return false;
-        }
-        if (filters.overdue && loan.status !== 'overdue') return false;
-        return true;
-      });
+    return updatedLoans.filter((loan) => {
+      if (filters.status && loan.status !== filters.status) return false;
+      if (filters.borrower) {
+        const searchTerm = filters.borrower.toLowerCase();
+        if (!loan.borrowerName?.toLowerCase().includes(searchTerm)) return false;
+      }
+      if (filters.equipment) {
+        const searchTerm = filters.equipment.toLowerCase();
+        if (!loan.equipmentName?.toLowerCase().includes(searchTerm)) return false;
+      }
+      if (filters.overdue && loan.status !== 'overdue') return false;
+      return true;
+    });
   }, [updatedLoans, filters]);
 
   const stats: LoanStats = useMemo(() => {
@@ -105,10 +99,11 @@ export function useLoans() {
     };
   }, [updatedLoans]);
 
-  const addLoan = async (newLoan: Omit<Loan, 'id'>) => {
-    logger.userAction('create_loan', undefined, { equipmentId: newLoan.equipmentId });
-    
-    try {
+  // Mutation for adding loan
+  const addLoanMutation = useMutation({
+    mutationFn: async (newLoan: Omit<Loan, 'id'>): Promise<Loan> => {
+      logger.userAction('create_loan', undefined, { equipmentId: newLoan.equipmentId });
+      
       // Transform to database format
       const dbLoan: LoanDbInsert = {
         equipment_id: newLoan.equipmentId,
@@ -150,22 +145,27 @@ export function useLoans() {
           returnCondition: data.return_condition as 'excellent' | 'good' | 'fair' | 'damaged' | undefined,
           returnNotes: data.return_notes
         };
-        setLoans(prev => [...prev, loanData]);
         logger.database('insert', 'loans', true);
+        return loanData;
       }
-    } catch (error) {
-      throw handleLegacyError(error, { operation: 'addLoan', equipmentId: newLoan.equipmentId });
-    }
-  };
 
-  const updateLoan = async (id: string, updates: Partial<Loan>) => {
-    if (!isAdmin) {
-      throw new AuthorizationError('Only admins can update loans', 'loans', 'update');
-    }
-    
-    logger.userAction('update_loan', undefined, { loanId: id, updates });
-    
-    try {
+      throw new DatabaseError('Loan creation returned no data', 'insert', 'loans');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.loans.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+    },
+  });
+
+  // Mutation for updating loan
+  const updateLoanMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Loan> }): Promise<void> => {
+      if (!isAdmin) {
+        throw new AuthorizationError('Only admins can update loans', 'loans', 'update');
+      }
+      
+      logger.userAction('update_loan', undefined, { loanId: id, updates });
+      
       // Transform updates to database format
       const dbUpdates: Partial<LoanDbUpdate> = {};
       
@@ -191,10 +191,25 @@ export function useLoans() {
         throw new DatabaseError(`Failed to update loan: ${error.message}`, 'update', 'loans');
       }
 
-      setLoans(prev =>
-        prev.map(loan => loan.id === id ? { ...loan, ...updates } : loan)
-      );
       logger.database('update', 'loans', true);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.loans.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+    },
+  });
+
+  const addLoan = async (newLoan: Omit<Loan, 'id'>) => {
+    try {
+      await addLoanMutation.mutateAsync(newLoan);
+    } catch (error) {
+      throw handleLegacyError(error, { operation: 'addLoan', equipmentId: newLoan.equipmentId });
+    }
+  };
+
+  const updateLoan = async (id: string, updates: Partial<Loan>) => {
+    try {
+      await updateLoanMutation.mutateAsync({ id, updates });
     } catch (error) {
       throw handleLegacyError(error, { operation: 'updateLoan', loanId: id });
     }

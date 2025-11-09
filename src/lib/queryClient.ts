@@ -29,10 +29,12 @@ export const queryKeys = {
   ssds: {
     all: ['ssds'] as const,
     allocations: ['ssds', 'allocations'] as const,
+    detail: (id: string) => ['ssds', id] as const,
   },
   loans: {
     all: ['loans'] as const,
     byEquipment: (equipmentId: string) => ['loans', 'equipment', equipmentId] as const,
+    detail: (id: string) => ['loans', id] as const,
   },
   categories: {
     all: ['categories'] as const,
