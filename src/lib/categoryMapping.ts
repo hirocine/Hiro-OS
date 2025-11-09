@@ -195,10 +195,27 @@ export const findSubcategory = (
   
   const normalized = normalizeString(subcategory);
   
-  return parentCategory.subcategories.find(sub => {
+  // PASSO 1: Tentar match exato primeiro (mais preciso)
+  const exactMatch = parentCategory.subcategories.find(sub => {
     const normalizedSubKey = normalizeString(sub.key);
     const normalizedSubName = normalizeString(sub.name);
     
+    return normalized === normalizedSubKey || normalized === normalizedSubName;
+  });
+  
+  if (exactMatch) return exactMatch;
+  
+  // PASSO 2: Se não houver match exato, tentar match parcial
+  // Ordenar por comprimento (matches maiores primeiro para evitar falsos positivos)
+  const sortedSubcategories = [...parentCategory.subcategories].sort(
+    (a, b) => normalizeString(b.name).length - normalizeString(a.name).length
+  );
+  
+  return sortedSubcategories.find(sub => {
+    const normalizedSubKey = normalizeString(sub.key);
+    const normalizedSubName = normalizeString(sub.name);
+    
+    // Match parcial: a string normalizada contém ou está contida
     return normalized.includes(normalizedSubKey) || 
            normalized.includes(normalizedSubName) ||
            normalizedSubKey.includes(normalized) ||

@@ -113,16 +113,29 @@ export const useGroupedCategories = (
               groupedCategory.subcategories[subcatIndex].equipment.push(eq);
             }
           } else {
-            // Se não encontrou subcategoria correspondente, adicionar em "Outros" ou primeira disponível
-            const othersIndex = groupedCategory.subcategories.findIndex(
-              sub => sub.key === 'outros' || sub.key === 'acessório'
+            // Subcategoria customizada não mapeada - criar dinamicamente
+            const normalizedSubKey = eq.subcategory.toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/\s+/g, '-')
+              .trim();
+            
+            let customSubcat = groupedCategory.subcategories.find(
+              sub => sub.key === normalizedSubKey
             );
             
-            if (othersIndex !== -1) {
-              groupedCategory.subcategories[othersIndex].equipment.push(eq);
-            } else if (groupedCategory.subcategories.length > 0) {
-              groupedCategory.subcategories[0].equipment.push(eq);
+            if (!customSubcat) {
+              // Criar nova subcategoria custom
+              customSubcat = {
+                key: normalizedSubKey,
+                name: eq.subcategory, // Nome original do banco
+                order: 998, // Quase no fim
+                equipment: []
+              };
+              groupedCategory.subcategories.push(customSubcat);
             }
+            
+            customSubcat.equipment.push(eq);
           }
         } else {
           // Se não tem subcategoria, adicionar na subcategoria padrão (order: 0) ou "outros"
