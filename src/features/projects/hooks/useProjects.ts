@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, ProjectFilters, ProjectStats, ProjectStep, StepChange, ProjectStatus } from '@/types/project';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +52,32 @@ export function useProjects() {
     queryKey: queryKeys.projects.all,
     queryFn: fetchProjects,
   });
+
+  // Real-time subscription para sincronização automática
+  useEffect(() => {
+    const channel = supabase
+      .channel('projects-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        },
+        (payload) => {
+          logger.debug('Project real-time update received', { 
+            module: 'projects', 
+            data: { event: payload.eventType } 
+          });
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const updatedProjects = useMemo(() => {
     return projects;

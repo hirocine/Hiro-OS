@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loan, LoanFilters, LoanStats } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +55,36 @@ export function useLoans() {
     queryFn: () => fetchLoans(isAdmin),
     enabled: !roleLoading, // Only fetch when role is loaded
   });
+
+  // Real-time subscription para sincronização automática
+  useEffect(() => {
+    if (!isAdmin) return; // Apenas admins podem subscrever
+
+    const channel = supabase
+      .channel('loans-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'loans'
+        },
+        (payload) => {
+          logger.debug('Loan real-time update received', { 
+            module: 'loans', 
+            data: { event: payload.eventType } 
+          });
+          queryClient.invalidateQueries({ queryKey: queryKeys.loans.all });
+          // Também invalidar equipment pois loans afetam o status
+          queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin, queryClient]);
 
   // Update overdue status based on current date
   const updatedLoans = useMemo(() => {

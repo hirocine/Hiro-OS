@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
@@ -89,6 +89,32 @@ export function useEquipment(): UseEquipmentReturn {
       })) as Equipment[];
     }
   });
+
+  // Real-time subscription para sincronização automática
+  useEffect(() => {
+    const channel = supabase
+      .channel('equipments-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'equipments'
+        },
+        (payload) => {
+          logger.debug('Equipment real-time update received', { 
+            module: 'equipment', 
+            data: { event: payload.eventType } 
+          });
+          queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const enrichedEquipment = useMemo((): Array<Equipment & { hasAccessories: boolean; isExpanded: boolean }> => {
     return equipment.map(item => {
