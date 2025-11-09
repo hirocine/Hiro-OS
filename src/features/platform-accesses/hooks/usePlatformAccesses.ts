@@ -25,7 +25,7 @@ export function usePlatformAccesses() {
         .from('platform_accesses')
         .select(`
           *,
-          profiles!platform_accesses_user_id_fkey (
+          profiles!platform_accesses_profile_user_id_fkey (
             display_name,
             user_id
           )
