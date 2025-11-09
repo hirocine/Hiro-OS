@@ -193,7 +193,7 @@ export function useEquipment(): UseEquipmentReturn {
       }
       
       // Apply brand filter
-      if (filters.brand && item.brand.toLowerCase() !== filters.brand.toLowerCase()) {
+      if (filters.brand && item.brand?.toLowerCase() !== filters.brand.toLowerCase()) {
         return false;
       }
       
@@ -201,10 +201,11 @@ export function useEquipment(): UseEquipmentReturn {
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         const matchesSearch = (
-          item.name.toLowerCase().includes(searchTerm) ||
-          item.brand.toLowerCase().includes(searchTerm) ||
+          item.name?.toLowerCase().includes(searchTerm) ||
+          item.brand?.toLowerCase().includes(searchTerm) ||
           item.serialNumber?.toLowerCase().includes(searchTerm) ||
-          item.description?.toLowerCase().includes(searchTerm)
+          item.description?.toLowerCase().includes(searchTerm) ||
+          item.category?.toLowerCase().includes(searchTerm)
         );
         if (!matchesSearch) {
           return false;
