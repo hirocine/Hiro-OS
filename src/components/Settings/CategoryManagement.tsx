@@ -70,8 +70,8 @@ export function CategoryManagement() {
     reorderSubcategory,
     syncOrdersWithMapping,
     refetch,
-    // novo: limpeza de duplicados
-    cleanDuplicateCategories
+    cleanDuplicateCategories,
+    resetCategoriesToDefault
   } = useCategories();
 
   const { toast } = useToast();
@@ -291,39 +291,44 @@ export function CategoryManagement() {
     setIsCleaning(true);
     setShowCleanupDialog(false);
     
-    // Fase 1: Limpar e normalizar
-    const cleanResult = await cleanDuplicateCategories();
-    if (!cleanResult.success) {
+    try {
+      // Importar função de reset de equipamentos
+      const { resetAllEquipmentCategories } = await import('@/hooks/useEquipment');
+      
+      // 1. Limpar equipamentos
+      const equipCount = await resetAllEquipmentCategories();
+      
+      // 2. Resetar categorias
+      const resetResult = await resetCategoriesToDefault();
+      
+      if (!resetResult.success) {
+        toast({
+          title: 'Erro',
+          description: resetResult.error || 'Erro ao resetar categorias.',
+          variant: 'destructive'
+        });
+        setIsCleaning(false);
+        return;
+      }
+      
+      const { inserted } = resetResult.data || { inserted: 0 };
+      
       toast({
-        title: 'Erro',
-        description: cleanResult.error || 'Erro ao limpar e normalizar categorias.',
-        variant: 'destructive'
-      });
-      setIsCleaning(false);
-      return;
-    }
-    
-    const { removed, updatedEquipments, updatedCategories } = cleanResult.data || { removed: 0, updatedEquipments: 0, updatedCategories: 0 };
-    
-    // Fase 2: Sincronizar ordens
-    const syncResult = await syncOrdersWithMapping();
-    
-    if (syncResult.success) {
-      toast({
-        title: 'Limpeza e Normalização Concluída',
-        description: `✓ ${updatedCategories} categorias normalizadas\n✓ ${removed} duplicados removidos\n✓ ${updatedEquipments} equipamentos migrados`,
+        title: '✅ Reset completo executado',
+        description: `${equipCount} equipamentos limpos e ${inserted} categorias canônicas inseridas.`,
         duration: 5000
       });
+      
       await refetch();
-    } else {
+    } catch (error: any) {
       toast({
-        title: 'Normalização concluída, erro na sincronização',
-        description: `${updatedCategories} categorias normalizadas, ${removed} duplicados removidos, mas erro ao sincronizar ordens.`,
+        title: '❌ Erro no reset',
+        description: error?.message || 'Erro desconhecido',
         variant: 'destructive'
       });
+    } finally {
+      setIsCleaning(false);
     }
-    
-    setIsCleaning(false);
   };
 
   const openEditDialog = (
@@ -465,7 +470,7 @@ export function CategoryManagement() {
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
-              Limpar & Normalizar
+              🔄 Reset Total
             </Button>
             <Button onClick={() => setShowAddCategoryDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -818,9 +823,9 @@ export function CategoryManagement() {
         open={showCleanupDialog}
         onOpenChange={setShowCleanupDialog}
         onConfirm={handleCleanDuplicates}
-        title="Limpar & Normalizar Categorias?"
-        description="Esta operação irá:\n• Normalizar nomes de categorias para o padrão (ex: 'camera' → 'Câmera')\n• Remover entradas duplicadas\n• Migrar equipamentos para as categorias corretas\n• Sincronizar ordens com o sistema\n\nEsta ação não pode ser desfeita."
-        confirmText={isCleaning ? 'Processando...' : 'Limpar & Normalizar'}
+        title="🔄 Reset Total - Começar do Zero?"
+        description="Esta operação irá:\n• Limpar as categorias de TODOS os equipamentos (category = NULL, subcategory = NULL)\n• Deletar TODAS as categorias existentes no banco\n• Inserir apenas as categorias canônicas do sistema\n\n⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\nVocê terá que recategorizar os equipamentos manualmente depois."
+        confirmText={isCleaning ? 'Processando...' : '🔄 Executar Reset Total'}
         variant="destructive"
       />
     </>

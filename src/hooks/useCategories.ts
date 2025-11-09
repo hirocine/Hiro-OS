@@ -736,6 +736,73 @@ export function useCategories() {
       return { success: false, error: 'Erro ao limpar e normalizar categorias' };
     }
   };
+
+  /**
+   * Reset completo: deleta TODAS as categorias e insere apenas as canônicas
+   */
+  const resetCategoriesToDefault = async (): Promise<Result<{ inserted: number }>> => {
+    try {
+      logger.info('Reset to default - start', { module: 'categories' });
+
+      // Fase 1: Deletar TODAS as categorias existentes
+      const { error: deleteError } = await supabase
+        .from('equipment_categories')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      if (deleteError) {
+        logger.error('Failed to delete all categories', { error: deleteError });
+        throw new DatabaseError('Erro ao deletar categorias', 'delete', 'equipment_categories');
+      }
+
+      logger.info('All categories deleted', { module: 'categories' });
+
+      // Fase 2: Inserir categorias canônicas do PARENT_CATEGORIES
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      const insertData = [];
+      
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+
+      for (const parent of PARENT_CATEGORIES) {
+        for (const sub of parent.subcategories) {
+          insertData.push({
+            category: parent.title,
+            subcategory: sub.name,
+            category_order: parent.order,
+            subcategory_order: sub.order,
+            is_custom: false,
+            created_by: userId
+          });
+        }
+      }
+      
+      const { error: insertError } = await supabase
+        .from('equipment_categories')
+        .insert(insertData);
+      
+      if (insertError) {
+        logger.error('Failed to insert canonical categories', { error: insertError });
+        throw new DatabaseError('Erro ao inserir categorias canônicas', 'insert', 'equipment_categories');
+      }
+
+      logger.info('Canonical categories inserted', { 
+        module: 'categories', 
+        data: { inserted: insertData.length } 
+      });
+
+      await fetchCategories();
+      
+      return { 
+        success: true, 
+        data: { inserted: insertData.length } 
+      };
+    } catch (e) {
+      logger.error('Reset to default - error', { error: e });
+      return { success: false, error: 'Erro ao resetar categorias' };
+    }
+  };
+
   return {
     categories,
     loading,
@@ -753,6 +820,7 @@ export function useCategories() {
     reorderSubcategory,
     syncOrdersWithMapping,
     refetch: fetchCategories,
-    cleanDuplicateCategories
+    cleanDuplicateCategories,
+    resetCategoriesToDefault
   };
 }
