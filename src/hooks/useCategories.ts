@@ -114,7 +114,8 @@ export function useCategories() {
           id: cat.id,
           name: cat.subcategory,
           isCustom: cat.isCustom,
-          usageCount: 0
+          usageCount: 0,
+          order: cat.subcategoryOrder || 999
         });
       } else {
         acc[cat.category].categoryId = cat.id;
@@ -123,6 +124,11 @@ export function useCategories() {
       
       return acc;
     }, {} as Record<string, CategoryHierarchy>);
+    
+    // Sort subcategories by order
+    Object.values(grouped).forEach(cat => {
+      cat.subcategories.sort((a, b) => a.order - b.order);
+    });
     
     return Object.values(grouped);
   };
@@ -307,6 +313,56 @@ export function useCategories() {
     return data?.length || 0;
   };
 
+  const reorderSubcategory = async (
+    subcategoryId: string,
+    categoryName: string,
+    direction: 'up' | 'down'
+  ): Promise<Result<void>> => {
+    logger.userAction('reorder_subcategory', undefined, { subcategoryId, direction });
+    
+    const result = await wrapAsync(async () => {
+      // Get all subcategories for this category
+      const categorySubs = categories
+        .filter(cat => cat.category === categoryName && cat.subcategory)
+        .sort((a, b) => (a.subcategoryOrder || 999) - (b.subcategoryOrder || 999));
+
+      const currentIndex = categorySubs.findIndex(cat => cat.id === subcategoryId);
+      if (currentIndex === -1) {
+        throw new DatabaseError('Subcategory not found', 'update', 'equipment_categories');
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      
+      if (targetIndex < 0 || targetIndex >= categorySubs.length) {
+        throw new DatabaseError('Cannot move in that direction', 'update', 'equipment_categories');
+      }
+
+      const currentSub = categorySubs[currentIndex];
+      const targetSub = categorySubs[targetIndex];
+
+      // Swap orders
+      const currentOrder = currentSub.subcategoryOrder || 999;
+      const targetOrder = targetSub.subcategoryOrder || 999;
+
+      await supabase
+        .from('equipment_categories')
+        .update({ subcategory_order: targetOrder })
+        .eq('id', currentSub.id);
+
+      await supabase
+        .from('equipment_categories')
+        .update({ subcategory_order: currentOrder })
+        .eq('id', targetSub.id);
+
+      await fetchCategories();
+      logger.database('update', 'equipment_categories', true);
+    });
+
+    return result.error 
+      ? { success: false, error: result.error.message }
+      : { success: true, data: undefined };
+  };
+
   return {
     categories,
     loading,
@@ -321,6 +377,7 @@ export function useCategories() {
     deleteSubcategory,
     deleteCategoryWithSubcategories,
     getCategoryUsageCount,
+    reorderSubcategory,
     refetch: fetchCategories
   };
 }

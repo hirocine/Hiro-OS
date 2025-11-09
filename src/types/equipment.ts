@@ -107,5 +107,6 @@ export interface CategoryHierarchy {
     name: string;
     isCustom: boolean;
     usageCount: number;
+    order: number;
   }>;
 }

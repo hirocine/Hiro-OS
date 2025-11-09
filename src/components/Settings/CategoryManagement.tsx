@@ -28,7 +28,7 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Função para retornar placeholder contextual baseado na categoria
@@ -67,6 +67,7 @@ export function CategoryManagement() {
     deleteSubcategory,
     deleteCategoryWithSubcategories,
     getCategoryUsageCount,
+    reorderSubcategory,
     refetch
   } = useCategories();
 
@@ -438,12 +439,15 @@ export function CategoryManagement() {
 
                   <CollapsibleContent>
                     <div className="ml-8 mt-2 space-y-1">
-                      {cat.subcategories.map((sub) => (
+                      {cat.subcategories.map((sub, index) => (
                         <div
                           key={sub.id}
                           className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="w-8 justify-center">
+                              {sub.order}
+                            </Badge>
                             <FileText className="h-4 w-4 text-muted-foreground" />
                             <span>{sub.name}</span>
                             {sub.usageCount > 0 && (
@@ -451,7 +455,51 @@ export function CategoryManagement() {
                             )}
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              disabled={index === 0}
+                              onClick={async () => {
+                                const result = await reorderSubcategory(sub.id, cat.categoryName, 'up');
+                                if (result.success) {
+                                  toast({
+                                    title: 'Ordem atualizada',
+                                    description: 'Subcategoria movida para cima'
+                                  });
+                                } else {
+                                  toast({
+                                    title: 'Erro',
+                                    description: result.error,
+                                    variant: 'destructive'
+                                  });
+                                }
+                              }}
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              disabled={index === cat.subcategories.length - 1}
+                              onClick={async () => {
+                                const result = await reorderSubcategory(sub.id, cat.categoryName, 'down');
+                                if (result.success) {
+                                  toast({
+                                    title: 'Ordem atualizada',
+                                    description: 'Subcategoria movida para baixo'
+                                  });
+                                } else {
+                                  toast({
+                                    title: 'Erro',
+                                    description: result.error,
+                                    variant: 'destructive'
+                                  });
+                                }
+                              }}
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
