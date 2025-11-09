@@ -134,7 +134,7 @@ export type Database = {
         Row: {
           brand: string
           capacity: number | null
-          category: string
+          category: string | null
           created_at: string
           current_borrower: string | null
           current_loan_id: string | null
@@ -166,7 +166,7 @@ export type Database = {
         Insert: {
           brand: string
           capacity?: number | null
-          category: string
+          category?: string | null
           created_at?: string
           current_borrower?: string | null
           current_loan_id?: string | null
@@ -198,7 +198,7 @@ export type Database = {
         Update: {
           brand?: string
           capacity?: number | null
-          category?: string
+          category?: string | null
           created_at?: string
           current_borrower?: string | null
           current_loan_id?: string | null
