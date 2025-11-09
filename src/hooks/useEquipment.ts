@@ -131,20 +131,20 @@ export function useEquipment(): UseEquipmentReturn {
 
       switch (sortBy) {
         case 'name':
-          valueA = a.name.toLowerCase();
-          valueB = b.name.toLowerCase();
+          valueA = a.name?.toLowerCase() || '';
+          valueB = b.name?.toLowerCase() || '';
           break;
         case 'brand':
-          valueA = a.brand.toLowerCase();
-          valueB = b.brand.toLowerCase();
+          valueA = a.brand?.toLowerCase() || '';
+          valueB = b.brand?.toLowerCase() || '';
           break;
         case 'category':
-          valueA = a.category.toLowerCase();
-          valueB = b.category.toLowerCase();
+          valueA = a.category?.toLowerCase() || '';
+          valueB = b.category?.toLowerCase() || '';
           break;
         case 'status':
-          valueA = a.status.toLowerCase();
-          valueB = b.status.toLowerCase();
+          valueA = a.status?.toLowerCase() || '';
+          valueB = b.status?.toLowerCase() || '';
           break;
         case 'value':
           valueA = a.value || 0;
@@ -258,7 +258,7 @@ export function useEquipment(): UseEquipmentReturn {
     let accessories = 0;
 
     enrichedEquipment.forEach(eq => {
-      const category = eq.category.toLowerCase();
+      const category = eq.category?.toLowerCase() || 'sem-categoria';
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
 
       // Count in use by category
@@ -313,7 +313,7 @@ export function useEquipment(): UseEquipmentReturn {
       accessories,
       totalValue: enrichedEquipment.reduce((acc, eq) => acc + (eq.value || 0), 0),
       valueByCategory: enrichedEquipment.reduce((acc, eq) => {
-        const category = eq.category.toLowerCase();
+        const category = eq.category?.toLowerCase() || 'sem-categoria';
         acc[category as EquipmentCategory] = (acc[category as EquipmentCategory] || 0) + (eq.value || 0);
         return acc;
       }, {} as Record<EquipmentCategory, number>),
