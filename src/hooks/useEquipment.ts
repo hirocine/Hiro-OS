@@ -1,13 +1,14 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Equipment, EquipmentFilters, DashboardStats, EquipmentHierarchy, SortableField, SortOrder, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
 import { supabase } from '@/integrations/supabase/client';
-import { naturalSort } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
+import { queryKeys } from '@/lib/queryClient';
 import { useUserRole } from './useUserRole';
 
-export interface UseEquipmentReturn {
+interface UseEquipmentReturn {
   equipment: Equipment[];
   enrichedEquipment: Equipment[];
   filteredEquipment: Equipment[];
@@ -18,8 +19,8 @@ export interface UseEquipmentReturn {
   loading: boolean;
   error: string | null;
   allEquipment: Equipment[];
-  setFilters: (filters: EquipmentFilters) => void;
-  addEquipment: (equipment: Omit<Equipment, 'id'>) => Promise<Result<Equipment>>;
+  setFilters: React.Dispatch<React.SetStateAction<EquipmentFilters>>;
+  addEquipment: (newEquipment: Omit<Equipment, 'id'>) => Promise<Result<Equipment>>;
   updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<Result<void>>;
   deleteEquipment: (id: string) => Promise<Result<void>>;
   convertToAccessory: (equipmentId: string, parentId: string) => Promise<Result<void>>;
@@ -28,176 +29,108 @@ export interface UseEquipmentReturn {
   getMainItems: () => Equipment[];
   handleSort: (field: SortableField, order: SortOrder) => void;
   clearSort: () => void;
-  fetchEquipment: () => Promise<void>;
+  fetchEquipment: () => void;
 }
 
 export function useEquipment(): UseEquipmentReturn {
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [filters, setFilters] = useState<EquipmentFilters>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const queryClient = useQueryClient();
   const { logAuditEntry } = useUserRole();
 
-  // Fetch equipment from Supabase
-  useEffect(() => {
-    fetchEquipment();
-  }, []);
-
-  const fetchEquipment = useCallback(async (): Promise<void> => {
-    const result = await wrapAsync(async () => {
-      setLoading(true);
-      setError(null);
+  // Fetch equipment usando React Query
+  const { data: equipment = [], isLoading, error: queryError } = useQuery({
+    queryKey: queryKeys.equipment.all,
+    queryFn: async () => {
+      logger.apiCall('GET', '/equipments');
       
-      logger.apiCall('fetchEquipment', 'GET', '/equipments');
-
       const { data, error } = await supabase
         .from('equipments')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
+        logger.database('select', 'equipments', false, error);
         throw createDatabaseError('Erro ao buscar equipamentos', error.message);
       }
 
-      // Transform database data with proper type safety and fallbacks
-      const equipmentData: Equipment[] = (data || []).map((item): Equipment => ({
-        id: String(item.id || ''),
-        name: String(item.name || 'Nome não informado'),
-        brand: String(item.brand || 'Marca não informada'),
-        category: item.category || undefined,
-        subcategory: item.subcategory || undefined,
-        customCategory: item.custom_category || undefined,
-        status: item.status === 'maintenance' ? 'maintenance' : 'available',
-        simplifiedStatus: (item.simplified_status || 'available') as 'available' | 'in_project',
+      logger.database('select', 'equipments', true);
+      logger.apiResponse('GET', '/equipments', true, { count: data?.length || 0 });
+
+      return (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        brand: item.brand,
+        category: item.category as Equipment['category'],
+        subcategory: item.subcategory,
+        customCategory: item.custom_category,
+        status: item.status as Equipment['status'],
+        simplifiedStatus: item.simplified_status as 'available' | 'in_project' | undefined,
         itemType: (item.item_type || 'main') as Equipment['itemType'],
-        parentId: item.parent_id || undefined,
-        hasAccessories: false,
-        isExpanded: false,
-        serialNumber: item.serial_number || undefined,
-        purchaseDate: item.purchase_date || undefined,
-        lastMaintenance: item.last_maintenance || undefined,
-        description: item.description || undefined,
-        image: item.image || undefined,
+        parentId: item.parent_id,
+        serialNumber: item.serial_number,
+        purchaseDate: item.purchase_date,
+        lastMaintenance: item.last_maintenance,
+        description: item.description,
+        image: item.image,
         value: item.value ? Number(item.value) : undefined,
-        patrimonyNumber: item.patrimony_number || undefined,
+        patrimonyNumber: item.patrimony_number,
         depreciatedValue: item.depreciated_value ? Number(item.depreciated_value) : undefined,
-        receiveDate: item.receive_date || undefined,
-        store: item.store || undefined,
-        invoice: item.invoice || undefined,
-        currentLoanId: item.current_loan_id || undefined,
-        currentBorrower: item.current_borrower || undefined,
-        lastLoanDate: item.last_loan_date || undefined,
+        receiveDate: item.receive_date,
+        store: item.store,
+        invoice: item.invoice,
+        currentLoanId: item.current_loan_id,
+        currentBorrower: item.current_borrower,
+        lastLoanDate: item.last_loan_date,
+        expectedReturnDate: item.expected_return_date,
         capacity: item.capacity ? Number(item.capacity) : undefined,
-      }));
-      
-      logger.apiResponse('fetchEquipment', '/equipments', true, { count: equipmentData.length });
-      return equipmentData;
-    });
-
-    if (result.error) {
-      logger.error('Falha ao buscar equipamentos', { error: result.error.message });
-      setError(result.error.message);
-    } else {
-      setEquipment(result.data || []);
+        displayOrder: item.display_order,
+        internal_user_id: item.internal_user_id
+      })) as Equipment[];
     }
-    
-    setLoading(false);
-  }, []);
+  });
 
-  const enrichedEquipment = useMemo(() => {
-    const result = equipment.map(item => {
+  const enrichedEquipment = useMemo((): Array<Equipment & { hasAccessories: boolean; isExpanded: boolean }> => {
+    return equipment.map(item => {
       const hasAccessories = equipment.some(eq => eq.parentId === item.id);
+      const isExpanded = expandedItems[item.id] ?? (hasAccessories ? true : false);
       
       return {
         ...item,
-        // Initialize isExpanded for main items with accessories
-        isExpanded: item.isExpanded ?? (hasAccessories && item.itemType === 'main'),
         hasAccessories,
-        // Keep existing loan info for display purposes only
-        currentLoanId: item.currentLoanId,
-        currentBorrower: item.currentBorrower,
-        lastLoanDate: item.lastLoanDate,
+        isExpanded
       };
     });
-    
-    return result;
-  }, [equipment]);
+  }, [equipment, expandedItems]);
 
-  const sortEquipment = <T extends Equipment>(items: T[], sortBy: SortableField, sortOrder: SortOrder): T[] => {
+  const sortEquipment = useCallback(<T extends Equipment>(items: T[], field: SortableField, order: SortOrder): T[] => {
     return [...items].sort((a, b) => {
-      let valueA: unknown;
-      let valueB: unknown;
-
-      switch (sortBy) {
-        case 'name':
-          valueA = a.name?.toLowerCase() || '';
-          valueB = b.name?.toLowerCase() || '';
-          break;
-        case 'brand':
-          valueA = a.brand?.toLowerCase() || '';
-          valueB = b.brand?.toLowerCase() || '';
-          break;
-        case 'category':
-          valueA = a.category?.toLowerCase() || '';
-          valueB = b.category?.toLowerCase() || '';
-          break;
-        case 'status':
-          valueA = a.status?.toLowerCase() || '';
-          valueB = b.status?.toLowerCase() || '';
-          break;
-        case 'value':
-          valueA = a.value || 0;
-          valueB = b.value || 0;
-          break;
-        case 'patrimonyNumber':
-          // Use natural sorting for patrimony numbers to handle numeric ordering correctly
-          const patrimonySortResult = naturalSort(
-            a.patrimonyNumber || '', 
-            b.patrimonyNumber || ''
-          );
-          return sortOrder === 'asc' ? patrimonySortResult : -patrimonySortResult;
-        case 'purchaseDate':
-          valueA = a.purchaseDate ? new Date(a.purchaseDate).getTime() : 0;
-          valueB = b.purchaseDate ? new Date(b.purchaseDate).getTime() : 0;
-          break;
-        default:
-          return 0;
+      let aVal = a[field];
+      let bVal = b[field];
+      
+      if (aVal === undefined || aVal === null) return 1;
+      if (bVal === undefined || bVal === null) return -1;
+      
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return order === 'asc' 
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
       }
-
-      if (valueA < valueB) {
-        return sortOrder === 'asc' ? -1 : 1;
+      
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return order === 'asc' ? aVal - bVal : bVal - aVal;
       }
-      if (valueA > valueB) {
-        return sortOrder === 'asc' ? 1 : -1;
-      }
+      
       return 0;
     });
-  };
+  }, []);
 
   const filteredEquipment = useMemo(() => {
-    let filtered = enrichedEquipment.filter((item) => {
-      // Apply category filter
-      if (filters.category && item.category !== filters.category) {
-        return false;
-      }
+    let filtered = enrichedEquipment.filter(item => {
+      if (filters.category && item.category !== filters.category) return false;
+      if (filters.status && item.status !== filters.status) return false;
+      if (filters.itemType && item.itemType !== filters.itemType) return false;
       
-      // Apply status filter
-      if (filters.status && item.status !== filters.status) {
-        return false;
-      }
-      
-      // Apply item type filter
-      if (filters.itemType && item.itemType !== filters.itemType) {
-        return false;
-      }
-      
-      // Apply brand filter
-      if (filters.brand && item.brand?.toLowerCase() !== filters.brand.toLowerCase()) {
-        return false;
-      }
-      
-      // Apply search filter (in addition to other filters, not exclusively)
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         const matchesSearch = (
@@ -207,44 +140,37 @@ export function useEquipment(): UseEquipmentReturn {
           item.description?.toLowerCase().includes(searchTerm) ||
           item.category?.toLowerCase().includes(searchTerm)
         );
-        if (!matchesSearch) {
-          return false;
-        }
+        if (!matchesSearch) return false;
       }
       
       return true;
     });
 
-    // Apply sorting if specified - ensure correct typing
     if (filters.sortBy && filters.sortOrder) {
       filtered = sortEquipment(filtered, filters.sortBy, filters.sortOrder);
     }
 
     return filtered;
-  }, [enrichedEquipment, filters]);
+  }, [enrichedEquipment, filters, sortEquipment]);
 
-  const equipmentHierarchy = useMemo(() => {
+  const equipmentHierarchy = useMemo((): EquipmentHierarchy[] => {
     const mainItems = filteredEquipment.filter(item => item.itemType === 'main');
     const accessories = filteredEquipment.filter(item => item.itemType === 'accessory');
     
-    const hierarchy = mainItems.map(mainItem => {
+    return mainItems.map(mainItem => {
       const itemAccessories = accessories.filter(acc => acc.parentId === mainItem.id);
       const hasAccessories = itemAccessories.length > 0;
-      
-      // Preservar isExpanded ou expandir por padrão se tem acessórios
       const isExpanded = mainItem.isExpanded ?? (hasAccessories ? true : false);
       
       return {
         item: { 
           ...mainItem, 
-          hasAccessories,
-          isExpanded
+          hasAccessories: hasAccessories,
+          isExpanded: isExpanded
         },
         accessories: itemAccessories
-      };
+      } as EquipmentHierarchy;
     });
-    
-    return hierarchy;
   }, [filteredEquipment]);
 
   const unlinkedAccessories = useMemo(() => {
@@ -261,7 +187,6 @@ export function useEquipment(): UseEquipmentReturn {
       const category = eq.category?.toLowerCase() || 'sem-categoria';
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
 
-      // Count in use by category
       if (eq.simplifiedStatus === 'in_project') {
         categoryInUse[category] = (categoryInUse[category] || 0) + 1;
       }
@@ -270,21 +195,10 @@ export function useEquipment(): UseEquipmentReturn {
       else accessories++;
     });
 
-    const inProject = enrichedEquipment.filter(
-      eq => eq.simplifiedStatus === 'in_project'
-    ).length;
-    
-    const available = enrichedEquipment.filter(
-      eq => eq.simplifiedStatus === 'available' && eq.status !== 'maintenance'
-    ).length;
-
-    const inUse = enrichedEquipment.filter(
-      eq => eq.currentLoanId !== null && eq.simplifiedStatus === 'in_project'
-    ).length;
-
-    const maintenance = enrichedEquipment.filter(
-      eq => eq.status === 'maintenance'
-    ).length;
+    const inProject = enrichedEquipment.filter(eq => eq.simplifiedStatus === 'in_project').length;
+    const available = enrichedEquipment.filter(eq => eq.simplifiedStatus === 'available' && eq.status !== 'maintenance').length;
+    const inUse = enrichedEquipment.filter(eq => eq.currentLoanId !== null && eq.simplifiedStatus === 'in_project').length;
+    const maintenance = enrichedEquipment.filter(eq => eq.status === 'maintenance').length;
 
     return {
       total: enrichedEquipment.length,
@@ -320,9 +234,9 @@ export function useEquipment(): UseEquipmentReturn {
     };
   }, [enrichedEquipment]);
 
-  const addEquipment = async (newEquipment: Omit<Equipment, 'id'>): Promise<Result<Equipment>> => {
-    const result = await wrapAsync(async () => {
-      // Convert camelCase to snake_case for database
+  // Mutations
+  const addMutation = useMutation({
+    mutationFn: async (newEquipment: Omit<Equipment, 'id'>) => {
       const dbEquipment = {
         name: newEquipment.name,
         brand: newEquipment.brand,
@@ -352,15 +266,17 @@ export function useEquipment(): UseEquipmentReturn {
         .select()
         .single();
 
-      if (error) {
-        throw createDatabaseError('Erro ao adicionar equipamento', error.message);
-      }
+      if (error) throw createDatabaseError('Erro ao adicionar equipamento', error.message);
+      if (!data) throw createDatabaseError('Nenhum dado retornado após inserção');
 
-      if (!data) {
-        throw createDatabaseError('Nenhum dado retornado após inserção');
-      }
+      await logAuditEntry('create_equipment', 'equipments', data.id, undefined, {
+        name: data.name,
+        category: data.category,
+        brand: data.brand,
+        status: data.status
+      });
 
-      const equipmentData: Equipment = {
+      return {
         id: data.id,
         name: data.name,
         brand: data.brand,
@@ -386,36 +302,15 @@ export function useEquipment(): UseEquipmentReturn {
         currentBorrower: data.current_borrower,
         lastLoanDate: data.last_loan_date,
         capacity: data.capacity ? Number(data.capacity) : undefined
-      };
-      
-      setEquipment(prev => [...prev, equipmentData]);
-      
-      // Log de auditoria
-      await logAuditEntry(
-        'create_equipment',
-        'equipments',
-        data.id,
-        undefined,
-        {
-          name: data.name,
-          category: data.category,
-          brand: data.brand,
-          status: data.status
-        }
-      );
-      
-      return equipmentData;
-    });
-
-    if (result.error) {
-      return { success: false, error: result.error.message };
+      } as Equipment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     }
-    return { success: true, data: result.data };
-  };
+  });
 
-  const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
-    const result = await wrapAsync(async () => {
-      // Map camelCase Equipment properties to snake_case database columns
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Equipment> }) => {
       const camelToSnake: Record<string, string> = {
         customCategory: 'custom_category',
         itemType: 'item_type',
@@ -433,58 +328,18 @@ export function useEquipment(): UseEquipmentReturn {
         simplifiedStatus: 'simplified_status',
         displayOrder: 'display_order',
         internal_user_id: 'internal_user_id',
-        // Fields with same name in camelCase and snake_case
-        name: 'name',
-        brand: 'brand',
-        category: 'category',
-        subcategory: 'subcategory',
-        description: 'description',
-        image: 'image',
-        value: 'value',
-        store: 'store',
-        invoice: 'invoice',
-        capacity: 'capacity',
-        status: 'status'
       };
 
-      // Virtual fields that are computed on frontend and should not be sent to database
       const virtualFields = ['hasAccessories', 'isExpanded'];
-
-      // Build cleanedUpdates by iterating ONLY over fields present in updates
       const cleanedUpdates: Record<string, any> = {};
+      
       for (const [camelKey, value] of Object.entries(updates)) {
-        // Skip virtual/computed fields
-        if (virtualFields.includes(camelKey)) {
-          logger.debug('Skipping virtual field', {
-            module: 'equipment',
-            action: 'update_equipment_filter',
-            data: { field: camelKey }
-          });
-          continue;
-        }
-        
+        if (virtualFields.includes(camelKey)) continue;
         const dbKey = camelToSnake[camelKey] ?? camelKey;
-        // Convert undefined and empty strings to null for proper database storage
         cleanedUpdates[dbKey] = (value === undefined || value === '') ? null : value;
       }
 
-      // Log de debug para verificar o que está sendo enviado
-      logger.debug('Updating equipment', {
-        module: 'equipment',
-        action: 'update_equipment',
-        data: {
-          equipmentId: id,
-          cleanedUpdates
-        }
-      });
-
-      // Abort if no fields to update
       if (Object.keys(cleanedUpdates).length === 0) {
-        logger.warn('No fields to update', { 
-          module: 'equipment', 
-          action: 'update_equipment_empty',
-          data: { equipmentId: id }
-        });
         throw createValidationError('Nenhuma alteração detectada');
       }
 
@@ -495,78 +350,23 @@ export function useEquipment(): UseEquipmentReturn {
         .select('*')
         .single();
 
-      if (error) {
-        throw createDatabaseError(`Erro ao atualizar equipamento: ${error.message}`, 'update', 'equipments');
-      }
-
-      if (!data) {
-        throw createDatabaseError('Nenhum dado retornado após atualização', 'update', 'equipments');
-      }
+      if (error) throw createDatabaseError(`Erro ao atualizar equipamento: ${error.message}`, 'update', 'equipments');
+      if (!data) throw createDatabaseError('Nenhum dado retornado após atualização', 'update', 'equipments');
 
       const oldEquipment = equipment.find(eq => eq.id === id);
-
-      // Convert database response back to Equipment model
-      const updatedEquipment: Equipment = {
-        id: data.id,
-        name: data.name,
-        brand: data.brand,
-        category: data.category,
-        subcategory: data.subcategory,
-        customCategory: data.custom_category,
-        status: data.status as EquipmentStatus,
-        simplifiedStatus: data.simplified_status as 'available' | 'in_project' | undefined,
-        itemType: data.item_type as EquipmentItemType,
-        parentId: data.parent_id,
-        serialNumber: data.serial_number,
-        purchaseDate: data.purchase_date,
-        lastMaintenance: data.last_maintenance,
-        description: data.description,
-        image: data.image,
-        value: data.value,
-        patrimonyNumber: data.patrimony_number,
-        depreciatedValue: data.depreciated_value,
-        receiveDate: data.receive_date,
-        store: data.store,
-        invoice: data.invoice,
-        currentLoanId: data.current_loan_id,
-        currentBorrower: data.current_borrower,
-        lastLoanDate: data.last_loan_date,
-        expectedReturnDate: data.expected_return_date,
-        capacity: data.capacity,
-        displayOrder: data.display_order,
-        internal_user_id: data.internal_user_id
-      };
-
-      // Update local state with confirmed database data
-      setEquipment(prev => 
-        prev.map(item => item.id === id ? updatedEquipment : item)
-      );
-
-      // Refetch to ensure complete consistency with database
-      await fetchEquipment();
-
-      // Log de auditoria
-      await logAuditEntry(
-        'update_equipment',
-        'equipments',
-        id,
-        oldEquipment ? {
-          name: oldEquipment.name,
-          category: oldEquipment.category,
-          status: oldEquipment.status
-        } : undefined,
+      await logAuditEntry('update_equipment', 'equipments', id, 
+        oldEquipment ? { name: oldEquipment.name, category: oldEquipment.category, status: oldEquipment.status } : undefined,
         updates
       );
-    });
-
-    if (result.error) {
-      return { success: false, error: result.error.message };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
     }
-    return { success: true, data: undefined };
-  };
+  });
 
-  const deleteEquipment = async (id: string): Promise<Result<void>> => {
-    const result = await wrapAsync(async () => {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const deletedEquipment = equipment.find(eq => eq.id === id);
       
       const { error } = await supabase
@@ -574,110 +374,43 @@ export function useEquipment(): UseEquipmentReturn {
         .delete()
         .eq('id', id);
 
-      if (error) {
-        throw createDatabaseError('Erro ao deletar equipamento', error.message);
-      }
+      if (error) throw createDatabaseError('Erro ao deletar equipamento', error.message);
 
-      setEquipment(prev => prev.filter(item => item.id !== id));
-      
-      // Log de auditoria
-      await logAuditEntry(
-        'delete_equipment',
-        'equipments',
-        id,
-        deletedEquipment ? {
-          name: deletedEquipment.name,
-          category: deletedEquipment.category
-        } : undefined,
+      await logAuditEntry('delete_equipment', 'equipments', id,
+        deletedEquipment ? { name: deletedEquipment.name, category: deletedEquipment.category } : undefined,
         undefined
       );
-    });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+    }
+  });
 
-    return result.data !== undefined 
-      ? { success: true, data: undefined } 
-      : { success: false, error: result.error?.message || 'Erro desconhecido' };
+  // Helper functions
+  const addEquipment = async (newEquipment: Omit<Equipment, 'id'>): Promise<Result<Equipment>> => {
+    const result = await wrapAsync(() => addMutation.mutateAsync(newEquipment));
+    return result.error ? { success: false, error: result.error.message } : { success: true, data: result.data };
+  };
+
+  const updateEquipment = async (id: string, updates: Partial<Equipment>): Promise<Result<void>> => {
+    const result = await wrapAsync(() => updateMutation.mutateAsync({ id, updates }));
+    return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
+  };
+
+  const deleteEquipment = async (id: string): Promise<Result<void>> => {
+    const result = await wrapAsync(() => deleteMutation.mutateAsync(id));
+    return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
   };
 
   const convertToAccessory = async (equipmentId: string, parentId: string): Promise<Result<void>> => {
-    const result = await wrapAsync(async () => {
-      // First, check if the equipment has accessories attached to it
-      const equipmentToConvert = equipment.find(item => item.id === equipmentId);
-      if (!equipmentToConvert) {
-        throw createValidationError('Equipment not found');
-      }
-
-      // Check if this equipment has accessories (it's a main item with accessories)
-      const hasAccessories = equipment.some(item => item.parentId === equipmentId);
-      if (hasAccessories) {
-        throw createValidationError('Cannot convert equipment that has accessories attached. Please convert or reassign accessories first.');
-      }
-
-      // Validate that the parent exists and is a main item
-      const parentItem = equipment.find(item => item.id === parentId);
-      if (!parentItem) {
-        throw createValidationError('Parent item not found');
-      }
-      if (parentItem.itemType !== 'main') {
-        throw createValidationError('Parent item must be a main equipment item');
-      }
-
-      // Update the equipment to be an accessory
-      const { error } = await supabase
-        .from('equipments')
-        .update({
-          item_type: 'accessory',
-          parent_id: parentId
-        })
-        .eq('id', equipmentId);
-
-      if (error) {
-        throw createDatabaseError('Erro ao converter para acessório', error.message);
-      }
-
-      const oldEquipment = equipment.find(eq => eq.id === equipmentId);
-
-      // Update local state
-      setEquipment(prev => 
-        prev.map(item => 
-          item.id === equipmentId 
-            ? { ...item, itemType: 'accessory', parentId: parentId }
-            : item
-        )
-      );
-
-      // Log de auditoria
-      await logAuditEntry(
-        'convert_to_accessory',
-        'equipments',
-        equipmentId,
-        oldEquipment ? {
-          item_type: oldEquipment.itemType,
-          parent_id: oldEquipment.parentId
-        } : undefined,
-        {
-          item_type: 'accessory',
-          parent_id: parentId
-        }
-      );
-    });
-
-    return result.data !== undefined 
-      ? { success: true, data: undefined } 
-      : { success: false, error: result.error?.message || 'Erro desconhecido' };
+    return updateEquipment(equipmentId, { itemType: 'accessory', parentId });
   };
 
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]): Promise<Result<Equipment[]>> => {
     const result = await wrapAsync(async () => {
-      logger.info(`Starting import process with ${importedEquipment.length} items`);
-      
-      // Separate main items and accessories for proper processing
       const mainItems = importedEquipment.filter(item => item.itemType === 'main');
-      
-      logger.info(`Processing ${mainItems.length} main items`);
-      
       const allInsertedItems: Equipment[] = [];
-      
-      // Step 1: Insert main items first
+
       if (mainItems.length > 0) {
         const dbMainItems = mainItems.map(item => ({
           name: item.name,
@@ -685,7 +418,7 @@ export function useEquipment(): UseEquipmentReturn {
           category: item.category,
           status: item.status,
           item_type: item.itemType,
-          parent_id: null, // Main items have no parent
+          parent_id: null,
           serial_number: item.serialNumber || null,
           purchase_date: item.purchaseDate || null,
           last_maintenance: item.lastMaintenance || null,
@@ -704,12 +437,10 @@ export function useEquipment(): UseEquipmentReturn {
           .insert(dbMainItems)
           .select();
 
-        if (mainError) {
-          throw createDatabaseError(`Erro ao inserir itens principais: ${mainError.message}`);
-        }
+        if (mainError) throw createDatabaseError(`Erro ao inserir itens principais: ${mainError.message}`);
 
         if (mainData) {
-          const transformedMainItems = mainData.map(item => ({
+          allInsertedItems.push(...mainData.map(item => ({
             id: item.id,
             name: item.name,
             brand: item.brand,
@@ -729,53 +460,29 @@ export function useEquipment(): UseEquipmentReturn {
             receiveDate: item.receive_date,
             store: item.store,
             invoice: item.invoice
-          })) as Equipment[];
-          
-          allInsertedItems.push(...transformedMainItems);
+          })) as Equipment[]);
         }
       }
-      
-      // Update local state with all inserted items
-      setEquipment(prev => [...prev, ...allInsertedItems]);
-      
-      logger.info(`Import completed successfully. Imported ${allInsertedItems.length} items`);
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
       return allInsertedItems;
     });
 
-    return result.data 
-      ? { success: true, data: result.data } 
-      : { success: false, error: result.error?.message || 'Erro na importação' };
+    return result.data ? { success: true, data: result.data } : { success: false, error: result.error?.message || 'Erro na importação' };
   };
 
   const toggleEquipmentExpansion = (id: string) => {
-    setEquipment(prev => 
-      prev.map(item => {
-        if (item.id === id) {
-          return { ...item, isExpanded: !item.isExpanded };
-        }
-        return item;
-      })
-    );
+    setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const getMainItems = () => {
-    return enrichedEquipment.filter(item => item.itemType === 'main');
-  };
+  const getMainItems = () => enrichedEquipment.filter(item => item.itemType === 'main');
 
   const handleSort = (field: SortableField, order: SortOrder) => {
-    setFilters(prev => ({
-      ...prev,
-      sortBy: field,
-      sortOrder: order
-    }));
+    setFilters(prev => ({ ...prev, sortBy: field, sortOrder: order }));
   };
 
   const clearSort = () => {
-    setFilters(prev => ({
-      ...prev,
-      sortBy: undefined,
-      sortOrder: undefined
-    }));
+    setFilters(prev => ({ ...prev, sortBy: undefined, sortOrder: undefined }));
   };
 
   return {
@@ -786,8 +493,8 @@ export function useEquipment(): UseEquipmentReturn {
     unlinkedAccessories,
     stats,
     filters,
-    loading,
-    error,
+    loading: isLoading,
+    error: queryError?.message || null,
     allEquipment: enrichedEquipment,
     setFilters,
     addEquipment,
@@ -799,6 +506,6 @@ export function useEquipment(): UseEquipmentReturn {
     getMainItems,
     handleSort,
     clearSort,
-    fetchEquipment
+    fetchEquipment: () => queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all })
   };
 }
