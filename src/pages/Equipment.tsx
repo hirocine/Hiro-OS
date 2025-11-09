@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download, Clock } from 'lucide-react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,9 @@ import { logger } from '@/lib/logger';
 
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
+import { BulkActionsBar } from '@/components/Equipment/BulkActionsBar';
+import { exportEquipmentToCSV } from '@/lib/csvExporter';
 
 type ViewMode = 'table' | 'grid' | 'cards';
 
@@ -85,6 +89,18 @@ export default function EquipmentPage() {
   const isMobile = useIsMobile();
   const isTablet = false; // Simplified for now
   const { classes } = usePageLayout('table');
+
+  // Bulk selection
+  const {
+    selectedItems,
+    selectedCount,
+    isAllSelected,
+    isPartialSelected,
+    toggleItem,
+    toggleAll,
+    clearSelection,
+    getSelectedItems,
+  } = useBulkSelection(filteredEquipment);
 
   // Update timestamp when data is loaded
   useEffect(() => {
@@ -276,6 +292,42 @@ export default function EquipmentPage() {
     setCurrentPage(1); // Reset to first page
   };
 
+  // Bulk action handlers
+  const handleBulkExport = useCallback((items: Equipment[]) => {
+    const filename = `equipamentos-selecionados-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    exportEquipmentToCSV(items, filename);
+    
+    enhancedToast.success({
+      title: 'CSV exportado!',
+      description: `${items.length} equipamento(s) foram exportados com sucesso.`
+    });
+  }, []);
+
+  const handleBulkDelete = useCallback(async (items: Equipment[]) => {
+    // Deleta múltiplos equipamentos
+    for (const item of items) {
+      await deleteEquipment(item.id);
+    }
+  }, [deleteEquipment]);
+
+  const handleBulkEdit = useCallback((items: Equipment[]) => {
+    // Placeholder para futura implementação de edição em massa
+    enhancedToast.info({
+      title: 'Em desenvolvimento',
+      description: 'A edição em massa estará disponível em breve.'
+    });
+  }, []);
+
+  const handleExportAll = useCallback(() => {
+    const filename = `todos-equipamentos-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    exportEquipmentToCSV(filteredEquipment, filename);
+    
+    enhancedToast.success({
+      title: 'CSV exportado!',
+      description: `${filteredEquipment.length} equipamento(s) foram exportados com sucesso.`
+    });
+  }, [filteredEquipment]);
+
 
   const loadingSkeletons = useMemo(() => {
     return [...Array(6)].map((_, i) => (
@@ -329,6 +381,8 @@ export default function EquipmentPage() {
                 onDelete={handleDelete}
                 onImageUpload={handleImageUpload}
                 onConvertToAccessory={handleConvertToAccessory}
+                selected={selectedItems.has(equipment.id)}
+                onToggleSelection={toggleItem}
               />
             ))}
           </div>
@@ -345,6 +399,8 @@ export default function EquipmentPage() {
                 onDelete={handleDelete}
                 onImageUpload={handleImageUpload}
                 onConvertToAccessory={handleConvertToAccessory}
+                selected={selectedItems.has(equipment.id)}
+                onToggleSelection={toggleItem}
               />
             ))}
           </div>
@@ -374,6 +430,9 @@ export default function EquipmentPage() {
                   onSort={handleSort}
                   sortBy={filters.sortBy}
                   sortOrder={filters.sortOrder}
+                  isAllSelected={isAllSelected}
+                  isPartialSelected={isPartialSelected}
+                  onToggleAll={toggleAll}
                 />
 
                 {/* Body */}
@@ -388,6 +447,8 @@ export default function EquipmentPage() {
                       onToggleExpansion={toggleEquipmentExpansion}
                       onImageUpload={handleImageUploadById}
                       onConvertToAccessory={handleConvertToAccessory}
+                      selected={selectedItems.has(item.id)}
+                      onToggleSelection={toggleItem}
                     />
                   ))}
                 </div>
@@ -418,6 +479,14 @@ export default function EquipmentPage() {
         }
         actions={
           <div className="flex flex-col sm:flex-row gap-2">
+            <ResponsiveButton
+              onClick={handleExportAll}
+              variant="outline"
+              icon={Download}
+              mobileText="Exportar"
+              desktopText="Exportar CSV"
+              disabled={filteredEquipment.length === 0}
+            />
             <AdminOnly>
               <ResponsiveButton
                 onClick={() => setIsImportDialogOpen(true)}
@@ -624,6 +693,16 @@ export default function EquipmentPage() {
             });
           }
         }}
+      />
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedItems={getSelectedItems()}
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
+        onBulkDelete={handleBulkDelete}
+        onBulkEdit={handleBulkEdit}
+        onBulkExport={handleBulkExport}
       />
     </ResponsiveContainer>
   );

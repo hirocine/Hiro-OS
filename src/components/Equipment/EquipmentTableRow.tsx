@@ -2,6 +2,7 @@ import React, { useRef, memo, useCallback } from 'react';
 import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight, Upload } from 'lucide-react';
 import { categoryLabels } from '@/data/mockData';
@@ -18,6 +19,8 @@ interface EquipmentTableRowProps {
   onConvertToAccessory?: (equipment: Equipment) => void;
   level?: number;
   className?: string;
+  selected?: boolean;
+  onToggleSelection?: (id: string) => void;
 }
 
 export const EquipmentTableRow = memo(function EquipmentTableRow({
@@ -29,7 +32,9 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   onImageUpload,
   onConvertToAccessory,
   level = 0,
-  className = ''
+  className = '',
+  selected = false,
+  onToggleSelection,
 }: EquipmentTableRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -60,8 +65,20 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   return (
     <>
       <div 
-        className={`grid grid-cols-[40px_60px_minmax(250px,1fr)_minmax(140px,200px)_minmax(120px,160px)_100px_120px_120px] gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 hover:bg-muted/30 border-border ${level > 0 ? 'ml-6 border-l-2 border-primary/20 bg-muted/10' : ''} ${className}`}
+        className={`grid grid-cols-[40px_40px_60px_minmax(250px,1fr)_minmax(140px,200px)_minmax(120px,160px)_100px_120px_120px] gap-2 lg:gap-3 px-2 lg:px-4 py-3 border-b transition-all duration-200 hover:bg-muted/30 border-border ${
+          selected ? 'bg-primary/5 border-primary/20' : ''
+        } ${level > 0 ? 'ml-6 border-l-2 border-primary/20 bg-muted/10' : ''} ${className}`}
       >
+
+        {/* Checkbox */}
+        <div className="flex items-center justify-center">
+          {onToggleSelection && level === 0 && (
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelection(equipment.id)}
+            />
+          )}
+        </div>
 
         {/* Expansão / Tipo */}
         <div className="flex items-center justify-center">

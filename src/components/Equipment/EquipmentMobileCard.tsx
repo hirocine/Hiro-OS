@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Camera, Edit, Trash2, MoreVertical, Package, Link, Upload } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
 import {
@@ -19,6 +20,8 @@ interface EquipmentMobileCardProps {
   onImageUpload: (equipment: Equipment, file: File) => void;
   onConvertToAccessory?: (equipment: Equipment) => void;
   accessoryCount?: number;
+  selected?: boolean;
+  onToggleSelection?: (id: string) => void;
 }
 
 export const EquipmentMobileCard = memo(function EquipmentMobileCard({
@@ -28,6 +31,8 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   onImageUpload,
   onConvertToAccessory,
   accessoryCount = 0,
+  selected = false,
+  onToggleSelection,
 }: EquipmentMobileCardProps) {
   const {
     getStatusVariant,
@@ -55,11 +60,20 @@ export const EquipmentMobileCard = memo(function EquipmentMobileCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in mobile-safe min-w-0">
+    <Card className={`overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in mobile-safe min-w-0 ${
+      selected ? 'ring-2 ring-primary border-primary' : ''
+    }`}>
       <CardContent className="p-4 min-w-0">
         {/* Header */}
         <div className="flex items-start justify-between mb-3 min-w-0 gap-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
+            {onToggleSelection && (
+              <Checkbox
+                checked={selected}
+                onCheckedChange={() => onToggleSelection(equipment.id)}
+                className="mt-1 flex-shrink-0"
+              />
+            )}
             <button
               onClick={handleImageClick}
               disabled={uploading}
