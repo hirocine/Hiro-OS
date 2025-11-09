@@ -25,6 +25,7 @@ export const PARENT_CATEGORIES: ParentCategoryConfig[] = [
     icon: Camera,
     order: 1,
     subcategories: [
+      { key: 'câmera', name: 'Câmera', order: 0 },
       { key: 'lente', name: 'Lente', order: 1 },
       { key: 'cage', name: 'Cage', order: 2 },
       { key: 'filtro', name: 'Filtro', order: 3 },

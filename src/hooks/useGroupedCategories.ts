@@ -88,8 +88,17 @@ export const useGroupedCategories = (equipment: Equipment[]): GroupedCategory[] 
             }
           }
         } else {
-          // Se não tem subcategoria, adicionar na primeira subcategoria disponível
-          if (groupedCategory.subcategories.length > 0) {
+          // Se não tem subcategoria, adicionar na subcategoria padrão (order: 0) ou "outros"
+          const defaultSubcat = groupedCategory.subcategories.find(sub => sub.order === 0);
+          const othersSubcat = groupedCategory.subcategories.find(
+            sub => sub.key === 'outros' || sub.key === 'acessório'
+          );
+          
+          if (defaultSubcat) {
+            defaultSubcat.equipment.push(eq);
+          } else if (othersSubcat) {
+            othersSubcat.equipment.push(eq);
+          } else if (groupedCategory.subcategories.length > 0) {
             groupedCategory.subcategories[0].equipment.push(eq);
           }
         }
