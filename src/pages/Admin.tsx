@@ -63,7 +63,6 @@ export default function Admin() {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [notificationSettings, setNotificationSettings] = useState({
     maintenanceAlerts: true,
-    emailReports: true,
     equipmentUsageAlerts: false,
   });
 
@@ -585,19 +584,6 @@ export default function Admin() {
                 <Switch 
                   checked={notificationSettings.maintenanceAlerts}
                   onCheckedChange={(checked) => handleNotificationSettingChange('maintenanceAlerts', checked)}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Relatórios por Email</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Envio automático de relatórios semanais por email
-                  </p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.emailReports}
-                  onCheckedChange={(checked) => handleNotificationSettingChange('emailReports', checked)}
                 />
               </div>
               

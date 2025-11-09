@@ -12,7 +12,6 @@ import ProjectDetails from "./pages/ProjectDetails";
 import ProjectSeparation from "./pages/ProjectSeparation";
 import ProjectVerification from "./pages/ProjectVerification";
 import ProjectWithdrawal from "./pages/ProjectWithdrawal";
-import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -45,7 +44,6 @@ const App = () => (
             <Route path="projects/:id/separation" element={<ProjectSeparation />} />
             <Route path="projects/:id/verification" element={<ProjectVerification />} />
             <Route path="projects/:id/withdrawal" element={<ProjectWithdrawal />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
             
             <Route path="admin" element={<Admin />} />

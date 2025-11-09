@@ -32,11 +32,6 @@ const navigation: NavigationItem[] = [
     href: '/projects',
     icon: FolderOpen,
   },
-  {
-    name: 'Relatórios',
-    href: '/reports',
-    icon: BarChart3,
-  },
 ];
 
 const adminNavigation: NavigationItem[] = [
