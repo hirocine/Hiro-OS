@@ -20,6 +20,37 @@ const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'audio', 'lighting', 'a
 const VALID_STATUSES: EquipmentStatus[] = ['available', 'maintenance'];
 const VALID_ITEM_TYPES: EquipmentItemType[] = ['main', 'accessory'];
 
+/**
+ * Extrai o prefixo do número de patrimônio antes do último ponto
+ * Exemplo: "00007.1" → "00007"
+ */
+function extractPatrimonyPrefix(patrimonyNumber: string): string | null {
+  if (!patrimonyNumber || !patrimonyNumber.includes('.')) {
+    return null;
+  }
+  const lastDotIndex = patrimonyNumber.lastIndexOf('.');
+  return patrimonyNumber.substring(0, lastDotIndex);
+}
+
+/**
+ * Verifica se um número de patrimônio segue o padrão de item principal (termina em .0)
+ */
+function isMainItemPatrimony(patrimonyNumber: string): boolean {
+  return patrimonyNumber?.endsWith('.0') || false;
+}
+
+/**
+ * Verifica se um número de patrimônio segue o padrão de acessório (termina em .X onde X != 0)
+ */
+function isAccessoryPatrimony(patrimonyNumber: string): boolean {
+  if (!patrimonyNumber || !patrimonyNumber.includes('.')) {
+    return false;
+  }
+  const parts = patrimonyNumber.split('.');
+  const suffix = parts[parts.length - 1];
+  return suffix !== '0';
+}
+
 const COLUMN_MAPPING = {
   'patrimônio': 'patrimonyNumber',
   'patrimonio': 'patrimonyNumber',
@@ -186,11 +217,34 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     });
   }
 
-  // Parent ID validation for accessories - use patrimony number or name as key
+  // Parent ID validation for accessories - AUTO-DETECT by patrimony pattern
   let parentId: string | undefined;
-  if (itemType === 'accessory' && row.parentId?.trim()) {
-    // Store the parent reference as provided in the CSV for later mapping
-    parentId = row.parentId.trim();
+  
+  if (itemType === 'accessory') {
+    // ESTRATÉGIA 1: Detecção automática pelo padrão de numeração
+    if (row.patrimonyNumber?.trim() && mainItemsLookup) {
+      const patrimonyNumber = row.patrimonyNumber.trim();
+      
+      if (isAccessoryPatrimony(patrimonyNumber)) {
+        const prefix = extractPatrimonyPrefix(patrimonyNumber);
+        
+        if (prefix) {
+          // Procurar pelo item principal com padrão PREFIX.0
+          const mainItemPatrimony = `${prefix}.0`;
+          
+          if (mainItemsLookup.has(mainItemPatrimony)) {
+            parentId = mainItemsLookup.get(mainItemPatrimony);
+            console.log(`[AUTO-LINK] Acessório ${patrimonyNumber} vinculado a ${mainItemPatrimony}`);
+          }
+        }
+      }
+    }
+    
+    // ESTRATÉGIA 2: Fallback para coluna "Item Principal" (comportamento atual)
+    if (!parentId && row.parentId?.trim()) {
+      parentId = row.parentId.trim();
+      console.log(`[MANUAL-LINK] Acessório usando coluna "Item Principal": ${parentId}`);
+    }
   }
 
   // Date validation with improved format checking
@@ -339,6 +393,14 @@ export function parseCSV(file: File): Promise<ImportResult> {
               // Build lookup by patrimony number and name
               if (equipment.patrimonyNumber) {
                 mainItemsLookup.set(equipment.patrimonyNumber, equipmentId);
+                
+                // Se o patrimônio segue o padrão .0, indexar também por prefixo
+                if (isMainItemPatrimony(equipment.patrimonyNumber)) {
+                  const prefix = extractPatrimonyPrefix(equipment.patrimonyNumber);
+                  if (prefix) {
+                    mainItemsLookup.set(prefix, equipmentId);
+                  }
+                }
               }
               if (equipment.name) {
                 mainItemsLookup.set(equipment.name, equipmentId);
@@ -451,6 +513,14 @@ export function parseExcel(file: File): Promise<ImportResult> {
               // Build lookup
               if (equipmentItem.patrimonyNumber) {
                 mainItemsLookup.set(equipmentItem.patrimonyNumber, equipmentId);
+                
+                // Se o patrimônio segue o padrão .0, indexar também por prefixo
+                if (isMainItemPatrimony(equipmentItem.patrimonyNumber)) {
+                  const prefix = extractPatrimonyPrefix(equipmentItem.patrimonyNumber);
+                  if (prefix) {
+                    mainItemsLookup.set(prefix, equipmentId);
+                  }
+                }
               }
               if (equipmentItem.name) {
                 mainItemsLookup.set(equipmentItem.name, equipmentId);
@@ -539,66 +609,87 @@ export function generateTemplate(): string {
 
   const exampleRows = [
     [
-      'PAT001',
-      'Kit Câmera Sony FX6',
-      'Sony',
-      'camera',
-      'Cinema',
+      '00007.0',
+      'Aputure MC Light',
+      'Aputure',
+      'lighting',
+      'Portátil',
       'Principal',
       '',
       'SN001',
-      '25000.00',
+      '1200.00',
       'disponível',
       '2024-01-15',
-      '2024-06-01',
-      'Kit completo de câmera profissional',
-      '24000.00',
+      '',
+      'Luz LED RGB portátil',
+      '1100.00',
       '2024-01-10',
       '',
-      'Camera Store',
-      'NF-001234',
-      'https://example.com/images/fx6.jpg'
+      'Loja A',
+      'NF12345',
+      'https://exemplo.com/imagem1.jpg'
     ],
     [
-      'PAT002',
-      'Lente Sony 24-70mm',
-      'Sony',
+      '00007.1',
+      'Silicone Diffuser',
+      'Aputure',
       'accessories',
-      'Lentes',
+      'Difusores',
       'Acessório',
-      'PAT001',
+      '',
       'SN002',
-      '5000.00',
+      '50.00',
       'disponível',
       '2024-01-15',
       '',
-      'Lente zoom padrão',
-      '4800.00',
+      'Difusor de silicone - Auto-vinculado pelo padrão 00007.X',
+      '45.00',
       '2024-01-10',
       '',
-      'Camera Store',
-      'NF-001234',
-      ''
+      'Loja A',
+      'NF12345',
+      'https://exemplo.com/imagem2.jpg'
     ],
     [
-      'PAT003',
-      'SSD Samsung 2TB',
-      'Samsung',
-      'SSD/HD',
-      'SSD',
+      '00010.0',
+      'DJI Mavic 3 Cine',
+      'DJI',
+      'drone',
+      'Cinema',
       'Principal',
       '',
       'SN003',
+      '15000.00',
+      'disponível',
+      '2024-02-01',
+      '',
+      'Drone profissional com câmera 4K',
+      '14000.00',
+      '2024-01-28',
+      '2000',
+      'Loja B',
+      'NF67890',
+      'https://exemplo.com/imagem3.jpg'
+    ],
+    [
+      '00010.1',
+      'Bateria Extra DJI',
+      'DJI',
+      'accessories',
+      'Baterias',
+      'Acessório',
+      '',
+      'SN004',
       '800.00',
       'disponível',
-      '2024-01-15',
+      '2024-02-01',
       '',
-      'SSD NVMe de alta velocidade',
+      'Bateria extra - Auto-vinculado pelo padrão 00010.X',
       '750.00',
-      '2024-01-10',
-      '2000',
-      'Tech Store',
-      'NF-001235',
+      '2024-01-28',
+      '',
+      'Loja B',
+      'NF67890',
       ''
     ]
   ];
