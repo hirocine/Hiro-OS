@@ -1,13 +1,9 @@
 import { useState } from 'react';
-import { Upload, Search } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { PLATFORM_ICONS } from '../types';
-import { cn } from '@/lib/utils';
 
 interface PlatformIconPickerProps {
   selectedIconUrl?: string;
@@ -15,12 +11,7 @@ interface PlatformIconPickerProps {
 }
 
 export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIconPickerProps) {
-  const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
-
-  const filteredIcons = Object.entries(PLATFORM_ICONS).filter(([name]) =>
-    name.toLowerCase().includes(search.toLowerCase())
-  );
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,48 +62,9 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar ícones..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
-
-      {/* Pre-defined Icons Grid */}
-      <div>
-        <Label className="text-sm text-muted-foreground mb-2 block">Ícones Predefinidos</Label>
-        <ScrollArea className="h-[200px] border rounded-lg p-4">
-          <div className="grid grid-cols-6 gap-2">
-            {filteredIcons.map(([name, url]) => (
-              <button
-                key={name}
-                onClick={() => onSelectIcon(url)}
-                className={cn(
-                  "p-3 rounded-lg border-2 transition-all hover:border-primary hover:bg-muted/50",
-                  selectedIconUrl === url
-                    ? "border-primary bg-primary/10"
-                    : "border-transparent bg-muted/20"
-                )}
-                title={name}
-              >
-                <img
-                  src={url}
-                  alt={name}
-                  className="w-full h-full object-contain"
-                />
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
-
       {/* Custom Upload */}
       <div>
-        <Label className="text-sm text-muted-foreground mb-2 block">Ou faça upload customizado</Label>
+        <Label className="text-sm text-muted-foreground mb-2 block">Carregar Ícone da Plataforma</Label>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
