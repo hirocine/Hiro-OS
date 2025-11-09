@@ -51,7 +51,7 @@ export function SelectableEquipmentCard({
   return (
     <Card className={cn(
       "relative transition-all duration-200 hover:shadow-md",
-      isSelected && "ring-2 ring-primary shadow-lg",
+      isSelected && "ring-2 ring-green-500 shadow-lg bg-green-50/50 dark:bg-green-950/20",
       isLoading && "opacity-50 pointer-events-none"
     )}>
       <div className="absolute top-4 left-4 z-10">

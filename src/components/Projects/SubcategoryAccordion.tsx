@@ -176,7 +176,7 @@ export function SubcategoryAccordion({
                             className={cn(
                               'flex items-center justify-between p-3 rounded-md border transition-all',
                               isSelected
-                                ? 'bg-primary/5 border-primary/30 shadow-sm'
+                                ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600 shadow-sm'
                                 : 'bg-card border-border hover:bg-muted/50'
                             )}
                           >
