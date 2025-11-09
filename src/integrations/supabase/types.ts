@@ -1079,12 +1079,14 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       platform_category:
-        | "development"
-        | "infrastructure"
-        | "design"
-        | "communication"
-        | "analytics"
-        | "storage"
+        | "cloud"
+        | "ai"
+        | "references"
+        | "social_media"
+        | "site"
+        | "software"
+        | "music"
+        | "stock"
         | "other"
     }
     CompositeTypes: {
@@ -1215,12 +1217,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       platform_category: [
-        "development",
-        "infrastructure",
-        "design",
-        "communication",
-        "analytics",
-        "storage",
+        "cloud",
+        "ai",
+        "references",
+        "social_media",
+        "site",
+        "software",
+        "music",
+        "stock",
         "other",
       ],
     },
