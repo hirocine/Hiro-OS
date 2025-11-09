@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { EquipmentCategoryDbRow } from '@/types/database';
+import { normalizeString } from '@/lib/categoryMapping';
 
 export function useCategories() {
   const [categories, setCategories] = useState<EquipmentCategoryData[]>([]);
@@ -374,18 +375,22 @@ export function useCategories() {
       // Para cada categoria no mapping
       for (const parentCat of PARENT_CATEGORIES) {
         for (const subcat of parentCat.subcategories) {
-          // Encontrar entrada no banco
-          const dbEntry = categories.find(
-            cat => cat.category === parentCat.key && cat.subcategory === subcat.key
+          // Encontrar TODAS as entradas no banco que fazem match normalizado
+          const dbEntries = categories.filter(
+            cat => normalizeString(cat.category) === normalizeString(parentCat.key) && 
+                   normalizeString(cat.subcategory || '') === normalizeString(subcat.key)
           );
           
-          if (dbEntry) {
-            // Se a ordem no banco for 999 ou diferente do mapping, atualizar
-            if (dbEntry.subcategoryOrder === 999 || dbEntry.subcategoryOrder !== subcat.order) {
-              updates.push({
-                id: dbEntry.id,
-                subcategory_order: subcat.order
-              });
+          if (dbEntries.length > 0) {
+            // Atualizar TODAS as entradas que fazem match
+            for (const dbEntry of dbEntries) {
+              // Se a ordem no banco for 999 ou diferente do mapping, atualizar
+              if (dbEntry.subcategoryOrder === 999 || dbEntry.subcategoryOrder !== subcat.order) {
+                updates.push({
+                  id: dbEntry.id,
+                  subcategory_order: subcat.order
+                });
+              }
             }
           } else {
             // Se não existir no banco, criar
