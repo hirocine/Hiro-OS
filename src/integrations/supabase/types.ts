@@ -95,6 +95,13 @@ export type Database = {
             referencedRelation: "loans"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_borrower_contacts_loan"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
         ]
       }
       equipment_categories: {
@@ -235,6 +242,13 @@ export type Database = {
             referencedRelation: "equipments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_equipments_parent"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       loans: {
@@ -287,6 +301,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_loans_equipment"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loans_equipment_id_fkey"
             columns: ["equipment_id"]
@@ -635,6 +656,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_ssd_allocations_ssd"
+            columns: ["ssd_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ssd_allocations_ssd_id_fkey"
             columns: ["ssd_id"]
             isOneToOne: false
@@ -676,6 +704,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_ssd_external_loans_ssd"
+            columns: ["ssd_id"]
+            isOneToOne: false
+            referencedRelation: "equipments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ssd_external_loans_ssd_id_fkey"
             columns: ["ssd_id"]
             isOneToOne: false
@@ -710,6 +745,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_user_notification_status_notification"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_notification_status_notification_id_fkey"
             columns: ["notification_id"]

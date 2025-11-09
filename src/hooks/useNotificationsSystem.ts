@@ -16,13 +16,13 @@ export function useNotificationsSystem() {
       setLoading(true);
       setError(null);
 
-      // Query mais simples usando join
+      // Query especificando o FK notification_id para evitar ambiguidade
       const { data, error } = await supabase
         .from('user_notification_status')
         .select(`
           is_read,
           read_at,
-          notifications (
+          notifications!notification_id (
             id,
             title,
             description,
