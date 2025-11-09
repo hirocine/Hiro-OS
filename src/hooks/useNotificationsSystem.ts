@@ -16,13 +16,13 @@ export function useNotificationsSystem() {
       setLoading(true);
       setError(null);
 
-      // Query especificando o FK notification_id para evitar ambiguidade
+      // Query usando FK explícita para evitar ambiguidade
       const { data, error } = await supabase
         .from('user_notification_status')
         .select(`
           is_read,
           read_at,
-          notifications!notification_id (
+          notification:notifications!user_notification_status_notification_id_fkey (
             id,
             title,
             description,
@@ -41,19 +41,19 @@ export function useNotificationsSystem() {
       if (error) throw error;
 
       const processedNotifications: Notification[] = (data || []).map(item => ({
-        id: item.notifications?.id || '',
-        title: item.notifications?.title || '',
-        description: item.notifications?.description,
-        type: (item.notifications?.type || 'system') as Notification['type'],
-        relatedEntity: (item.notifications?.related_entity || 'system') as Notification['relatedEntity'],
-        entityId: item.notifications?.entity_id,
-        responsibleUser: item.notifications?.responsible_user_name ? {
+        id: item.notification?.id || '',
+        title: item.notification?.title || '',
+        description: item.notification?.description,
+        type: (item.notification?.type || 'system') as Notification['type'],
+        relatedEntity: (item.notification?.related_entity || 'system') as Notification['relatedEntity'],
+        entityId: item.notification?.entity_id,
+        responsibleUser: item.notification?.responsible_user_name ? {
           id: '',
-          name: item.notifications.responsible_user_name,
-          email: item.notifications.responsible_user_email
+          name: item.notification.responsible_user_name,
+          email: item.notification.responsible_user_email
         } : undefined,
-        createdAt: item.notifications?.created_at || '',
-        updatedAt: item.notifications?.updated_at || '',
+        createdAt: item.notification?.created_at || '',
+        updatedAt: item.notification?.updated_at || '',
         isRead: item.is_read,
         readAt: item.read_at
       })).filter(n => n.id !== ''); // Remove empty notifications
