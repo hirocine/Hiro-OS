@@ -446,9 +446,22 @@ export function useEquipment(): UseEquipmentReturn {
         status: 'status'
       };
 
+      // Virtual fields that are computed on frontend and should not be sent to database
+      const virtualFields = ['hasAccessories', 'isExpanded'];
+
       // Build cleanedUpdates by iterating ONLY over fields present in updates
       const cleanedUpdates: Record<string, any> = {};
       for (const [camelKey, value] of Object.entries(updates)) {
+        // Skip virtual/computed fields
+        if (virtualFields.includes(camelKey)) {
+          logger.debug('Skipping virtual field', {
+            module: 'equipment',
+            action: 'update_equipment_filter',
+            data: { field: camelKey }
+          });
+          continue;
+        }
+        
         const dbKey = camelToSnake[camelKey] ?? camelKey;
         // Convert undefined and empty strings to null for proper database storage
         cleanedUpdates[dbKey] = (value === undefined || value === '') ? null : value;
