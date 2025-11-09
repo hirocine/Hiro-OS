@@ -26,12 +26,12 @@ export const PARENT_CATEGORIES: ParentCategoryConfig[] = [
     order: 1,
     subcategories: [
       { key: 'câmera', name: 'Câmera', order: 0 },
-      { key: 'lente', name: 'Lente', order: 1 },
-      { key: 'cage', name: 'Cage', order: 2 },
+      { key: 'cage', name: 'Cage', order: 1 },
+      { key: 'lente', name: 'Lente', order: 2 },
       { key: 'filtro', name: 'Filtro', order: 3 },
-      { key: 'acessórios', name: 'Acessórios', order: 4 },
-      { key: 'bateria', name: 'Bateria', order: 5 },
-      { key: 'carregador', name: 'Carregador', order: 6 },
+      { key: 'bateria', name: 'Bateria', order: 4 },
+      { key: 'carregador', name: 'Carregador', order: 5 },
+      { key: 'acessórios', name: 'Acessórios', order: 6 },
       { key: 'cabo', name: 'Cabo', order: 7 },
       { key: 'case', name: 'Case', order: 8 },
     ]
