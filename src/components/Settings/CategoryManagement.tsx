@@ -28,7 +28,7 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Função para retornar placeholder contextual baseado na categoria
@@ -68,12 +68,14 @@ export function CategoryManagement() {
     deleteCategoryWithSubcategories,
     getCategoryUsageCount,
     reorderSubcategory,
+    syncOrdersWithMapping,
     refetch
   } = useCategories();
 
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // Dialogs state
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -260,6 +262,27 @@ export function CategoryManagement() {
     }
   };
 
+  const handleSyncOrders = async () => {
+    setIsSyncing(true);
+    
+    const result = await syncOrdersWithMapping();
+    
+    if (result.success) {
+      toast({
+        title: 'Ordens Sincronizadas',
+        description: 'As ordens foram sincronizadas com as definições padrão do sistema.'
+      });
+    } else {
+      toast({
+        title: 'Erro',
+        description: result.error || 'Erro ao sincronizar ordens.',
+        variant: 'destructive'
+      });
+    }
+    
+    setIsSyncing(false);
+  };
+
   const openEditDialog = (
     type: 'category' | 'subcategory',
     categoryName: string,
@@ -377,10 +400,22 @@ export function CategoryManagement() {
                 className="pl-9"
               />
             </div>
-          <Button onClick={() => setShowAddCategoryDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova
-          </Button>
+            <Button 
+              onClick={handleSyncOrders} 
+              variant="outline"
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Sincronizar Ordens
+            </Button>
+            <Button onClick={() => setShowAddCategoryDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova
+            </Button>
           </div>
 
           <div className="space-y-2">

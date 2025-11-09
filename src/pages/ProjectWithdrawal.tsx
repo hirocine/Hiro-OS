@@ -27,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { generateProjectPDF } from '@/lib/pdfGenerator';
 import { useGroupedCategories } from '@/hooks/useGroupedCategories';
+import { useCategories } from '@/hooks/useCategories';
 import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
 import { SubcategoryAccordion } from '@/components/Projects/SubcategoryAccordion';
 
@@ -80,9 +81,10 @@ export default function ProjectWithdrawal() {
 
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
+  const { categories: categoriesFromDB } = useCategories();
 
-  // Group equipment by parent categories
-  const groupedCategories = useGroupedCategories(allEquipment);
+  // Group equipment by parent categories (usando ordens do banco de dados)
+  const groupedCategories = useGroupedCategories(allEquipment, categoriesFromDB);
 
   // Create category steps from grouped categories
   const CATEGORY_STEPS = useMemo(() => {

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { PARENT_CATEGORIES, ParentCategoryConfig, findParentCategory, findSubcategory } from '@/lib/categoryMapping';
+import { EquipmentCategoryData } from '@/types/equipment';
 
 interface Equipment {
   id: string;
@@ -25,13 +26,47 @@ export interface GroupedCategory extends Omit<ParentCategoryConfig, 'subcategori
  * Hook que agrupa equipamentos por categoria mãe e subcategorias
  * 
  * @param equipment - Array de equipamentos do banco de dados
+ * @param categoriesFromDB - Array de categorias do banco (opcional) - usado para obter ordens customizadas
  * @returns Array de categorias agrupadas com seus equipamentos organizados por subcategoria
  */
-export const useGroupedCategories = (equipment: Equipment[]): GroupedCategory[] => {
+export const useGroupedCategories = (
+  equipment: Equipment[], 
+  categoriesFromDB?: EquipmentCategoryData[]
+): GroupedCategory[] => {
   return useMemo(() => {
     if (!equipment || equipment.length === 0) {
       return [];
     }
+
+    /**
+     * Helper function to get order from database or fallback to mapping
+     */
+    const getOrderFromDB = (categoryKey: string, subcategoryKey: string): number => {
+      if (!categoriesFromDB || categoriesFromDB.length === 0) {
+        // Fallback to hardcoded order from mapping
+        const parentCat = PARENT_CATEGORIES.find(pc => pc.key === categoryKey);
+        if (!parentCat) return 999;
+        
+        const subcat = parentCat.subcategories.find(sc => sc.key === subcategoryKey);
+        return subcat?.order ?? 999;
+      }
+
+      // Try to find order in database
+      const dbEntry = categoriesFromDB.find(
+        cat => cat.category === categoryKey && cat.subcategory === subcategoryKey
+      );
+      
+      if (dbEntry && dbEntry.subcategoryOrder !== null && dbEntry.subcategoryOrder !== undefined) {
+        return dbEntry.subcategoryOrder;
+      }
+
+      // Fallback to mapping if not found in DB
+      const parentCat = PARENT_CATEGORIES.find(pc => pc.key === categoryKey);
+      if (!parentCat) return 999;
+      
+      const subcat = parentCat.subcategories.find(sc => sc.key === subcategoryKey);
+      return subcat?.order ?? 999;
+    };
 
     const grouped: GroupedCategory[] = [];
 
@@ -47,10 +82,12 @@ export const useGroupedCategories = (equipment: Equipment[]): GroupedCategory[] 
 
       // Inicializar todas as subcategorias (mesmo vazias)
       parentCat.subcategories.forEach(subCatConfig => {
+        const orderFromDB = getOrderFromDB(parentCat.key, subCatConfig.key);
+        
         groupedCategory.subcategories.push({
           key: subCatConfig.key,
           name: subCatConfig.name,
-          order: subCatConfig.order,
+          order: orderFromDB,
           equipment: []
         });
       });
@@ -119,7 +156,7 @@ export const useGroupedCategories = (equipment: Equipment[]): GroupedCategory[] 
 
     // Ordenar categorias mães
     return grouped.sort((a, b) => a.order - b.order);
-  }, [equipment]);
+  }, [equipment, categoriesFromDB]);
 };
 
 /**

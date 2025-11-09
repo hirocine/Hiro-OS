@@ -363,6 +363,77 @@ export function useCategories() {
       : { success: true, data: undefined };
   };
 
+  /**
+   * Sincroniza as ordens do banco de dados com as definições do categoryMapping.ts
+   */
+  const syncOrdersWithMapping = async (): Promise<Result<void>> => {
+    try {
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      const updates: Array<{ id: string; subcategory_order: number }> = [];
+      
+      // Para cada categoria no mapping
+      for (const parentCat of PARENT_CATEGORIES) {
+        for (const subcat of parentCat.subcategories) {
+          // Encontrar entrada no banco
+          const dbEntry = categories.find(
+            cat => cat.category === parentCat.key && cat.subcategory === subcat.key
+          );
+          
+          if (dbEntry) {
+            // Se a ordem no banco for 999 ou diferente do mapping, atualizar
+            if (dbEntry.subcategoryOrder === 999 || dbEntry.subcategoryOrder !== subcat.order) {
+              updates.push({
+                id: dbEntry.id,
+                subcategory_order: subcat.order
+              });
+            }
+          } else {
+            // Se não existir no banco, criar
+            const { error: insertError } = await supabase
+              .from('equipment_categories')
+              .insert([{
+                category: parentCat.key,
+                subcategory: subcat.key,
+                subcategory_order: subcat.order,
+                category_order: parentCat.order,
+                is_custom: false
+              }]);
+            
+            if (insertError) {
+              logger.error('Error inserting missing category', { error: insertError });
+            }
+          }
+        }
+      }
+      
+      // Executar atualizações em lote
+      for (const update of updates) {
+        const { error: updateError } = await supabase
+          .from('equipment_categories')
+          .update({ subcategory_order: update.subcategory_order })
+          .eq('id', update.id);
+        
+        if (updateError) {
+          logger.error('Error updating category order', { error: updateError });
+        }
+      }
+      
+      // Refetch após sincronização
+      await fetchCategories();
+      
+      return {
+        success: true,
+        data: undefined
+      };
+    } catch (error) {
+      logger.error('Error syncing orders with mapping', { error });
+      return {
+        success: false,
+        error: 'Erro ao sincronizar ordens'
+      };
+    }
+  };
+
   return {
     categories,
     loading,
@@ -378,6 +449,7 @@ export function useCategories() {
     deleteCategoryWithSubcategories,
     getCategoryUsageCount,
     reorderSubcategory,
+    syncOrdersWithMapping,
     refetch: fetchCategories
   };
 }
