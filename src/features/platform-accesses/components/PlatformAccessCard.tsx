@@ -88,7 +88,7 @@ export function PlatformAccessCard({
             <img
               src={access.platform_icon_url}
               alt={access.platform_name}
-              className="w-8 h-8 object-contain"
+              className="w-full h-full object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
