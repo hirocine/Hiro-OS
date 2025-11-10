@@ -130,7 +130,12 @@ const ITEM_TYPE_MAPPING = {
 };
 
 function normalizeKey(key: string): string {
-  return key.toLowerCase().trim().replace(/[^\w\s]/g, '');
+  return key
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')           // Decompõe caracteres Unicode (ó → o + ́)
+    .replace(/[\u0300-\u036f]/g, '')  // Remove diacríticos (acentos)
+    .replace(/[^\w\s]/g, '');   // Remove outros caracteres especiais
 }
 
 function mapColumn(header: string): string | null {
