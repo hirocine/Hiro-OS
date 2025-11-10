@@ -48,7 +48,33 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       const equipment = allEquipment.find(e => e.id === equipmentId);
       
       if (equipment) {
-        setFormData(equipment);
+        // Mapeamento explícito para evitar poluição do estado com propriedades extras
+        setFormData({
+          name: equipment.name,
+          brand: equipment.brand,
+          category: equipment.category,
+          subcategory: equipment.subcategory || '',
+          customCategory: equipment.customCategory || '',
+          status: equipment.status,
+          itemType: equipment.itemType,
+          parentId: equipment.parentId || '',
+          serialNumber: equipment.serialNumber || '',
+          purchaseDate: equipment.purchaseDate || '',
+          lastMaintenance: equipment.lastMaintenance || '',
+          description: equipment.description || '',
+          image: equipment.image || '',
+          value: equipment.value || 0,
+          patrimonyNumber: equipment.patrimonyNumber || '',
+          depreciatedValue: equipment.depreciatedValue || 0,
+          receiveDate: equipment.receiveDate || '',
+          store: equipment.store || '',
+          invoice: equipment.invoice || '',
+          capacity: equipment.capacity,
+          currentBorrower: equipment.currentBorrower || '',
+          lastLoanDate: equipment.lastLoanDate || '',
+          expectedReturnDate: equipment.expectedReturnDate || '',
+          currentLoanId: equipment.currentLoanId
+        });
         setImageUrl(equipment.image);
       } else {
         enhancedToast.error({
