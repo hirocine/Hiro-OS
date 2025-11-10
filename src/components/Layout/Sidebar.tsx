@@ -14,7 +14,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   {
     name: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
@@ -71,7 +71,7 @@ export function Sidebar() {
           <NavLink
             key={item.name}
             to={item.href}
-            end={item.href === '/'}
+            end
             className={({ isActive }) =>
               cn(
                 'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',

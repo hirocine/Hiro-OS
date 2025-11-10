@@ -9,6 +9,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
 
 // Lazy load pages for better performance
+const ComingSoonHome = lazy(() => import("./pages/ComingSoonHome"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Equipment = lazy(() => import("./pages/Equipment"));
 const AddEquipment = lazy(() => import("./pages/AddEquipment"));
@@ -37,7 +38,8 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Dashboard />} />
+              <Route index element={<ComingSoonHome />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="inventario" element={<Equipment />} />
               <Route path="inventario/novo" element={<AddEquipment />} />
               <Route path="inventario/editar/:id" element={<AddEquipment />} />

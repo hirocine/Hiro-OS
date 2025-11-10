@@ -1,4 +1,4 @@
-import { Home, Package, FolderKanban, FileText, Settings, X, HardDrive, Key } from 'lucide-react';
+import { LayoutDashboard, Package, FolderKanban, FileText, Settings, X, HardDrive, Key } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -16,12 +16,12 @@ import hiroLogo from '@/assets/hiro-logo.png';
 interface NavigationItem {
   name: string;
   href: string;
-  icon: typeof Home;
+  icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
 }
 
 const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Projetos', href: '/projetos', icon: FolderKanban },
@@ -45,8 +45,7 @@ export function MobileSidebar() {
   }, [location.pathname, setOpenMobile]);
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   return (
