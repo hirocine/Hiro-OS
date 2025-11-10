@@ -118,6 +118,7 @@ interface PlatformAccessDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: PlatformAccessForm) => Promise<void>;
   editingAccess?: PlatformAccess | null;
+  getPassword?: (id: string) => Promise<string>;
 }
 
 export function PlatformAccessDialog({
@@ -125,10 +126,12 @@ export function PlatformAccessDialog({
   onOpenChange,
   onSubmit,
   editingAccess,
+  getPassword,
 }: PlatformAccessDialogProps) {
   const [selectedCategory, setSelectedCategory] = useState<PlatformCategory>(
     editingAccess?.category || 'other'
   );
+  const [decryptedPassword, setDecryptedPassword] = useState<string>('');
 
   const form = useForm<z.infer<typeof createSchema>>({
     resolver: zodResolver(editingAccess ? editSchema : createSchema),
@@ -147,34 +150,58 @@ export function PlatformAccessDialog({
 
   // Populate form when editing
   useEffect(() => {
-    if (editingAccess) {
-      setSelectedCategory(editingAccess.category);
-      form.reset({
-        platformName: editingAccess.platform_name,
-        platformIconUrl: editingAccess.platform_icon_url || '',
-        platformUrl: editingAccess.platform_url || '',
-        username: editingAccess.username,
-        password: '', // Don't populate password for security
-        notes: editingAccess.notes || '',
-        category: editingAccess.category,
-        isFavorite: editingAccess.is_favorite,
-        isActive: editingAccess.is_active,
-      });
-    } else {
-      setSelectedCategory('other');
-      form.reset({
-        platformName: '',
-        platformIconUrl: '',
-        platformUrl: '',
-        username: '',
-        password: '',
-        notes: '',
-        category: 'other',
-        isFavorite: false,
-        isActive: true,
-      });
-    }
-  }, [editingAccess, form, open]);
+    const loadPassword = async () => {
+      if (editingAccess && getPassword) {
+        try {
+          const password = await getPassword(editingAccess.id);
+          setDecryptedPassword(password);
+          setSelectedCategory(editingAccess.category);
+          form.reset({
+            platformName: editingAccess.platform_name,
+            platformIconUrl: editingAccess.platform_icon_url || '',
+            platformUrl: editingAccess.platform_url || '',
+            username: editingAccess.username,
+            password: password,
+            notes: editingAccess.notes || '',
+            category: editingAccess.category,
+            isFavorite: editingAccess.is_favorite,
+            isActive: editingAccess.is_active,
+          });
+        } catch (error) {
+          console.error('Error loading password:', error);
+        }
+      } else if (editingAccess) {
+        setSelectedCategory(editingAccess.category);
+        form.reset({
+          platformName: editingAccess.platform_name,
+          platformIconUrl: editingAccess.platform_icon_url || '',
+          platformUrl: editingAccess.platform_url || '',
+          username: editingAccess.username,
+          password: '',
+          notes: editingAccess.notes || '',
+          category: editingAccess.category,
+          isFavorite: editingAccess.is_favorite,
+          isActive: editingAccess.is_active,
+        });
+      } else {
+        setSelectedCategory('other');
+        setDecryptedPassword('');
+        form.reset({
+          platformName: '',
+          platformIconUrl: '',
+          platformUrl: '',
+          username: '',
+          password: '',
+          notes: '',
+          category: 'other',
+          isFavorite: false,
+          isActive: true,
+        });
+      }
+    };
+
+    loadPassword();
+  }, [editingAccess, form, open, getPassword]);
 
   const handleSubmit = async (values: z.infer<typeof createSchema>) => {
     try {

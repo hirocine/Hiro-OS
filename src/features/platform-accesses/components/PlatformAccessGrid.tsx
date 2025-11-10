@@ -148,6 +148,7 @@ export function PlatformAccessGrid() {
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
         editingAccess={editingAccess}
+        getPassword={getPassword}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
