@@ -53,7 +53,7 @@ export default function PolicyView() {
 
   return (
     <>
-      <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
+      <div className="container mx-auto p-6 md:p-8 space-y-8 md:space-y-12">
         {/* Header com botão Voltar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
