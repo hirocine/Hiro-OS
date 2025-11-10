@@ -4,7 +4,7 @@ import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { ResponsiveText } from './responsive-text';
 
 interface PageHeaderProps {
-  title: string;
+  title: string | ReactNode;
   subtitle?: string | ReactNode;
   actions?: ReactNode;
   className?: string;
@@ -32,12 +32,18 @@ export function PageHeader({
             {title}
           </h1>
           {subtitle && (
-            <ResponsiveText 
-              size="sm" 
-              className="text-muted-foreground leading-relaxed"
-            >
-              {subtitle}
-            </ResponsiveText>
+            typeof subtitle === 'string' ? (
+              <ResponsiveText 
+                size="sm" 
+                className="text-muted-foreground leading-relaxed"
+              >
+                {subtitle}
+              </ResponsiveText>
+            ) : (
+              <div className="text-sm text-muted-foreground leading-relaxed">
+                {subtitle}
+              </div>
+            )
           )}
         </div>
         

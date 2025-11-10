@@ -9,6 +9,7 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import type { PolicyForm } from '@/features/policies';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { PageHeader } from '@/components/ui/page-header';
 import DOMPurify from 'dompurify';
 
 export default function PolicyView() {
@@ -54,19 +55,28 @@ export default function PolicyView() {
 
   return (
     <>
-      <ResponsiveContainer maxWidth="xl" padding="none">
-        <div className="border-b -mx-6 lg:-mx-12">
-          <div className="px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between">
-            <Button
-              variant="ghost"
+      <ResponsiveContainer maxWidth="xl">
+        <PageHeader
+          title={
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{policy.icon_url || '📋'}</span>
+              {policy.title}
+            </div>
+          }
+          subtitle={
+            <Button 
+              variant="ghost" 
+              size="sm"
               onClick={() => navigate('/politicas')}
+              className="-ml-2"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              Voltar para Políticas
             </Button>
-
-            {isAdmin && (
-              <div className="flex gap-2">
+          }
+          actions={
+            isAdmin && (
+              <>
                 <Button
                   variant="outline"
                   onClick={() => setEditorOpen(true)}
@@ -81,32 +91,20 @@ export default function PolicyView() {
                   <Trash2 className="mr-2 h-4 w-4" />
                   Excluir
                 </Button>
-              </div>
-            )}
-          </div>
-        </div>
+              </>
+            )
+          }
+        />
 
-        <div className="px-6 lg:px-12 pt-6 pb-12">
-          <div className="flex items-center gap-4 mb-12">
-            <div className="text-5xl flex-shrink-0">
-              {policy.icon_url || '📋'}
-            </div>
-            
-            <h1 className="text-4xl font-bold text-left">
-              {policy.title}
-            </h1>
-          </div>
-
-          <div 
-            className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ 
-              __html: DOMPurify.sanitize(policy.content, {
-                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
-                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
-              })
-            }} 
-          />
-        </div>
+        <div 
+          className="prose prose-lg dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ 
+            __html: DOMPurify.sanitize(policy.content, {
+              ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
+              ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
+            })
+          }} 
+        />
       </ResponsiveContainer>
 
       {isAdmin && (
