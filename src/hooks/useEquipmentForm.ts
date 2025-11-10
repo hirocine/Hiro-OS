@@ -226,6 +226,60 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     return selectedItem ? `${selectedItem.patrimonyNumber || 'S/N'} - ${selectedItem.name}` : 'Item não encontrado';
   }, [formData.parentId, allEquipment]);
 
+  const compressImage = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Falha ao obter contexto do canvas'));
+            return;
+          }
+          
+          // Calcular dimensões mantendo proporção (max 1920x1920)
+          const maxSize = 1920;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            } else {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Comprimir para WebP com qualidade 85%
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Falha na compressão'));
+              }
+            },
+            'image/webp',
+            0.85
+          );
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
   const handleImageUpload = async (file: File) => {
     // Validar formato
     const validFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -248,13 +302,20 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
 
     setIsUploadingImage(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      // Comprimir imagem antes do upload
+      const compressedBlob = await compressImage(file);
+      
+      // Nome do arquivo sempre com extensão .webp
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.webp`;
       const filePath = `${fileName}`;
 
       const { error: uploadError, data } = await supabase.storage
         .from('equipment-images')
-        .upload(filePath, file);
+        .upload(filePath, compressedBlob, {
+          contentType: 'image/webp',
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         throw uploadError;
@@ -268,8 +329,8 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       updateField('image', publicUrl);
       
       enhancedToast.success({
-        title: 'Imagem carregada',
-        description: 'A foto foi adicionada com sucesso.'
+        title: 'Imagem otimizada e carregada',
+        description: 'A foto foi comprimida e adicionada com sucesso.'
       });
     } catch (error) {
       logger.error('Error uploading image', {
@@ -279,7 +340,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       });
       enhancedToast.error({
         title: 'Erro ao carregar imagem',
-        description: 'Ocorreu um erro ao fazer upload da foto. Tente novamente.'
+        description: 'Não foi possível fazer upload da imagem.'
       });
     } finally {
       setIsUploadingImage(false);
