@@ -173,7 +173,7 @@ export default function Dashboard() {
           description="Comece adicionando seu primeiro equipamento ao inventário para visualizar estatísticas e análises."
           action={{
             label: "Adicionar Equipamento",
-            onClick: () => navigate('/equipment/add')
+            onClick: () => navigate('/inventario/novo')
           }}
         />
       </ResponsiveContainer>

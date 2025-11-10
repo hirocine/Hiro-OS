@@ -168,7 +168,7 @@ export default function EquipmentPage() {
   }, [filters, currentPage, itemsPerPage, filteredEquipment.length, equipmentHierarchy.length, effectiveViewMode, lastFiltersHash]);
 
   const handleEdit = (equipment: Equipment) => {
-    navigate(`/equipment/edit/${equipment.id}`);
+    navigate(`/inventario/editar/${equipment.id}`);
   };
 
   const handleDelete = (equipment: Equipment) => {
@@ -363,7 +363,7 @@ export default function EquipmentPage() {
           description="Adicione equipamentos para começar a gerenciar seu inventário."
           action={{
             label: "Adicionar Equipamento",
-            onClick: () => navigate('/equipment/new')
+            onClick: () => navigate('/inventario/novo')
           }}
         />
       );
@@ -415,7 +415,7 @@ export default function EquipmentPage() {
               onDelete={handleDelete}
               onImageUpload={handleImageUpload}
               onConvertToAccessory={handleConvertToAccessory}
-              onAddEquipment={() => navigate('/equipment/new')}
+              onAddEquipment={() => navigate('/inventario/novo')}
               isLoading={loading}
             />
           );

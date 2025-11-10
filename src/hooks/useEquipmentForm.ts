@@ -55,7 +55,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
           title: 'Equipamento não encontrado',
           description: 'O equipamento solicitado não foi encontrado.'
         });
-        navigate('/equipment');
+        navigate('/inventario');
       }
       setIsLoading(false);
     }
@@ -150,7 +150,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
         });
       }
       
-      navigate('/equipment');
+      navigate('/inventario');
     } catch (error) {
       logger.error('Error submitting equipment', {
         module: 'equipment-form',
@@ -168,7 +168,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   };
 
   const handleCancel = useCallback(() => {
-    navigate('/equipment');
+    navigate('/inventario');
   }, [navigate]);
 
   const formatCurrency = (value: number | string): string => {
