@@ -22,6 +22,7 @@ import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
 import { CategoryManagement } from '@/components/Settings/CategoryManagement';
+import { OptimizePlatformIcons } from '@/components/Settings/OptimizePlatformIcons';
 import { adminDebug } from '@/lib/debug';
 import { logger } from '@/lib/logger';
 
@@ -343,6 +344,10 @@ export default function Admin() {
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Sistema
+          </TabsTrigger>
+          <TabsTrigger value="optimization" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Otimização
           </TabsTrigger>
         </TabsList>
 
@@ -668,6 +673,21 @@ export default function Admin() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="optimization" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Otimizar Ícones de Plataformas</CardTitle>
+              <CardDescription>
+                Reprocessar ícones antigos para o formato otimizado (WebP 256x256px). 
+                Esta operação reduz significativamente o tamanho dos arquivos e melhora o desempenho.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OptimizePlatformIcons />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </ResponsiveContainer>
