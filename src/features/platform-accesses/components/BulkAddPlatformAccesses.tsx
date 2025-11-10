@@ -6,69 +6,6 @@ import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const accessesToAdd = [
   {
-    platformName: "PixieSet",
-    platformUrl: "https://pixieset.com",
-    username: "plataforma@hiro.film",
-    password: "PX·HiroFilm5044",
-    category: "cloud" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Vimeo",
-    platformUrl: "https://vimeo.com",
-    username: "plataforma@hiro.film",
-    password: "VI·HiroFilms5044",
-    category: "cloud" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Inner AI",
-    platformUrl: "https://inner.ai",
-    username: "plataforma@hiro.film",
-    password: "IN·HiroFilm5044",
-    category: "ai" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "ElevenLabs",
-    platformUrl: "https://elevenlabs.io",
-    username: "plataforma@hiro.film",
-    password: "EL·HiroFilm5044",
-    category: "ai" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Chat GPT",
-    platformUrl: "https://chatgpt.com",
-    username: "plataforma@hiro.film",
-    password: "GPT·HiroFilm5044",
-    category: "ai" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Frame Set",
-    platformUrl: "https://frameset.app",
-    username: "gabriel@hiro.film",
-    password: "FS·HiroFilm5044",
-    category: "references" as const,
-    isFavorite: false,
-    isActive: false
-  },
-  {
-    platformName: "NAS Hiro Films",
-    platformUrl: "https://hiro.films",
-    username: "",
-    password: "NAS·HiroFilm5044",
-    category: "cloud" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
     platformName: "Framer",
     platformUrl: "https://framer.com",
     username: "plataforma@hiro.film",
