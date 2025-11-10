@@ -64,6 +64,11 @@ function isAccessoryPatrimony(patrimonyNumber: string): boolean {
 const COLUMN_MAPPING = {
   'patrimônio': 'patrimonyNumber',
   'patrimonio': 'patrimonyNumber',
+  'numero de patrimonio': 'patrimonyNumber',
+  'numero patrimonio': 'patrimonyNumber',
+  'n patrimonio': 'patrimonyNumber',
+  'numero do patrimonio': 'patrimonyNumber',
+  'nro patrimonio': 'patrimonyNumber',
   'nome': 'name',
   'marca': 'brand',
   'categoria': 'category',
@@ -77,6 +82,9 @@ const COLUMN_MAPPING = {
   'principal': 'parentId',
   'pai': 'parentId',
   'serial': 'serialNumber',
+  'numero de serie': 'serialNumber',
+  'numero serie': 'serialNumber',
+  'n serie': 'serialNumber',
   'valor de compra': 'value',
   'valor': 'value',
   'status': 'status',
@@ -93,6 +101,8 @@ const COLUMN_MAPPING = {
   'nfe ou recibo': 'invoice',
   'nfe': 'invoice',
   'recibo': 'invoice',
+  'nota fiscal': 'invoice',
+  'nf': 'invoice',
   'url da imagem': 'image',
   'imagem': 'image'
 };
