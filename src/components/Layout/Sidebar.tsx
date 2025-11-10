@@ -33,7 +33,7 @@ const navigation: NavigationItem[] = [
     icon: FolderOpen,
   },
   {
-    name: 'Acessos',
+    name: 'Plataformas',
     href: '/accesses',
     icon: Key,
   },

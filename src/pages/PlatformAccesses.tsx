@@ -11,7 +11,7 @@ export default function PlatformAccesses() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
-        title="Acessos de Plataformas"
+        title="Plataformas"
         subtitle="Gerencie senhas e credenciais de forma segura com criptografia"
         actions={
           <Button onClick={() => setShowAddDialog(true)}>

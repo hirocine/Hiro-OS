@@ -24,7 +24,7 @@ const navigation: NavigationItem[] = [
   { name: 'Inventário', href: '/equipment', icon: Package },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Projetos', href: '/projects', icon: FolderKanban },
-  { name: 'Acessos', href: '/accesses', icon: Key },
+  { name: 'Plataformas', href: '/accesses', icon: Key },
 ];
 
 const adminNavigation: NavigationItem[] = [
