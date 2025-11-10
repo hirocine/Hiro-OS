@@ -26,7 +26,8 @@ export interface ImportSummary {
   errors: string[];
 }
 
-const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'audio', 'lighting', 'accessories'];
+// Categorias válidas agora em português (alinhadas com categoryMapping.ts)
+const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'monitoring', 'audio', 'lighting', 'grip', 'electrical', 'storage', 'computers', 'miscellaneous'];
 const VALID_STATUSES: EquipmentStatus[] = ['available', 'maintenance'];
 const VALID_ITEM_TYPES: EquipmentItemType[] = ['main', 'accessory'];
 
@@ -107,21 +108,55 @@ const COLUMN_MAPPING = {
   'imagem': 'image'
 };
 
+// Mapeamento de categorias - agora salvando em português no banco
 const CATEGORY_MAPPING = {
+  // Câmera
   'câmera': 'camera',
   'camera': 'camera',
   'câmeras': 'camera',
   'cameras': 'camera',
+  
+  // Monitoração
+  'monitoração': 'monitoring',
+  'monitoracao': 'monitoring',
+  'monitoring': 'monitoring',
+  'monitor': 'monitoring',
+  
+  // Áudio
   'áudio': 'audio',
   'audio': 'audio',
   'som': 'audio',
+  
+  // Iluminação
   'iluminação': 'lighting',
   'iluminacao': 'lighting',
   'luz': 'lighting',
   'lighting': 'lighting',
-  'acessórios': 'accessories',
-  'acessorios': 'accessories',
-  'accessories': 'accessories'
+  
+  // Grip
+  'grip': 'grip',
+  'apoio': 'grip',
+  
+  // Elétrica
+  'elétrica': 'electrical',
+  'eletrica': 'electrical',
+  'electrical': 'electrical',
+  
+  // Armazenamento
+  'armazenamento': 'storage',
+  'storage': 'storage',
+  
+  // Computadores
+  'computadores': 'computers',
+  'computers': 'computers',
+  'computador': 'computers',
+  
+  // Diversos/Acessórios
+  'diversos': 'miscellaneous',
+  'miscellaneous': 'miscellaneous',
+  'acessórios': 'miscellaneous',
+  'acessorios': 'miscellaneous',
+  'accessories': 'miscellaneous'
 };
 
 const STATUS_MAPPING = {
