@@ -13,6 +13,48 @@ interface PlatformIconPickerProps {
 export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIconPickerProps) {
   const [uploading, setUploading] = useState(false);
 
+  const compressImage = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Falha ao obter contexto do canvas'));
+            return;
+          }
+          
+          // Redimensionar para 256x256 (tamanho ideal para ícones)
+          const maxSize = 256;
+          canvas.width = maxSize;
+          canvas.height = maxSize;
+          
+          ctx.drawImage(img, 0, 0, maxSize, maxSize);
+          
+          // Comprimir para WebP com qualidade 85%
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Falha na compressão'));
+              }
+            },
+            'image/webp',
+            0.85
+          );
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -31,16 +73,19 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
     try {
       setUploading(true);
 
+      // Comprimir imagem antes do upload
+      const compressedBlob = await compressImage(file);
+
       // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${Math.random()}.webp`;
+      const filePath = fileName;
 
       const { error: uploadError } = await supabase.storage
         .from('platform-icons')
-        .upload(filePath, file, {
+        .upload(filePath, compressedBlob, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: 'image/webp'
         });
 
       if (uploadError) throw uploadError;
@@ -51,7 +96,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
         .getPublicUrl(filePath);
 
       onSelectIcon(data.publicUrl);
-      toast.success('Ícone carregado com sucesso!');
+      toast.success('Ícone carregado e otimizado com sucesso!');
     } catch (error) {
       console.error('Error uploading icon:', error);
       toast.error('Erro ao carregar ícone');
@@ -85,7 +130,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Máximo 2MB. Formatos: PNG, JPG, SVG
+          Máximo 2MB. A imagem será otimizada para 256x256px em WebP.
         </p>
       </div>
 
