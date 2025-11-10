@@ -28,7 +28,7 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, Camera, Monitor, Mic2, Lightbulb, Package, Video, Zap, HardDrive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Função para retornar placeholder contextual baseado na categoria
@@ -85,6 +85,7 @@ export function CategoryManagement() {
   
   // Form state
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState<string>('');
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{
@@ -138,7 +139,7 @@ export function CategoryManagement() {
       return;
     }
 
-    const result = await addCategoryOnly(newCategoryName);
+    const result = await addCategoryOnly(newCategoryName, newCategoryIcon || null);
 
     if (result.success) {
       toast({
@@ -147,6 +148,7 @@ export function CategoryManagement() {
       });
       setShowAddCategoryDialog(false);
       setNewCategoryName('');
+      setNewCategoryIcon('');
       refetch();
     } else {
       toast({
@@ -567,10 +569,35 @@ export function CategoryManagement() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
               />
             </div>
+            <div>
+              <Label htmlFor="category-icon">Ícone da Categoria (opcional)</Label>
+              <Select
+                value={newCategoryIcon}
+                onValueChange={setNewCategoryIcon}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um ícone..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Camera">📷 Câmera</SelectItem>
+                  <SelectItem value="Video">🎬 Vídeo</SelectItem>
+                  <SelectItem value="Mic2">🎤 Áudio</SelectItem>
+                  <SelectItem value="Lightbulb">💡 Iluminação</SelectItem>
+                  <SelectItem value="Monitor">🖥️ Monitor</SelectItem>
+                  <SelectItem value="HardDrive">💾 Armazenamento</SelectItem>
+                  <SelectItem value="Zap">⚡ Elétrica</SelectItem>
+                  <SelectItem value="Package">📦 Acessórios</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddCategoryDialog(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowAddCategoryDialog(false);
+              setNewCategoryName('');
+              setNewCategoryIcon('');
+            }}>
               Cancelar
             </Button>
             <Button onClick={handleAddCategory}>Criar</Button>

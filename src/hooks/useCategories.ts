@@ -54,8 +54,8 @@ export function useCategories() {
     setLoading(false);
   };
 
-  const addCustomCategory = async (category: string, subcategory: string | null): Promise<Result<EquipmentCategoryData>> => {
-    logger.userAction('create_category', undefined, { category, subcategory });
+  const addCustomCategory = async (category: string, subcategory: string | null, icon?: string | null): Promise<Result<EquipmentCategoryData>> => {
+    logger.userAction('create_category', undefined, { category, subcategory, icon });
     
     const result = await wrapAsync(async () => {
       const categoryData = {
@@ -63,7 +63,8 @@ export function useCategories() {
         subcategory: subcategory,
         is_custom: false,
         category_order: 999,
-        subcategory_order: 999
+        subcategory_order: 999,
+        icon: icon || null
       };
 
       const { data, error } = await supabase
@@ -85,7 +86,8 @@ export function useCategories() {
         createdAt: data.created_at,
         createdBy: data.created_by,
         categoryOrder: data.category_order,
-        subcategoryOrder: data.subcategory_order
+        subcategoryOrder: data.subcategory_order,
+        icon: data.icon
       };
 
       setCategories(prev => [...prev, newCategory]);
@@ -145,8 +147,8 @@ export function useCategories() {
     return Object.values(grouped);
   };
 
-  const addCategoryOnly = async (categoryName: string): Promise<Result<EquipmentCategoryData>> => {
-    return addCustomCategory(categoryName, null);
+  const addCategoryOnly = async (categoryName: string, icon?: string | null): Promise<Result<EquipmentCategoryData>> => {
+    return addCustomCategory(categoryName, null, icon);
   };
 
   const addSubcategory = async (
