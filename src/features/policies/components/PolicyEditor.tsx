@@ -1,15 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
 import type { CompanyPolicy, PolicyForm } from '../types';
-import { MarkdownToolbar } from './MarkdownToolbar';
+import { TipTapEditor } from './TipTapEditor';
 
 interface PolicyEditorProps {
   open: boolean;
@@ -19,7 +14,6 @@ interface PolicyEditorProps {
 }
 
 export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState(policy?.title || '');
   const [icon, setIcon] = useState(policy?.icon_url || '📋');
   const [content, setContent] = useState(policy?.content || '');
@@ -88,49 +82,15 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
           </div>
 
           <div className="space-y-2">
-            <Label>Conteúdo (Markdown) *</Label>
-            
-            {/* Container vertical */}
-            <div className="space-y-4">
-              
-              {/* Editor (em cima) */}
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground font-medium mb-1">
-                  Editor
-                </div>
-                <MarkdownToolbar
-                  textareaRef={textareaRef}
-                  content={content}
-                  setContent={setContent}
-                />
-                <Textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="# Título da Seção&#10;&#10;Escreva o conteúdo aqui...&#10;&#10;## Subtítulo&#10;&#10;- Item 1&#10;- Item 2"
-                  className="min-h-[400px] font-mono text-sm resize-none"
-                />
-              </div>
-              
-              {/* Preview (embaixo) */}
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground font-medium mb-1">
-                  Preview
-                </div>
-                <div className="border rounded-md p-6 min-h-[300px] max-h-[400px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
-                  {content ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                      {content}
-                    </ReactMarkdown>
-                  ) : (
-                    <p className="text-muted-foreground italic">
-                      O preview aparecerá aqui conforme você digita...
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-            </div>
+            <Label>Conteúdo *</Label>
+            <TipTapEditor
+              content={content}
+              onChange={setContent}
+              placeholder="Escreva o conteúdo da política aqui..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Use a barra de ferramentas acima para formatar o texto. O conteúdo será salvo em Markdown.
+            </p>
           </div>
         </div>
 
