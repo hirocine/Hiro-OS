@@ -142,7 +142,7 @@ export function PlatformAccessCard({
                 License Key
               </label>
             <div className="flex items-center gap-2 mt-1">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <div className="font-mono text-sm bg-muted/50 px-3 py-2 pr-10 rounded border overflow-hidden text-ellipsis whitespace-nowrap">
                   {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
@@ -200,7 +200,7 @@ export function PlatformAccessCard({
                 Senha
               </label>
             <div className="flex items-center gap-2 mt-1">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <div className="font-mono text-sm bg-muted/50 px-3 py-2 pr-10 rounded border overflow-hidden text-ellipsis whitespace-nowrap">
                   {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
