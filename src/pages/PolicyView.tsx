@@ -53,53 +53,55 @@ export default function PolicyView() {
   };
 
   return (
-    <ResponsiveContainer maxWidth="xl" padding="none">
-      <div className="border-b -mx-6 lg:-mx-12">
-        <div className="px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/politicas')}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+    <>
+      <ResponsiveContainer maxWidth="xl" padding="none">
+        <div className="border-b -mx-6 lg:-mx-12">
+          <div className="px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/politicas')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
 
-          {isAdmin && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setEditorOpen(true)}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="px-6 lg:px-12 pt-6 pb-12">
-        <div className="flex items-center gap-4 mb-12">
-          <div className="text-5xl flex-shrink-0">
-            {policy.icon_url || '📋'}
+            {isAdmin && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditorOpen(true)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </Button>
+              </div>
+            )}
           </div>
-          
-          <h1 className="text-4xl font-bold text-left">
-            {policy.title}
-          </h1>
         </div>
 
-        <div className="prose prose-lg dark:prose-invert max-w-none">
-          <ReactMarkdown>{policy.content}</ReactMarkdown>
+        <div className="px-6 lg:px-12 pt-6 pb-12">
+          <div className="flex items-center gap-4 mb-12">
+            <div className="text-5xl flex-shrink-0">
+              {policy.icon_url || '📋'}
+            </div>
+            
+            <h1 className="text-4xl font-bold text-left">
+              {policy.title}
+            </h1>
+          </div>
+
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <ReactMarkdown>{policy.content}</ReactMarkdown>
+          </div>
         </div>
-      </div>
+      </ResponsiveContainer>
 
       {isAdmin && (
         <>
@@ -132,6 +134,6 @@ export default function PolicyView() {
           </AlertDialog>
         </>
       )}
-    </ResponsiveContainer>
+    </>
   );
 }
