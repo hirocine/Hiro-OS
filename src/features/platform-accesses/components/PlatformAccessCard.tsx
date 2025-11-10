@@ -83,46 +83,97 @@ export function PlatformAccessCard({
         </div>
       </div>
 
-      {/* Username com botão copiar */}
+      {/* Credenciais - Lógica condicional por categoria */}
       <div className="space-y-3 mb-4">
-        <div>
-          <label className="text-xs text-muted-foreground font-medium">
-            Usuário/E-mail
-          </label>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 text-sm bg-muted/50 px-3 py-2 rounded border truncate">
-              {access.username}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => onCopyUsername(access.username)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        {access.category === 'software' ? (
+          // MODO SOFTWARE: Mostrar apenas KEY
+          <>
+            {/* Username (opcional para software) */}
+            {access.username && (
+              <div>
+                <label className="text-xs text-muted-foreground font-medium">
+                  Usuário/E-mail
+                </label>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 text-sm bg-muted/50 px-3 py-2 rounded border truncate">
+                    {access.username}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => onCopyUsername(access.username)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
 
-        {/* Senha com botão copiar */}
-        <div>
-          <label className="text-xs text-muted-foreground font-medium">
-            Senha
-          </label>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border">
-              ••••••••••••
+            {/* License Key */}
+            <div>
+              <label className="text-xs text-muted-foreground font-medium">
+                License Key
+              </label>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border">
+                  ••••••••••••
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={() => onCopyPassword(access.id)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => onCopyPassword(access.id)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+          </>
+        ) : (
+          // MODO PADRÃO: Username + Password
+          <>
+            {/* Username */}
+            <div>
+              <label className="text-xs text-muted-foreground font-medium">
+                Usuário/E-mail
+              </label>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 text-sm bg-muted/50 px-3 py-2 rounded border truncate">
+                  {access.username}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={() => onCopyUsername(access.username)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Senha */}
+            <div>
+              <label className="text-xs text-muted-foreground font-medium">
+                Senha
+              </label>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border">
+                  ••••••••••••
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={() => onCopyPassword(access.id)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Botões de Ação */}

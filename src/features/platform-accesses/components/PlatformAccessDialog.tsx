@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,8 +49,9 @@ const createSchema = z.object({
     .transform((val) => val || ''),
   username: z.string()
     .trim()
-    .min(1, 'Usuário/email é obrigatório')
-    .max(255, 'Usuário muito longo'),
+    .max(255, 'Usuário muito longo')
+    .optional()
+    .or(z.literal('')),
   password: z.string()
     .min(1, 'Senha é obrigatória')
     .max(1000, 'Senha muito longa'),
@@ -88,8 +89,9 @@ const editSchema = z.object({
     .transform((val) => val || ''),
   username: z.string()
     .trim()
-    .min(1, 'Usuário/email é obrigatório')
-    .max(255, 'Usuário muito longo'),
+    .max(255, 'Usuário muito longo')
+    .optional()
+    .or(z.literal('')),
   password: z.string()
     .max(1000, 'Senha muito longa')
     .optional(),
@@ -124,6 +126,10 @@ export function PlatformAccessDialog({
   onSubmit,
   editingAccess,
 }: PlatformAccessDialogProps) {
+  const [selectedCategory, setSelectedCategory] = useState<PlatformCategory>(
+    editingAccess?.category || 'other'
+  );
+
   const form = useForm<z.infer<typeof createSchema>>({
     resolver: zodResolver(editingAccess ? editSchema : createSchema),
     defaultValues: {
@@ -142,10 +148,11 @@ export function PlatformAccessDialog({
   // Populate form when editing
   useEffect(() => {
     if (editingAccess) {
+      setSelectedCategory(editingAccess.category);
       form.reset({
         platformName: editingAccess.platform_name,
         platformIconUrl: editingAccess.platform_icon_url || '',
-        platformUrl: editingAccess.platform_url,
+        platformUrl: editingAccess.platform_url || '',
         username: editingAccess.username,
         password: '', // Don't populate password for security
         notes: editingAccess.notes || '',
@@ -154,6 +161,7 @@ export function PlatformAccessDialog({
         isActive: editingAccess.is_active,
       });
     } else {
+      setSelectedCategory('other');
       form.reset({
         platformName: '',
         platformIconUrl: '',
@@ -242,7 +250,13 @@ export function PlatformAccessDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoria *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedCategory(value as PlatformCategory);
+                      }} 
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria" />
@@ -291,31 +305,58 @@ export function PlatformAccessDialog({
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Usuário/Email *</FormLabel>
+                    <FormLabel>
+                      Usuário/Email {selectedCategory !== 'software' && '*'}
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="usuario@exemplo.com" {...field} />
+                      <Input 
+                        placeholder={
+                          selectedCategory === 'software' 
+                            ? 'Opcional para software' 
+                            : 'usuario@exemplo.com'
+                        } 
+                        {...field} 
+                      />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      {selectedCategory === 'software' 
+                        ? 'Deixe em branco se o software só usa chave de licença'
+                        : 'Email ou nome de usuário para login'
+                      }
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Password */}
+              {/* Password / License Key */}
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Senha {!editingAccess && '*'} {editingAccess && '(deixe em branco para manter)'}
+                      {selectedCategory === 'software' ? 'License Key' : 'Senha'} 
+                      {!editingAccess && ' *'} 
+                      {editingAccess && ' (deixe em branco para manter)'}
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder={editingAccess ? 'Digite para alterar...' : 'Digite a senha'}
+                        placeholder={
+                          selectedCategory === 'software'
+                            ? editingAccess ? 'Digite para alterar a chave...' : 'XXXX-XXXX-XXXX-XXXX'
+                            : editingAccess ? 'Digite para alterar...' : 'Digite a senha'
+                        }
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      {selectedCategory === 'software' 
+                        ? 'Chave de licença ou ativação do software'
+                        : 'Senha de acesso à plataforma'
+                      }
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
