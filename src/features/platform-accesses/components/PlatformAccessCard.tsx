@@ -60,7 +60,7 @@ export function PlatformAccessCard({
       </div>
 
       {/* Logo + Nome da Plataforma */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-start gap-4 mb-4">
         {access.platform_icon_url ? (
           <div className="w-12 h-12 rounded-lg bg-background border flex items-center justify-center overflow-hidden">
             <img
