@@ -24,7 +24,7 @@ interface UseEquipmentReturn {
   updateEquipment: (id: string, updates: Partial<Equipment>) => Promise<Result<void>>;
   deleteEquipment: (id: string) => Promise<Result<void>>;
   convertToAccessory: (equipmentId: string, parentId: string) => Promise<Result<void>>;
-  importEquipment: (equipment: Omit<Equipment, 'id'>[]) => Promise<Result<Equipment[]>>;
+  importEquipment: (equipment: Omit<Equipment, 'id'>[]) => Promise<Result<{ equipment: Equipment[], summary: any }>>;
   toggleEquipmentExpansion: (id: string) => void;
   getMainItems: () => Equipment[];
   handleSort: (field: SortableField, order: SortOrder) => void;
@@ -432,15 +432,56 @@ export function useEquipment(): UseEquipmentReturn {
     return updateEquipment(equipmentId, { itemType: 'accessory', parentId });
   };
 
-  const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]): Promise<Result<Equipment[]>> => {
+  const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]): Promise<Result<{ equipment: Equipment[], summary: any }>> => {
     const result = await wrapAsync(async () => {
       const mainItems = importedEquipment.filter(item => item.itemType === 'main');
       const accessories = importedEquipment.filter(item => item.itemType === 'accessory');
+      
+      const summary = {
+        totalParsed: importedEquipment.length,
+        mainsNew: 0,
+        accessoriesNew: 0,
+        mainsExisting: 0,
+        accessoriesExisting: 0,
+        skippedMissingParent: 0,
+        errors: [] as string[]
+      };
+
+      // PASSO 1: Pré-buscar equipamentos existentes
+      const allPatrimonies = importedEquipment
+        .map(item => item.patrimonyNumber)
+        .filter(Boolean) as string[];
+      
+      const { data: existingEquipments, error: fetchError } = await supabase
+        .from('equipments')
+        .select('id, patrimony_number, item_type')
+        .in('patrimony_number', allPatrimonies);
+      
+      if (fetchError) throw createDatabaseError(`Erro ao buscar equipamentos existentes: ${fetchError.message}`);
+
+      // Criar mapa de patrimônios existentes
+      const existingPatrimonyMap = new Map<string, { id: string; item_type: string }>();
+      existingEquipments?.forEach(eq => {
+        if (eq.patrimony_number) {
+          existingPatrimonyMap.set(eq.patrimony_number, { id: eq.id, item_type: eq.item_type });
+        }
+      });
+
+      // PASSO 2: Particionar itens
+      const mainToInsert = mainItems.filter(item => 
+        !item.patrimonyNumber || !existingPatrimonyMap.has(item.patrimonyNumber)
+      );
+      const mainExisting = mainItems.filter(item => 
+        item.patrimonyNumber && existingPatrimonyMap.has(item.patrimonyNumber)
+      );
+      
+      summary.mainsExisting = mainExisting.length;
+
       const allInsertedItems: Equipment[] = [];
 
-      // PASSO 1: Inserir itens principais
-      if (mainItems.length > 0) {
-        const dbMainItems = mainItems.map(item => ({
+      // PASSO 3: Inserir itens principais novos
+      if (mainToInsert.length > 0) {
+        const dbMainItems = mainToInsert.map(item => ({
           name: item.name,
           brand: item.brand,
           category: item.category,
@@ -468,9 +509,16 @@ export function useEquipment(): UseEquipmentReturn {
           .insert(dbMainItems)
           .select();
 
-        if (mainError) throw createDatabaseError(`Erro ao inserir itens principais: ${mainError.message}`);
-
-        if (mainData) {
+        if (mainError) {
+          // Se erro é de unicidade, contar como existentes
+          if (mainError.code === '23505') {
+            summary.mainsExisting += mainToInsert.length;
+            summary.errors.push('Alguns itens principais já existiam no banco');
+          } else {
+            throw createDatabaseError(`Erro ao inserir itens principais: ${mainError.message}`);
+          }
+        } else if (mainData) {
+          summary.mainsNew = mainData.length;
           allInsertedItems.push(...mainData.map(item => ({
             id: item.id,
             name: item.name,
@@ -495,64 +543,91 @@ export function useEquipment(): UseEquipmentReturn {
             invoice: item.invoice,
             capacity: item.capacity ? Number(item.capacity) : undefined
           })) as Equipment[]);
+
+          // Atualizar mapa com novos IDs
+          mainData.forEach(item => {
+            if (item.patrimony_number) {
+              existingPatrimonyMap.set(item.patrimony_number, { id: item.id, item_type: item.item_type });
+            }
+          });
         }
       }
 
-      // PASSO 2: Inserir acessórios com vinculação correta
-      if (accessories.length > 0) {
-        const dbAccessories = accessories.map(item => {
-          // Encontrar o parent_id real baseado no patrimônio
-          let realParentId: string | null = null;
-          
-          if (item.patrimonyNumber) {
-            // Extrair prefixo do patrimônio do acessório (ex: "00007.1" → "00007")
-            const match = item.patrimonyNumber.match(/^(.+)\.\d+$/);
-            if (match) {
-              const parentPatrimony = `${match[1]}.0`;
-              const parentEquipment = allInsertedItems.find(
-                eq => eq.patrimonyNumber === parentPatrimony
-              );
-              if (parentEquipment) {
-                realParentId = parentEquipment.id;
-              }
+      // PASSO 4: Processar acessórios
+      const accessoryToInsert: any[] = [];
+      const accessoryExisting = accessories.filter(item => 
+        item.patrimonyNumber && existingPatrimonyMap.has(item.patrimonyNumber)
+      );
+      
+      summary.accessoriesExisting = accessoryExisting.length;
+
+      accessories.forEach(item => {
+        // Ignorar se já existe
+        if (item.patrimonyNumber && existingPatrimonyMap.has(item.patrimonyNumber)) {
+          return;
+        }
+
+        // Resolver parent_id
+        let realParentId: string | null = null;
+        
+        if (item.patrimonyNumber) {
+          const match = item.patrimonyNumber.match(/^(.+)\.\d+$/);
+          if (match) {
+            const parentPatrimony = `${match[1]}.0`;
+            const parentData = existingPatrimonyMap.get(parentPatrimony);
+            if (parentData) {
+              realParentId = parentData.id;
             }
           }
+        }
 
-          return {
-            name: item.name,
-            brand: item.brand,
-            category: item.category,
-            status: item.status,
-            item_type: item.itemType,
-            parent_id: realParentId,
-            serial_number: item.serialNumber || null,
-            purchase_date: item.purchaseDate || null,
-            last_maintenance: item.lastMaintenance || null,
-            description: item.description || null,
-            image: item.image || null,
-            value: item.value || null,
-            patrimony_number: item.patrimonyNumber || null,
-            depreciated_value: item.depreciatedValue || null,
-            receive_date: item.receiveDate || null,
-            store: item.store || null,
-            invoice: item.invoice || null,
-            subcategory: item.subcategory || null,
-            custom_category: item.customCategory || null,
-            capacity: item.capacity || null
-          };
+        // Se não encontrou pai, pular
+        if (!realParentId) {
+          summary.skippedMissingParent++;
+          summary.errors.push(`Acessório ${item.patrimonyNumber || item.name} pulado: item principal não encontrado`);
+          return;
+        }
+
+        accessoryToInsert.push({
+          name: item.name,
+          brand: item.brand,
+          category: item.category,
+          status: item.status,
+          item_type: item.itemType,
+          parent_id: realParentId,
+          serial_number: item.serialNumber || null,
+          purchase_date: item.purchaseDate || null,
+          last_maintenance: item.lastMaintenance || null,
+          description: item.description || null,
+          image: item.image || null,
+          value: item.value || null,
+          patrimony_number: item.patrimonyNumber || null,
+          depreciated_value: item.depreciatedValue || null,
+          receive_date: item.receiveDate || null,
+          store: item.store || null,
+          invoice: item.invoice || null,
+          subcategory: item.subcategory || null,
+          custom_category: item.customCategory || null,
+          capacity: item.capacity || null
         });
+      });
 
+      // PASSO 5: Inserir acessórios
+      if (accessoryToInsert.length > 0) {
         const { data: accessoriesData, error: accessoriesError } = await supabase
           .from('equipments')
-          .insert(dbAccessories)
+          .insert(accessoryToInsert)
           .select();
 
         if (accessoriesError) {
-          console.error('Erro ao inserir acessórios:', accessoriesError);
-          throw createDatabaseError(`Erro ao inserir acessórios: ${accessoriesError.message}`);
-        }
-
-        if (accessoriesData) {
+          if (accessoriesError.code === '23505') {
+            summary.accessoriesExisting += accessoryToInsert.length;
+            summary.errors.push('Alguns acessórios já existiam no banco');
+          } else {
+            summary.errors.push(`Erro ao inserir acessórios: ${accessoriesError.message}`);
+          }
+        } else if (accessoriesData) {
+          summary.accessoriesNew = accessoriesData.length;
           allInsertedItems.push(...accessoriesData.map(item => ({
             id: item.id,
             name: item.name,
@@ -581,10 +656,12 @@ export function useEquipment(): UseEquipmentReturn {
       }
 
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
-      return allInsertedItems;
+      return { equipment: allInsertedItems, summary };
     });
 
-    return result.data ? { success: true, data: result.data } : { success: false, error: result.error?.message || 'Erro na importação' };
+    return result.data 
+      ? { success: true, data: result.data } 
+      : { success: false, error: result.error?.message || 'Erro na importação' };
   };
 
   const toggleEquipmentExpansion = (id: string) => {

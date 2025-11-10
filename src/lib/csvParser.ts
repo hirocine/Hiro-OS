@@ -16,6 +16,16 @@ export interface ImportResult {
   successRows: number;
 }
 
+export interface ImportSummary {
+  totalParsed: number;
+  mainsNew: number;
+  accessoriesNew: number;
+  mainsExisting: number;
+  accessoriesExisting: number;
+  skippedMissingParent: number;
+  errors: string[];
+}
+
 const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'audio', 'lighting', 'accessories'];
 const VALID_STATUSES: EquipmentStatus[] = ['available', 'maintenance'];
 const VALID_ITEM_TYPES: EquipmentItemType[] = ['main', 'accessory'];
@@ -188,6 +198,16 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     });
   }
 
+  // PATRIMÔNIO É OBRIGATÓRIO para importação
+  if (!row.patrimonyNumber?.trim()) {
+    errors.push({
+      row: rowNumber,
+      field: 'patrimonyNumber',
+      message: 'Número de patrimônio é obrigatório para importação',
+      value: row.patrimonyNumber
+    });
+  }
+
 
   // Validate and transform category (accepts custom categories)
   const category = validateAndTransformCategory(row.category);
@@ -317,7 +337,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
   const depreciatedValue = validateNumber(row.depreciatedValue, 'depreciatedValue');
   const capacity = validateNumber(row.capacity, 'capacity');
 
-  // Validate patrimony number uniqueness (basic format check)
+  // Validate patrimony number format
   if (row.patrimonyNumber?.trim()) {
     const patrimonyNumber = row.patrimonyNumber.trim();
     if (patrimonyNumber.length < 3) {
@@ -334,6 +354,16 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     return { equipment: null, errors };
   }
 
+  // Normalizar patrimônio: principais terminam com .0
+  let normalizedPatrimony = row.patrimonyNumber?.trim();
+  if (normalizedPatrimony && itemType === 'main') {
+    if (!normalizedPatrimony.includes('.')) {
+      normalizedPatrimony = `${normalizedPatrimony}.0`;
+    } else if (!normalizedPatrimony.endsWith('.0')) {
+      normalizedPatrimony = `${normalizedPatrimony}.0`;
+    }
+  }
+
   const equipment: Omit<Equipment, 'id'> = {
     name: row.name.trim(),
     brand: row.brand.trim(),
@@ -348,7 +378,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     description: row.description?.trim() || undefined,
     image: row.image?.trim() || undefined,
     value,
-    patrimonyNumber: row.patrimonyNumber?.trim() || undefined,
+    patrimonyNumber: normalizedPatrimony || undefined,
     depreciatedValue,
     receiveDate,
     capacity,

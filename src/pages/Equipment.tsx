@@ -574,13 +574,32 @@ export default function EquipmentPage() {
       <ImportDialog
         open={isImportDialogOpen}
         onOpenChange={setIsImportDialogOpen}
-        onImport={(data) => {
-          importEquipment(data);
-          setIsImportDialogOpen(false);
-          enhancedToast.success({
-            title: 'Importação concluída!',
-            description: `${data.length} equipamento(s) importado(s) com sucesso.`
-          });
+        onImport={async (data) => {
+          const result = await importEquipment(data);
+          if (result.success && result.data) {
+            const { summary } = result.data;
+            setIsImportDialogOpen(false);
+            
+            const totalNew = summary.mainsNew + summary.accessoriesNew;
+            const totalExisting = summary.mainsExisting + summary.accessoriesExisting;
+            
+            let description = `${totalNew} novo(s) (${summary.mainsNew} principais, ${summary.accessoriesNew} acessórios).`;
+            if (totalExisting > 0) {
+              description += ` ${totalExisting} já cadastrado(s).`;
+            }
+            if (summary.skippedMissingParent > 0) {
+              description += ` ${summary.skippedMissingParent} acessório(s) ignorado(s) (sem item principal).`;
+            }
+            
+            enhancedToast.success({
+              title: 'Importação concluída!',
+              description
+            });
+            
+            return summary;
+          } else {
+            throw new Error(result.error || 'Erro na importação');
+          }
         }}
       />
 

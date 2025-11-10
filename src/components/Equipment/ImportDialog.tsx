@@ -21,16 +21,27 @@ import { importDebug } from '@/lib/debug';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+interface ImportSummary {
+  totalParsed: number;
+  mainsNew: number;
+  accessoriesNew: number;
+  mainsExisting: number;
+  accessoriesExisting: number;
+  skippedMissingParent: number;
+  errors: string[];
+}
+
 interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (equipment: any[]) => void;
+  onImport: (equipment: any[]) => Promise<ImportSummary>;
 }
 
 export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [step, setStep] = useState<'upload' | 'preview' | 'complete'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -86,13 +97,10 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
     setIsProcessing(true);
     try {
       importDebug('Starting import of items', { count: importResult.data.length });
-      await onImport(importResult.data);
+      const summary = await onImport(importResult.data);
+      setImportSummary(summary);
       setStep('complete');
-      importDebug('Import completed successfully');
-      toast({
-        title: "Importação concluída",
-        description: `${importResult.successRows} equipamentos importados com sucesso.`,
-      });
+      importDebug('Import completed successfully', summary);
     } catch (error) {
       importDebug('Import failed', error);
       toast({
@@ -108,6 +116,7 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
   const handleClose = () => {
     setFile(null);
     setImportResult(null);
+    setImportSummary(null);
     setStep('upload');
     setIsProcessing(false);
     onOpenChange(false);
@@ -263,20 +272,69 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
     );
   };
 
-  const renderCompleteStep = () => (
-    <div className="text-center space-y-4">
-      <CheckCircle className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
-      <div>
-        <h3 className="text-lg font-semibold">Importação Concluída!</h3>
-        <p className="text-muted-foreground">
-          {importResult?.successRows} equipamentos foram importados com sucesso.
-        </p>
+  const renderCompleteStep = () => {
+    if (!importSummary) return null;
+    
+    const totalNew = importSummary.mainsNew + importSummary.accessoriesNew;
+    const totalExisting = importSummary.mainsExisting + importSummary.accessoriesExisting;
+    
+    return (
+      <div className="text-center space-y-6">
+        <CheckCircle className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
+        <div>
+          <h3 className="text-lg font-semibold">Importação Concluída!</h3>
+          <p className="text-muted-foreground mt-2">
+            Os equipamentos foram processados com sucesso
+          </p>
+        </div>
+
+        <div className="space-y-3 text-left max-w-md mx-auto">
+          <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <span className="text-sm font-medium">Novos inseridos:</span>
+            <Badge variant="default" className="bg-green-600">
+              {totalNew} ({importSummary.mainsNew} principais, {importSummary.accessoriesNew} acessórios)
+            </Badge>
+          </div>
+
+          {totalExisting > 0 && (
+            <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <span className="text-sm font-medium">Já cadastrados:</span>
+              <Badge variant="secondary">
+                {totalExisting} ({importSummary.mainsExisting} principais, {importSummary.accessoriesExisting} acessórios)
+              </Badge>
+            </div>
+          )}
+
+          {importSummary.skippedMissingParent > 0 && (
+            <div className="flex justify-between items-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+              <span className="text-sm font-medium">Acessórios ignorados:</span>
+              <Badge variant="outline" className="border-orange-500 text-orange-700 dark:text-orange-400">
+                {importSummary.skippedMissingParent} (sem item principal)
+              </Badge>
+            </div>
+          )}
+
+          {importSummary.errors.length > 0 && (
+            <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+              <p className="text-sm font-medium text-destructive mb-2">Avisos:</p>
+              <ul className="text-xs space-y-1 text-muted-foreground">
+                {importSummary.errors.slice(0, 5).map((error, idx) => (
+                  <li key={idx}>• {error}</li>
+                ))}
+                {importSummary.errors.length > 5 && (
+                  <li>• ... e mais {importSummary.errors.length - 5} avisos</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <Button onClick={handleClose} className="w-full max-w-xs">
+          Fechar
+        </Button>
       </div>
-      <Button onClick={handleClose}>
-        Fechar
-      </Button>
-    </div>
-  );
+    );
+  };
 
   return (
     <ResponsiveDialog open={open} onOpenChange={handleClose}>
