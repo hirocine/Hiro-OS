@@ -3,54 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { usePlatformAccesses } from '../hooks/usePlatformAccesses';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import type { PlatformAccessForm } from '../types';
 
-const accessesToAdd = [
-  {
-    platformName: "ArtGrid",
-    platformUrl: "https://artgrid.io",
-    username: "gabriel@hiro.film",
-    password: "A·HiroFilm5044",
-    category: "stock" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Motion Array",
-    platformUrl: "https://motionarray.com",
-    username: "gabriel@hiro.film",
-    password: "M·HiroFilm5044",
-    category: "stock" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Envato Elements (até 10/12/2025)",
-    platformUrl: "https://elements.envato.com",
-    username: "gabriel@hiro.film",
-    password: "EE·HiroFilm5044",
-    category: "stock" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Shutterstock",
-    platformUrl: "https://shutterstock.com",
-    username: "plataforma@hiro.film",
-    password: "SS·HiroFilm5044",
-    category: "stock" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Epidemic Sound",
-    platformUrl: "https://epidemicsound.com",
-    username: "gabriel@hiro.film",
-    password: "EP·HiroFilm5044",
-    category: "music" as const,
-    isFavorite: false,
-    isActive: true
-  }
-];
+const accessesToAdd: PlatformAccessForm[] = [];
 
 interface ImportResult {
   platformName: string;
