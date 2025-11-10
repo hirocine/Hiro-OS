@@ -449,9 +449,6 @@ export function CategoryManagement() {
                           className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="w-8 justify-center">
-                              {sub.order}
-                            </Badge>
                             <FileText className="h-4 w-4 text-muted-foreground" />
                             <span>{sub.name}</span>
                             {sub.usageCount > 0 && (
