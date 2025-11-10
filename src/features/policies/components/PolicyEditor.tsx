@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import ReactMarkdown from 'react-markdown';
 import type { CompanyPolicy, PolicyForm } from '../types';
 import { MarkdownToolbar } from './MarkdownToolbar';
@@ -87,13 +87,15 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
 
           <div className="space-y-2">
             <Label>Conteúdo (Markdown) *</Label>
-            <Tabs defaultValue="edit" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="edit">Editar</TabsTrigger>
-                <TabsTrigger value="preview">Preview</TabsTrigger>
-              </TabsList>
+            
+            {/* Container split-view */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               
-              <TabsContent value="edit" className="mt-2 space-y-2">
+              {/* Coluna Esquerda: Editor */}
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground font-medium mb-1">
+                  Editor
+                </div>
                 <MarkdownToolbar
                   textareaRef={textareaRef}
                   content={content}
@@ -104,16 +106,27 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="# Título da Seção&#10;&#10;Escreva o conteúdo aqui...&#10;&#10;## Subtítulo&#10;&#10;- Item 1&#10;- Item 2"
-                  className="min-h-[400px] font-mono text-sm"
+                  className="min-h-[400px] font-mono text-sm resize-none"
                 />
-              </TabsContent>
+              </div>
               
-              <TabsContent value="preview" className="mt-2">
-                <div className="border rounded-md p-6 min-h-[400px] prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown>{content}</ReactMarkdown>
+              {/* Coluna Direita: Preview */}
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground font-medium mb-1">
+                  Preview
                 </div>
-              </TabsContent>
-            </Tabs>
+                <div className="border rounded-md p-6 min-h-[400px] max-h-[520px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none">
+                  {content ? (
+                    <ReactMarkdown>{content}</ReactMarkdown>
+                  ) : (
+                    <p className="text-muted-foreground italic">
+                      O preview aparecerá aqui conforme você digita...
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+            </div>
           </div>
         </div>
 
