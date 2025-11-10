@@ -119,7 +119,7 @@ export function useEquipment(): UseEquipmentReturn {
   const enrichedEquipment = useMemo((): Array<Equipment & { hasAccessories: boolean; isExpanded: boolean }> => {
     return equipment.map(item => {
       const hasAccessories = equipment.some(eq => eq.parentId === item.id);
-      const isExpanded = expandedItems[item.id] ?? (hasAccessories ? true : false);
+      const isExpanded = expandedItems[item.id] ?? false;
       
       return {
         ...item,
