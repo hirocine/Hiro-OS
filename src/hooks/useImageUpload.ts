@@ -21,6 +21,60 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_IMAGES = 20;
 
+const compressImage = async (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error('Falha ao obter contexto do canvas'));
+          return;
+        }
+        
+        // Calcular dimensões mantendo proporção (max 1920x1920)
+        const maxSize = 1920;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          } else {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Comprimir para WebP com qualidade 85%
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Falha na compressão'));
+            }
+          },
+          'image/webp',
+          0.85
+        );
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 export const useImageUpload = () => {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -100,12 +154,16 @@ export const useImageUpload = () => {
           : img
       ));
 
-      const fileExt = imageFile.file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      // Comprimir imagem antes do upload
+      const compressedBlob = await compressImage(imageFile.file);
+      
+      // Sempre usar extensão .webp para arquivos comprimidos
+      const fileName = `${Date.now()}-${Math.random()}.webp`;
 
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, imageFile.file, {
+        .upload(fileName, compressedBlob, {
+          contentType: 'image/webp',
           cacheControl: '3600',
           upsert: false
         });
