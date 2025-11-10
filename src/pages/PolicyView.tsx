@@ -8,8 +8,6 @@ import { PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import type { PolicyForm } from '@/features/policies';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { PageHeader } from '@/components/ui/page-header';
 import DOMPurify from 'dompurify';
 
 export default function PolicyView() {
@@ -55,47 +53,40 @@ export default function PolicyView() {
 
   return (
     <>
-      <ResponsiveContainer maxWidth="xl">
-        <PageHeader
-          title={
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{policy.icon_url || '📋'}</span>
-              {policy.title}
-            </div>
-          }
-          subtitle={
-            <Button 
-              variant="ghost" 
+      <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
+        {/* Header com botão Voltar */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => navigate('/politicas')}
-              className="-ml-2"
+              className="p-2"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Políticas
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-          }
-          actions={
-            isAdmin && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditorOpen(true)}
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Excluir
-                </Button>
-              </>
-            )
-          }
-        />
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{policy.icon_url || '📋'}</span>
+              <h1 className="text-2xl md:text-3xl font-bold">{policy.title}</h1>
+            </div>
+          </div>
+          
+          {/* Botões de ação */}
+          {isAdmin && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditorOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </Button>
+              <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir
+              </Button>
+            </div>
+          )}
+        </div>
 
+        {/* Conteúdo da política */}
         <div 
           className="prose prose-lg dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ 
@@ -105,7 +96,7 @@ export default function PolicyView() {
             })
           }} 
         />
-      </ResponsiveContainer>
+      </div>
 
       {isAdmin && (
         <>
