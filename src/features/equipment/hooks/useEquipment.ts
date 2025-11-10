@@ -435,8 +435,10 @@ export function useEquipment(): UseEquipmentReturn {
   const importEquipment = async (importedEquipment: Omit<Equipment, 'id'>[]): Promise<Result<Equipment[]>> => {
     const result = await wrapAsync(async () => {
       const mainItems = importedEquipment.filter(item => item.itemType === 'main');
+      const accessories = importedEquipment.filter(item => item.itemType === 'accessory');
       const allInsertedItems: Equipment[] = [];
 
+      // PASSO 1: Inserir itens principais
       if (mainItems.length > 0) {
         const dbMainItems = mainItems.map(item => ({
           name: item.name,
@@ -455,7 +457,10 @@ export function useEquipment(): UseEquipmentReturn {
           depreciated_value: item.depreciatedValue || null,
           receive_date: item.receiveDate || null,
           store: item.store || null,
-          invoice: item.invoice || null
+          invoice: item.invoice || null,
+          subcategory: item.subcategory || null,
+          custom_category: item.customCategory || null,
+          capacity: item.capacity || null
         }));
 
         const { data: mainData, error: mainError } = await supabase
@@ -471,6 +476,8 @@ export function useEquipment(): UseEquipmentReturn {
             name: item.name,
             brand: item.brand,
             category: item.category as Equipment['category'],
+            subcategory: item.subcategory,
+            customCategory: item.custom_category,
             status: item.status as Equipment['status'],
             itemType: (item.item_type || 'main') as Equipment['itemType'],
             parentId: item.parent_id,
@@ -485,7 +492,90 @@ export function useEquipment(): UseEquipmentReturn {
             depreciatedValue: item.depreciated_value ? Number(item.depreciated_value) : undefined,
             receiveDate: item.receive_date,
             store: item.store,
-            invoice: item.invoice
+            invoice: item.invoice,
+            capacity: item.capacity ? Number(item.capacity) : undefined
+          })) as Equipment[]);
+        }
+      }
+
+      // PASSO 2: Inserir acessórios com vinculação correta
+      if (accessories.length > 0) {
+        const dbAccessories = accessories.map(item => {
+          // Encontrar o parent_id real baseado no patrimônio
+          let realParentId: string | null = null;
+          
+          if (item.patrimonyNumber) {
+            // Extrair prefixo do patrimônio do acessório (ex: "00007.1" → "00007")
+            const match = item.patrimonyNumber.match(/^(.+)\.\d+$/);
+            if (match) {
+              const parentPatrimony = `${match[1]}.0`;
+              const parentEquipment = allInsertedItems.find(
+                eq => eq.patrimonyNumber === parentPatrimony
+              );
+              if (parentEquipment) {
+                realParentId = parentEquipment.id;
+              }
+            }
+          }
+
+          return {
+            name: item.name,
+            brand: item.brand,
+            category: item.category,
+            status: item.status,
+            item_type: item.itemType,
+            parent_id: realParentId,
+            serial_number: item.serialNumber || null,
+            purchase_date: item.purchaseDate || null,
+            last_maintenance: item.lastMaintenance || null,
+            description: item.description || null,
+            image: item.image || null,
+            value: item.value || null,
+            patrimony_number: item.patrimonyNumber || null,
+            depreciated_value: item.depreciatedValue || null,
+            receive_date: item.receiveDate || null,
+            store: item.store || null,
+            invoice: item.invoice || null,
+            subcategory: item.subcategory || null,
+            custom_category: item.customCategory || null,
+            capacity: item.capacity || null
+          };
+        });
+
+        const { data: accessoriesData, error: accessoriesError } = await supabase
+          .from('equipments')
+          .insert(dbAccessories)
+          .select();
+
+        if (accessoriesError) {
+          console.error('Erro ao inserir acessórios:', accessoriesError);
+          throw createDatabaseError(`Erro ao inserir acessórios: ${accessoriesError.message}`);
+        }
+
+        if (accessoriesData) {
+          allInsertedItems.push(...accessoriesData.map(item => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand,
+            category: item.category as Equipment['category'],
+            subcategory: item.subcategory,
+            customCategory: item.custom_category,
+            status: item.status as Equipment['status'],
+            itemType: (item.item_type || 'accessory') as Equipment['itemType'],
+            parentId: item.parent_id,
+            isExpanded: false,
+            serialNumber: item.serial_number,
+            purchaseDate: item.purchase_date,
+            lastMaintenance: item.last_maintenance,
+            description: item.description,
+            image: item.image,
+            value: item.value ? Number(item.value) : undefined,
+            patrimonyNumber: item.patrimony_number,
+            depreciatedValue: item.depreciated_value ? Number(item.depreciated_value) : undefined,
+            receiveDate: item.receive_date,
+            store: item.store,
+            invoice: item.invoice,
+            capacity: item.capacity ? Number(item.capacity) : undefined
           })) as Equipment[]);
         }
       }
