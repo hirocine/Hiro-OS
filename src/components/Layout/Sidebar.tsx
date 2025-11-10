@@ -18,9 +18,9 @@ const navigation: NavigationItem[] = [
     icon: Home,
   },
   {
-    name: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
+    name: 'Projetos',
+    href: '/projetos',
+    icon: FolderOpen,
   },
   {
     name: 'Inventário',
@@ -28,14 +28,14 @@ const navigation: NavigationItem[] = [
     icon: Package,
   },
   {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
     name: 'SSDs',
     href: '/ssds',
     icon: HardDrive,
-  },
-  {
-    name: 'Projetos',
-    href: '/projetos',
-    icon: FolderOpen,
   },
   {
     name: 'Plataformas',
