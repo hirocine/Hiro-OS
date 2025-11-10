@@ -6,47 +6,56 @@ import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const accessesToAdd = [
   {
-    platformName: "Framer",
-    platformUrl: "https://framer.com",
-    username: "plataforma@hiro.film",
-    password: "Login via Inbox Email",
-    category: "site" as const,
+    platformName: "DaVinci Resolve (Chave 2)",
+    platformUrl: "https://blackmagicdesign.com",
+    username: "",
+    password: "BSG3D-T2F3W-1PFMV-1R3Y2-XX7CY",
+    category: "software" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "Pinterest",
-    platformUrl: "https://pinterest.com",
-    username: "plataforma@hiro.film",
-    password: "P·HiroFilm5044",
-    category: "social_media" as const,
+    platformName: "4K Download (Android)",
+    platformUrl: "https://4kdownload.com",
+    username: "",
+    password: "84e8f814abd64ce5baf31167cf86ac79",
+    category: "software" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "Linktree",
-    platformUrl: "https://linktr.ee",
-    username: "gabriel@hiro.film",
-    password: "L·HiroFilm5044",
-    category: "social_media" as const,
+    platformName: "4K Download (Compressor Imagem)",
+    platformUrl: "https://4kdownload.com",
+    username: "",
+    password: "e0a56fa28fcc410a8cd06cbcc9649737",
+    category: "software" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "Behance",
-    platformUrl: "https://behance.net",
-    username: "plataforma@hiro.film",
-    password: "*9$%n-QhsRKa2q%",
-    category: "social_media" as const,
+    platformName: "4K Download (Converter YouTube→MP3)",
+    platformUrl: "https://4kdownload.com",
+    username: "",
+    password: "159797a0e6e34f43be088e97a2758ae0",
+    category: "software" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "Instagram",
-    platformUrl: "https://instagram.com",
-    username: "hiro.film",
-    password: "I·HiroFilm5044",
-    category: "social_media" as const,
+    platformName: "4K Download (Vídeo TikTok Download)",
+    platformUrl: "https://4kdownload.com",
+    username: "",
+    password: "1f25ba79449c425699f59e61e8b10c83",
+    category: "software" as const,
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "4K Download (Vídeo Download)",
+    platformUrl: "https://4kdownload.com",
+    username: "",
+    password: "6bfdd8f41f2441d4bde0d9063bd661b6",
+    category: "software" as const,
     isFavorite: false,
     isActive: true
   }
