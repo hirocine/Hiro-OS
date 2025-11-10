@@ -22,7 +22,8 @@ import {
   Undo,
   Redo,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 
 interface TipTapEditorProps {
   content: string;
@@ -36,12 +37,42 @@ const turndownService = new TurndownService({
 });
 
 export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorProps) {
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isUpdatingRef = useRef(false);
+
+  // Debounced conversion function
+  const debouncedConvert = useCallback((html: string) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      try {
+        // Check size limit (50,000 characters)
+        if (html.length > 50000) {
+          toast.warning('Texto muito grande', {
+            description: 'Documentos muito grandes podem afetar a performance. Considere dividir em múltiplas políticas.',
+          });
+        }
+
+        const markdown = turndownService.turndown(html);
+        onChange(markdown);
+      } catch (error) {
+        console.error('Error converting to markdown:', error);
+        toast.error('Erro ao processar texto', {
+          description: 'Houve um problema ao converter o conteúdo. Tente novamente.',
+        });
+      }
+    }, 300);
+  }, [onChange]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
         },
+        link: false, // Disable duplicate Link extension from StarterKit
       }),
       Link.configure({
         openOnClick: false,
@@ -61,21 +92,44 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
     content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      const markdown = turndownService.turndown(html);
-      onChange(markdown);
+      debouncedConvert(html);
     },
     editorProps: {
       attributes: {
         class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-4',
       },
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData('text/plain') || '';
+        
+        if (text.length > 100000) {
+          event.preventDefault();
+          toast.error('Texto muito grande', {
+            description: 'O texto colado excede o limite máximo. Por favor, divida em partes menores.',
+          });
+          return true;
+        }
+        
+        return false; // Allow default paste behavior
+      },
     },
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
+    if (editor && !isUpdatingRef.current && content !== editor.getHTML()) {
+      isUpdatingRef.current = true;
       editor.commands.setContent(content);
+      isUpdatingRef.current = false;
     }
   }, [content, editor]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!editor) {
     return null;
