@@ -85,12 +85,12 @@ export default function PolicyView() {
       </div>
 
       <div className="container mx-auto px-6 pt-6 pb-12 max-w-[800px]">
-        <div className="text-center mb-12 space-y-4">
-          <div className="text-8xl mb-6">
+        <div className="flex items-center gap-4 mb-12">
+          <div className="text-5xl flex-shrink-0">
             {policy.icon_url || '📋'}
           </div>
           
-          <h1 className="text-4xl font-bold">
+          <h1 className="text-4xl font-bold text-left">
             {policy.title}
           </h1>
         </div>
