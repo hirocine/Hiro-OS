@@ -99,11 +99,6 @@ export default function PolicyView() {
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <ReactMarkdown>{policy.content}</ReactMarkdown>
         </div>
-
-        <div className="mt-12 pt-6 border-t text-sm text-muted-foreground text-center">
-          Criado por {policy.creator_name} em{' '}
-          {new Date(policy.created_at).toLocaleDateString('pt-BR')}
-        </div>
       </div>
 
       {isAdmin && (
