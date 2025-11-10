@@ -420,6 +420,50 @@ export function usePlatformAccesses() {
     }
   }, []);
 
+  // Get password (decrypt and return)
+  const getPassword = useCallback(async (accessId: string): Promise<string | null> => {
+    try {
+      const access = accesses.find(a => a.id === accessId);
+      if (!access) {
+        toast.error('Acesso não encontrado');
+        return null;
+      }
+
+      logger.info('Decrypting password for display', {
+        module: 'platform-accesses',
+        data: { id: accessId }
+      });
+
+      const { data, error } = await supabase.functions.invoke(
+        'manage-password',
+        {
+          body: { 
+            action: 'decrypt', 
+            encryptedPassword: access.encrypted_password 
+          }
+        }
+      );
+
+      if (error) {
+        logger.error('Failed to decrypt password', {
+          module: 'platform-accesses',
+          error
+        });
+        toast.error('Erro ao descriptografar senha');
+        return null;
+      }
+
+      return data.password;
+    } catch (error) {
+      logger.error('Failed to get password', {
+        module: 'platform-accesses',
+        error
+      });
+      toast.error('Erro ao obter senha');
+      return null;
+    }
+  }, [accesses]);
+
   return {
     accesses: filteredAccesses,
     stats,
@@ -432,6 +476,7 @@ export function usePlatformAccesses() {
     deleteAccess: deleteAccess.mutateAsync,
     copyPassword,
     copyUsername,
+    getPassword,
     toggleFavorite: toggleFavorite.mutateAsync,
   };
 }

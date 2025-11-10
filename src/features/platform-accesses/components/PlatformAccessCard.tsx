@@ -1,4 +1,5 @@
-import { Star, ExternalLink, Copy, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { Star, ExternalLink, Copy, Pencil, Eye, EyeOff } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ interface PlatformAccessCardProps {
   onToggleFavorite: (id: string) => void;
   onCopyPassword: (id: string) => void;
   onCopyUsername: (username: string) => void;
+  onGetPassword: (id: string) => Promise<string | null>;
 }
 
 export function PlatformAccessCard({
@@ -20,9 +22,29 @@ export function PlatformAccessCard({
   onToggleFavorite,
   onCopyPassword,
   onCopyUsername,
+  onGetPassword,
 }: PlatformAccessCardProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [decryptedPassword, setDecryptedPassword] = useState<string>('');
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+
   const handleOpenUrl = () => {
     window.open(access.platform_url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleTogglePasswordVisibility = async () => {
+    if (!showPassword && !decryptedPassword) {
+      setIsLoadingPassword(true);
+      const password = await onGetPassword(access.id);
+      setIsLoadingPassword(false);
+      
+      if (password) {
+        setDecryptedPassword(password);
+        setShowPassword(true);
+      }
+    } else {
+      setShowPassword(!showPassword);
+    }
   };
 
   return (
@@ -120,9 +142,24 @@ export function PlatformAccessCard({
                 License Key
               </label>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border">
-                  ••••••••••••
+                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border break-all">
+                  {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={handleTogglePasswordVisibility}
+                  disabled={isLoadingPassword}
+                >
+                  {isLoadingPassword ? (
+                    <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  ) : showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   variant="outline"
                   size="icon"
@@ -163,9 +200,24 @@ export function PlatformAccessCard({
                 Senha
               </label>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border">
-                  ••••••••••••
+                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border break-all">
+                  {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={handleTogglePasswordVisibility}
+                  disabled={isLoadingPassword}
+                >
+                  {isLoadingPassword ? (
+                    <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  ) : showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   variant="outline"
                   size="icon"
