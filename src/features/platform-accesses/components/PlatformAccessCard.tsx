@@ -29,6 +29,7 @@ export function PlatformAccessCard({
     <Card className={cn(
       "p-6 hover:shadow-lg transition-all duration-300",
       "border-2 hover:border-primary/50",
+      "flex flex-col min-h-[380px]",
       !access.is_active && "opacity-60"
     )}>
       {/* Header com Favorite + Category + Status */}
@@ -84,7 +85,7 @@ export function PlatformAccessCard({
       </div>
 
       {/* Credenciais - Lógica condicional por categoria */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-3 mb-4 flex-grow">
         {access.category === 'software' ? (
           // MODO SOFTWARE: Mostrar apenas KEY
           <>
@@ -177,7 +178,7 @@ export function PlatformAccessCard({
       </div>
 
       {/* Botões de Ação */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-auto">
         {access.platform_url && (
           <Button
             variant="outline"
