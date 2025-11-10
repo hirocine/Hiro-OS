@@ -312,39 +312,77 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
       updateField(field, '');
     }
   };
+  // Função para formatar moeda durante digitação (em tempo real)
+  const formatCurrencyInput = (value: string): string => {
+    // Remove tudo que não seja dígito
+    const digits = value.replace(/\D/g, '');
+    
+    if (!digits) return '';
+    
+    // Converte para número (centavos)
+    const number = parseInt(digits, 10);
+    
+    // Formata para reais (divide por 100 para ter os centavos)
+    const formatted = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(number / 100);
+    
+    return formatted;
+  };
 
   // Handlers para campos monetários - Valor de Compra
   const handleValueFocus = () => {
     setIsEditingValue(true);
+    // Se já tem valor, formata ao receber foco
     const rawValue = formData.value ? formData.value.toString() : '';
-    setEditingValue(rawValue);
+    if (rawValue && parseFloat(rawValue) > 0) {
+      const formatted = formatCurrencyInput((parseFloat(rawValue) * 100).toString());
+      setEditingValue(formatted);
+    } else {
+      setEditingValue('');
+    }
   };
 
   const handleValueBlur = () => {
     setIsEditingValue(false);
-    const parsed = parseCurrencyInput(editingValue);
+    // Remove formatação e salva apenas o número
+    const digits = editingValue.replace(/\D/g, '');
+    const parsed = digits ? parseInt(digits, 10) / 100 : 0;
     updateField('value', parsed);
   };
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingValue(e.target.value);
+    const inputValue = e.target.value;
+    const formatted = formatCurrencyInput(inputValue);
+    setEditingValue(formatted);
   };
 
   // Handlers para campos monetários - Valor Depreciado
   const handleDepreciatedValueFocus = () => {
     setIsEditingDepreciatedValue(true);
     const rawValue = formData.depreciatedValue ? formData.depreciatedValue.toString() : '';
-    setEditingDepreciatedValue(rawValue);
+    if (rawValue && parseFloat(rawValue) > 0) {
+      const formatted = formatCurrencyInput((parseFloat(rawValue) * 100).toString());
+      setEditingDepreciatedValue(formatted);
+    } else {
+      setEditingDepreciatedValue('');
+    }
   };
 
   const handleDepreciatedValueBlur = () => {
     setIsEditingDepreciatedValue(false);
-    const parsed = parseCurrencyInput(editingDepreciatedValue);
+    const digits = editingDepreciatedValue.replace(/\D/g, '');
+    const parsed = digits ? parseInt(digits, 10) / 100 : 0;
     updateField('depreciatedValue', parsed);
   };
 
   const handleDepreciatedValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingDepreciatedValue(e.target.value);
+    const inputValue = e.target.value;
+    const formatted = formatCurrencyInput(inputValue);
+    setEditingDepreciatedValue(formatted);
   };
 
   // Helper para mapear categoria para variante de badge
