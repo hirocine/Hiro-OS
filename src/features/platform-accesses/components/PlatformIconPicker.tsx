@@ -94,11 +94,11 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
         <div>
           <Label className="text-sm text-muted-foreground mb-2 block">Preview</Label>
           <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-lg border-2 border-primary/20 bg-background flex items-center justify-center p-4">
+            <div className="w-20 h-20 rounded-lg border-2 border-primary/20 bg-background overflow-hidden">
               <img
                 src={selectedIconUrl}
                 alt="Selected icon"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
