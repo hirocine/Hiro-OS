@@ -84,8 +84,11 @@ export function PlatformAccessCard({
         </div>
       </div>
 
+      {/* Spacer - empurra credenciais para o bottom */}
+      <div className="flex-grow" />
+
       {/* Credenciais - Lógica condicional por categoria */}
-      <div className="space-y-3 mb-4 flex-grow">
+      <div className="space-y-3 mb-4">
         {access.category === 'software' ? (
           // MODO SOFTWARE: Mostrar apenas KEY
           <>
