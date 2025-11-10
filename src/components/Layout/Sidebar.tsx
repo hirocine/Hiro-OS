@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutDashboard, Package, Settings, BarChart3, FolderOpen, HardDrive, Key } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Settings, BarChart3, FolderOpen, HardDrive, Key, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -36,6 +36,11 @@ const navigation: NavigationItem[] = [
     name: 'SSDs',
     href: '/ssds',
     icon: HardDrive,
+  },
+  {
+    name: 'Políticas',
+    href: '/politicas',
+    icon: FileText,
   },
   {
     name: 'Plataformas',

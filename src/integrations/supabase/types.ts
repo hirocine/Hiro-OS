@@ -104,6 +104,39 @@ export type Database = {
           },
         ]
       }
+      company_policies: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          icon_url: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          icon_url?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          icon_url?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equipment_categories: {
         Row: {
           category: string

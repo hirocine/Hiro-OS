@@ -26,6 +26,7 @@ const navigation: NavigationItem[] = [
   { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
+  { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
 ];
 
