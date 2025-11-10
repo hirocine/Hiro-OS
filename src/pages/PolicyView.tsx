@@ -97,7 +97,7 @@ export default function PolicyView() {
             </h1>
           </div>
 
-          <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="prose prose-lg dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
             <ReactMarkdown>{policy.content}</ReactMarkdown>
           </div>
         </div>

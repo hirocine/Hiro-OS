@@ -115,7 +115,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
                 <div className="text-xs text-muted-foreground font-medium mb-1">
                   Preview
                 </div>
-                <div className="border rounded-md p-6 min-h-[300px] max-h-[400px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none">
+                <div className="border rounded-md p-6 min-h-[300px] max-h-[400px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
                   {content ? (
                     <ReactMarkdown>{content}</ReactMarkdown>
                   ) : (
