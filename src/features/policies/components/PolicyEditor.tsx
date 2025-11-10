@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ReactMarkdown from 'react-markdown';
 import type { CompanyPolicy, PolicyForm } from '../types';
+import { MarkdownToolbar } from './MarkdownToolbar';
 
 interface PolicyEditorProps {
   open: boolean;
@@ -16,6 +17,7 @@ interface PolicyEditorProps {
 }
 
 export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState(policy?.title || '');
   const [icon, setIcon] = useState(policy?.icon_url || '📋');
   const [content, setContent] = useState(policy?.content || '');
@@ -91,8 +93,14 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
                 <TabsTrigger value="preview">Preview</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="edit" className="mt-2">
+              <TabsContent value="edit" className="mt-2 space-y-2">
+                <MarkdownToolbar
+                  textareaRef={textareaRef}
+                  content={content}
+                  setContent={setContent}
+                />
                 <Textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="# Título da Seção&#10;&#10;Escreva o conteúdo aqui...&#10;&#10;## Subtítulo&#10;&#10;- Item 1&#10;- Item 2"
