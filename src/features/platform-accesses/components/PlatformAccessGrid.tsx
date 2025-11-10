@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlatformAccessCard } from './PlatformAccessCard';
@@ -17,7 +17,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export function PlatformAccessGrid() {
+interface PlatformAccessGridProps {
+  showAddDialog?: boolean;
+  setShowAddDialog?: (show: boolean) => void;
+}
+
+export function PlatformAccessGrid({
+  showAddDialog = false,
+  setShowAddDialog
+}: PlatformAccessGridProps) {
   const {
     accesses,
     stats,
@@ -37,6 +45,15 @@ export function PlatformAccessGrid() {
   const [editingAccess, setEditingAccess] = useState<PlatformAccess | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [accessToDelete, setAccessToDelete] = useState<string | null>(null);
+
+  // Sincronizar com prop externa
+  useEffect(() => {
+    if (showAddDialog) {
+      setEditingAccess(null);
+      setDialogOpen(true);
+      setShowAddDialog?.(false);
+    }
+  }, [showAddDialog, setShowAddDialog]);
 
   const handleAdd = () => {
     setEditingAccess(null);
@@ -79,20 +96,6 @@ export function PlatformAccessGrid() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Acessos de Plataformas</h2>
-          <p className="text-muted-foreground">
-            Gerencie suas credenciais de forma segura
-          </p>
-        </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Acesso
-        </Button>
-      </div>
-
       {/* Filters */}
       <PlatformFilters
         filters={filters}
