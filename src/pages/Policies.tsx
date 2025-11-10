@@ -5,6 +5,8 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { usePolicies } from '@/features/policies';
 import { PolicyCard, PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
+import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import type { PolicyForm } from '@/features/policies';
 
 export default function Policies() {
@@ -17,22 +19,19 @@ export default function Policies() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">📋 Políticas da Empresa</h1>
-          <p className="text-muted-foreground mt-1">
-            Acesse as políticas e diretrizes da empresa
-          </p>
-        </div>
-        
-        {isAdmin && (
-          <Button onClick={() => setEditorOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Política
-          </Button>
-        )}
-      </div>
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader
+        title="📋 Políticas da Empresa"
+        subtitle="Acesse as políticas e diretrizes da empresa"
+        actions={
+          isAdmin ? (
+            <Button onClick={() => setEditorOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Política
+            </Button>
+          ) : undefined
+        }
+      />
 
       {policies.length === 0 ? (
         <div className="text-center py-12">
@@ -62,6 +61,6 @@ export default function Policies() {
         onOpenChange={setEditorOpen}
         onSave={addPolicy}
       />
-    </div>
+    </ResponsiveContainer>
   );
 }
