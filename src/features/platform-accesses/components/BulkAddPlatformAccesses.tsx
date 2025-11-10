@@ -7,11 +7,20 @@ import type { PlatformAccessForm } from '../types';
 
 const accessesToAdd: PlatformAccessForm[] = [
   {
-    platformName: "Epidemic Sound",
-    platformUrl: "https://epidemicsound.com",
-    username: "gabriel@hiro.film",
-    password: "EP·HiroFilm5044",
-    category: "music",
+    platformName: "Adobe",
+    platformUrl: "https://adobe.com",
+    username: "giovanna.leite@hiro.film",
+    password: "#Hiro2024",
+    category: "other",
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "Adobe",
+    platformUrl: "https://adobe.com",
+    username: "plataforma@hiro.film",
+    password: "A·Adobe5044",
+    category: "other",
     isFavorite: false,
     isActive: true
   }
