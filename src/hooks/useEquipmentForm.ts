@@ -5,7 +5,8 @@ import { useEquipment } from '@/features/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { findParentCategory, findSubcategory } from '@/lib/categoryMappingTemplate';
+import { normalizeString } from '@/lib/stringUtils';
+import { useCategories } from '@/hooks/useCategories';
 
 interface UseEquipmentFormProps {
   equipmentId?: string;
@@ -14,6 +15,7 @@ interface UseEquipmentFormProps {
 export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   const navigate = useNavigate();
   const { allEquipment, addEquipment, updateEquipment } = useEquipment();
+  const { loading: categoriesLoading, getCategoriesHierarchy, getSubcategoriesForCategory } = useCategories();
   
   const [formData, setFormData] = useState<Omit<Equipment, 'id'>>({
     name: '',
@@ -42,6 +44,27 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  // Helpers para normalização canônica (usa banco como verdade)
+  const resolveCategoryToCanonical = useCallback((raw: string): string => {
+    if (!raw) return '';
+    
+    const categoryNames = getCategoriesHierarchy().map(c => c.categoryName);
+    const normalized = normalizeString(raw);
+    
+    const match = categoryNames.find(name => normalizeString(name) === normalized);
+    return match || raw;
+  }, [getCategoriesHierarchy]);
+
+  const resolveSubcategoryToCanonical = useCallback((parent: string, rawSub: string): string => {
+    if (!parent || !rawSub) return rawSub;
+    
+    const subcategories = getSubcategoriesForCategory(parent);
+    const normalized = normalizeString(rawSub);
+    
+    const match = subcategories.find(sub => normalizeString(sub) === normalized);
+    return match || rawSub;
+  }, [getSubcategoriesForCategory]);
+
   // Carregar dados do equipamento se for edição
   useEffect(() => {
     if (equipmentId && allEquipment.length > 0) {
@@ -49,24 +72,34 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       const equipment = allEquipment.find(e => e.id === equipmentId);
       
       if (equipment) {
-        // Normalizar categoria e subcategoria para garantir match com o Select
-        const parent = findParentCategory(equipment.category);
-        const resolvedCategory = parent?.title || equipment.category || '';
+        // Se categorias ainda não carregaram, usar valores brutos (fallback ad-hoc mostrará)
+        // Quando categorias carregarem, este efeito roda novamente e normaliza
+        const canonicalCategory = categoriesLoading 
+          ? equipment.category 
+          : resolveCategoryToCanonical(equipment.category || '');
+          
+        const canonicalSubcategory = (categoriesLoading || !equipment.subcategory)
+          ? equipment.subcategory || ''
+          : resolveSubcategoryToCanonical(canonicalCategory, equipment.subcategory);
 
-        let resolvedSubcategory = equipment.subcategory || '';
-        if (parent && equipment.subcategory) {
-          const subConf = findSubcategory(parent, equipment.subcategory);
-          if (subConf) {
-            resolvedSubcategory = subConf.name;
+        logger.debug('Carregando equipamento para edição', {
+          module: 'equipment-form',
+          action: 'load_equipment',
+          data: {
+            originalCategory: equipment.category,
+            canonicalCategory,
+            originalSubcategory: equipment.subcategory,
+            canonicalSubcategory,
+            categoriesLoading
           }
-        }
+        });
 
         // Mapeamento explícito para evitar poluição do estado com propriedades extras
         setFormData({
           name: equipment.name,
           brand: equipment.brand,
-          category: resolvedCategory,
-          subcategory: resolvedSubcategory,
+          category: canonicalCategory,
+          subcategory: canonicalSubcategory,
           customCategory: equipment.customCategory || '',
           status: equipment.status,
           itemType: equipment.itemType,
@@ -98,7 +131,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       }
       setIsLoading(false);
     }
-  }, [equipmentId, allEquipment, navigate]);
+  }, [equipmentId, allEquipment, navigate, categoriesLoading, resolveCategoryToCanonical, resolveSubcategoryToCanonical]);
 
   const updateField = useCallback((field: keyof typeof formData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -112,6 +145,17 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       enhancedToast.error({
         title: 'Campos obrigatórios',
         description: 'Por favor, preencha nome, marca e categoria.'
+      });
+      return;
+    }
+
+    // Validação: categoria deve estar na lista (exceto se usuário está criando uma nova via dialog)
+    const categoryNames = getCategoriesHierarchy().map(c => c.categoryName);
+    if (!categoryNames.includes(formData.category)) {
+      enhancedToast.error({
+        title: 'Categoria inválida',
+        description: 'Selecione uma categoria válida da lista ou crie uma nova através do botão "Criar nova categoria".',
+        duration: 5000
       });
       return;
     }
@@ -144,11 +188,29 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
     setIsSubmitting(true);
     
     try {
+      // Reaplica normalização canônica antes de salvar
+      const canonicalCategory = resolveCategoryToCanonical(formData.category);
+      const canonicalSubcategory = formData.subcategory 
+        ? resolveSubcategoryToCanonical(canonicalCategory, formData.subcategory)
+        : null;
+
+      logger.debug('Salvando equipamento com normalização', {
+        module: 'equipment-form',
+        action: 'submit_equipment',
+        data: {
+          originalCategory: formData.category,
+          canonicalCategory,
+          originalSubcategory: formData.subcategory,
+          canonicalSubcategory
+        }
+      });
+
       // Sanitize data - using null explicitly for empty fields
       const sanitizedData = {
         ...formData,
+        category: canonicalCategory,
+        subcategory: canonicalSubcategory,
         parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : null,
-        subcategory: formData.subcategory?.trim() || null,
         customCategory: formData.customCategory?.trim() || null,
         capacity: formData.capacity && formData.capacity > 0 ? formData.capacity : null,
         value: formData.value && formData.value > 0 ? formData.value : null,

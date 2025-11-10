@@ -575,6 +575,16 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <SelectValue placeholder="Selecione uma categoria" />
             </SelectTrigger>
             <SelectContent>
+              {/* Fallback ad-hoc: Se categoria atual não está na lista, injeta dinamicamente */}
+              {formData.category && !getCategoriesHierarchy().some(cat => cat.categoryName === formData.category) && (
+                <>
+                  <SelectItem value={formData.category}>
+                    {formData.category} (valor atual - fora da lista)
+                  </SelectItem>
+                  <div className="border-t my-1" />
+                </>
+              )}
+              
               {/* Categorias do banco de dados */}
               {getCategoriesHierarchy().map((cat) => (
                 <SelectItem key={cat.categoryName} value={cat.categoryName}>
@@ -615,6 +625,16 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
+              {/* Fallback ad-hoc: Se subcategoria atual não está na lista, injeta dinamicamente */}
+              {formData.subcategory && !getSubcategoriesForCategory(formData.category).includes(formData.subcategory) && (
+                <>
+                  <SelectItem value={formData.subcategory}>
+                    {formData.subcategory} (valor atual - fora da lista)
+                  </SelectItem>
+                  <div className="border-t my-1" />
+                </>
+              )}
+              
               {getSubcategoriesForCategory(formData.category).map((sub) => (
                 <SelectItem key={sub} value={sub}>
                   {sub}

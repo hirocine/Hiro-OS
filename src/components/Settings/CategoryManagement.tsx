@@ -371,6 +371,63 @@ export function CategoryManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Botões de Manutenção */}
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="flex flex-col gap-2">
+              <span className="font-medium">Ferramentas de Manutenção</span>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={async () => {
+                    const result = await syncOrdersWithMapping();
+                    if (result.success) {
+                      toast({
+                        title: 'Sucesso',
+                        description: 'Categorias sincronizadas com o mapeamento padrão'
+                      });
+                      refetch();
+                    } else {
+                      toast({
+                        title: 'Erro',
+                        description: result.error,
+                        variant: 'destructive'
+                      });
+                    }
+                  }}
+                >
+                  Sincronizar com Mapeamento
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={async () => {
+                    const result = await cleanDuplicateCategories();
+                    if (result.success && result.data) {
+                      toast({
+                        title: 'Limpeza concluída',
+                        description: `${result.data.removed} duplicatas removidas, ${result.data.updatedEquipments} equipamentos atualizados`
+                      });
+                      refetch();
+                    } else {
+                      toast({
+                        title: 'Erro',
+                        description: result.error,
+                        variant: 'destructive'
+                      });
+                    }
+                  }}
+                >
+                  Limpar Duplicatas
+                </Button>
+              </div>
+              <span className="text-xs text-muted-foreground mt-1">
+                Use estas ferramentas para corrigir inconsistências e normalizar dados existentes
+              </span>
+            </AlertDescription>
+          </Alert>
+
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
