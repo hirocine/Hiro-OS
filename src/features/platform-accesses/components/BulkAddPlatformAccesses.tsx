@@ -7,19 +7,10 @@ import type { PlatformAccessForm } from '../types';
 
 const accessesToAdd: PlatformAccessForm[] = [
   {
-    platformName: "Adobe",
-    platformUrl: "https://adobe.com",
-    username: "giovanna.leite@hiro.film",
-    password: "#Hiro2024",
-    category: "other",
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "Adobe",
-    platformUrl: "https://adobe.com",
+    platformName: "MilaNote",
+    platformUrl: "https://app.milanote.com",
     username: "plataforma@hiro.film",
-    password: "A·Adobe5044",
+    password: "MN·HiroFilm5044",
     category: "other",
     isFavorite: false,
     isActive: true
