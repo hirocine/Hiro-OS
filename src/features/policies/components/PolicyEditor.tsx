@@ -88,10 +88,10 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
           <div className="space-y-2">
             <Label>Conteúdo (Markdown) *</Label>
             
-            {/* Container split-view */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Container vertical */}
+            <div className="space-y-4">
               
-              {/* Coluna Esquerda: Editor */}
+              {/* Editor (em cima) */}
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground font-medium mb-1">
                   Editor
@@ -110,12 +110,12 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
                 />
               </div>
               
-              {/* Coluna Direita: Preview */}
+              {/* Preview (embaixo) */}
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground font-medium mb-1">
                   Preview
                 </div>
-                <div className="border rounded-md p-6 min-h-[400px] max-h-[520px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none">
+                <div className="border rounded-md p-6 min-h-[300px] max-h-[400px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none">
                   {content ? (
                     <ReactMarkdown>{content}</ReactMarkdown>
                   ) : (
