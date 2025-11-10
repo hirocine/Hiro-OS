@@ -5,6 +5,7 @@ import { useEquipment } from '@/features/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
+import { findParentCategory, findSubcategory } from '@/lib/categoryMappingTemplate';
 
 interface UseEquipmentFormProps {
   equipmentId?: string;
@@ -17,7 +18,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
   const [formData, setFormData] = useState<Omit<Equipment, 'id'>>({
     name: '',
     brand: '',
-    category: 'camera',
+    category: '',
     subcategory: '',
     customCategory: '',
     status: 'available',
@@ -48,12 +49,24 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       const equipment = allEquipment.find(e => e.id === equipmentId);
       
       if (equipment) {
+        // Normalizar categoria e subcategoria para garantir match com o Select
+        const parent = findParentCategory(equipment.category);
+        const resolvedCategory = parent?.title || equipment.category || '';
+
+        let resolvedSubcategory = equipment.subcategory || '';
+        if (parent && equipment.subcategory) {
+          const subConf = findSubcategory(parent, equipment.subcategory);
+          if (subConf) {
+            resolvedSubcategory = subConf.name;
+          }
+        }
+
         // Mapeamento explícito para evitar poluição do estado com propriedades extras
         setFormData({
           name: equipment.name,
           brand: equipment.brand,
-          category: equipment.category,
-          subcategory: equipment.subcategory || '',
+          category: resolvedCategory,
+          subcategory: resolvedSubcategory,
           customCategory: equipment.customCategory || '',
           status: equipment.status,
           itemType: equipment.itemType,
