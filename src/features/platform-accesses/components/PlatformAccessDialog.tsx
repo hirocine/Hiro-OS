@@ -282,7 +282,7 @@ export function PlatformAccessDialog({
                         field.onChange(value);
                         setSelectedCategory(value as PlatformCategory);
                       }} 
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
