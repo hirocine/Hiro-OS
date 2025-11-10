@@ -49,7 +49,7 @@ const App = () => (
               <Route path="projects/:id/separation" element={<ProjectSeparation />} />
               <Route path="projects/:id/verification" element={<ProjectVerification />} />
               <Route path="projects/:id/withdrawal" element={<ProjectWithdrawal />} />
-              <Route path="accesses" element={<PlatformAccesses />} />
+              <Route path="plataformas" element={<PlatformAccesses />} />
               <Route path="profile" element={<Profile />} />
               
               <Route path="admin" element={<Admin />} />

@@ -34,7 +34,7 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Plataformas',
-    href: '/accesses',
+    href: '/plataformas',
     icon: Key,
   },
 ];
