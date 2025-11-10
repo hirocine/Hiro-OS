@@ -5,7 +5,6 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import TurndownService from 'turndown';
 import {
   Bold,
   Italic,
@@ -24,57 +23,32 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { marked } from 'marked';
 
 interface TipTapEditorProps {
   content: string;
-  onChange: (markdown: string) => void;
+  onChange: (html: string) => void;
   placeholder?: string;
 }
-
-const turndownService = new TurndownService({
-  headingStyle: 'atx',
-  codeBlockStyle: 'fenced',
-});
-
-// Helper to convert Markdown to HTML
-const markdownToHtml = (md: string): string => {
-  return marked.parse(md, { breaks: true }) as string;
-};
 
 export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorProps) {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isUpdatingRef = useRef(false);
-  const lastMarkdownRef = useRef<string>('');
 
-  // Debounced conversion function
-  const debouncedConvert = useCallback((html: string) => {
+  // Debounced onChange function
+  const debouncedChange = useCallback((html: string) => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      try {
-        // Check size limit (50,000 characters)
-        if (html.length > 50000) {
-          toast.warning('Texto muito grande', {
-            description: 'Documentos muito grandes podem afetar a performance. Considere dividir em múltiplas políticas.',
-          });
-        }
-
-        const markdown = turndownService.turndown(html);
-        
-        // Only call onChange if markdown actually changed
-        if (markdown !== lastMarkdownRef.current) {
-          lastMarkdownRef.current = markdown;
-          onChange(markdown);
-        }
-      } catch (error) {
-        console.error('Error converting to markdown:', error);
-        toast.error('Erro ao processar texto', {
-          description: 'Houve um problema ao converter o conteúdo. Tente novamente.',
+      // Check size limit (50,000 characters)
+      if (html.length > 50000) {
+        toast.warning('Texto muito grande', {
+          description: 'Documentos muito grandes podem afetar a performance. Considere dividir em múltiplas políticas.',
         });
       }
+
+      onChange(html);
     }, 300);
   }, [onChange]);
 
@@ -103,8 +77,9 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
     ],
     content,
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      debouncedConvert(html);
+      if (!isUpdatingRef.current) {
+        debouncedChange(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -145,14 +120,9 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
   });
 
   useEffect(() => {
-    if (editor && !isUpdatingRef.current && content !== lastMarkdownRef.current) {
+    if (editor && !isUpdatingRef.current && content !== editor.getHTML()) {
       isUpdatingRef.current = true;
-      lastMarkdownRef.current = content;
-      
-      // Convert markdown to HTML before setting content
-      const html = markdownToHtml(content);
-      editor.commands.setContent(html, { emitUpdate: false });
-      
+      editor.commands.setContent(content, { emitUpdate: false });
       isUpdatingRef.current = false;
     }
   }, [content, editor]);

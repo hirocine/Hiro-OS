@@ -89,7 +89,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
               placeholder="Escreva o conteúdo da política aqui..."
             />
             <p className="text-xs text-muted-foreground">
-              Use a barra de ferramentas acima para formatar o texto. O conteúdo será salvo em Markdown.
+              Use a barra de ferramentas acima para formatar o texto.
             </p>
           </div>
         </div>

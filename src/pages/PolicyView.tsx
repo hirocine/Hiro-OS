@@ -7,11 +7,9 @@ import { usePolicies } from '@/features/policies';
 import { PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
 import type { PolicyForm } from '@/features/policies';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import DOMPurify from 'dompurify';
 
 export default function PolicyView() {
   const { id } = useParams<{ id: string }>();
@@ -99,11 +97,15 @@ export default function PolicyView() {
             </h1>
           </div>
 
-          <div className="prose prose-lg dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-              {policy.content}
-            </ReactMarkdown>
-          </div>
+          <div 
+            className="prose prose-lg dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(policy.content, {
+                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
+              })
+            }} 
+          />
         </div>
       </ResponsiveContainer>
 
