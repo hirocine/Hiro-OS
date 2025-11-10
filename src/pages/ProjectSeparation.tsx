@@ -98,7 +98,7 @@ export default function ProjectSeparation() {
         title: "Equipamentos separados",
         description: "A separação dos equipamentos foi confirmada com sucesso.",
       });
-      navigate(`/projects/${id}`);
+      navigate(`/projetos/${id}`);
     } catch (error) {
       toast({
         title: "Erro ao confirmar separação",
@@ -112,7 +112,7 @@ export default function ProjectSeparation() {
   };
 
   const handleCancel = () => {
-    navigate(`/projects/${id}`);
+    navigate(`/projetos/${id}`);
   };
 
   const progressPercentage = totalCount > 0 ? (checkedCount / totalCount) * 100 : 0;

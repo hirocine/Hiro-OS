@@ -32,28 +32,28 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<LoadingScreenSkeleton />}>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/entrar" element={<Auth />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
-              <Route path="equipment" element={<Equipment />} />
-              <Route path="equipment/new" element={<AddEquipment />} />
-              <Route path="equipment/edit/:id" element={<AddEquipment />} />
+              <Route path="inventario" element={<Equipment />} />
+              <Route path="inventario/novo" element={<AddEquipment />} />
+              <Route path="inventario/editar/:id" element={<AddEquipment />} />
               <Route path="ssds" element={<SSDs />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="projects/new" element={<ProjectWithdrawal />} />
-              <Route path="projects/:id" element={<ProjectDetails />} />
-              <Route path="projects/:id/separation" element={<ProjectSeparation />} />
-              <Route path="projects/:id/verification" element={<ProjectVerification />} />
-              <Route path="projects/:id/withdrawal" element={<ProjectWithdrawal />} />
+              <Route path="projetos" element={<Projects />} />
+              <Route path="projetos/novo" element={<ProjectWithdrawal />} />
+              <Route path="projetos/:id" element={<ProjectDetails />} />
+              <Route path="projetos/:id/separacao" element={<ProjectSeparation />} />
+              <Route path="projetos/:id/verificacao" element={<ProjectVerification />} />
+              <Route path="projetos/:id/retirada" element={<ProjectWithdrawal />} />
               <Route path="plataformas" element={<PlatformAccesses />} />
-              <Route path="profile" element={<Profile />} />
+              <Route path="perfil" element={<Profile />} />
               
-              <Route path="admin" element={<Admin />} />
-              <Route path="security" element={<SecurityAdmin />} />
+              <Route path="administracao" element={<Admin />} />
+              <Route path="seguranca" element={<SecurityAdmin />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

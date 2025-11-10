@@ -19,7 +19,7 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Inventário',
-    href: '/equipment',
+    href: '/inventario',
     icon: Package,
   },
   {
@@ -29,7 +29,7 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Projetos',
-    href: '/projects',
+    href: '/projetos',
     icon: FolderOpen,
   },
   {
@@ -42,13 +42,13 @@ const navigation: NavigationItem[] = [
 const adminNavigation: NavigationItem[] = [
   {
     name: 'Administração',
-    href: '/admin',
+    href: '/administracao',
     icon: Settings,
     adminOnly: true,
   },
   {
     name: 'Segurança',
-    href: '/security',
+    href: '/seguranca',
     icon: Shield,
     adminOnly: true,
   },

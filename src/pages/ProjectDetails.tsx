@@ -184,7 +184,7 @@ export default function ProjectDetails() {
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Projeto não encontrado</h1>
           <p className="text-muted-foreground">{error || 'O projeto solicitado não existe.'}</p>
-          <Button onClick={() => navigate('/projects')}>Voltar aos Projetos</Button>
+          <Button onClick={() => navigate('/projetos')}>Voltar aos Projetos</Button>
         </div>
       </div>
     );
@@ -283,7 +283,7 @@ export default function ProjectDetails() {
         description: "O projeto foi excluído permanentemente.",
         variant: "destructive"
       });
-      navigate('/projects');
+      navigate('/projetos');
     } catch (error) {
       toast({
         title: "Erro ao excluir",
@@ -410,7 +410,7 @@ export default function ProjectDetails() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/projects')}
+            onClick={() => navigate('/projetos')}
             className="p-2"
           >
             <ArrowLeft className="h-4 w-4" />

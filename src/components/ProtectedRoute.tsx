@@ -23,7 +23,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     authDebug('No user, redirecting to auth');
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/entrar" replace />;
   }
 
   authDebug('User authenticated, rendering children');

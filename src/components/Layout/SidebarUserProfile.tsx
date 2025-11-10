@@ -59,7 +59,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <DropdownMenuItem onClick={() => navigate('/perfil')}>
               <User className="mr-2 h-4 w-4" />
               Ver Perfil
             </DropdownMenuItem>
@@ -101,7 +101,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
           
           <DropdownMenuSeparator />
           
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <DropdownMenuItem onClick={() => navigate('/perfil')}>
             <User className="mr-2 h-4 w-4" />
             Ver Perfil
           </DropdownMenuItem>

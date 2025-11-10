@@ -99,7 +99,7 @@ export default function ProjectVerification() {
         title: "Verificação concluída",
         description: "A verificação dos equipamentos foi confirmada com sucesso.",
       });
-      navigate(`/projects/${id}`);
+      navigate(`/projetos/${id}`);
     } catch (error) {
       toast({
         title: "Erro ao confirmar verificação",
@@ -113,7 +113,7 @@ export default function ProjectVerification() {
   };
 
   const handleCancel = () => {
-    navigate(`/projects/${id}`);
+    navigate(`/projetos/${id}`);
   };
 
   const progressPercentage = totalCount > 0 ? (checkedCount / totalCount) * 100 : 0;

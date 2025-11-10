@@ -262,7 +262,7 @@ export default function ProjectWithdrawal() {
         title: "Sucesso!",
         description: "Retirada criada com sucesso!"
       });
-      navigate(`/projects/${newProject.id}`);
+      navigate(`/projetos/${newProject.id}`);
     } catch (error) {
       logger.error('Error creating withdrawal', {
         module: 'withdrawal-page',
@@ -916,7 +916,7 @@ export default function ProjectWithdrawal() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <span 
               className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
-              onClick={() => navigate('/projects')}
+              onClick={() => navigate('/projetos')}
             >
               <Package className="h-3.5 w-3.5" />
               Projetos
@@ -930,7 +930,7 @@ export default function ProjectWithdrawal() {
               variant="ghost" 
               size="icon"
               className="mt-1"
-              onClick={() => navigate('/projects')}
+              onClick={() => navigate('/projetos')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -1001,7 +1001,7 @@ export default function ProjectWithdrawal() {
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/projects')}
+                onClick={() => navigate('/projetos')}
                 className="w-full sm:w-auto h-11 sm:h-10"
               >
                 Cancelar

@@ -497,7 +497,7 @@ export default function EquipmentPage() {
               />
             </AdminOnly>
             <ResponsiveButton
-              onClick={() => navigate('/equipment/new')}
+              onClick={() => navigate('/inventario/novo')}
               icon={Plus}
               mobileText="Adicionar"
               desktopText="Adicionar Equipamento"
