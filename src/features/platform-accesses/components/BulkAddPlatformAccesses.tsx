@@ -6,56 +6,38 @@ import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const accessesToAdd = [
   {
-    platformName: "DaVinci Resolve (Chave 2)",
-    platformUrl: "https://blackmagicdesign.com",
-    username: "",
-    password: "BSG3D-T2F3W-1PFMV-1R3Y2-XX7CY",
-    category: "software" as const,
+    platformName: "ArtGrid",
+    platformUrl: "https://artgrid.io",
+    username: "gabriel@hiro.film",
+    password: "A·HiroFilm5044",
+    category: "stock" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "4K Download (Android)",
-    platformUrl: "https://4kdownload.com",
-    username: "",
-    password: "84e8f814abd64ce5baf31167cf86ac79",
-    category: "software" as const,
+    platformName: "Motion Array",
+    platformUrl: "https://motionarray.com",
+    username: "gabriel@hiro.film",
+    password: "M·HiroFilm5044",
+    category: "stock" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "4K Download (Compressor Imagem)",
-    platformUrl: "https://4kdownload.com",
-    username: "",
-    password: "e0a56fa28fcc410a8cd06cbcc9649737",
-    category: "software" as const,
+    platformName: "Envato Elements (até 10/12/2025)",
+    platformUrl: "https://elements.envato.com",
+    username: "gabriel@hiro.film",
+    password: "EE·HiroFilm5044",
+    category: "stock" as const,
     isFavorite: false,
     isActive: true
   },
   {
-    platformName: "4K Download (Converter YouTube→MP3)",
-    platformUrl: "https://4kdownload.com",
-    username: "",
-    password: "159797a0e6e34f43be088e97a2758ae0",
-    category: "software" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "4K Download (Vídeo TikTok Download)",
-    platformUrl: "https://4kdownload.com",
-    username: "",
-    password: "1f25ba79449c425699f59e61e8b10c83",
-    category: "software" as const,
-    isFavorite: false,
-    isActive: true
-  },
-  {
-    platformName: "4K Download (Vídeo Download)",
-    platformUrl: "https://4kdownload.com",
-    username: "",
-    password: "6bfdd8f41f2441d4bde0d9063bd661b6",
-    category: "software" as const,
+    platformName: "Shutterstock",
+    platformUrl: "https://shutterstock.com",
+    username: "plataforma@hiro.film",
+    password: "SS·HiroFilm5044",
+    category: "stock" as const,
     isFavorite: false,
     isActive: true
   }
