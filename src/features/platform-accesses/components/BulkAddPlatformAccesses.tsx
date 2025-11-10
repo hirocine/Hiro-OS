@@ -67,6 +67,51 @@ const accessesToAdd = [
     category: "cloud" as const,
     isFavorite: false,
     isActive: true
+  },
+  {
+    platformName: "Framer",
+    platformUrl: "https://framer.com",
+    username: "plataforma@hiro.film",
+    password: "Login via Inbox Email",
+    category: "site" as const,
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "Pinterest",
+    platformUrl: "https://pinterest.com",
+    username: "plataforma@hiro.film",
+    password: "P·HiroFilm5044",
+    category: "social_media" as const,
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "Linktree",
+    platformUrl: "https://linktr.ee",
+    username: "gabriel@hiro.film",
+    password: "L·HiroFilm5044",
+    category: "social_media" as const,
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "Behance",
+    platformUrl: "https://behance.net",
+    username: "plataforma@hiro.film",
+    password: "*9$%n-QhsRKa2q%",
+    category: "social_media" as const,
+    isFavorite: false,
+    isActive: true
+  },
+  {
+    platformName: "Instagram",
+    platformUrl: "https://instagram.com",
+    username: "hiro.film",
+    password: "I·HiroFilm5044",
+    category: "social_media" as const,
+    isFavorite: false,
+    isActive: true
   }
 ];
 
@@ -128,7 +173,7 @@ export function BulkAddPlatformAccesses() {
             disabled={isImporting || results.length === accessesToAdd.length}
           >
             {isImporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isImporting ? `Importando... ${progress}/${accessesToAdd.length}` : 'Importar 7 Acessos'}
+            {isImporting ? `Importando... ${progress}/${accessesToAdd.length}` : `Importar ${accessesToAdd.length} Acessos`}
           </Button>
         </div>
 
