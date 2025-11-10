@@ -141,34 +141,34 @@ export function PlatformAccessCard({
               <label className="text-xs text-muted-foreground font-medium">
                 License Key
               </label>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border break-all">
+            <div className="flex items-center gap-2 mt-1">
+              <div className="relative flex-1">
+                <div className="font-mono text-sm bg-muted/50 px-3 py-2 pr-10 rounded border break-all">
                   {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 shrink-0"
+                <button
                   onClick={handleTogglePasswordVisibility}
                   disabled={isLoadingPassword}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-muted rounded transition-colors disabled:opacity-50"
                 >
                   {isLoadingPassword ? (
                     <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                   ) : showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 shrink-0"
-                  onClick={() => onCopyPassword(access.id)}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={() => onCopyPassword(access.id)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
             </div>
           </>
         ) : (
@@ -199,34 +199,34 @@ export function PlatformAccessCard({
               <label className="text-xs text-muted-foreground font-medium">
                 Senha
               </label>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 font-mono text-sm bg-muted/50 px-3 py-2 rounded border break-all">
+            <div className="flex items-center gap-2 mt-1">
+              <div className="relative flex-1">
+                <div className="font-mono text-sm bg-muted/50 px-3 py-2 pr-10 rounded border break-all">
                   {showPassword && decryptedPassword ? decryptedPassword : '••••••••••••'}
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 shrink-0"
+                <button
                   onClick={handleTogglePasswordVisibility}
                   disabled={isLoadingPassword}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-muted rounded transition-colors disabled:opacity-50"
                 >
                   {isLoadingPassword ? (
                     <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                   ) : showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 shrink-0"
-                  onClick={() => onCopyPassword(access.id)}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={() => onCopyPassword(access.id)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
             </div>
           </>
         )}
