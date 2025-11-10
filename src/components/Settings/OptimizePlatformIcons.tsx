@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +30,23 @@ export function OptimizePlatformIcons() {
   const [totalCount, setTotalCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [optimizedCount, setOptimizedCount] = useState(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const loadInitialStats = async () => {
+      try {
+        setIsLoadingStats(true);
+        await fetchIconStats();
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+        toast.error('Erro ao carregar estatísticas dos ícones');
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    loadInitialStats();
+  }, []);
 
   const compressImage = async (img: HTMLImageElement): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -264,25 +281,44 @@ export function OptimizePlatformIcons() {
     <div className="space-y-6">
       {/* Status Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg border bg-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Total de Ícones</div>
-          <div className="text-2xl font-bold">{totalCount}</div>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Já Otimizados (WebP)</div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{optimizedCount}</div>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Pendentes de Otimização</div>
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingCount}</div>
-        </div>
+        {isLoadingStats ? (
+          <>
+            <div className="rounded-lg border bg-card p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-24 mb-2"></div>
+              <div className="h-8 bg-muted rounded w-16"></div>
+            </div>
+            <div className="rounded-lg border bg-card p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-32 mb-2"></div>
+              <div className="h-8 bg-muted rounded w-16"></div>
+            </div>
+            <div className="rounded-lg border bg-card p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-36 mb-2"></div>
+              <div className="h-8 bg-muted rounded w-16"></div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium text-muted-foreground">Total de Ícones</div>
+              <div className="text-2xl font-bold">{totalCount}</div>
+            </div>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium text-muted-foreground">Já Otimizados (WebP)</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{optimizedCount}</div>
+            </div>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium text-muted-foreground">Pendentes de Otimização</div>
+              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingCount}</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Action Button */}
       <div className="flex items-center gap-3">
         <Button
           onClick={startOptimization}
-          disabled={isProcessing || pendingCount === 0}
+          disabled={isProcessing || pendingCount === 0 || isLoadingStats}
           className="gap-2"
         >
           {isProcessing ? (
@@ -298,9 +334,15 @@ export function OptimizePlatformIcons() {
           )}
         </Button>
         
-        {pendingCount === 0 && !isProcessing && (
+        {!isLoadingStats && pendingCount === 0 && !isProcessing && (
           <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300">
             ✅ Todos os ícones já estão otimizados!
+          </Badge>
+        )}
+        
+        {!isLoadingStats && pendingCount > 0 && !isProcessing && (
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            ⚠️ {pendingCount} ícone{pendingCount > 1 ? 's' : ''} pendente{pendingCount > 1 ? 's' : ''}
           </Badge>
         )}
       </div>
