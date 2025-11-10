@@ -11,7 +11,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { authDebug } from '@/lib/debug';
-import { validateEmail, sanitizeInput } from '@/lib/security';
+import { validateEmail, sanitizeInput } from '@/lib/validation';
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');

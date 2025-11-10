@@ -1,5 +1,5 @@
 /**
- * Security utilities for input validation and sanitization
+ * Validation utilities for input sanitization and validation
  */
 
 /**
@@ -88,44 +88,4 @@ export function sanitizeFormData<T extends Record<string, any>>(data: T): T {
   }
   
   return sanitized;
-}
-
-/**
- * Rate limiting utility for preventing brute force attacks
- */
-export class RateLimiter {
-  private attempts: Map<string, { count: number; lastAttempt: number }> = new Map();
-  private maxAttempts: number;
-  private windowMs: number;
-
-  constructor(maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000) { // 15 minutes
-    this.maxAttempts = maxAttempts;
-    this.windowMs = windowMs;
-  }
-
-  isAllowed(identifier: string): boolean {
-    const now = Date.now();
-    const attempt = this.attempts.get(identifier);
-
-    if (!attempt) {
-      this.attempts.set(identifier, { count: 1, lastAttempt: now });
-      return true;
-    }
-
-    // Reset if window has passed
-    if (now - attempt.lastAttempt > this.windowMs) {
-      this.attempts.set(identifier, { count: 1, lastAttempt: now });
-      return true;
-    }
-
-    // Increment attempts
-    attempt.count++;
-    attempt.lastAttempt = now;
-
-    return attempt.count <= this.maxAttempts;
-  }
-
-  reset(identifier: string): void {
-    this.attempts.delete(identifier);
-  }
 }

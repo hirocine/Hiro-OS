@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, Shield, HardDrive, Key } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, BarChart3, FolderOpen, HardDrive, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -44,12 +44,6 @@ const adminNavigation: NavigationItem[] = [
     name: 'Administração',
     href: '/administracao',
     icon: Settings,
-    adminOnly: true,
-  },
-  {
-    name: 'Segurança',
-    href: '/seguranca',
-    icon: Shield,
     adminOnly: true,
   },
 ];

@@ -32,13 +32,6 @@ export const LazyChart = lazy(() =>
   }))
 );
 
-// Security components (heavy)
-export const LazySecurityDashboard = lazy(() => 
-  import('@/components/Security/SecurityDashboard').then(module => ({ 
-    default: module.SecurityDashboard 
-  }))
-);
-
 /**
  * Common fallback components for lazy loading
  */

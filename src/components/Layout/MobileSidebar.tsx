@@ -1,4 +1,4 @@
-import { Home, Package, FolderKanban, FileText, Settings, X, HardDrive, Key, Shield } from 'lucide-react';
+import { Home, Package, FolderKanban, FileText, Settings, X, HardDrive, Key } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -30,7 +30,6 @@ const navigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
-  { name: 'Segurança', href: '/seguranca', icon: Shield, adminOnly: true },
 ];
 
 export function MobileSidebar() {

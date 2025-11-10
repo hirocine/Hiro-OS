@@ -20,7 +20,6 @@ const ProjectWithdrawal = lazy(() => import("./pages/ProjectWithdrawal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
-const SecurityAdmin = lazy(() => import("./pages/SecurityAdmin"));
 const SSDs = lazy(() => import("./pages/SSDs"));
 const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -53,7 +52,6 @@ const App = () => (
               <Route path="perfil" element={<Profile />} />
               
               <Route path="administracao" element={<Admin />} />
-              <Route path="seguranca" element={<SecurityAdmin />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

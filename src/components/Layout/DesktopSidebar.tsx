@@ -1,4 +1,4 @@
-import { Home, Package, FolderKanban, FileText, Settings, HardDrive, Key, Shield } from 'lucide-react';
+import { Home, Package, FolderKanban, FileText, Settings, HardDrive, Key } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -29,7 +29,6 @@ const navigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
-  { name: 'Segurança', href: '/seguranca', icon: Shield, adminOnly: true },
 ];
 
 export function DesktopSidebar() {

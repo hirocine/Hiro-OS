@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { validatePassword, getPasswordStrengthText, type PasswordRequirements } from '@/lib/passwordValidation';
-import { sanitizeInput } from '@/lib/security';
+import { sanitizeInput } from '@/lib/validation';
 
 export interface PasswordInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
