@@ -88,6 +88,8 @@ export function usePolicies() {
     });
 
     if (result.data) {
+      // Atualização otimista: adicionar à lista imediatamente
+      setPolicies(prev => [...prev, result.data]);
       toast.success('Política criada com sucesso');
     } else if (result.error) {
       logger.error('Failed to add policy', {
@@ -128,6 +130,8 @@ export function usePolicies() {
     });
 
     if (result.data) {
+      // Atualização otimista: atualizar na lista imediatamente
+      setPolicies(prev => prev.map(p => p.id === id ? result.data : p));
       toast.success('Política atualizada com sucesso');
     } else if (result.error) {
       logger.error('Failed to update policy', {
@@ -166,6 +170,8 @@ export function usePolicies() {
       toast.error('Erro ao deletar política');
       throw result.error;
     } else {
+      // Atualização otimista: remover da lista imediatamente
+      setPolicies(prev => prev.filter(p => p.id !== id));
       toast.success('Política deletada com sucesso');
     }
   };
