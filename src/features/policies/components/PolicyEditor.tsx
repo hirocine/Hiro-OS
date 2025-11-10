@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import type { CompanyPolicy, PolicyForm } from '../types';
 import { MarkdownToolbar } from './MarkdownToolbar';
 
@@ -37,7 +39,7 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
         setContent('');
       }
     }
-  }, [open, policy]);
+  }, [open]); // Removido policy para evitar reset durante digitação
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
@@ -117,7 +119,9 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
                 </div>
                 <div className="border rounded-md p-6 min-h-[300px] max-h-[400px] overflow-y-auto bg-muted/20 prose prose-sm dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
                   {content ? (
-                    <ReactMarkdown>{content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                      {content}
+                    </ReactMarkdown>
                   ) : (
                     <p className="text-muted-foreground italic">
                       O preview aparecerá aqui conforme você digita...

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,7 +26,8 @@ interface MarkdownToolbarProps {
 }
 
 export function MarkdownToolbar({ textareaRef, content, setContent }: MarkdownToolbarProps) {
-  const insertMarkdown = (before: string, after: string = '') => {
+  // Toggle wrap (negrito, itálico, código inline)
+  const toggleWrap = (before: string, after: string = before) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -36,112 +38,270 @@ export function MarkdownToolbar({ textareaRef, content, setContent }: MarkdownTo
     let newText: string;
     let cursorPosition: number;
 
-    if (selectedText) {
-      // Se há texto selecionado, envolve com a sintaxe
+    // Verifica se já está aplicado
+    const beforeStart = content.substring(start - before.length, start);
+    const afterEnd = content.substring(end, end + after.length);
+    
+    if (beforeStart === before && afterEnd === after && selectedText) {
+      // Remove o wrap
+      newText = 
+        content.substring(0, start - before.length) + 
+        selectedText + 
+        content.substring(end + after.length);
+      cursorPosition = start - before.length + selectedText.length;
+    } else if (selectedText) {
+      // Aplica o wrap
       newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
       cursorPosition = start + before.length + selectedText.length + after.length;
     } else {
-      // Se não há texto selecionado, insere placeholder
+      // Sem seleção: insere placeholder
       const placeholder = 'texto';
       newText = content.substring(0, start) + before + placeholder + after + content.substring(end);
-      cursorPosition = start + before.length + placeholder.length;
+      cursorPosition = start + before.length;
     }
 
     setContent(newText);
     
-    // Restaura o foco e posição do cursor
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(cursorPosition, cursorPosition);
+      if (selectedText || beforeStart !== before) {
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+      } else {
+        // Seleciona o placeholder
+        textarea.setSelectionRange(cursorPosition, cursorPosition + 5);
+      }
     }, 0);
   };
 
-  const insertAtCursor = (text: string) => {
+  // Toggle heading (H1, H2, H3)
+  const toggleHeading = (level: number) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     
-    const newText = content.substring(0, start) + text + content.substring(end);
-    setContent(newText);
-    
-    setTimeout(() => {
-      textarea.focus();
-      const newPosition = start + text.length;
-      textarea.setSelectionRange(newPosition, newPosition);
-    }, 0);
-  };
-
-  const insertLinePrefix = (prefix: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    
-    // Encontra o início da linha atual
+    // Encontra início e fim das linhas selecionadas
     const beforeCursor = content.substring(0, start);
     const lastNewline = beforeCursor.lastIndexOf('\n');
     const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
     
-    const selectedText = content.substring(start, end);
-    const afterSelection = content.substring(end);
+    const afterCursor = content.substring(end);
+    const nextNewline = afterCursor.indexOf('\n');
+    const lineEnd = nextNewline === -1 ? content.length : end + nextNewline;
     
-    let newText: string;
-    let cursorPosition: number;
-
-    if (selectedText.includes('\n')) {
-      // Múltiplas linhas selecionadas - adiciona prefixo em cada linha
-      const lines = selectedText.split('\n');
-      const prefixedLines = lines.map(line => line ? prefix + line : line).join('\n');
-      newText = content.substring(0, start) + prefixedLines + afterSelection;
-      cursorPosition = start + prefixedLines.length;
-    } else {
-      // Adiciona prefixo no início da linha atual
-      const currentLine = content.substring(lineStart, end);
-      const restOfLine = content.substring(end);
-      newText = content.substring(0, lineStart) + prefix + currentLine + restOfLine;
-      cursorPosition = lineStart + prefix.length + (start - lineStart);
-    }
-
+    const selectedLines = content.substring(lineStart, lineEnd);
+    const lines = selectedLines.split('\n');
+    const prefix = '#'.repeat(level) + ' ';
+    
+    const processedLines = lines.map(line => {
+      // Remove heading existente
+      const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+      if (headingMatch) {
+        const [, existingLevel, rest] = headingMatch;
+        // Se for o mesmo nível, remove; senão, substitui
+        if (existingLevel.length === level) {
+          return rest;
+        } else {
+          return prefix + rest;
+        }
+      } else if (line.trim()) {
+        // Adiciona heading
+        return prefix + line;
+      }
+      return line;
+    });
+    
+    const newLines = processedLines.join('\n');
+    const newText = content.substring(0, lineStart) + newLines + content.substring(lineEnd);
+    
     setContent(newText);
     
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(cursorPosition, cursorPosition);
+      const newPosition = lineStart + newLines.length;
+      textarea.setSelectionRange(newPosition, newPosition);
     }, 0);
   };
+
+  // Toggle list prefix (listas com marcadores ou numeradas)
+  const toggleListPrefix = (prefix: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    // Encontra início da primeira linha
+    const beforeCursor = content.substring(0, start);
+    const lastNewline = beforeCursor.lastIndexOf('\n');
+    const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
+    
+    // Se há múltiplas linhas selecionadas
+    const selectedText = content.substring(start, end);
+    
+    if (selectedText.includes('\n')) {
+      // Múltiplas linhas
+      const lines = selectedText.split('\n');
+      const processedLines = lines.map(line => {
+        if (!line.trim()) return line;
+        // Verifica se já tem o prefixo
+        if (line.trimStart().startsWith(prefix)) {
+          // Remove o prefixo
+          return line.replace(new RegExp(`^(\\s*)${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '$1');
+        } else {
+          // Adiciona o prefixo
+          const indent = line.match(/^\s*/)?.[0] || '';
+          return indent + prefix + line.trimStart();
+        }
+      });
+      
+      const newLines = processedLines.join('\n');
+      const newText = content.substring(0, start) + newLines + content.substring(end);
+      
+      setContent(newText);
+      
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + newLines.length, start + newLines.length);
+      }, 0);
+    } else {
+      // Linha única
+      const lineEnd = content.indexOf('\n', lineStart);
+      const actualLineEnd = lineEnd === -1 ? content.length : lineEnd;
+      const line = content.substring(lineStart, actualLineEnd);
+      
+      let newLine: string;
+      if (line.trimStart().startsWith(prefix)) {
+        // Remove
+        newLine = line.replace(new RegExp(`^(\\s*)${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '$1');
+      } else {
+        // Adiciona
+        const indent = line.match(/^\s*/)?.[0] || '';
+        newLine = indent + prefix + line.trimStart();
+      }
+      
+      const newText = content.substring(0, lineStart) + newLine + content.substring(actualLineEnd);
+      
+      setContent(newText);
+      
+      setTimeout(() => {
+        textarea.focus();
+        const newPosition = lineStart + newLine.length;
+        textarea.setSelectionRange(newPosition, newPosition);
+      }, 0);
+    }
+  };
+
+  // Inserir texto no cursor
+  const insertAtCursor = (text: string, selectAfter: boolean = false) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let insertText = text;
+    let cursorPosition = start + text.length;
+    
+    // Para link e imagem, usar seleção como texto/alt
+    if (text.includes('[') && text.includes('](') && selectedText) {
+      if (text.startsWith('![')) {
+        // Imagem
+        insertText = `![${selectedText}](https://exemplo.com/imagem.jpg)`;
+        cursorPosition = start + insertText.length;
+      } else {
+        // Link
+        insertText = `[${selectedText}](https://exemplo.com)`;
+        cursorPosition = start + insertText.length;
+      }
+    }
+    
+    const newText = content.substring(0, start) + insertText + content.substring(end);
+    setContent(newText);
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (selectAfter && !selectedText) {
+        // Seleciona o placeholder (URL ou texto)
+        if (text.includes('](')) {
+          const urlStart = start + insertText.indexOf('](') + 2;
+          const urlEnd = start + insertText.indexOf(')');
+          textarea.setSelectionRange(urlStart, urlEnd);
+        } else {
+          textarea.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      } else {
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }, 0);
+  };
+
+  // Quebra de linha hard (dois espaços + newline)
+  const insertLineBreak = () => {
+    insertAtCursor('  \n');
+  };
+
+  // Atalhos de teclado
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.ctrlKey || e.metaKey;
+      
+      if (isMod && e.key === 'b') {
+        e.preventDefault();
+        toggleWrap('**');
+      } else if (isMod && e.key === 'i') {
+        e.preventDefault();
+        toggleWrap('*');
+      } else if (isMod && e.key === '1') {
+        e.preventDefault();
+        toggleHeading(1);
+      } else if (isMod && e.key === '2') {
+        e.preventDefault();
+        toggleHeading(2);
+      } else if (isMod && e.key === '3') {
+        e.preventDefault();
+        toggleHeading(3);
+      }
+    };
+
+    textarea.addEventListener('keydown', handleKeyDown);
+    return () => textarea.removeEventListener('keydown', handleKeyDown);
+  }, [content]);
 
   const buttons = [
     // Grupo: Texto
     [
-      { icon: Bold, label: 'Negrito (Ctrl+B)', onClick: () => insertMarkdown('**', '**') },
-      { icon: Italic, label: 'Itálico (Ctrl+I)', onClick: () => insertMarkdown('*', '*') },
+      { icon: Bold, label: 'Negrito (Ctrl+B)', onClick: () => toggleWrap('**') },
+      { icon: Italic, label: 'Itálico (Ctrl+I)', onClick: () => toggleWrap('*') },
     ],
     // Grupo: Títulos
     [
-      { icon: Heading1, label: 'Título 1', onClick: () => insertLinePrefix('# ') },
-      { icon: Heading2, label: 'Título 2', onClick: () => insertLinePrefix('## ') },
-      { icon: Heading3, label: 'Título 3', onClick: () => insertLinePrefix('### ') },
+      { icon: Heading1, label: 'Título 1 (Ctrl+1)', onClick: () => toggleHeading(1) },
+      { icon: Heading2, label: 'Título 2 (Ctrl+2)', onClick: () => toggleHeading(2) },
+      { icon: Heading3, label: 'Título 3 (Ctrl+3)', onClick: () => toggleHeading(3) },
     ],
     // Grupo: Listas
     [
-      { icon: List, label: 'Lista com marcadores', onClick: () => insertLinePrefix('- ') },
-      { icon: ListOrdered, label: 'Lista numerada', onClick: () => insertLinePrefix('1. ') },
+      { icon: List, label: 'Lista com marcadores', onClick: () => toggleListPrefix('- ') },
+      { icon: ListOrdered, label: 'Lista numerada', onClick: () => toggleListPrefix('1. ') },
     ],
     // Grupo: Inserções
     [
-      { icon: Link, label: 'Link', onClick: () => insertMarkdown('[', '](url)') },
-      { icon: Image, label: 'Imagem', onClick: () => insertMarkdown('![', '](url)') },
-      { icon: Code, label: 'Código inline', onClick: () => insertMarkdown('`', '`') },
-      { icon: FileCode, label: 'Bloco de código', onClick: () => insertMarkdown('```\n', '\n```') },
+      { icon: Link, label: 'Link', onClick: () => insertAtCursor('[texto](https://exemplo.com)', true) },
+      { icon: Image, label: 'Imagem', onClick: () => insertAtCursor('![alt](https://exemplo.com/imagem.jpg)', true) },
+      { icon: Code, label: 'Código inline', onClick: () => toggleWrap('`') },
+      { icon: FileCode, label: 'Bloco de código', onClick: () => insertAtCursor('```\ncódigo\n```') },
     ],
     // Grupo: Formatação extra
     [
-      { icon: Quote, label: 'Citação', onClick: () => insertLinePrefix('> ') },
+      { icon: Quote, label: 'Citação', onClick: () => toggleListPrefix('> ') },
       { icon: Minus, label: 'Linha horizontal', onClick: () => insertAtCursor('\n---\n') },
-      { icon: CornerDownLeft, label: 'Quebra de linha', onClick: () => insertAtCursor('\n\n') },
+      { icon: CornerDownLeft, label: 'Quebra de linha', onClick: insertLineBreak },
     ],
   ];
 

@@ -8,6 +8,8 @@ import { PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import type { PolicyForm } from '@/features/policies';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
@@ -98,7 +100,9 @@ export default function PolicyView() {
           </div>
 
           <div className="prose prose-lg dark:prose-invert max-w-none [&_p]:whitespace-pre-line [&_li]:whitespace-pre-line">
-            <ReactMarkdown>{policy.content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {policy.content}
+            </ReactMarkdown>
           </div>
         </div>
       </ResponsiveContainer>
