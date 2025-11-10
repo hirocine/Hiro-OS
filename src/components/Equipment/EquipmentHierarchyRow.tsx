@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, MoreVertical, ArrowUpRight } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { categoryLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import { getCategoryTitle } from '@/lib/categoryUtils';
 
 interface EquipmentHierarchyRowProps {
   equipment: Equipment;
@@ -175,7 +175,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
         {/* Categoria */}
         <div className="col-span-1 flex items-center text-sm min-w-0 overflow-hidden">
           <span className="truncate">
-            {equipment.category}
+            {getCategoryTitle(equipment.category)}
           </span>
         </div>
 

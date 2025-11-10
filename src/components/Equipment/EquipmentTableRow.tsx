@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight, Upload } from 'lucide-react';
-import { categoryLabels } from '@/data/mockData';
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import { getCategoryTitle } from '@/lib/categoryUtils';
 
 interface EquipmentTableRowProps {
   equipment: Equipment;
@@ -233,7 +233,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
               <TooltipTrigger asChild>
                 <div className="cursor-default">
                   <span className="text-sm truncate block">
-                    {equipment.category}
+                    {getCategoryTitle(equipment.category)}
                   </span>
                   {equipment.subcategory && (
                     <span className="text-xs text-muted-foreground truncate block">
@@ -244,7 +244,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
               </TooltipTrigger>
               <TooltipContent>
                 <div>
-                  <p>{equipment.category}</p>
+                  <p>{getCategoryTitle(equipment.category)}</p>
                   {equipment.subcategory && (
                     <p className="text-xs text-muted-foreground">{equipment.subcategory}</p>
                   )}

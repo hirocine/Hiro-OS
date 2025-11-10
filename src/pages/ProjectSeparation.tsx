@@ -27,6 +27,7 @@ import {
   ArrowLeft,
   Home
 } from 'lucide-react';
+import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
 
 const categoryIcons: Record<string, any> = {
   camera: Camera,
@@ -36,13 +37,11 @@ const categoryIcons: Record<string, any> = {
   storage: HardDrive,
 };
 
-const categoryLabels: Record<string, string> = {
-  camera: 'Câmeras',
-  audio: 'Áudio',
-  lighting: 'Iluminação',
-  accessories: 'Acessórios',
-  storage: 'Armazenamento',
-};
+// Criar mapa de labels a partir de PARENT_CATEGORIES
+const categoryLabels: Record<string, string> = PARENT_CATEGORIES.reduce((acc, cat) => {
+  acc[cat.key] = cat.title;
+  return acc;
+}, {} as Record<string, string>);
 
 export default function ProjectSeparation() {
   const { id } = useParams<{ id: string }>();

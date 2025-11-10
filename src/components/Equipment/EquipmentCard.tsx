@@ -3,8 +3,8 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Calendar, UserCheck, Package, Link } from 'lucide-react';
-import { categoryLabels } from '@/data/mockData';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
+import { getCategoryTitle } from '@/lib/categoryUtils';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -62,7 +62,7 @@ export function EquipmentCard({
         <div className="text-sm text-muted-foreground space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">Categoria:</span>
-            {equipment.category}
+            {getCategoryTitle(equipment.category)}
           </div>
           
           {equipment.patrimonyNumber && (

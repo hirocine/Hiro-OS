@@ -22,7 +22,8 @@ import {
 import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { categoryLabels, statusLabels } from '@/data/mockData';
+import { statusLabels } from '@/data/mockData';
+import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
 import { useCategories } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2, Check, ChevronsUpDown, Search, Plus } from 'lucide-react';
@@ -257,9 +258,9 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
+            {PARENT_CATEGORIES.map((category) => (
+              <SelectItem key={category.key} value={category.key}>
+                {category.title}
               </SelectItem>
             ))}
           </SelectContent>

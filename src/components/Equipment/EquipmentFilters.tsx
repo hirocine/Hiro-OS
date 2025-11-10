@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Separator } from '@/components/ui/separator';
+import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -86,13 +87,11 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     ).length
   , [filters]);
 
-  const categoryLabels = {
-    camera: 'Câmeras',
-    audio: 'Áudio', 
-    lighting: 'Iluminação',
-    accessories: 'Acessórios',
-    storage: 'Armazenamento'
-  };
+  // Criar mapa de labels a partir de PARENT_CATEGORIES
+  const categoryLabels = PARENT_CATEGORIES.reduce((acc, cat) => {
+    acc[cat.key] = cat.title;
+    return acc;
+  }, {} as Record<string, string>);
 
   const statusLabels = {
     available: 'Disponível',

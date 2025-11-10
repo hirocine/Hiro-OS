@@ -2,15 +2,17 @@ import { Equipment } from '@/types/equipment';
 
 export const mockEquipment: Equipment[] = [];
 
-// DEPRECATED: categoryLabels não é mais necessário
-// As categorias agora são armazenadas e exibidas em português diretamente
-// Mantido aqui apenas para referência histórica
+// Labels de categorias - agora importadas do categoryMapping
 export const categoryLabels = {
-  camera: 'Câmeras',
+  camera: 'Câmera',
+  monitoring: 'Monitoração',
   audio: 'Áudio',
   lighting: 'Iluminação',
-  accessories: 'Acessórios',
-  storage: 'Armazenamento'
+  grip: 'Grip',
+  electrical: 'Elétrica',
+  storage: 'Armazenamento',
+  computers: 'Computadores',
+  miscellaneous: 'Diversos'
 };
 
 export const statusLabels = {
