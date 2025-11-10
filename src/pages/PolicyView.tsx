@@ -9,6 +9,7 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import ReactMarkdown from 'react-markdown';
 import type { PolicyForm } from '@/features/policies';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 export default function PolicyView() {
   const { id } = useParams<{ id: string }>();
@@ -52,9 +53,9 @@ export default function PolicyView() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b">
-        <div className="container mx-auto px-6 h-16 lg:h-20 flex items-center justify-between max-w-[800px]">
+    <ResponsiveContainer maxWidth="xl" padding="none">
+      <div className="border-b -mx-6 lg:-mx-12">
+        <div className="px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate('/politicas')}
@@ -84,7 +85,7 @@ export default function PolicyView() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 pt-6 pb-12 max-w-[800px]">
+      <div className="px-6 lg:px-12 pt-6 pb-12">
         <div className="flex items-center gap-4 mb-12">
           <div className="text-5xl flex-shrink-0">
             {policy.icon_url || '📋'}
@@ -136,6 +137,6 @@ export default function PolicyView() {
           </AlertDialog>
         </>
       )}
-    </div>
+    </ResponsiveContainer>
   );
 }
