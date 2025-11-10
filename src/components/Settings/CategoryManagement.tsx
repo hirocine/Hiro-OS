@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { PARENT_CATEGORIES } from '@/lib/categoryMappingTemplate';
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,7 @@ export function CategoryManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [isMigrating, setIsMigrating] = useState(false);
   
   // Dialogs state
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -264,6 +267,61 @@ export function CategoryManagement() {
     }
   };
 
+  const handleMigrateEnglishCategories = async () => {
+    setIsMigrating(true);
+    try {
+      // Criar mapeamento inglês -> português
+      const englishToPortuguese: Record<string, string> = {};
+      PARENT_CATEGORIES.forEach(cat => {
+        englishToPortuguese[cat.key] = cat.title;
+      });
+
+      // Buscar todos equipamentos com categorias em inglês
+      const { data: equipments, error: fetchError } = await supabase
+        .from('equipments')
+        .select('id, category')
+        .in('category', Object.keys(englishToPortuguese));
+
+      if (fetchError) throw fetchError;
+      if (!equipments || equipments.length === 0) {
+        toast({
+          title: 'Nenhuma migração necessária',
+          description: 'Não foram encontrados equipamentos com categorias em inglês'
+        });
+        return;
+      }
+
+      // Atualizar cada equipamento
+      let updated = 0;
+      for (const equipment of equipments) {
+        const portugueseCategory = englishToPortuguese[equipment.category];
+        if (portugueseCategory) {
+          const { error: updateError } = await supabase
+            .from('equipments')
+            .update({ category: portugueseCategory })
+            .eq('id', equipment.id);
+
+          if (!updateError) updated++;
+        }
+      }
+
+      toast({
+        title: 'Migração concluída',
+        description: `${updated} equipamentos foram atualizados de inglês para português`
+      });
+      refetch();
+    } catch (error) {
+      console.error('Erro na migração:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao migrar categorias. Tente novamente.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
   const openEditDialog = (
     type: 'category' | 'subcategory',
     categoryName: string,
@@ -377,6 +435,15 @@ export function CategoryManagement() {
             <AlertDescription className="flex flex-col gap-2">
               <span className="font-medium">Ferramentas de Manutenção</span>
               <div className="flex flex-wrap gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleMigrateEnglishCategories}
+                  disabled={isMigrating}
+                >
+                  {isMigrating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Migrar do Inglês
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
