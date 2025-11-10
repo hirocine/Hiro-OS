@@ -50,9 +50,10 @@ export function PlatformAccessCard({
   return (
     <Card className={cn(
       "p-6 hover:shadow-lg transition-all duration-300",
-      "border-2 hover:border-primary/50",
       "flex flex-col min-h-[380px]",
-      !access.is_active && "opacity-60"
+      access.is_active 
+        ? "border-2 hover:border-primary/50" 
+        : "border-2 border-red-500/50 bg-red-500/5 hover:border-red-500/70"
     )}>
       {/* Header com Favorite + Category + Status */}
       <div className="flex justify-between items-start mb-4">
@@ -76,7 +77,7 @@ export function PlatformAccessCard({
             {CATEGORY_LABELS[access.category]}
           </Badge>
         </div>
-        <Badge variant={access.is_active ? "success" : "secondary"}>
+        <Badge variant={access.is_active ? "success" : "destructive"}>
           {access.is_active ? "Ativo" : "Inativo"}
         </Badge>
       </div>
@@ -84,7 +85,10 @@ export function PlatformAccessCard({
       {/* Logo + Nome da Plataforma */}
       <div className="flex items-start gap-4 mb-4">
         {access.platform_icon_url ? (
-          <div className="w-12 h-12 rounded-lg bg-background border flex items-center justify-center overflow-hidden">
+          <div className={cn(
+            "w-12 h-12 rounded-lg bg-background flex items-center justify-center overflow-hidden",
+            access.is_active ? "border" : "border-2 border-red-500"
+          )}>
             <img
               src={access.platform_icon_url}
               alt={access.platform_name}
@@ -95,8 +99,16 @@ export function PlatformAccessCard({
             />
           </div>
         ) : (
-          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-            <span className="text-xl font-bold text-primary">
+          <div className={cn(
+            "w-12 h-12 rounded-lg flex items-center justify-center",
+            access.is_active 
+              ? "bg-primary/10" 
+              : "bg-red-500/10 border-2 border-red-500"
+          )}>
+            <span className={cn(
+              "text-xl font-bold",
+              access.is_active ? "text-primary" : "text-red-500"
+            )}>
               {access.platform_name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -239,7 +251,10 @@ export function PlatformAccessCard({
             variant="outline"
             size="sm"
             onClick={handleOpenUrl}
-            className="flex-1"
+            className={cn(
+              "flex-1",
+              !access.is_active && "border-red-500/50 text-red-600 hover:bg-red-500/10"
+            )}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Link
@@ -249,7 +264,10 @@ export function PlatformAccessCard({
           variant="outline"
           size="sm"
           onClick={() => onEdit(access)}
-          className="flex-1"
+          className={cn(
+            "flex-1",
+            !access.is_active && "border-red-500/50 text-red-600 hover:bg-red-500/10"
+          )}
         >
           <Pencil className="h-4 w-4 mr-2" />
           Editar
