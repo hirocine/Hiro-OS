@@ -5,7 +5,17 @@ import { usePlatformAccesses } from '../hooks/usePlatformAccesses';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import type { PlatformAccessForm } from '../types';
 
-const accessesToAdd: PlatformAccessForm[] = [];
+const accessesToAdd: PlatformAccessForm[] = [
+  {
+    platformName: "Epidemic Sound",
+    platformUrl: "https://epidemicsound.com",
+    username: "gabriel@hiro.film",
+    password: "EP·HiroFilm5044",
+    category: "music",
+    isFavorite: false,
+    isActive: true
+  }
+];
 
 interface ImportResult {
   platformName: string;
