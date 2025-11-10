@@ -14,6 +14,7 @@ import { Autocomplete } from '@/components/ui/autocomplete';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Loader2, Upload, X, Package, Check, Link2, DollarSign, Calendar, Camera, Mic, Lightbulb, Wrench, HardDrive, CalendarIcon, Plus } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -567,48 +568,56 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <Label htmlFor="category" className="text-sm font-medium">
             Categoria <span className="text-destructive">*</span>
           </Label>
-          <Select 
-            value={formData.category} 
-            onValueChange={handleCategoryChange}
-          >
-            <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {/* Fallback ad-hoc: Se categoria atual não está na lista, injeta dinamicamente */}
-              {formData.category && !getCategoriesHierarchy().some(cat => cat.categoryName === formData.category) && (
-                <>
-                  <SelectItem value={formData.category}>
-                    {formData.category} (valor atual - fora da lista)
+          {categoriesLoading ? (
+            <Skeleton className={cn("mt-1.5", isMobile ? "h-10" : "h-9")} />
+          ) : (
+            <Select
+              key={`category-${categoriesLoading}-${formData.category}`}
+              value={formData.category || undefined}
+              onValueChange={handleCategoryChange}
+              disabled={categoriesLoading}
+            >
+              <SelectTrigger id="category" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
+                <SelectValue placeholder="Selecione uma categoria">
+                  {formData.category || "Selecione uma categoria"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {/* Fallback ad-hoc: Se categoria atual não está na lista, injeta dinamicamente */}
+                {formData.category && !getCategoriesHierarchy().some(cat => cat.categoryName === formData.category) && (
+                  <>
+                    <SelectItem value={formData.category}>
+                      {formData.category} (valor atual - fora da lista)
+                    </SelectItem>
+                    <div className="border-t my-1" />
+                  </>
+                )}
+                
+                {/* Categorias do banco de dados */}
+                {getCategoriesHierarchy().map((cat) => (
+                  <SelectItem key={cat.categoryName} value={cat.categoryName}>
+                    {cat.categoryName}
                   </SelectItem>
+                ))}
+                
+                {/* Separador */}
+                {getCategoriesHierarchy().length > 0 && (
                   <div className="border-t my-1" />
-                </>
-              )}
-              
-              {/* Categorias do banco de dados */}
-              {getCategoriesHierarchy().map((cat) => (
-                <SelectItem key={cat.categoryName} value={cat.categoryName}>
-                  {cat.categoryName}
+                )}
+                
+                {/* Opção de criar nova */}
+                <SelectItem 
+                  value="__CREATE_NEW__" 
+                  className="text-primary font-medium"
+                >
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Criar nova categoria
+                  </div>
                 </SelectItem>
-              ))}
-              
-              {/* Separador */}
-              {getCategoriesHierarchy().length > 0 && (
-                <div className="border-t my-1" />
-              )}
-              
-              {/* Opção de criar nova */}
-              <SelectItem 
-                value="__CREATE_NEW__" 
-                className="text-primary font-medium"
-              >
-                <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Criar nova categoria
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* Subcategoria */}
@@ -617,12 +626,15 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             Subcategoria
           </Label>
           <Select
+            key={`subcategory-${categoriesLoading}-${formData.category}-${formData.subcategory || ''}`}
             value={formData.subcategory || ''}
             onValueChange={handleSubcategoryChange}
             disabled={categoriesLoading || !formData.category}
           >
             <SelectTrigger id="subcategory" className={cn("mt-1.5", isMobile ? "h-10" : "h-9")}>
-              <SelectValue placeholder="Selecione" />
+              <SelectValue placeholder="Selecione">
+                {formData.subcategory || "Selecione"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {/* Fallback ad-hoc: Se subcategoria atual não está na lista, injeta dinamicamente */}
