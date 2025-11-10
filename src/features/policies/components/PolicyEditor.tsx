@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,22 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
   const [content, setContent] = useState(policy?.content || '');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      if (policy) {
+        // Modo edição: carregar dados da policy
+        setTitle(policy.title);
+        setIcon(policy.icon_url || '📋');
+        setContent(policy.content);
+      } else {
+        // Modo criação: campos vazios
+        setTitle('');
+        setIcon('📋');
+        setContent('');
+      }
+    }
+  }, [open, policy]);
+
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
       return;
@@ -30,9 +46,6 @@ export function PolicyEditor({ open, onOpenChange, onSave, policy }: PolicyEdito
     try {
       await onSave({ title, icon, content });
       onOpenChange(false);
-      setTitle('');
-      setIcon('📋');
-      setContent('');
     } finally {
       setSaving(false);
     }
