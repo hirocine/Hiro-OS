@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { PlatformAccessCard } from './PlatformAccessCard';
 import { PlatformAccessDialog } from './PlatformAccessDialog';
 import { PlatformFilters } from './PlatformFilters';
-import { BulkAddPlatformAccesses } from './BulkAddPlatformAccesses';
 import { usePlatformAccesses } from '../hooks/usePlatformAccesses';
 import type { PlatformAccess } from '../types';
 import {
@@ -80,8 +79,6 @@ export function PlatformAccessGrid() {
 
   return (
     <div className="space-y-6">
-      <BulkAddPlatformAccesses />
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
