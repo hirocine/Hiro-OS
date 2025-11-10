@@ -1,23 +1,26 @@
-import { PARENT_CATEGORIES } from './categoryMapping';
+/**
+ * ⚠️ DEPRECATED: Este arquivo foi substituído pelo CategoriesContext
+ * 
+ * Use o hook useCategoriesContext() para acessar:
+ * - getCategoryTitle(key)
+ * - getSubcategoryTitle(categoryKey, subcategoryKey)
+ * - getCategoryIcon(key)
+ * 
+ * Todas as categorias são gerenciadas via banco de dados no Admin Panel.
+ */
 
 /**
- * Retorna o título em português da categoria baseado na key
+ * @deprecated Use useCategoriesContext().getCategoryTitle() instead
  */
 export const getCategoryTitle = (categoryKey: string | undefined | null): string => {
   if (!categoryKey) return '';
-  
-  const parentCategory = PARENT_CATEGORIES.find(cat => cat.key === categoryKey);
-  return parentCategory?.title || categoryKey;
+  return categoryKey;
 };
 
 /**
- * Retorna o título da subcategoria em português
+ * @deprecated Use useCategoriesContext().getSubcategoryTitle() instead
  */
 export const getSubcategoryTitle = (categoryKey: string | undefined | null, subcategoryKey: string | undefined | null): string => {
   if (!subcategoryKey) return '';
-  
-  const parentCategory = PARENT_CATEGORIES.find(cat => cat.key === categoryKey);
-  const subcategory = parentCategory?.subcategories.find(sub => sub.key === subcategoryKey);
-  
-  return subcategory?.name || subcategoryKey;
+  return subcategoryKey;
 };

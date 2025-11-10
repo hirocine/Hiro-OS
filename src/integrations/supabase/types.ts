@@ -110,6 +110,7 @@ export type Database = {
           category_order: number | null
           created_at: string | null
           created_by: string | null
+          icon: string | null
           id: string
           is_custom: boolean | null
           subcategory: string | null
@@ -120,6 +121,7 @@ export type Database = {
           category_order?: number | null
           created_at?: string | null
           created_by?: string | null
+          icon?: string | null
           id?: string
           is_custom?: boolean | null
           subcategory?: string | null
@@ -130,6 +132,7 @@ export type Database = {
           category_order?: number | null
           created_at?: string | null
           created_by?: string | null
+          icon?: string | null
           id?: string
           is_custom?: boolean | null
           subcategory?: string | null

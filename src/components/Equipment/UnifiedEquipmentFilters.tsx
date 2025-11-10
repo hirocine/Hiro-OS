@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Autocomplete } from '@/components/ui/autocomplete';
-import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
 
 interface UnifiedEquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -33,6 +33,7 @@ interface UnifiedEquipmentFiltersProps {
 }
 
 export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment = [], stats }: UnifiedEquipmentFiltersProps) {
+  const { categories: dbCategories } = useCategoriesContext();
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search || '');
   const [isSearching, setIsSearching] = useState(false);
@@ -77,11 +78,14 @@ export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment
     ).length
   , [filters]);
 
-  // Criar mapa de labels a partir de PARENT_CATEGORIES
-  const categoryLabels = PARENT_CATEGORIES.reduce((acc, cat) => {
-    acc[cat.key] = cat.title;
-    return acc;
-  }, {} as Record<string, string>);
+  // Criar mapa de labels a partir das categorias do banco
+  const categoryLabels = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(dbCategories.filter(c => !c.subcategory).map(c => c.category)));
+    return uniqueCategories.reduce((acc, cat) => {
+      acc[cat] = cat;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [dbCategories]);
 
   const statusLabels = {
     available: 'Disponível',

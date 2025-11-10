@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { EquipmentCategoryDbRow } from '@/types/database';
-import { normalizeString } from '@/lib/categoryMapping';
+import { normalizeString } from '@/lib/stringUtils';
 
 export function useCategories() {
   const [categories, setCategories] = useState<EquipmentCategoryData[]>([]);
@@ -380,7 +380,7 @@ export function useCategories() {
    */
   const syncOrdersWithMapping = async (): Promise<Result<void>> => {
     try {
-      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMappingTemplate');
       const updates: Array<{ id: string; subcategory_order: number }> = [];
       let insertedCount = 0;
 
@@ -493,7 +493,7 @@ export function useCategories() {
       })) as EquipmentCategoryData[];
 
       // Carregar mapping
-      const { PARENT_CATEGORIES } = await import('@/lib/categoryMapping');
+      const { PARENT_CATEGORIES } = await import('@/lib/categoryMappingTemplate');
 
       // === FASE A: NORMALIZAÇÃO ===
       logger.info('Phase A - Normalization', { module: 'categories' });

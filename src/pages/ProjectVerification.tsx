@@ -28,7 +28,7 @@ import {
   Home,
   ClipboardCheck
 } from 'lucide-react';
-import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
 
 const categoryIcons: Record<string, any> = {
   camera: Camera,
@@ -38,13 +38,8 @@ const categoryIcons: Record<string, any> = {
   storage: HardDrive,
 };
 
-// Criar mapa de labels a partir de PARENT_CATEGORIES
-const categoryLabels: Record<string, string> = PARENT_CATEGORIES.reduce((acc, cat) => {
-  acc[cat.key] = cat.title;
-  return acc;
-}, {} as Record<string, string>);
-
 export default function ProjectVerification() {
+  const { categories: dbCategories } = useCategoriesContext();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -225,7 +220,7 @@ export default function ProjectVerification() {
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-3">
                     <CategoryIcon className="w-5 h-5 text-muted-foreground" />
-                    <span>{categoryLabels[category.category] || category.category}</span>
+                    <span>{category.category}</span>
                     <Badge variant="outline">
                       {category.items.length} {category.items.length === 1 ? 'item' : 'itens'}
                     </Badge>

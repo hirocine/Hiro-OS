@@ -46,6 +46,7 @@ export interface EquipmentCategoryData {
   createdBy?: string;
   categoryOrder?: number;
   subcategoryOrder?: number;
+  icon?: string | null;
 }
 
 export type SortableField = 'name' | 'brand' | 'category' | 'subcategory' | 'status' | 'value' | 'patrimonyNumber' | 'purchaseDate';

@@ -28,7 +28,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { generateProjectPDF } from '@/lib/pdfGenerator';
 import { useGroupedCategories } from '@/hooks/useGroupedCategories';
 import { useCategories } from '@/hooks/useCategories';
-import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
 import { SubcategoryAccordion } from '@/components/Projects/SubcategoryAccordion';
 
 interface WithdrawalData {

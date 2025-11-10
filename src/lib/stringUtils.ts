@@ -15,3 +15,17 @@ export function capitalizeNames(name: string): string {
     })
     .join(' ');
 }
+
+/**
+ * Normaliza uma string removendo acentos, espaços extras e convertendo para minúsculas
+ * Útil para comparações de categorias
+ */
+export function normalizeString(str: string): string {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}

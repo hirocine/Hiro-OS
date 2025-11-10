@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Separator } from '@/components/ui/separator';
-import { PARENT_CATEGORIES } from '@/lib/categoryMapping';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -36,6 +36,7 @@ interface EquipmentFiltersProps {
 }
 
 export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipment = [], stats }: EquipmentFiltersProps) {
+  const { categories: dbCategories } = useCategoriesContext();
   const [isBasicExpanded, setIsBasicExpanded] = useState(true);
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [isQuickFiltersExpanded, setIsQuickFiltersExpanded] = useState(true);
@@ -87,11 +88,14 @@ export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipme
     ).length
   , [filters]);
 
-  // Criar mapa de labels a partir de PARENT_CATEGORIES
-  const categoryLabels = PARENT_CATEGORIES.reduce((acc, cat) => {
-    acc[cat.key] = cat.title;
-    return acc;
-  }, {} as Record<string, string>);
+  // Criar mapa de labels a partir das categorias do banco
+  const categoryLabels = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(dbCategories.filter(c => !c.subcategory).map(c => c.category)));
+    return uniqueCategories.reduce((acc, cat) => {
+      acc[cat] = cat;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [dbCategories]);
 
   const statusLabels = {
     available: 'Disponível',

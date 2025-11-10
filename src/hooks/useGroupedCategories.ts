@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { PARENT_CATEGORIES, ParentCategoryConfig, findParentCategory, findSubcategory } from '@/lib/categoryMapping';
+import { PARENT_CATEGORIES, ParentCategoryConfig, findParentCategory, findSubcategory } from '@/lib/categoryMappingTemplate';
 import { EquipmentCategoryData } from '@/types/equipment';
 
 interface Equipment {
