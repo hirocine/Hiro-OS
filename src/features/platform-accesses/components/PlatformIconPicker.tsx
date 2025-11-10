@@ -29,12 +29,32 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
             return;
           }
           
-          // Redimensionar para 256x256 (tamanho ideal para ícones)
-          const maxSize = 256;
-          canvas.width = maxSize;
-          canvas.height = maxSize;
+          const size = 256; // Tamanho final (quadrado)
+          canvas.width = size;
+          canvas.height = size;
           
-          ctx.drawImage(img, 0, 0, maxSize, maxSize);
+          // Calcular dimensões para cover (preencher todo o canvas mantendo proporção)
+          const imgRatio = img.width / img.height;
+          
+          let drawWidth = size;
+          let drawHeight = size;
+          let offsetX = 0;
+          let offsetY = 0;
+          
+          if (imgRatio > 1) {
+            // Imagem mais larga (paisagem)
+            drawHeight = size;
+            drawWidth = size * imgRatio;
+            offsetX = -(drawWidth - size) / 2; // Centralizar horizontalmente
+          } else if (imgRatio < 1) {
+            // Imagem mais alta (retrato)
+            drawWidth = size;
+            drawHeight = size / imgRatio;
+            offsetY = -(drawHeight - size) / 2; // Centralizar verticalmente
+          }
+          
+          // Desenhar imagem centralizada e cortada
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
           
           // Comprimir para WebP com qualidade 85%
           canvas.toBlob(
@@ -143,7 +163,7 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
               <img
                 src={selectedIconUrl}
                 alt="Selected icon"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             </div>
           </div>
