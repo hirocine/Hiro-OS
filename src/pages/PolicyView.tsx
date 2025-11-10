@@ -54,7 +54,7 @@ export default function PolicyView() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between max-w-[800px]">
           <Button
             variant="ghost"
             onClick={() => navigate('/politicas')}
