@@ -40,6 +40,15 @@ const accessesToAdd = [
     category: "stock" as const,
     isFavorite: false,
     isActive: true
+  },
+  {
+    platformName: "Epidemic Sound",
+    platformUrl: "https://epidemicsound.com",
+    username: "gabriel@hiro.film",
+    password: "EP·HiroFilm5044",
+    category: "music" as const,
+    isFavorite: false,
+    isActive: true
   }
 ];
 
