@@ -857,7 +857,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         )}
 
         {/* Capacidade (condicional para storage) */}
-        {formData.category === 'storage' && (
+        {formData.category === 'Armazenamento' && (
           <div>
             <Label htmlFor="capacity" className="text-sm font-medium">
               Capacidade (GB)

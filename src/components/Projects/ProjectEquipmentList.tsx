@@ -123,7 +123,7 @@ export function ProjectEquipmentList({ projectId }: ProjectEquipmentListProps) {
 
   // Helper to check if equipment is SSD/HD
   const isStorageDevice = (item: any) => {
-    return item.category === 'storage' && 
+    return item.category === 'Armazenamento' && 
            (item.subcategory?.toLowerCase().includes('ssd') || 
             item.subcategory?.toLowerCase().includes('hd'));
   };

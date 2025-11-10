@@ -150,17 +150,17 @@ export default function ProjectWithdrawal() {
       };
 
       flattenSelectedEquipment().forEach(eq => {
-        if (eq.category === 'camera' && eq.subcategory === 'Câmera') {
+        if (eq.category === 'Câmera' && (eq.subcategory === 'Câmera (Corpo e Acessórios)' || eq.subcategory === 'Câmera')) {
           selectedEquipmentForPDF.cameras.push({ camera: eq, accessories: [] });
-        } else if (eq.category === 'camera' && eq.subcategory === 'Lente') {
+        } else if (eq.category === 'Câmera' && eq.subcategory === 'Lente') {
           selectedEquipmentForPDF.lenses.push(eq);
-        } else if (eq.category === 'camera') {
+        } else if (eq.category === 'Câmera' || eq.category === 'Acessórios de Câmera') {
           selectedEquipmentForPDF.cameraAccessories.push(eq);
-        } else if (eq.category === 'lighting' && eq.subcategory === 'Luz') {
+        } else if (eq.category === 'Iluminação' && eq.subcategory === 'Luz') {
           selectedEquipmentForPDF.lights.push(eq);
-        } else if (eq.category === 'lighting') {
+        } else if (eq.category === 'Iluminação') {
           selectedEquipmentForPDF.lightModifiers.push(eq);
-        } else if (eq.category === 'storage') {
+        } else if (eq.category === 'Armazenamento') {
           selectedEquipmentForPDF.storage.push(eq);
         } else {
           selectedEquipmentForPDF.electrical.push(eq);

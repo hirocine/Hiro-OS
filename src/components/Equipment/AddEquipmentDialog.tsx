@@ -538,7 +538,7 @@ export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, ma
       </MobileFriendlyFormField>
 
       {/* Campo de Capacidade - para dispositivos de armazenamento */}
-      {formData.category === 'storage' && (
+      {formData.category === 'Armazenamento' && (
         <MobileFriendlyFormField>
           <Label htmlFor="capacity">Capacidade (GB)</Label>
           <Input

@@ -26,8 +26,8 @@ export interface ImportSummary {
   errors: string[];
 }
 
-// Categorias válidas agora em português (alinhadas com categoryMapping.ts)
-const VALID_CATEGORIES: EquipmentCategory[] = ['camera', 'monitoring', 'audio', 'lighting', 'grip', 'electrical', 'storage', 'computers', 'miscellaneous'];
+// Chaves em inglês bloqueadas - não são mais aceitas na importação
+const BLOCKED_ENGLISH_KEYS = ['camera', 'monitoring', 'audio', 'lighting', 'grip', 'electrical', 'storage', 'computers', 'miscellaneous', 'accessories'];
 const VALID_STATUSES: EquipmentStatus[] = ['available', 'maintenance'];
 const VALID_ITEM_TYPES: EquipmentItemType[] = ['main', 'accessory'];
 
@@ -108,57 +108,6 @@ const COLUMN_MAPPING = {
   'imagem': 'image'
 };
 
-// Mapeamento de categorias - agora salvando em português no banco
-const CATEGORY_MAPPING = {
-  // Câmera
-  'câmera': 'camera',
-  'camera': 'camera',
-  'câmeras': 'camera',
-  'cameras': 'camera',
-  
-  // Monitoração
-  'monitoração': 'monitoring',
-  'monitoracao': 'monitoring',
-  'monitoring': 'monitoring',
-  'monitor': 'monitoring',
-  
-  // Áudio
-  'áudio': 'audio',
-  'audio': 'audio',
-  'som': 'audio',
-  
-  // Iluminação
-  'iluminação': 'lighting',
-  'iluminacao': 'lighting',
-  'luz': 'lighting',
-  'lighting': 'lighting',
-  
-  // Grip
-  'grip': 'grip',
-  'apoio': 'grip',
-  
-  // Elétrica
-  'elétrica': 'electrical',
-  'eletrica': 'electrical',
-  'electrical': 'electrical',
-  
-  // Armazenamento
-  'armazenamento': 'storage',
-  'storage': 'storage',
-  
-  // Computadores
-  'computadores': 'computers',
-  'computers': 'computers',
-  'computador': 'computers',
-  
-  // Diversos/Acessórios
-  'diversos': 'miscellaneous',
-  'miscellaneous': 'miscellaneous',
-  'acessórios': 'miscellaneous',
-  'acessorios': 'miscellaneous',
-  'accessories': 'miscellaneous'
-};
-
 const STATUS_MAPPING = {
   'disponível': 'available',
   'disponivel': 'available',
@@ -200,10 +149,16 @@ function mapColumn(header: string): string | null {
 
 function validateAndTransformCategory(value: string): string | null {
   if (!value) return null;
-  const normalized = normalizeKey(value);
-  const mapped = CATEGORY_MAPPING[normalized as keyof typeof CATEGORY_MAPPING];
-  // Accept any category - use mapped value if available, otherwise use original (custom category)
-  return mapped || value.trim();
+  const trimmed = value.trim();
+  const normalized = normalizeKey(trimmed);
+  
+  // Bloquear categorias em inglês - devem estar em português
+  if (BLOCKED_ENGLISH_KEYS.includes(normalized)) {
+    return null; // Vai gerar erro na validação
+  }
+  
+  // Aceitar qualquer categoria customizada em português
+  return trimmed;
 }
 
 function validateAndTransformStatus(value: string): EquipmentStatus | null {
@@ -257,10 +212,15 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
   // Validate and transform category (accepts custom categories)
   const category = validateAndTransformCategory(row.category);
   if (!category) {
+    const normalized = normalizeKey(row.category || '');
+    const isEnglish = BLOCKED_ENGLISH_KEYS.includes(normalized);
+    
     errors.push({
       row: rowNumber,
       field: 'category',
-      message: 'Categoria é obrigatória',
+      message: isEnglish 
+        ? 'Categoria deve estar em português (ex: "Câmera", "Áudio", "Iluminação"). Valores em inglês não são aceitos.'
+        : 'Categoria é obrigatória',
       value: row.category
     });
   }
@@ -692,7 +652,7 @@ export function generateTemplate(): string {
       '00007.0',
       'Aputure MC Light',
       'Aputure',
-      'lighting',
+      'Iluminação',
       'Portátil',
       'Principal',
       '',
@@ -713,7 +673,7 @@ export function generateTemplate(): string {
       '00007.1',
       'Silicone Diffuser',
       'Aputure',
-      'accessories',
+      'Diversos',
       'Difusores',
       'Acessório',
       '',
@@ -734,8 +694,8 @@ export function generateTemplate(): string {
       '00010.0',
       'DJI Mavic 3 Cine',
       'DJI',
-      'drone',
-      'Cinema',
+      'Câmera',
+      'Drone',
       'Principal',
       '',
       'SN003',
@@ -755,7 +715,7 @@ export function generateTemplate(): string {
       '00010.1',
       'Bateria Extra DJI',
       'DJI',
-      'accessories',
+      'Diversos',
       'Baterias',
       'Acessório',
       '',

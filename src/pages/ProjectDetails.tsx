@@ -339,7 +339,7 @@ export default function ProjectDetails() {
     projectEquipment.forEach(eq => {
       const equipment = eq as unknown as Equipment;
       
-      if (equipment.category === 'camera' && equipment.subcategory === 'Câmera') {
+      if (equipment.category === 'Câmera' && (equipment.subcategory === 'Câmera (Corpo e Acessórios)' || equipment.subcategory === 'Câmera')) {
         // Buscar acessórios desta câmera
         const accessories = projectEquipment
           .filter(acc => (acc as unknown as Equipment).parentId === equipment.id)
@@ -349,28 +349,29 @@ export default function ProjectDetails() {
           camera: equipment,
           accessories: accessories
         });
-      } else if (equipment.category === 'camera' && equipment.subcategory === 'Lente') {
+      } else if (equipment.category === 'Câmera' && equipment.subcategory === 'Lente') {
         categorizedEquipment.lenses.push(equipment);
-      } else if (equipment.category === 'camera' && 
-                 ['Acessórios', 'Bateria', 'Cabo', 'Carregador', 'Case', 'Filtro', 'Monitor', 'Transmissão', 'Cage'].includes(equipment.subcategory || '')) {
+      } else if ((equipment.category === 'Câmera' || equipment.category === 'Acessórios de Câmera') && 
+                 ['Acessórios (Câmera)', 'Bateria (Câmera)', 'Carregador (Bateria de Câmera)', 'Filtro', 'Mattebox', 'Adaptador de Lente', 'Bateria', 'Carregador'].includes(equipment.subcategory || '')) {
         categorizedEquipment.cameraAccessories.push(equipment);
-      } else if ((equipment.category === 'accessories' && equipment.subcategory === 'Tripé de Câmera') ||
-                 (equipment.category === 'camera' && equipment.subcategory === 'Estabilizador')) {
+      } else if ((equipment.category === 'Tripé de Câmera') ||
+                 (equipment.category === 'Movimento' && equipment.subcategory === 'Estabilizador')) {
         categorizedEquipment.tripods.push(equipment);
-      } else if (equipment.category === 'lighting' && equipment.subcategory === 'Luz') {
+      } else if (equipment.category === 'Iluminação' && equipment.subcategory === 'Luz') {
         categorizedEquipment.lights.push(equipment);
-      } else if (equipment.category === 'lighting' && 
-                 ['Modificador de Luz', 'Tripé de Luz'].includes(equipment.subcategory || '')) {
+      } else if (equipment.category === 'Iluminação' && 
+                 ['Acessórios (Luz)', 'Modificador'].includes(equipment.subcategory || '')) {
         categorizedEquipment.lightModifiers.push(equipment);
-      } else if (equipment.category === 'accessories' && equipment.subcategory === 'Maquinária') {
+      } else if (equipment.category === 'Produção' && equipment.subcategory === 'Diversos') {
         categorizedEquipment.machinery.push(equipment);
-      } else if (equipment.category === 'accessories' && 
-                 ['Cabo', 'Elétrica'].includes(equipment.subcategory || '')) {
+      } else if ((equipment.category === 'Armazenamento' && equipment.subcategory?.includes('Cabo')) ||
+                 (equipment.category === 'Monitoração e Transmissão' && equipment.subcategory?.includes('Cabos')) ||
+                 (equipment.category === 'Áudio' && equipment.subcategory?.includes('Cabos'))) {
         categorizedEquipment.electrical.push(equipment);
-      } else if (equipment.category === 'storage' && 
-                 ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD'].includes(equipment.subcategory || '')) {
+      } else if (equipment.category === 'Armazenamento' && 
+                 ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD (Externo)', 'SSD/HD (Interno)'].includes(equipment.subcategory || '')) {
         categorizedEquipment.storage.push(equipment);
-      } else if (equipment.category === 'accessories' && equipment.subcategory === 'Computador') {
+      } else if (equipment.category === 'Tecnologia') {
         categorizedEquipment.computers.push(equipment);
       }
     });

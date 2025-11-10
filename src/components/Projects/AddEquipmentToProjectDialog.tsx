@@ -298,7 +298,7 @@ export function AddEquipmentToProjectDialog({
         // Verificar quantos SSDs/HDs foram selecionados
         const storageDevices = Array.from(selectedEquipment).filter(id => {
           const equipment = allEquipment.find(e => e.id === id);
-          return equipment?.category === 'storage' && 
+          return equipment?.category === 'Armazenamento' && 
                  (equipment?.subcategory?.toLowerCase().includes('ssd') || 
                   equipment?.subcategory?.toLowerCase().includes('hd'));
         });

@@ -125,8 +125,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableCameras = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'camera' && 
-        item.item.subcategory === 'Câmera' &&
+        item.item.category === 'Câmera' && 
+        item.item.subcategory === 'Câmera (Corpo e Acessórios)' &&
         item.item.itemType === 'main' && 
         item.item.status === 'available'
       );
@@ -136,7 +136,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableLenses = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'camera' && 
+        item.item.category === 'Câmera' && 
         item.item.subcategory === 'Lente' &&
         item.item.status === 'available'
       )
@@ -145,10 +145,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   // Get available camera accessories
   const getAvailableCameraAccessories = () => {
-    const cameraAccessorySubcategories = ['Acessórios', 'Bateria', 'Cabo', 'Carregador', 'Case', 'Filtro', 'Monitor', 'Transmissão', 'Cage'];
+    const cameraAccessorySubcategories = ['Acessórios (Câmera)', 'Bateria (Câmera)', 'Carregador (Bateria de Câmera)', 'Filtro', 'Mattebox', 'Adaptador de Lente'];
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'camera' && 
+        (item.item.category === 'Câmera' || item.item.category === 'Acessórios de Câmera') && 
         cameraAccessorySubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -159,8 +159,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableTripods = () => {
     return equipmentHierarchy
       .filter(item => 
-        ((item.item.category === 'accessories' && item.item.subcategory === 'Tripé de Câmera') ||
-         (item.item.category === 'camera' && item.item.subcategory === 'Estabilizador')) &&
+        ((item.item.category === 'Tripé de Câmera') ||
+         (item.item.category === 'Movimento' && item.item.subcategory === 'Estabilizador')) &&
         item.item.status === 'available'
       )
       .map(item => item.item);
@@ -170,7 +170,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableLights = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'lighting' && 
+        item.item.category === 'Iluminação' && 
         item.item.subcategory === 'Luz' &&
         item.item.status === 'available'
       )
@@ -179,10 +179,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   // Get available light modifiers
   const getAvailableLightModifiers = () => {
-    const lightModifierSubcategories = ['Modificador de Luz', 'Tripé de Luz'];
+    const lightModifierSubcategories = ['Acessórios (Luz)', 'Modificador'];
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'lighting' && 
+        item.item.category === 'Iluminação' && 
         lightModifierSubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -193,8 +193,8 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableMachinery = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'accessories' && 
-        item.item.subcategory === 'Maquinária' &&
+        item.item.category === 'Produção' && 
+        item.item.subcategory === 'Diversos' &&
         item.item.status === 'available'
       )
       .map(item => item.item);
@@ -204,8 +204,9 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableElectrical = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'accessories' && 
-        (item.item.subcategory === 'Cabo' || item.item.subcategory === 'Elétrica') &&
+        (item.item.category === 'Armazenamento' && item.item.subcategory?.includes('Cabo')) ||
+        (item.item.category === 'Monitoração e Transmissão' && item.item.subcategory?.includes('Cabos')) ||
+        (item.item.category === 'Áudio' && item.item.subcategory?.includes('Cabos')) &&
         item.item.status === 'available'
       )
       .map(item => item.item);
@@ -213,10 +214,10 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
 
   // Get available storage equipment
   const getAvailableStorage = () => {
-    const storageSubcategories = ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD'];
+    const storageSubcategories = ['Cartão de Memória', 'Leitor de Cartão', 'SSD/HD (Externo)', 'SSD/HD (Interno)'];
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'storage' && 
+        item.item.category === 'Armazenamento' && 
         storageSubcategories.includes(item.item.subcategory || '') &&
         item.item.status === 'available'
       )
@@ -227,7 +228,7 @@ export function NewWithdrawalDialog({ open, onOpenChange, onSubmit }: NewWithdra
   const getAvailableComputers = () => {
     return equipmentHierarchy
       .filter(item => 
-        item.item.category === 'accessories' && 
+        item.item.category === 'Tecnologia' &&
         item.item.subcategory === 'Computador' &&
         item.item.status === 'available'
       )
