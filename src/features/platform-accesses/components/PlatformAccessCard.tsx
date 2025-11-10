@@ -127,15 +127,17 @@ export function PlatformAccessCard({
 
       {/* Botões de Ação */}
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleOpenUrl}
-          className="flex-1"
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          Link
-        </Button>
+        {access.platform_url && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOpenUrl}
+            className="flex-1"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Link
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"

@@ -400,7 +400,7 @@ export type Database = {
           notes: string | null
           platform_icon_url: string | null
           platform_name: string
-          platform_url: string
+          platform_url: string | null
           updated_at: string | null
           user_id: string
           username: string
@@ -415,7 +415,7 @@ export type Database = {
           notes?: string | null
           platform_icon_url?: string | null
           platform_name: string
-          platform_url: string
+          platform_url?: string | null
           updated_at?: string | null
           user_id: string
           username: string
@@ -430,7 +430,7 @@ export type Database = {
           notes?: string | null
           platform_icon_url?: string | null
           platform_name?: string
-          platform_url?: string
+          platform_url?: string | null
           updated_at?: string | null
           user_id?: string
           username?: string

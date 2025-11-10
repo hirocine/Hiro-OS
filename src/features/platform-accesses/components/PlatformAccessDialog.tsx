@@ -42,8 +42,11 @@ const createSchema = z.object({
   platformIconUrl: z.string().optional(),
   platformUrl: z.string()
     .trim()
-    .url('URL inválida')
-    .max(500, 'URL muito longa'),
+    .optional()
+    .refine((val) => !val || val === '' || z.string().url().safeParse(val).success, {
+      message: 'URL inválida',
+    })
+    .transform((val) => val || ''),
   username: z.string()
     .trim()
     .min(1, 'Usuário/email é obrigatório')
@@ -78,8 +81,11 @@ const editSchema = z.object({
   platformIconUrl: z.string().optional(),
   platformUrl: z.string()
     .trim()
-    .url('URL inválida')
-    .max(500, 'URL muito longa'),
+    .optional()
+    .refine((val) => !val || val === '' || z.string().url().safeParse(val).success, {
+      message: 'URL inválida',
+    })
+    .transform((val) => val || ''),
   username: z.string()
     .trim()
     .min(1, 'Usuário/email é obrigatório')
@@ -262,7 +268,7 @@ export function PlatformAccessDialog({
               name="platformUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL da Plataforma *</FormLabel>
+                  <FormLabel>URL da Plataforma</FormLabel>
                   <FormControl>
                     <Input
                       type="url"
@@ -271,7 +277,7 @@ export function PlatformAccessDialog({
                     />
                   </FormControl>
                   <FormDescription>
-                    Link direto para acessar a plataforma
+                    Link direto para acessar a plataforma (opcional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

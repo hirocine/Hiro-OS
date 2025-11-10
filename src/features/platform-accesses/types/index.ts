@@ -14,7 +14,7 @@ export interface PlatformAccess {
   user_id: string;
   platform_name: string;
   platform_icon_url?: string;
-  platform_url: string;
+  platform_url?: string;
   username: string;
   encrypted_password: string;
   notes?: string;
