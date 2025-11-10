@@ -66,6 +66,7 @@
     "jspdf": "^3.0.2",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.462.0",
+    "marked": "^12.0.2",
     "next-themes": "^0.3.0",
     "papaparse": "^5.5.3",
     "react": "^18.3.1",

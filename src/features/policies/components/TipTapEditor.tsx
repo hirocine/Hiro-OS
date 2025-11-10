@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { marked } from 'marked';
 
 interface TipTapEditorProps {
   content: string;
@@ -36,9 +37,15 @@ const turndownService = new TurndownService({
   codeBlockStyle: 'fenced',
 });
 
+// Helper to convert Markdown to HTML
+const markdownToHtml = (md: string): string => {
+  return marked.parse(md, { breaks: true }) as string;
+};
+
 export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorProps) {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isUpdatingRef = useRef(false);
+  const lastMarkdownRef = useRef<string>('');
 
   // Debounced conversion function
   const debouncedConvert = useCallback((html: string) => {
@@ -56,7 +63,12 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
         }
 
         const markdown = turndownService.turndown(html);
-        onChange(markdown);
+        
+        // Only call onChange if markdown actually changed
+        if (markdown !== lastMarkdownRef.current) {
+          lastMarkdownRef.current = markdown;
+          onChange(markdown);
+        }
       } catch (error) {
         console.error('Error converting to markdown:', error);
         toast.error('Erro ao processar texto', {
@@ -100,6 +112,7 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
       },
       handlePaste: (view, event) => {
         const text = event.clipboardData?.getData('text/plain') || '';
+        const html = event.clipboardData?.getData('text/html') || '';
         
         if (text.length > 100000) {
           event.preventDefault();
@@ -109,15 +122,37 @@ export function TipTapEditor({ content, onChange, placeholder }: TipTapEditorPro
           return true;
         }
         
+        // Sanitize Office HTML (remove MS Office artifacts)
+        if (html) {
+          const sanitized = html
+            .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
+            .replace(/class="Mso[^"]*"/gi, '') // Remove MS Office classes
+            .replace(/style="[^"]*mso-[^"]*"/gi, '') // Remove MS Office styles
+            .replace(/<o:p>[\s\S]*?<\/o:p>/gi, '') // Remove Office paragraph tags
+            .replace(/<\/?span[^>]*>/gi, ''); // Remove span tags
+          
+          if (sanitized !== html) {
+            // Insert sanitized HTML
+            event.preventDefault();
+            editor?.chain().focus().insertContent(sanitized).run();
+            return true;
+          }
+        }
+        
         return false; // Allow default paste behavior
       },
     },
   });
 
   useEffect(() => {
-    if (editor && !isUpdatingRef.current && content !== editor.getHTML()) {
+    if (editor && !isUpdatingRef.current && content !== lastMarkdownRef.current) {
       isUpdatingRef.current = true;
-      editor.commands.setContent(content);
+      lastMarkdownRef.current = content;
+      
+      // Convert markdown to HTML before setting content
+      const html = markdownToHtml(content);
+      editor.commands.setContent(html, { emitUpdate: false });
+      
       isUpdatingRef.current = false;
     }
   }, [content, editor]);
