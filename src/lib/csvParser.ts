@@ -149,8 +149,13 @@ function mapColumn(header: string): string | null {
 
 function validateAndTransformCategory(value: string): string | null {
   if (!value) return null;
-  const trimmed = value.trim();
-  const normalized = normalizeKey(trimmed);
+  
+  // CRÍTICO: Remover TODOS os whitespace invisíveis (newlines, tabs, espaços)
+  const cleaned = value
+    .replace(/[\n\r\t]/g, '') // Remove newlines, carriage returns, tabs
+    .trim(); // Remove espaços no início/fim
+  
+  const normalized = normalizeKey(cleaned);
   
   // Bloquear categorias em inglês - devem estar em português
   if (BLOCKED_ENGLISH_KEYS.includes(normalized)) {
@@ -158,7 +163,7 @@ function validateAndTransformCategory(value: string): string | null {
   }
   
   // Aceitar qualquer categoria customizada em português
-  return trimmed;
+  return cleaned;
 }
 
 function validateAndTransformStatus(value: string): EquipmentStatus | null {
@@ -373,7 +378,7 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     name: row.name.trim(),
     brand: row.brand.trim(),
     category: category!,
-    subcategory: row.subcategory?.trim() || undefined,
+    subcategory: row.subcategory ? row.subcategory.replace(/[\n\r\t]/g, '').trim() : undefined,
     status: status!,
     itemType: itemType!,
     parentId,

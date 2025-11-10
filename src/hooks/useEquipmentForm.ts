@@ -52,8 +52,8 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
         setFormData({
           name: equipment.name,
           brand: equipment.brand,
-          category: equipment.category || '',
-          subcategory: equipment.subcategory || '',
+          category: equipment.category?.replace(/[\n\r\t]/g, '').trim() || '',
+          subcategory: equipment.subcategory?.replace(/[\n\r\t]/g, '').trim() || '',
           customCategory: equipment.customCategory || '',
           status: equipment.status,
           itemType: equipment.itemType,
@@ -134,8 +134,8 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       // Sanitize data - using null explicitly for empty fields
       const sanitizedData = {
         ...formData,
-        category: formData.category,
-        subcategory: formData.subcategory || null,
+        category: formData.category.replace(/[\n\r\t]/g, '').trim(),
+        subcategory: formData.subcategory ? formData.subcategory.replace(/[\n\r\t]/g, '').trim() : null,
         parentId: formData.parentId && formData.parentId !== 'none' ? formData.parentId : null,
         customCategory: formData.customCategory?.trim() || null,
         capacity: formData.capacity && formData.capacity > 0 ? formData.capacity : null,

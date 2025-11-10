@@ -108,7 +108,7 @@ export function useCategories() {
       
       if (!acc[normalizedKey]) {
         acc[normalizedKey] = {
-          categoryName: cat.category,
+          categoryName: cat.category.replace(/[\n\r\t]/g, '').trim(),
           categoryId: null,
           isCustom: cat.isCustom,
           subcategories: []
@@ -125,7 +125,7 @@ export function useCategories() {
         if (!existingSub) {
           acc[normalizedKey].subcategories.push({
             id: cat.id,
-            name: cat.subcategory,
+            name: cat.subcategory.replace(/[\n\r\t]/g, '').trim(),
             isCustom: cat.isCustom,
             usageCount: 0,
             order: cat.subcategoryOrder || 999

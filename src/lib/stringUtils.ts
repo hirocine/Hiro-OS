@@ -23,9 +23,10 @@ export function capitalizeNames(name: string): string {
 export function normalizeString(str: string): string {
   if (!str) return '';
   return str
+    .replace(/[\n\r\t]/g, '') // Remove newlines, carriage returns, tabs
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' '); // Normaliza múltiplos espaços para um único
 }
