@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { CompanyPolicy } from '../types';
 
@@ -14,22 +14,46 @@ export function PolicyCard({ policy }: PolicyCardProps) {
     navigate(`/politicas/${policy.id}`);
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
   return (
     <Card
       onClick={handleClick}
       className={cn(
-        "flex flex-col items-center justify-center p-8 cursor-pointer",
-        "hover:shadow-lg hover:scale-105 transition-all duration-200",
-        "min-h-[200px] space-y-4"
+        "group relative overflow-hidden cursor-pointer min-h-[240px]",
+        "hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1",
+        "transition-all duration-300 animate-fade-in",
+        "border-t-4 border-t-primary",
+        "bg-gradient-to-br from-background to-muted/20"
       )}
     >
-      <div className="text-6xl">
-        {policy.icon_url || '📋'}
-      </div>
+      <CardHeader className="text-center space-y-4 pb-6">
+        <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 ring-4 ring-primary/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+          <span className="text-5xl">
+            {policy.icon_url || '📋'}
+          </span>
+        </div>
+      </CardHeader>
       
-      <h3 className="text-lg font-semibold text-center line-clamp-2">
-        {policy.title}
-      </h3>
+      <CardContent className="text-center pb-8 space-y-3">
+        <h3 className="text-lg font-semibold line-clamp-2 min-h-[3.5rem] px-2">
+          {policy.title}
+        </h3>
+        
+        {policy.updated_at && (
+          <p className="text-xs text-muted-foreground">
+            Atualizado em {formatDate(policy.updated_at)}
+          </p>
+        )}
+      </CardContent>
+      
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </Card>
   );
 }
