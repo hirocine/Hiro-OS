@@ -221,7 +221,7 @@ export default function Projects() {
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         actions={
           <ResponsiveButton 
-            onClick={() => navigate('/projects/new')}
+            onClick={() => navigate('/projetos/novo')}
             icon={Plus}
             className="shadow-elegant"
             mobileText="Nova"
@@ -422,7 +422,7 @@ export default function Projects() {
               <p className="text-muted-foreground mb-4">
                 Comece criando seu primeiro projeto de retirada de equipamentos
               </p>
-              <Button onClick={() => navigate('/projects/new')}>
+              <Button onClick={() => navigate('/projetos/novo')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Projeto
               </Button>
