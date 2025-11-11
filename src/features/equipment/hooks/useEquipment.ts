@@ -33,7 +33,10 @@ interface UseEquipmentReturn {
 }
 
 export function useEquipment(): UseEquipmentReturn {
-  const [filters, setFilters] = useState<EquipmentFilters>({});
+  const [filters, setFilters] = useState<EquipmentFilters>({
+    sortBy: 'name',
+    sortOrder: 'asc'
+  });
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { logAuditEntry } = useUserRole();
