@@ -74,6 +74,7 @@ export function usePolicies() {
           title: form.title,
           icon_url: form.icon,
           content: form.content,
+          category: form.category,
         })
         .select()
         .single();
@@ -113,6 +114,7 @@ export function usePolicies() {
           title: form.title,
           icon_url: form.icon,
           content: form.content,
+          category: form.category,
           updated_at: new Date().toISOString()
         })
         .eq('id', id)

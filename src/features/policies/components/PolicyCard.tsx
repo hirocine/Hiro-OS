@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { CompanyPolicy } from '../types';
+import { CATEGORY_COLORS } from '../types';
 
 interface PolicyCardProps {
   policy: CompanyPolicy;
@@ -22,6 +24,8 @@ export function PolicyCard({ policy }: PolicyCardProps) {
     });
   };
 
+  const borderColor = CATEGORY_COLORS[policy.category || 'Geral'] || 'border-t-primary';
+
   return (
     <Card
       onClick={handleClick}
@@ -29,7 +33,8 @@ export function PolicyCard({ policy }: PolicyCardProps) {
         "group relative overflow-hidden cursor-pointer min-h-[240px]",
         "hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1",
         "transition-all duration-300 animate-fade-in",
-        "border-t-4 border-t-primary",
+        "border-t-4",
+        borderColor,
         "bg-gradient-to-br from-background to-muted/20"
       )}
     >
@@ -39,6 +44,11 @@ export function PolicyCard({ policy }: PolicyCardProps) {
             {policy.icon_url || '📋'}
           </span>
         </div>
+        {policy.category && (
+          <Badge variant="secondary" className="text-xs">
+            {policy.category}
+          </Badge>
+        )}
       </CardHeader>
       
       <CardContent className="text-center pb-8 space-y-3">

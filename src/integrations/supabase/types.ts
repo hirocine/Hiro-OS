@@ -106,6 +106,7 @@ export type Database = {
       }
       company_policies: {
         Row: {
+          category: string | null
           content: string
           created_at: string | null
           created_by: string | null
@@ -116,6 +117,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string | null
           created_by?: string | null
@@ -126,6 +128,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string | null
           created_by?: string | null
