@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUploadArea } from '@/components/ui/image-upload-area';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { logger } from '@/lib/logger';
+import { generateEquipmentImageName } from '@/lib/imageNaming';
 
 interface ImageUploadResult {
   filename: string;
@@ -123,20 +124,22 @@ export const BulkImageUploadDialog: React.FC<BulkImageUploadDialogProps> = ({
 
   const handleManualMatch = async (filename: string, equipmentId: string) => {
     const pendingResult = results.find(r => r.filename === filename && r.status === 'pending_manual');
-    if (!pendingResult || !pendingResult.imageData) return;
+    const equipment = equipments.find(eq => eq.id === equipmentId);
+    if (!pendingResult || !pendingResult.imageData || !equipment) return;
 
     try {
-      // Upload manual da imagem
+      // Upload manual da imagem com nomenclatura padronizada
       const base64Data = pendingResult.imageData.split(',')[1];
       const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-      const fileExt = filename.split('.').pop();
-      const filePath = `${equipmentId}.${fileExt}`;
+      
+      // Gerar nome padronizado usando nomenclatura híbrida
+      const filePath = generateEquipmentImageName(equipmentId, equipment.patrimonyNumber);
 
       const { error: uploadError } = await supabase.storage
         .from('equipment-images')
         .upload(filePath, binaryData, {
-          contentType: `image/${fileExt}`,
-          upsert: true
+          contentType: 'image/webp',
+          upsert: true // Sobrescreve imagem existente com mesmo nome
         });
 
       if (uploadError) throw uploadError;

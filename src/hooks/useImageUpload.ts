@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { generateEquipmentImageName } from '@/lib/imageNaming';
 
 export interface ImageFile {
   id: string;
@@ -146,7 +147,12 @@ export const useImageUpload = () => {
     });
   };
 
-  const uploadImage = async (imageFile: ImageFile, bucket: string = 'equipment-images'): Promise<UploadResult> => {
+  const uploadImage = async (
+    imageFile: ImageFile, 
+    bucket: string = 'equipment-images',
+    equipmentId?: string,
+    patrimonyNumber?: string
+  ): Promise<UploadResult> => {
     try {
       setImages(prev => prev.map(img => 
         img.id === imageFile.id 
@@ -157,15 +163,17 @@ export const useImageUpload = () => {
       // Comprimir imagem antes do upload
       const compressedBlob = await compressImage(imageFile.file);
       
-      // Sempre usar extensão .webp para arquivos comprimidos
-      const fileName = `${Date.now()}-${Math.random()}.webp`;
+      // Gerar nome padronizado usando nomenclatura híbrida
+      const fileName = equipmentId
+        ? generateEquipmentImageName(equipmentId, patrimonyNumber)
+        : `temp-${Date.now()}.webp`; // Fallback para uploads sem equipmentId
 
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(fileName, compressedBlob, {
           contentType: 'image/webp',
           cacheControl: '3600',
-          upsert: false
+          upsert: true, // Sobrescreve imagem existente com mesmo nome
         });
 
       if (error) throw error;

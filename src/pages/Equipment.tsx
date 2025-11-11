@@ -29,6 +29,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 import { logger } from '@/lib/logger';
+import { generateEquipmentImageName } from '@/lib/imageNaming';
 
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
@@ -287,15 +288,15 @@ export default function EquipmentPage() {
       // Comprimir imagem antes do upload
       const compressedBlob = await compressImage(file);
       
-      // Sempre usar extensão .webp
-      const fileName = `${equipment.id}-${Date.now()}.webp`;
+      // Gerar nome padronizado usando nomenclatura híbrida
+      const fileName = generateEquipmentImageName(equipment.id, equipment.patrimonyNumber);
 
       const { data, error } = await supabase.storage
         .from('equipment-images')
         .upload(fileName, compressedBlob, {
           contentType: 'image/webp',
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Sobrescreve imagem existente com mesmo nome
         });
 
       if (error) throw error;

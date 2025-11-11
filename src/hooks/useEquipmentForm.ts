@@ -5,6 +5,7 @@ import { useEquipment } from '@/features/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
+import { generateEquipmentImageName } from '@/lib/imageNaming';
 
 interface UseEquipmentFormProps {
   equipmentId?: string;
@@ -332,16 +333,17 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
       // Comprimir imagem antes do upload
       const compressedBlob = await compressImage(file);
       
-      // Nome do arquivo sempre com extensão .webp
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.webp`;
-      const filePath = `${fileName}`;
+      // Gerar nome padronizado usando nomenclatura híbrida
+      const fileName = equipmentId
+        ? generateEquipmentImageName(equipmentId, formData.patrimonyNumber)
+        : `temp-${Date.now()}.webp`; // Fallback para novos equipamentos sem ID ainda
 
       const { error: uploadError, data } = await supabase.storage
         .from('equipment-images')
-        .upload(filePath, compressedBlob, {
+        .upload(fileName, compressedBlob, {
           contentType: 'image/webp',
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Sobrescreve imagem existente com mesmo nome
         });
 
       if (uploadError) {
@@ -350,7 +352,7 @@ export function useEquipmentForm({ equipmentId }: UseEquipmentFormProps = {}) {
 
       const { data: { publicUrl } } = supabase.storage
         .from('equipment-images')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       setImageUrl(publicUrl);
       updateField('image', publicUrl);
