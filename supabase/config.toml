@@ -69,6 +69,9 @@ verify_jwt = true
 [functions.manage-password]
 verify_jwt = true
 
+[functions.optimize-existing-images]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 policy = "per_worker"
