@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePolicies, POLICY_CATEGORIES } from '@/features/policies';
 import { PolicyCard, PolicyEditor } from '@/features/policies';
@@ -39,24 +40,53 @@ export default function Policies() {
         }
       />
 
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-1">
-          <TabsTrigger value="Todas" className="text-xs">
-            Todas ({policies.length})
-          </TabsTrigger>
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={selectedCategory === 'Todas' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('Todas')}
+          >
+            Todas
+            <Badge 
+              variant="secondary" 
+              className={cn(
+                "ml-2",
+                selectedCategory === 'Todas' && "bg-primary-foreground/20"
+              )}
+            >
+              {policies.length}
+            </Badge>
+          </Button>
+
           {POLICY_CATEGORIES.map((cat) => {
             const count = policies.filter(p => p.category === cat.value).length;
+            const isActive = selectedCategory === cat.value;
+            
             return (
-              <TabsTrigger key={cat.value} value={cat.value} className="text-xs">
-                <span className="hidden lg:inline">{cat.icon} </span>
-                <span className="hidden xl:inline">{cat.label}</span>
-                <span className="xl:hidden">{cat.icon}</span>
-                <span className="ml-1">({count})</span>
-              </TabsTrigger>
+              <Button
+                key={cat.value}
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(cat.value)}
+                className="gap-1"
+              >
+                <span>{cat.icon}</span>
+                <span className="hidden sm:inline">{cat.label}</span>
+                <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "ml-1",
+                    isActive && "bg-primary-foreground/20"
+                  )}
+                >
+                  {count}
+                </Badge>
+              </Button>
             );
           })}
-        </TabsList>
-      </Tabs>
+        </div>
+      </div>
 
       {filteredPolicies.length === 0 ? (
         <div className="text-center py-12">
