@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePolicies, POLICY_CATEGORIES } from '@/features/policies';
@@ -16,10 +17,17 @@ export default function Policies() {
   const { policies, loading, addPolicy } = usePolicies();
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const filteredPolicies = selectedCategory === 'Todas' 
-    ? policies 
-    : policies.filter(p => p.category === selectedCategory);
+  const filteredPolicies = policies.filter((policy) => {
+    const matchesCategory = selectedCategory === 'Todas' || policy.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      policy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      policy.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      policy.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesCategory && matchesSearch;
+  });
 
   if (loading) {
     return <LoadingScreen />;
@@ -40,7 +48,17 @@ export default function Policies() {
         }
       />
 
-      <div className="mb-6">
+      <div className="space-y-4 mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar políticas por título, conteúdo ou categoria..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <Button
             variant={selectedCategory === 'Todas' ? 'default' : 'outline'}
