@@ -322,10 +322,19 @@ export function SubcategoryAccordion({
 
                             {/* Lista de Acessórios (Expandível) */}
                             {equipment.hasAccessories && isExpanded && equipment.accessories && (
-            <div className={cn(
-              "ml-8 mt-2 space-y-2 border-l-2 rounded-tl-md pl-4 animate-in slide-in-from-left-2 fade-in-0 duration-300",
-              isSelected ? "border-success/50" : "border-muted"
-            )}>
+                              <div className={cn(
+                                "ml-4 mt-3 p-3 rounded-lg border-2 space-y-2 animate-in slide-in-from-top-2 fade-in-0 duration-300",
+                                isSelected 
+                                  ? "bg-success/5 border-success/30" 
+                                  : "bg-muted/20 border-muted"
+                              )}>
+                                {/* Título dos acessórios */}
+                                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
+                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    Acessórios deste equipamento
+                                  </span>
+                                </div>
+                                
                                 {equipment.accessories.map((accessory) => {
                                   const isAccessorySelected = selectedEquipment.includes(accessory.id);
                                   
