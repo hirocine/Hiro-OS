@@ -345,7 +345,7 @@ export default function ProjectWithdrawal() {
     if (currentStep <= 2) {
       const descriptions = [
         'Preencha as informações básicas do projeto de retirada',
-        'Defina o responsável, as datas e o tipo de gravação'
+        null
       ];
       return descriptions[currentStep - 1] || null;
     }
