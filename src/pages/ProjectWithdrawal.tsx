@@ -487,10 +487,6 @@ export default function ProjectWithdrawal() {
         <div className="space-y-6">
           {/* SEÇÃO: Responsável */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <User className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-base">Responsável</h3>
-            </div>
             <div>
               <Label htmlFor="responsible" className="text-base font-semibold mb-2 block">
                 Responsável pela Retirada *
@@ -576,10 +572,6 @@ export default function ProjectWithdrawal() {
 
           {/* SEÇÃO: Datas */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <CalendarIconLucide className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-base">Datas</h3>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Data de Separação *</Label>
@@ -667,10 +659,6 @@ export default function ProjectWithdrawal() {
 
           {/* SEÇÃO: Tipo de Gravação */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <Video className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-base">Tipo de Gravação</h3>
-            </div>
             <div>
               <Label>Tipo de Gravação *</Label>
               <Select 
