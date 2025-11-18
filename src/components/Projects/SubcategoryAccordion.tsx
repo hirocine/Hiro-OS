@@ -231,12 +231,6 @@ export function SubcategoryAccordion({
                                   : 'bg-card hover:bg-muted/50 border-border'
                               )}
                             >
-                              {/* Check icon para indicar seleção */}
-                              {isSelected && (
-                                <div className="absolute top-2 right-2 w-5 h-5 bg-success rounded-full flex items-center justify-center">
-                                  <Check className="h-3 w-3 text-white" />
-                                </div>
-                              )}
                               {/* Equipment Image */}
                               {equipment.image && (
                                 <img
