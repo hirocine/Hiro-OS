@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Package, Check } from 'lucide-react';
+import { Search, Plus, Package, Check, ChevronDown } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +21,10 @@ interface Equipment {
   status: string;
   image?: string;
   patrimonyNumber?: string;
+  itemType?: 'main' | 'accessory';
+  hasAccessories?: boolean;
+  accessoryCount?: number;
+  accessories?: Equipment[];
 }
 
 interface Subcategory {
@@ -45,6 +49,7 @@ export function SubcategoryAccordion({
 }: SubcategoryAccordionProps) {
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Calculate total selected count for badge
   const totalSelected = useMemo(() => {
@@ -69,8 +74,52 @@ export function SubcategoryAccordion({
   };
 
   // Handle toggle (add/remove from selection)
-  const handleToggle = (equipmentId: string) => {
+  const handleToggle = (equipmentId: string, hasAccessories?: boolean) => {
     onEquipmentChange(equipmentId);
+    
+    // Se tem acessórios e está sendo adicionado, expandir automaticamente
+    if (hasAccessories && !selectedEquipment.includes(equipmentId)) {
+      setExpandedItems(prev => new Set(prev).add(equipmentId));
+    }
+  };
+
+  // Toggle expansão de acessórios
+  const toggleExpanded = (equipmentId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(equipmentId)) {
+        newSet.delete(equipmentId);
+      } else {
+        newSet.add(equipmentId);
+      }
+      return newSet;
+    });
+  };
+
+  // Contar acessórios selecionados de um item
+  const getSelectedAccessoriesCount = (equipment: Equipment) => {
+    if (!equipment.accessories) return 0;
+    return equipment.accessories.filter(acc => selectedEquipment.includes(acc.id)).length;
+  };
+
+  // Adicionar item principal + todos os acessórios
+  const handleAddAllWithAccessories = (equipment: Equipment) => {
+    if (!equipment.accessories) return;
+    
+    // Adicionar item principal se não estiver selecionado
+    if (!selectedEquipment.includes(equipment.id)) {
+      onEquipmentChange(equipment.id);
+    }
+    
+    // Adicionar todos os acessórios que não estão selecionados
+    equipment.accessories.forEach(acc => {
+      if (!selectedEquipment.includes(acc.id)) {
+        onEquipmentChange(acc.id);
+      }
+    });
+    
+    // Expandir para mostrar os acessórios
+    setExpandedItems(prev => new Set(prev).add(equipment.id));
   };
 
   // Filter out empty subcategories
@@ -158,7 +207,7 @@ export function SubcategoryAccordion({
                 </div>
 
                 {/* Equipment List */}
-                <ScrollArea className="h-[300px] pr-4">
+                <ScrollArea className="h-[400px] pr-4">
                   {filteredEquipment.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground text-sm">
                       {searchTerms[subcategory.key]
@@ -166,71 +215,164 @@ export function SubcategoryAccordion({
                         : 'Nenhum equipamento disponível'}
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {filteredEquipment.map((equipment) => {
                         const isSelected = selectedEquipment.includes(equipment.id);
+                        const isExpanded = expandedItems.has(equipment.id);
+                        const selectedAccessoriesCount = getSelectedAccessoriesCount(equipment);
 
                         return (
-                          <div
-                            key={equipment.id}
-                            className={cn(
-                              'flex items-center justify-between p-3 rounded-md border transition-all',
-                              isSelected
-                                ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600 shadow-sm'
-                                : 'bg-card border-border hover:bg-muted/50'
-                            )}
-                          >
-                            {/* Equipment Info */}
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div key={equipment.id} className="space-y-2">
+                            {/* Item Principal */}
+                            <div
+                              className={cn(
+                                'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
+                                isSelected
+                                  ? 'bg-primary/5 border-primary/20'
+                                  : 'bg-card hover:bg-muted/50 border-border'
+                              )}
+                            >
+                              {/* Equipment Image */}
                               {equipment.image && (
                                 <img
                                   src={equipment.image}
                                   alt={equipment.name}
-                                  className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                  className="w-12 h-12 object-cover rounded-md flex-shrink-0"
                                 />
                               )}
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-medium text-sm text-foreground truncate">
+
+                              {/* Equipment Info */}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate text-foreground">
                                   {equipment.name}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground truncate">
-                                    {equipment.brand}
-                                  </span>
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {equipment.brand}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
                                   {equipment.patrimonyNumber && (
-                                    <>
-                                      <span className="text-xs text-muted-foreground">•</span>
-                                      <Badge variant="outline" className="text-xs px-1.5 py-0 h-5">
-                                        Pat. {equipment.patrimonyNumber}
-                                      </Badge>
-                                    </>
+                                    <span className="text-xs text-muted-foreground/70">
+                                      Pat. {equipment.patrimonyNumber}
+                                    </span>
+                                  )}
+                                  {equipment.hasAccessories && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {selectedAccessoriesCount > 0 
+                                        ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
+                                        : `${equipment.accessoryCount} acessórios`
+                                      }
+                                    </Badge>
                                   )}
                                 </div>
                               </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-2 shrink-0">
+                                {equipment.hasAccessories && (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => toggleExpanded(equipment.id)}
+                                      className="px-2"
+                                    >
+                                      <ChevronDown
+                                        className={cn(
+                                          "h-4 w-4 transition-transform",
+                                          isExpanded && "rotate-180"
+                                        )}
+                                      />
+                                    </Button>
+                                    {!isSelected && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleAddAllWithAccessories(equipment)}
+                                        className="text-xs px-2 hidden sm:flex"
+                                      >
+                                        <Package className="h-3 w-3 mr-1" />
+                                        Todos
+                                      </Button>
+                                    )}
+                                  </>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant={isSelected ? 'default' : 'outline'}
+                                  onClick={() => handleToggle(equipment.id, equipment.hasAccessories)}
+                                >
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="h-4 w-4 mr-1" />
+                                      Adicionado
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Adicionar
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
                             </div>
 
-                            {/* Add/Remove Button */}
-                            <Button
-                              variant={isSelected ? "default" : "outline"}
-                              size="sm"
-                              className={cn(
-                                "flex-shrink-0",
-                                isSelected && "bg-primary hover:bg-primary/90"
-                              )}
-                              onClick={() => handleToggle(equipment.id)}
-                            >
-                              {isSelected ? (
-                                <>
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Adicionado
-                                </>
-                              ) : (
-                                <>
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Adicionar
-                                </>
-                              )}
-                            </Button>
+                            {/* Lista de Acessórios (Expandível) */}
+                            {equipment.hasAccessories && isExpanded && equipment.accessories && (
+                              <div className="ml-8 space-y-2 border-l-2 border-muted pl-4">
+                                {equipment.accessories.map((accessory) => {
+                                  const isAccessorySelected = selectedEquipment.includes(accessory.id);
+                                  
+                                  return (
+                                    <div
+                                      key={accessory.id}
+                                      className={cn(
+                                        'flex items-center justify-between p-2 rounded-md transition-all duration-200',
+                                        isAccessorySelected
+                                          ? 'bg-primary/5 border border-primary/20'
+                                          : 'bg-muted/30 hover:bg-muted/50'
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        {accessory.image && (
+                                          <img
+                                            src={accessory.image}
+                                            alt={accessory.name}
+                                            className="w-8 h-8 object-cover rounded flex-shrink-0"
+                                          />
+                                        )}
+                                        <div className="flex flex-col min-w-0">
+                                          <span className="text-sm font-medium truncate">
+                                            {accessory.name}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground truncate">
+                                            {accessory.brand}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <Button
+                                        size="sm"
+                                        variant={isAccessorySelected ? 'default' : 'outline'}
+                                        onClick={() => handleToggle(accessory.id)}
+                                        className="shrink-0"
+                                      >
+                                        {isAccessorySelected ? (
+                                          <>
+                                            <Check className="h-3 w-3 mr-1" />
+                                            Adicionado
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Plus className="h-3 w-3 mr-1" />
+                                            Adicionar
+                                          </>
+                                        )}
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
