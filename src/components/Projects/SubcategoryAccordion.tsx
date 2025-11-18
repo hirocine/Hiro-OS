@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Package, Check, ChevronDown } from 'lucide-react';
+import { Search, Plus, Check, ChevronDown } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -70,7 +70,25 @@ export function SubcategoryAccordion({
 
   // Count selected equipment in a subcategory
   const getSubcategorySelectedCount = (equipment: Equipment[]) => {
-    return equipment.filter(eq => selectedEquipment.includes(eq.id)).length;
+    let count = 0;
+    
+    equipment.forEach(eq => {
+      // Contar o item principal se estiver selecionado
+      if (selectedEquipment.includes(eq.id)) {
+        count++;
+      }
+      
+      // Contar os acessórios deste item se estiverem selecionados
+      if (eq.accessories && eq.accessories.length > 0) {
+        eq.accessories.forEach(acc => {
+          if (selectedEquipment.includes(acc.id)) {
+            count++;
+          }
+        });
+      }
+    });
+    
+    return count;
   };
 
   // Handle toggle (add/remove from selection)
@@ -102,25 +120,6 @@ export function SubcategoryAccordion({
     return equipment.accessories.filter(acc => selectedEquipment.includes(acc.id)).length;
   };
 
-  // Adicionar item principal + todos os acessórios
-  const handleAddAllWithAccessories = (equipment: Equipment) => {
-    if (!equipment.accessories) return;
-    
-    // Adicionar item principal se não estiver selecionado
-    if (!selectedEquipment.includes(equipment.id)) {
-      onEquipmentChange(equipment.id);
-    }
-    
-    // Adicionar todos os acessórios que não estão selecionados
-    equipment.accessories.forEach(acc => {
-      if (!selectedEquipment.includes(acc.id)) {
-        onEquipmentChange(acc.id);
-      }
-    });
-    
-    // Expandir para mostrar os acessórios
-    setExpandedItems(prev => new Set(prev).add(equipment.id));
-  };
 
   // Filter out empty subcategories
   const nonEmptySubcategories = subcategories.filter(
@@ -130,7 +129,7 @@ export function SubcategoryAccordion({
   if (nonEmptySubcategories.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <Package className="h-12 w-12 mb-4 opacity-50" />
+        <Search className="h-12 w-12 mb-4 opacity-50" />
         <p className="text-sm">Nenhum equipamento disponível nesta categoria</p>
       </div>
     );
@@ -283,17 +282,6 @@ export function SubcategoryAccordion({
                                         )}
                                       />
                                     </Button>
-                                    {!isSelected && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleAddAllWithAccessories(equipment)}
-                                        className="text-xs px-2 hidden sm:flex"
-                                      >
-                                        <Package className="h-3 w-3 mr-1" />
-                                        Todos
-                                      </Button>
-                                    )}
                                   </>
                                 )}
                                 <Button
