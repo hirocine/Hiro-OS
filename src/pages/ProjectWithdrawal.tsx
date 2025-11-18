@@ -87,8 +87,28 @@ export default function ProjectWithdrawal() {
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
   const { categories: categoriesFromDB } = useCategories();
 
+  // Enriquecer equipamentos com informações de acessórios
+  const equipmentWithAccessories = useMemo(() => {
+    return allEquipment
+      .filter(item => item.itemType === 'main' && item.status === 'available')
+      .map(item => {
+        const accessories = allEquipment.filter(
+          acc => acc.itemType === 'accessory' && 
+                 acc.parentId === item.id && 
+                 acc.status === 'available'
+        );
+        
+        return {
+          ...item,
+          hasAccessories: accessories.length > 0,
+          accessoryCount: accessories.length,
+          accessories: accessories
+        };
+      });
+  }, [allEquipment]);
+
   // Group equipment by parent categories (usando ordens do banco de dados)
-  const groupedCategories = useGroupedCategories(allEquipment, categoriesFromDB);
+  const groupedCategories = useGroupedCategories(equipmentWithAccessories, categoriesFromDB);
 
   // Create category steps from grouped categories
   const CATEGORY_STEPS = useMemo(() => {
