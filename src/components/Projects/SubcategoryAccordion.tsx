@@ -227,8 +227,8 @@ export function SubcategoryAccordion({
                               className={cn(
                                 'flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 relative',
                                 isSelected
-                                  ? 'bg-success/10 border-success ring-1 ring-success/20 transform scale-[1.01]'
-                                  : 'bg-card hover:bg-muted/50 hover:scale-[1.005] border-border'
+                                  ? 'bg-success/10 border-success ring-1 ring-success/20'
+                                  : 'bg-card hover:bg-muted/50 border-border'
                               )}
                             >
                               {/* Check icon para indicar seleção */}
@@ -323,7 +323,7 @@ export function SubcategoryAccordion({
                             {/* Lista de Acessórios (Expandível) */}
                             {equipment.hasAccessories && isExpanded && equipment.accessories && (
             <div className={cn(
-              "ml-8 space-y-2 border-l-2 pl-4 transition-colors duration-300",
+              "ml-8 mt-2 space-y-2 border-l-2 rounded-tl-md pl-4 animate-in slide-in-from-left-2 fade-in-0 duration-300",
               isSelected ? "border-success/50" : "border-muted"
             )}>
                                 {equipment.accessories.map((accessory) => {
@@ -335,7 +335,7 @@ export function SubcategoryAccordion({
                   className={cn(
                     'flex items-center justify-between p-2 rounded-md transition-all duration-300 relative',
                     isAccessorySelected
-                      ? 'bg-success/15 border border-success/50 animate-in fade-in-0 duration-200'
+                      ? 'bg-success/15 border border-success/50'
                       : 'bg-muted/30 hover:bg-muted/50'
                   )}
                 >
