@@ -551,39 +551,6 @@ export default function ProjectWithdrawal() {
               </Select>
             </div>
 
-            {data.responsibleUserId && (() => {
-              const selectedUser = users.find(u => u.id === data.responsibleUserId);
-              if (!selectedUser) return null;
-              
-              const displayName = selectedUser.display_name || selectedUser.email;
-              const avatarUrl = selectedUser.avatar_url;
-              const initials = displayName
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2);
-
-              return (
-                <Card className="border-success/50 bg-success/5">
-                  <CardContent className="pt-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{displayName}</p>
-                        <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                        {selectedUser.department && (
-                          <p className="text-sm text-muted-foreground">{selectedUser.department}</p>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })()}
           </div>
 
           {/* SEÇÃO: Datas */}
