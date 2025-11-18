@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Check, ChevronDown } from 'lucide-react';
+import { Search, Plus, Check, ChevronDown, CheckCircle2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -143,7 +143,7 @@ export function SubcategoryAccordion({
           <span className="text-sm font-medium text-foreground">
             Total selecionado nesta categoria
           </span>
-          <Badge variant="default" className="text-base px-3 py-1">
+          <Badge className="bg-success/20 text-success border-success/50 text-base px-3 py-1">
             {totalSelected} {totalSelected === 1 ? 'item' : 'itens'}
           </Badge>
         </div>
@@ -180,11 +180,11 @@ export function SubcategoryAccordion({
                       {availableCount}
                     </Badge>
                   </div>
-                  {selectedCount > 0 && (
-                    <Badge variant="default" className="ml-2">
-                      {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
-                    </Badge>
-                  )}
+            {selectedCount > 0 && (
+              <Badge className="bg-success/20 text-success border-success/50 ml-2">
+                {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
+              </Badge>
+            )}
                 </div>
               </AccordionTrigger>
 
@@ -225,12 +225,18 @@ export function SubcategoryAccordion({
                             {/* Item Principal */}
                             <div
                               className={cn(
-                                'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
+                                'flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 relative',
                                 isSelected
-                                  ? 'bg-primary/5 border-primary/20'
-                                  : 'bg-card hover:bg-muted/50 border-border'
+                                  ? 'bg-success/10 border-success ring-1 ring-success/20 transform scale-[1.01]'
+                                  : 'bg-card hover:bg-muted/50 hover:scale-[1.005] border-border'
                               )}
                             >
+                              {/* Check icon para indicar seleção */}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-5 h-5 bg-success rounded-full flex items-center justify-center">
+                                  <Check className="h-3 w-3 text-white" />
+                                </div>
+                              )}
                               {/* Equipment Image */}
                               {equipment.image && (
                                 <img
@@ -254,14 +260,20 @@ export function SubcategoryAccordion({
                                       Pat. {equipment.patrimonyNumber}
                                     </span>
                                   )}
-                                  {equipment.hasAccessories && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {selectedAccessoriesCount > 0 
-                                        ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
-                                        : `${equipment.accessoryCount} acessórios`
-                                      }
-                                    </Badge>
-                                  )}
+              {equipment.hasAccessories && (
+                <Badge 
+                  variant={selectedAccessoriesCount > 0 ? "default" : "outline"}
+                  className={cn(
+                    "text-xs",
+                    selectedAccessoriesCount > 0 && "bg-success/20 text-success border-success/50"
+                  )}
+                >
+                  {selectedAccessoriesCount > 0 
+                    ? `${selectedAccessoriesCount}/${equipment.accessoryCount} acessórios`
+                    : `${equipment.accessoryCount} acessórios`
+                  }
+                </Badge>
+              )}
                                 </div>
                               </div>
 
@@ -288,10 +300,14 @@ export function SubcategoryAccordion({
                                   size="sm"
                                   variant={isSelected ? 'default' : 'outline'}
                                   onClick={() => handleToggle(equipment.id, equipment.hasAccessories)}
+                                  className={cn(
+                                    "transition-all duration-200",
+                                    isSelected && "bg-success hover:bg-success/90 text-white border-success"
+                                  )}
                                 >
                                   {isSelected ? (
                                     <>
-                                      <Check className="h-4 w-4 mr-1" />
+                                      <CheckCircle2 className="h-4 w-4 mr-1" />
                                       Adicionado
                                     </>
                                   ) : (
@@ -306,20 +322,23 @@ export function SubcategoryAccordion({
 
                             {/* Lista de Acessórios (Expandível) */}
                             {equipment.hasAccessories && isExpanded && equipment.accessories && (
-                              <div className="ml-8 space-y-2 border-l-2 border-muted pl-4">
+            <div className={cn(
+              "ml-8 space-y-2 border-l-2 pl-4 transition-colors duration-300",
+              isSelected ? "border-success/50" : "border-muted"
+            )}>
                                 {equipment.accessories.map((accessory) => {
                                   const isAccessorySelected = selectedEquipment.includes(accessory.id);
                                   
                                   return (
-                                    <div
-                                      key={accessory.id}
-                                      className={cn(
-                                        'flex items-center justify-between p-2 rounded-md transition-all duration-200',
-                                        isAccessorySelected
-                                          ? 'bg-primary/5 border border-primary/20'
-                                          : 'bg-muted/30 hover:bg-muted/50'
-                                      )}
-                                    >
+                <div
+                  key={accessory.id}
+                  className={cn(
+                    'flex items-center justify-between p-2 rounded-md transition-all duration-300 relative',
+                    isAccessorySelected
+                      ? 'bg-success/15 border border-success/50 animate-in fade-in-0 duration-200'
+                      : 'bg-muted/30 hover:bg-muted/50'
+                  )}
+                >
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         {accessory.image && (
                                           <img
@@ -342,11 +361,14 @@ export function SubcategoryAccordion({
                                         size="sm"
                                         variant={isAccessorySelected ? 'default' : 'outline'}
                                         onClick={() => handleToggle(accessory.id)}
-                                        className="shrink-0"
+                                        className={cn(
+                                          "shrink-0 transition-all duration-200",
+                                          isAccessorySelected && "bg-success hover:bg-success/90 text-white border-success"
+                                        )}
                                       >
                                         {isAccessorySelected ? (
                                           <>
-                                            <Check className="h-3 w-3 mr-1" />
+                                            <CheckCircle2 className="h-3 w-3 mr-1" />
                                             Adicionado
                                           </>
                                         ) : (
