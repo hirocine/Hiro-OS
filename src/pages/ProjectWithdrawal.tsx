@@ -98,7 +98,7 @@ export default function ProjectWithdrawal() {
   }, [groupedCategories]);
 
   // Calculate total steps: 5 initial fixed steps + category steps + 1 summary
-  const TOTAL_STEPS = 5 + CATEGORY_STEPS.length + 1;
+  const TOTAL_STEPS = 2 + CATEGORY_STEPS.length + 1;
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
     setData(prev => ({ ...prev, [field]: value }));
@@ -306,22 +306,20 @@ export default function ProjectWithdrawal() {
                data.projectName.trim() !== '' &&
                /^\d{1,4}$/.test(data.projectNumber.trim());
       case 2:
-        return data.responsibleUserId !== '';
-      case 3:
-        return data.withdrawalDate !== undefined && 
+        return data.responsibleUserId !== '' &&
+               data.withdrawalDate !== undefined && 
                data.returnDate !== undefined && 
                data.separationDate !== undefined &&
-               data.returnDate >= data.withdrawalDate;
-      case 4:
-        return data.recordingType !== '';
+               data.returnDate >= data.withdrawalDate &&
+               data.recordingType !== '';
       default:
         return true; // Equipment selection steps and summary are optional
     }
   };
 
   const shouldShowSkipButton = (): boolean => {
-    // Allow skipping only on equipment steps (6 onwards, except summary)
-    if (currentStep < 5 || currentStep === TOTAL_STEPS) return false;
+    // Allow skipping only on equipment steps (3 onwards, except summary)
+    if (currentStep < 3 || currentStep === TOTAL_STEPS) return false;
     return true;
   };
 
@@ -329,12 +327,12 @@ export default function ProjectWithdrawal() {
 
   // Get step title
   const getStepTitle = (): string => {
-    if (currentStep <= 4) {
-      const titles = ['Informações do Projeto', 'Responsável', 'Datas', 'Tipo de Gravação'];
+    if (currentStep <= 2) {
+      const titles = ['Informações do Projeto', 'Detalhes da Retirada'];
       return titles[currentStep - 1] || '';
     }
     
-    const categoryStepIndex = currentStep - 5;
+    const categoryStepIndex = currentStep - 3;
     if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
       return CATEGORY_STEPS[categoryStepIndex].title;
     }
@@ -344,12 +342,10 @@ export default function ProjectWithdrawal() {
 
   // Get step description
   const getStepDescription = (): string | null => {
-    if (currentStep <= 4) {
+    if (currentStep <= 2) {
       const descriptions = [
         'Preencha as informações básicas do projeto de retirada',
-        'Selecione o responsável pela retirada dos equipamentos',
-        'Defina as datas de separação, retirada e devolução',
-        'Informe o tipo de gravação que será realizada'
+        'Defina o responsável, as datas e o tipo de gravação'
       ];
       return descriptions[currentStep - 1] || null;
     }
@@ -363,17 +359,15 @@ export default function ProjectWithdrawal() {
 
   // Get step icon
   const getStepIcon = () => {
-    if (currentStep <= 4) {
+    if (currentStep <= 2) {
       const icons = [
         <FileText className="h-5 w-5 text-primary" />,
-        <User className="h-5 w-5 text-primary" />,
-        <Clock className="h-5 w-5 text-primary" />,
-        <Video className="h-5 w-5 text-primary" />
+        <User className="h-5 w-5 text-primary" />
       ];
       return icons[currentStep - 1] || null;
     }
     
-    const categoryStepIndex = currentStep - 5;
+    const categoryStepIndex = currentStep - 3;
     if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
       const Icon = CATEGORY_STEPS[categoryStepIndex].icon;
       return <Icon className="h-5 w-5 text-primary" />;
@@ -487,196 +481,221 @@ export default function ProjectWithdrawal() {
       );
     }
 
-    // Step 2: Responsible Person
+    // Step 2: Detalhes da Retirada (Responsável + Datas + Tipo de Gravação)
     if (currentStep === 2) {
       return (
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="responsible" className="text-base font-semibold mb-2 block">
-              Responsável pela Retirada *
-            </Label>
-            <Select 
-              value={data.responsibleUserId} 
-              onValueChange={(value) => updateField('responsibleUserId', value)}
-            >
-              <SelectTrigger id="responsible" className="h-12">
-                <SelectValue placeholder="Selecione o responsável" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => {
-                  const displayName = user.display_name || user.email;
-                  const avatarUrl = user.avatar_url;
-                  const initials = displayName
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')
-                    .toUpperCase()
-                    .slice(0, 2);
-                  
-                  return (
-                    <SelectItem key={user.id} value={user.id}>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-                          <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">
-                            {user.display_name || user.email}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {user.department && user.position 
-                              ? `${user.position} - ${user.department}`
-                              : user.department || user.position || user.email
-                            }
-                          </span>
+        <div className="space-y-6">
+          {/* SEÇÃO: Responsável */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <User className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-base">Responsável</h3>
+            </div>
+            <div>
+              <Label htmlFor="responsible" className="text-base font-semibold mb-2 block">
+                Responsável pela Retirada *
+              </Label>
+              <Select 
+                value={data.responsibleUserId} 
+                onValueChange={(value) => updateField('responsibleUserId', value)}
+              >
+                <SelectTrigger id="responsible" className="h-12">
+                  <SelectValue placeholder="Selecione o responsável" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => {
+                    const displayName = user.display_name || user.email;
+                    const avatarUrl = user.avatar_url;
+                    const initials = displayName
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2);
+                    
+                    return (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">
+                              {user.display_name || user.email}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {user.department && user.position 
+                                ? `${user.position} - ${user.department}`
+                                : user.department || user.position || user.email
+                              }
+                            </span>
+                          </div>
                         </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {data.responsibleUserId && (() => {
+              const selectedUser = users.find(u => u.id === data.responsibleUserId);
+              if (!selectedUser) return null;
+              
+              const displayName = selectedUser.display_name || selectedUser.email;
+              const avatarUrl = selectedUser.avatar_url;
+              const initials = displayName
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+
+              return (
+                <Card className="border-success/50 bg-success/5">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">{displayName}</p>
+                        <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                        {selectedUser.department && (
+                          <p className="text-sm text-muted-foreground">{selectedUser.department}</p>
+                        )}
                       </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </div>
 
-          {data.responsibleUserId && (() => {
-            const selectedUser = users.find(u => u.id === data.responsibleUserId);
-            return selectedUser ? (
-              <div className="p-3 bg-muted rounded-lg space-y-1">
-                <p className="text-sm font-medium">Dados do responsável:</p>
-                <p className="text-sm text-muted-foreground">
-                  <strong>Nome:</strong> {selectedUser.display_name || selectedUser.email}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  <strong>Email:</strong> {selectedUser.email}
-                </p>
-                {selectedUser.department && (
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Departamento:</strong> {selectedUser.department}
-                  </p>
-                )}
+          {/* SEÇÃO: Datas */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <CalendarIconLucide className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-base">Datas</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Data de Separação *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !data.separationDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={data.separationDate}
+                      onSelect={(date) => updateField('separationDate', date)}
+                      locale={ptBR}
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
-            ) : null;
-          })()}
-        </div>
-      );
-    }
 
-    // Step 3: Dates
-    if (currentStep === 3) {
-      return (
-        <div className="space-y-4">
-          <div>
-            <Label>Data de Separação *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !data.separationDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data.separationDate ? format(data.separationDate, "dd/MM/yyyy") : "Selecionar data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={data.separationDate}
-                  onSelect={(date) => updateField('separationDate', date)}
-                  locale={ptBR}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+              <div>
+                <Label>Data de Retirada *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !data.withdrawalDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={data.withdrawalDate}
+                      onSelect={(date) => updateField('withdrawalDate', date)}
+                      locale={ptBR}
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label>Data de Devolução *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !data.returnDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={data.returnDate}
+                      onSelect={(date) => updateField('returnDate', date)}
+                      locale={ptBR}
+                      disabled={(date) => data.withdrawalDate ? date < data.withdrawalDate : false}
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <Label>Data de Retirada *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !data.withdrawalDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data.withdrawalDate ? format(data.withdrawalDate, "dd/MM/yyyy") : "Selecionar data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={data.withdrawalDate}
-                  onSelect={(date) => updateField('withdrawalDate', date)}
-                  locale={ptBR}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div>
-            <Label>Data de Devolução *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !data.returnDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data.returnDate ? format(data.returnDate, "dd/MM/yyyy") : "Selecionar data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={data.returnDate}
-                  onSelect={(date) => updateField('returnDate', date)}
-                  locale={ptBR}
-                  disabled={(date) => data.withdrawalDate ? date < data.withdrawalDate : false}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+          {/* SEÇÃO: Tipo de Gravação */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <Video className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-base">Tipo de Gravação</h3>
+            </div>
+            <div>
+              <Label>Tipo de Gravação *</Label>
+              <Select 
+                value={data.recordingType} 
+                onValueChange={(value) => updateField('recordingType', value)}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Selecione o tipo de gravação" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RECORDING_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       );
     }
 
-    // Step 4: Recording Type
-    if (currentStep === 4) {
-      return (
-        <div className="space-y-4">
-          <Label>Tipo de Gravação *</Label>
-          <Select 
-            value={data.recordingType} 
-            onValueChange={(value) => updateField('recordingType', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o tipo de gravação" />
-            </SelectTrigger>
-            <SelectContent>
-              {RECORDING_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      );
-    }
-
-    // Steps 5 onwards: Category equipment selection
-    const categoryStepIndex = currentStep - 5;
+    // Steps 3 onwards: Category equipment selection
+    const categoryStepIndex = currentStep - 3;
     if (categoryStepIndex >= 0 && categoryStepIndex < CATEGORY_STEPS.length) {
       return renderCategoryWithSubcategories(CATEGORY_STEPS[categoryStepIndex]);
     }
@@ -700,7 +719,7 @@ export default function ProjectWithdrawal() {
         key: cat.key,
         name: cat.title,
         icon: cat.icon,
-        stepNumber: 5 + index,
+        stepNumber: 3 + index,
         equipment: categoryEquipment
       };
     }).filter(cat => cat.equipment.length > 0);
