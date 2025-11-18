@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
 import { getStepLabel } from '@/lib/projectLabels';
 import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
-import { ProjectFilters } from '@/components/Projects/ProjectFilters';
+
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
@@ -278,8 +278,6 @@ export default function Projects() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <ProjectFilters filters={filters} onFiltersChange={setFilters} />
 
       {/* Projects Grid */}
       <div className="space-y-8">
