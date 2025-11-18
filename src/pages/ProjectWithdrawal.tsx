@@ -516,17 +516,9 @@ export default function ProjectWithdrawal() {
                             <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                             <AvatarFallback>{initials}</AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">
-                              {user.display_name || user.email}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {user.department && user.position 
-                                ? `${user.position} - ${user.department}`
-                                : user.department || user.position || user.email
-                              }
-                            </span>
-                          </div>
+                          <span className="font-medium">
+                            {user.display_name || user.email}
+                          </span>
                         </div>
                       </SelectItem>
                     );
