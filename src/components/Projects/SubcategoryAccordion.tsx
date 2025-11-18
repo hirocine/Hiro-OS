@@ -339,15 +339,15 @@ export function SubcategoryAccordion({
                                   const isAccessorySelected = selectedEquipment.includes(accessory.id);
                                   
                                   return (
-                <div
-                  key={accessory.id}
-                  className={cn(
-                    'flex items-center justify-between p-2 rounded-md transition-all duration-300 relative',
-                    isAccessorySelected
-                      ? 'bg-success/15 border border-success/50'
-                      : 'bg-muted/30 hover:bg-muted/50'
-                  )}
-                >
+                                    <div
+                                      key={accessory.id}
+                                      className={cn(
+                                        'flex items-center justify-between p-2 rounded-md border transition-all duration-300 relative',
+                                        isAccessorySelected
+                                          ? 'bg-success/15 border-success/50'
+                                          : 'bg-muted/30 hover:bg-muted/50 border-transparent hover:border-muted'
+                                      )}
+                                    >
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         {accessory.image && (
                                           <img
