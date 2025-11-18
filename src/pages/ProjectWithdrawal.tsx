@@ -78,6 +78,10 @@ export default function ProjectWithdrawal() {
     recordingType: '',
     selectedEquipment: [],
   });
+  
+  const [separationDateOpen, setSeparationDateOpen] = useState(false);
+  const [withdrawalDateOpen, setWithdrawalDateOpen] = useState(false);
+  const [returnDateOpen, setReturnDateOpen] = useState(false);
 
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
@@ -567,7 +571,7 @@ export default function ProjectWithdrawal() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Data de Separação *</Label>
-                <Popover>
+                <Popover open={separationDateOpen} onOpenChange={setSeparationDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -584,7 +588,10 @@ export default function ProjectWithdrawal() {
                     <Calendar
                       mode="single"
                       selected={data.separationDate}
-                      onSelect={(date) => updateField('separationDate', date)}
+                      onSelect={(date) => {
+                        updateField('separationDate', date);
+                        setSeparationDateOpen(false);
+                      }}
                       locale={ptBR}
                       className="pointer-events-auto"
                     />
@@ -594,7 +601,7 @@ export default function ProjectWithdrawal() {
 
               <div>
                 <Label>Data de Retirada *</Label>
-                <Popover>
+                <Popover open={withdrawalDateOpen} onOpenChange={setWithdrawalDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -611,7 +618,10 @@ export default function ProjectWithdrawal() {
                     <Calendar
                       mode="single"
                       selected={data.withdrawalDate}
-                      onSelect={(date) => updateField('withdrawalDate', date)}
+                      onSelect={(date) => {
+                        updateField('withdrawalDate', date);
+                        setWithdrawalDateOpen(false);
+                      }}
                       locale={ptBR}
                       className="pointer-events-auto"
                     />
@@ -621,7 +631,7 @@ export default function ProjectWithdrawal() {
 
               <div>
                 <Label>Data de Devolução *</Label>
-                <Popover>
+                <Popover open={returnDateOpen} onOpenChange={setReturnDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -638,7 +648,10 @@ export default function ProjectWithdrawal() {
                     <Calendar
                       mode="single"
                       selected={data.returnDate}
-                      onSelect={(date) => updateField('returnDate', date)}
+                      onSelect={(date) => {
+                        updateField('returnDate', date);
+                        setReturnDateOpen(false);
+                      }}
                       locale={ptBR}
                       disabled={(date) => data.withdrawalDate ? date < data.withdrawalDate : false}
                       className="pointer-events-auto"
