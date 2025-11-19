@@ -175,7 +175,7 @@ export default function ProjectWithdrawal() {
 
       flattenSelectedEquipment().forEach(eq => {
         if (eq.category === 'Câmera' && (eq.subcategory === 'Câmera (Corpo e Acessórios)' || eq.subcategory === 'Câmera')) {
-          selectedEquipmentForPDF.cameras.push({ camera: eq, accessories: [] });
+          selectedEquipmentForPDF.cameras.push(eq);
         } else if (eq.category === 'Câmera' && eq.subcategory === 'Lente') {
           selectedEquipmentForPDF.lenses.push(eq);
         } else if (eq.category === 'Câmera' || eq.category === 'Acessórios de Câmera') {
