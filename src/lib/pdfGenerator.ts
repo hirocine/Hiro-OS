@@ -16,7 +16,7 @@ export interface PDFProjectData {
   separationDate?: Date;
   recordingType?: string;
   selectedEquipment: {
-    cameras: Equipment[];
+    cameras: Array<{ camera: Equipment; accessories: Equipment[] }>;
     lenses: Equipment[];
     cameraAccessories: Equipment[];
     tripods: Equipment[];
@@ -143,12 +143,33 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
       items: Array<{ name: string }>;
     }> = [];
     
-    // Câmeras
+    // Câmeras (com acessórios)
     if (data.selectedEquipment.cameras.length > 0) {
-      const items = data.selectedEquipment.cameras.map(item => ({ 
-        name: `${item.name} - ${item.brand}` 
-      }));
-      categoriesData.push({ name: 'CÂMERAS', items });
+      const items: Array<{ name: string }> = [];
+      let totalAccessories = 0;
+      
+      data.selectedEquipment.cameras.forEach(cameraItem => {
+        // Adicionar câmera principal
+        items.push({ 
+          name: `${cameraItem.camera.name} - ${cameraItem.camera.brand}` 
+        });
+        
+        // Adicionar acessórios indentados
+        if (cameraItem.accessories && cameraItem.accessories.length > 0) {
+          totalAccessories += cameraItem.accessories.length;
+          cameraItem.accessories.forEach(accessory => {
+            items.push({ 
+              name: `  ${accessory.name} - ${accessory.brand}` 
+            });
+          });
+        }
+      });
+      
+      const categoryName = totalAccessories > 0 
+        ? `CÂMERAS (${data.selectedEquipment.cameras.length} ${data.selectedEquipment.cameras.length === 1 ? 'item' : 'itens'} + ${totalAccessories} ${totalAccessories === 1 ? 'acessório' : 'acessórios'})`
+        : 'CÂMERAS';
+      
+      categoriesData.push({ name: categoryName, items });
     }
     
     // Lentes
