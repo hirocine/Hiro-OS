@@ -6,7 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { PARENT_CATEGORIES } from '@/lib/categoryMappingTemplate';
+import { getCategoryIcon } from '@/lib/categoryIconMap';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Dialog,
   DialogContent,
@@ -30,8 +47,82 @@ import {
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, Camera, Monitor, Mic2, Lightbulb, Package, Video, Zap, HardDrive } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Folder, FileText, ChevronRight, AlertTriangle, ArrowUp, ArrowDown, Camera, Monitor, Mic2, Lightbulb, Package, Video, Zap, HardDrive, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Componente Sortable para Item de Categoria
+function SortableCategoryItem({ 
+  id, 
+  children 
+}: { 
+  id: string; 
+  children: React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+      <button
+        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </button>
+      {children}
+    </div>
+  );
+}
+
+// Componente Sortable para Item de Subcategoria
+function SortableSubcategoryItem({ 
+  id, 
+  children 
+}: { 
+  id: string; 
+  children: React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+      <button
+        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded ml-2"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </button>
+      {children}
+    </div>
+  );
+}
 
 // Função para retornar placeholder contextual baseado na categoria
 const getSubcategoryPlaceholder = (category: string | null): string => {
@@ -78,7 +169,6 @@ export function CategoryManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [isMigrating, setIsMigrating] = useState(false);
   
   // Dialogs state
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -267,58 +357,110 @@ export function CategoryManagement() {
     }
   };
 
-  const handleMigrateEnglishCategories = async () => {
-    setIsMigrating(true);
+  // Setup drag-and-drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Função para reordenar categorias principais
+  const reorderCategories = async (reorderedCategoryNames: string[]) => {
     try {
-      // Criar mapeamento inglês -> português
-      const englishToPortuguese: Record<string, string> = {};
-      PARENT_CATEGORIES.forEach(cat => {
-        englishToPortuguese[cat.key] = cat.title;
-      });
+      // Para cada categoria, atualizar apenas o category_order
+      for (let index = 0; index < reorderedCategoryNames.length; index++) {
+        const catName = reorderedCategoryNames[index];
+        const newOrder = (index + 1) * 10;
 
-      // Buscar todos equipamentos com categorias em inglês
-      const { data: equipments, error: fetchError } = await supabase
-        .from('equipments')
-        .select('id, category')
-        .in('category', Object.keys(englishToPortuguese));
+        // Atualizar todos os registros desta categoria
+        const { error } = await supabase
+          .from('equipment_categories')
+          .update({ category_order: newOrder })
+          .eq('category', catName);
 
-      if (fetchError) throw fetchError;
-      if (!equipments || equipments.length === 0) {
-        toast({
-          title: 'Nenhuma migração necessária',
-          description: 'Não foram encontrados equipamentos com categorias em inglês'
-        });
-        return;
-      }
-
-      // Atualizar cada equipamento
-      let updated = 0;
-      for (const equipment of equipments) {
-        const portugueseCategory = englishToPortuguese[equipment.category];
-        if (portugueseCategory) {
-          const { error: updateError } = await supabase
-            .from('equipments')
-            .update({ category: portugueseCategory })
-            .eq('id', equipment.id);
-
-          if (!updateError) updated++;
-        }
+        if (error) throw error;
       }
 
       toast({
-        title: 'Migração concluída',
-        description: `${updated} equipamentos foram atualizados de inglês para português`
+        title: 'Ordem atualizada',
+        description: 'Categorias reordenadas com sucesso'
       });
-      refetch();
+      
+      await refetch();
     } catch (error) {
-      console.error('Erro na migração:', error);
+      console.error('Erro ao reordenar categorias:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao migrar categorias. Tente novamente.',
+        description: 'Erro ao reordenar categorias',
         variant: 'destructive'
       });
-    } finally {
-      setIsMigrating(false);
+    }
+  };
+
+  // Função para reordenar subcategorias dentro de uma categoria
+  const reorderSubcategories = async (
+    categoryName: string,
+    reorderedSubcategoryIds: string[]
+  ) => {
+    try {
+      // Para cada subcategoria, atualizar apenas o subcategory_order
+      for (let index = 0; index < reorderedSubcategoryIds.length; index++) {
+        const id = reorderedSubcategoryIds[index];
+        const newOrder = (index + 1) * 10;
+
+        const { error } = await supabase
+          .from('equipment_categories')
+          .update({ subcategory_order: newOrder })
+          .eq('id', id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: 'Ordem atualizada',
+        description: 'Subcategorias reordenadas com sucesso'
+      });
+      
+      await refetch();
+    } catch (error) {
+      console.error('Erro ao reordenar subcategorias:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao reordenar subcategorias',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Handler para drag end de categorias
+  const handleCategoryDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = hierarchy.findIndex(cat => cat.categoryName === active.id);
+      const newIndex = hierarchy.findIndex(cat => cat.categoryName === over.id);
+
+      const reordered = arrayMove(hierarchy, oldIndex, newIndex);
+      const categoryNames = reordered.map(cat => cat.categoryName);
+      reorderCategories(categoryNames);
+    }
+  };
+
+  // Handler para drag end de subcategorias
+  const handleSubcategoryDragEnd = (categoryName: string) => (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const category = hierarchy.find(cat => cat.categoryName === categoryName);
+      if (!category) return;
+
+      const oldIndex = category.subcategories.findIndex(sub => sub.id === active.id);
+      const newIndex = category.subcategories.findIndex(sub => sub.id === over.id);
+
+      const reordered = arrayMove(category.subcategories, oldIndex, newIndex);
+      const subcategoryIds = reordered.map(sub => sub.id);
+      reorderSubcategories(categoryName, subcategoryIds);
     }
   };
 
@@ -429,43 +571,12 @@ export function CategoryManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Botões de Manutenção */}
+          {/* Botão de Limpeza de Duplicatas */}
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="flex flex-col gap-2">
-              <span className="font-medium">Ferramentas de Manutenção</span>
+              <span className="font-medium">Ferramenta de Manutenção</span>
               <div className="flex flex-wrap gap-2 mt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleMigrateEnglishCategories}
-                  disabled={isMigrating}
-                >
-                  {isMigrating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Migrar do Inglês
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={async () => {
-                    const result = await syncOrdersWithMapping();
-                    if (result.success) {
-                      toast({
-                        title: 'Sucesso',
-                        description: 'Categorias sincronizadas com o mapeamento padrão'
-                      });
-                      refetch();
-                    } else {
-                      toast({
-                        title: 'Erro',
-                        description: result.error,
-                        variant: 'destructive'
-                      });
-                    }
-                  }}
-                >
-                  Sincronizar com Mapeamento
-                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -490,7 +601,7 @@ export function CategoryManagement() {
                 </Button>
               </div>
               <span className="text-xs text-muted-foreground mt-1">
-                Use estas ferramentas para corrigir inconsistências e normalizar dados existentes
+                Use esta ferramenta para remover categorias duplicadas
               </span>
             </AlertDescription>
           </Alert>
@@ -512,154 +623,136 @@ export function CategoryManagement() {
           </div>
 
           <div className="space-y-2">
-            {filteredHierarchy.map((cat) => {
-              const isExpanded = expandedCategories.has(cat.categoryName);
-              
-              return (
-                <Collapsible
-                  key={cat.categoryName}
-                  open={isExpanded}
-                  onOpenChange={() => toggleCategory(cat.categoryName)}
-                >
-                  <div className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                    <div className="flex items-center gap-2 flex-1">
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <ChevronRight
-                            className={cn(
-                              "h-4 w-4 transition-transform",
-                              isExpanded && "rotate-90"
-                            )}
-                          />
-                        </Button>
-                      </CollapsibleTrigger>
-                      
-                      <Folder className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{cat.categoryName}</span>
-                      <Badge variant="secondary">
-                        {cat.subcategories.length} {cat.subcategories.length === 1 ? 'subcategoria' : 'subcategorias'}
-                      </Badge>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditDialog('category', cat.categoryName);
-                        }}
+            {/* Drag-and-drop para categorias principais */}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleCategoryDragEnd}
+            >
+              <SortableContext
+                items={filteredHierarchy.map(cat => cat.categoryName)}
+                strategy={verticalListSortingStrategy}
+              >
+                {filteredHierarchy.map((cat) => {
+                  const isExpanded = expandedCategories.has(cat.categoryName);
+                  const Icon = getCategoryIcon(cat.categoryName);
+                  
+                  return (
+                    <SortableCategoryItem key={cat.categoryName} id={cat.categoryName}>
+                      <Collapsible
+                        className="flex-1"
+                        open={isExpanded}
+                        onOpenChange={() => toggleCategory(cat.categoryName)}
                       >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDeleteDialog('category', cat.categoryName);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <CollapsibleContent>
-                    <div className="ml-8 mt-2 space-y-1">
-                      {cat.subcategories.map((sub, index) => (
-                        <div
-                          key={sub.id}
-                          className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span>{sub.name}</span>
-                            {sub.usageCount > 0 && (
-                              <Badge variant="outline">{sub.usageCount} equipamentos</Badge>
-                            )}
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
+                          <div className="flex items-center gap-2 flex-1">
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <ChevronRight
+                                  className={cn(
+                                    "h-4 w-4 transition-transform",
+                                    isExpanded && "rotate-90"
+                                  )}
+                                />
+                              </Button>
+                            </CollapsibleTrigger>
+                            
+                            <Icon className="h-4 w-4 text-primary" />
+                            <span className="font-medium">{cat.categoryName}</span>
+                            <Badge variant="secondary">
+                              {cat.subcategories.length} {cat.subcategories.length === 1 ? 'subcategoria' : 'subcategorias'}
+                            </Badge>
                           </div>
 
-                          <div className="flex gap-1">
+                          <div className="flex gap-2">
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              disabled={index === 0}
-                              onClick={async () => {
-                                const result = await reorderSubcategory(sub.id, cat.categoryName, 'up');
-                                if (result.success) {
-                                  toast({
-                                    title: 'Ordem atualizada',
-                                    description: 'Subcategoria movida para cima'
-                                  });
-                                } else {
-                                  toast({
-                                    title: 'Erro',
-                                    description: result.error,
-                                    variant: 'destructive'
-                                  });
-                                }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditDialog('category', cat.categoryName);
                               }}
-                            >
-                              <ArrowUp className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              disabled={index === cat.subcategories.length - 1}
-                              onClick={async () => {
-                                const result = await reorderSubcategory(sub.id, cat.categoryName, 'down');
-                                if (result.success) {
-                                  toast({
-                                    title: 'Ordem atualizada',
-                                    description: 'Subcategoria movida para baixo'
-                                  });
-                                } else {
-                                  toast({
-                                    title: 'Erro',
-                                    description: result.error,
-                                    variant: 'destructive'
-                                  });
-                                }
-                              }}
-                            >
-                              <ArrowDown className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteDialog('category', cat.categoryName);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
-                      ))}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          setSelectedCategory(cat.categoryName);
-                          setShowAddSubcategoryDialog(true);
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Adicionar Subcategoria
-                      </Button>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              );
-            })}
+                        <CollapsibleContent>
+                          <div className="ml-8 mt-2 space-y-1">
+                            {/* Drag-and-drop para subcategorias */}
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleSubcategoryDragEnd(cat.categoryName)}
+                            >
+                              <SortableContext
+                                items={cat.subcategories.map(sub => sub.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {cat.subcategories.map((sub) => (
+                                  <SortableSubcategoryItem key={sub.id} id={sub.id}>
+                                    <div className="flex items-center justify-between p-2 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                        <span>{sub.name}</span>
+                                        {sub.usageCount > 0 && (
+                                          <Badge variant="outline">{sub.usageCount} equipamentos</Badge>
+                                        )}
+                                      </div>
+
+                                      <div className="flex gap-1">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => openEditDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => openDeleteDialog('subcategory', cat.categoryName, sub.name, sub.id)}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </SortableSubcategoryItem>
+                                ))}
+                              </SortableContext>
+                            </DndContext>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                setSelectedCategory(cat.categoryName);
+                                setShowAddSubcategoryDialog(true);
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Adicionar Subcategoria
+                            </Button>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </SortableCategoryItem>
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
 
             {filteredHierarchy.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
