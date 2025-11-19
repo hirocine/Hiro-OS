@@ -335,12 +335,30 @@ export default function ProjectDetails() {
       computers: []
     };
 
-    // Agrupar equipamentos por categoria
+    // Separar equipamentos principais e acessórios
+    const mainEquipment = projectEquipment.filter(eq => {
+      const equipment = eq as unknown as Equipment;
+      return !equipment.parentId;
+    });
+    
+    const accessoriesMap = new Map<string, Equipment[]>();
     projectEquipment.forEach(eq => {
       const equipment = eq as unknown as Equipment;
+      if (equipment.parentId) {
+        if (!accessoriesMap.has(equipment.parentId)) {
+          accessoriesMap.set(equipment.parentId, []);
+        }
+        accessoriesMap.get(equipment.parentId)!.push(equipment);
+      }
+    });
+
+    // Agrupar equipamentos por categoria mantendo hierarquia
+    mainEquipment.forEach(eq => {
+      const equipment = eq as unknown as Equipment;
+      const accessories = accessoriesMap.get(equipment.id) || [];
       
       if (equipment.category === 'Câmera' && (equipment.subcategory === 'Câmera (Corpo e Acessórios)' || equipment.subcategory === 'Câmera')) {
-        categorizedEquipment.cameras.push(equipment);
+        categorizedEquipment.cameras.push({ camera: equipment, accessories });
       } else if (equipment.category === 'Câmera' && equipment.subcategory === 'Lente') {
         categorizedEquipment.lenses.push(equipment);
       } else if ((equipment.category === 'Câmera' || equipment.category === 'Acessórios de Câmera') && 

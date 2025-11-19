@@ -159,9 +159,9 @@ export default function ProjectWithdrawal() {
 
       const responsibleUser = users.find(user => user.id === data.responsibleUserId);
       
-      // Convert selected equipment to the old format for PDF generation
+      // Convert selected equipment maintaining hierarchy
       const selectedEquipmentForPDF = {
-        cameras: [] as any[],
+        cameras: [] as Array<{ camera: Equipment; accessories: Equipment[] }>,
         lenses: [] as Equipment[],
         cameraAccessories: [] as Equipment[],
         tripods: [] as Equipment[],
@@ -173,21 +173,34 @@ export default function ProjectWithdrawal() {
         computers: [] as Equipment[],
       };
 
-      flattenSelectedEquipment().forEach(eq => {
-        if (eq.category === 'Câmera' && (eq.subcategory === 'Câmera (Corpo e Acessórios)' || eq.subcategory === 'Câmera')) {
-          selectedEquipmentForPDF.cameras.push(eq);
-        } else if (eq.category === 'Câmera' && eq.subcategory === 'Lente') {
-          selectedEquipmentForPDF.lenses.push(eq);
-        } else if (eq.category === 'Câmera' || eq.category === 'Acessórios de Câmera') {
-          selectedEquipmentForPDF.cameraAccessories.push(eq);
-        } else if (eq.category === 'Iluminação' && eq.subcategory === 'Luz') {
-          selectedEquipmentForPDF.lights.push(eq);
-        } else if (eq.category === 'Iluminação') {
-          selectedEquipmentForPDF.lightModifiers.push(eq);
-        } else if (eq.category === 'Armazenamento') {
-          selectedEquipmentForPDF.storage.push(eq);
+      // Get selected main equipment from equipmentWithAccessories
+      const selectedMainEquipment = equipmentWithAccessories.filter(eq => 
+        data.selectedEquipment.includes(eq.id)
+      );
+
+      selectedMainEquipment.forEach(mainEq => {
+        // Filter accessories that were also selected
+        const selectedAccessories = mainEq.accessories?.filter(acc => 
+          data.selectedEquipment.includes(acc.id)
+        ) || [];
+
+        if (mainEq.category === 'Câmera' && (mainEq.subcategory === 'Câmera (Corpo e Acessórios)' || mainEq.subcategory === 'Câmera')) {
+          selectedEquipmentForPDF.cameras.push({
+            camera: mainEq,
+            accessories: selectedAccessories
+          });
+        } else if (mainEq.category === 'Câmera' && mainEq.subcategory === 'Lente') {
+          selectedEquipmentForPDF.lenses.push(mainEq);
+        } else if (mainEq.category === 'Câmera' || mainEq.category === 'Acessórios de Câmera') {
+          selectedEquipmentForPDF.cameraAccessories.push(mainEq);
+        } else if (mainEq.category === 'Iluminação' && mainEq.subcategory === 'Luz') {
+          selectedEquipmentForPDF.lights.push(mainEq);
+        } else if (mainEq.category === 'Iluminação') {
+          selectedEquipmentForPDF.lightModifiers.push(mainEq);
+        } else if (mainEq.category === 'Armazenamento') {
+          selectedEquipmentForPDF.storage.push(mainEq);
         } else {
-          selectedEquipmentForPDF.electrical.push(eq);
+          selectedEquipmentForPDF.electrical.push(mainEq);
         }
       });
       
