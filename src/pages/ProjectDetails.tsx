@@ -340,15 +340,7 @@ export default function ProjectDetails() {
       const equipment = eq as unknown as Equipment;
       
       if (equipment.category === 'Câmera' && (equipment.subcategory === 'Câmera (Corpo e Acessórios)' || equipment.subcategory === 'Câmera')) {
-        // Buscar acessórios desta câmera
-        const accessories = projectEquipment
-          .filter(acc => (acc as unknown as Equipment).parentId === equipment.id)
-          .map(acc => acc as unknown as Equipment);
-        
-        categorizedEquipment.cameras.push({
-          camera: equipment,
-          accessories: accessories
-        });
+        categorizedEquipment.cameras.push(equipment);
       } else if (equipment.category === 'Câmera' && equipment.subcategory === 'Lente') {
         categorizedEquipment.lenses.push(equipment);
       } else if ((equipment.category === 'Câmera' || equipment.category === 'Acessórios de Câmera') && 
