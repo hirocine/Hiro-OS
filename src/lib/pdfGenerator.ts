@@ -16,7 +16,7 @@ export interface PDFProjectData {
   separationDate?: Date;
   recordingType?: string;
   selectedEquipment: {
-    cameras: Array<{ camera: Equipment; accessories: Equipment[] }>;
+    cameras: Equipment[];
     lenses: Equipment[];
     cameraAccessories: Equipment[];
     tripods: Equipment[];
@@ -140,32 +140,21 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // === PREPARAR DADOS DE EQUIPAMENTOS (SEM EMOJIS) ===
     const categoriesData: Array<{
       name: string;
-      items: Array<{ name: string; isAccessory: boolean }>;
+      items: Array<{ name: string }>;
     }> = [];
     
     // Câmeras
     if (data.selectedEquipment.cameras.length > 0) {
-      const cameraItems: Array<{ name: string; isAccessory: boolean }> = [];
-      data.selectedEquipment.cameras.forEach((selectedCamera) => {
-        cameraItems.push({ 
-          name: `${selectedCamera.camera.name} - ${selectedCamera.camera.brand}`, 
-          isAccessory: false 
-        });
-        selectedCamera.accessories.forEach((acc) => {
-          cameraItems.push({ 
-            name: `${acc.name} - ${acc.brand}`, 
-            isAccessory: true 
-          });
-        });
-      });
-      categoriesData.push({ name: 'CÂMERAS', items: cameraItems });
+      const items = data.selectedEquipment.cameras.map(item => ({ 
+        name: `${item.name} - ${item.brand}` 
+      }));
+      categoriesData.push({ name: 'CÂMERAS', items });
     }
     
     // Lentes
     if (data.selectedEquipment.lenses.length > 0) {
       const items = data.selectedEquipment.lenses.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'LENTES', items });
     }
@@ -173,8 +162,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Acessórios de Câmera
     if (data.selectedEquipment.cameraAccessories.length > 0) {
       const items = data.selectedEquipment.cameraAccessories.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'ACESSÓRIOS DE CÂMERA', items });
     }
@@ -182,8 +170,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Tripés
     if (data.selectedEquipment.tripods.length > 0) {
       const items = data.selectedEquipment.tripods.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'TRIPÉS E ESTABILIZADORES', items });
     }
@@ -191,8 +178,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Iluminação
     if (data.selectedEquipment.lights.length > 0) {
       const items = data.selectedEquipment.lights.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'ILUMINAÇÃO', items });
     }
@@ -200,8 +186,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Modificadores
     if (data.selectedEquipment.lightModifiers.length > 0) {
       const items = data.selectedEquipment.lightModifiers.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'MODIFICADORES DE LUZ', items });
     }
@@ -209,8 +194,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Maquinário
     if (data.selectedEquipment.machinery.length > 0) {
       const items = data.selectedEquipment.machinery.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'MAQUINÁRIO', items });
     }
@@ -218,8 +202,7 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Elétrica
     if (data.selectedEquipment.electrical.length > 0) {
       const items = data.selectedEquipment.electrical.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'ELÉTRICA', items });
     }
@@ -227,15 +210,14 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
     // Armazenamento
     if (data.selectedEquipment.storage.length > 0) {
       const items = data.selectedEquipment.storage.map(item => ({ 
-        name: `${item.name} - ${item.brand}`, 
-        isAccessory: false 
+        name: `${item.name} - ${item.brand}` 
       }));
       categoriesData.push({ name: 'ARMAZENAMENTO', items });
     }
     
     // Computadores
     if (data.selectedEquipment.computers.length > 0) {
-      const items = data.selectedEquipment.computers.map(item => ({ 
+      const items = data.selectedEquipment.computers.map(item => ({
         name: `${item.name} - ${item.brand}`, 
         isAccessory: false 
       }));
@@ -290,23 +272,6 @@ export async function generateProjectPDF(data: PDFProjectData): Promise<void> {
         margin: { left: 15, right: 15, bottom: 20 },
         tableLineColor: [220, 220, 220] as [number, number, number],
         tableLineWidth: 0.3,
-        didParseCell: (data) => {
-          // Indentação de acessórios na coluna de descrição
-          if (data.section === 'body' && data.column.index === 0) {
-            const item = category.items[data.row.index];
-            if (item?.isAccessory && data.cell.styles.cellPadding) {
-              const currentPadding = data.cell.styles.cellPadding;
-              if (typeof currentPadding === 'object' && !Array.isArray(currentPadding)) {
-                data.cell.styles.cellPadding = { 
-                  top: currentPadding.top ?? 1.5,
-                  bottom: currentPadding.bottom ?? 1.5,
-                  left: 12,
-                  right: currentPadding.right ?? 4
-                };
-              }
-            }
-          }
-        },
         didDrawCell: (data) => {
           // Desenhar checkbox centralizado na célula da coluna 1
           if (data.section === 'body' && data.column.index === 1) {
