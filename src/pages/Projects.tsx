@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,7 @@ import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
 import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -46,6 +47,22 @@ export default function Projects() {
   const [showCompleted, setShowCompleted] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const { toast } = useToast();
+
+  // Verificar sessão e forçar refetch ao montar
+  useEffect(() => {
+    const checkSessionAndFetch = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.warn('No active session on Projects page');
+        await supabase.auth.refreshSession();
+      }
+      
+      fetchProjects();
+    };
+    
+    checkSessionAndFetch();
+  }, [fetchProjects]);
 
   // Organize projects by categories
   const today = new Date().toISOString().split('T')[0];
