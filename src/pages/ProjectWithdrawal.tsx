@@ -295,10 +295,21 @@ export default function ProjectWithdrawal() {
 
       if (loansError) throw loansError;
 
+      // Refresh da sessão antes de navegar
+      const { data: session } = await supabase.auth.refreshSession();
+      
+      if (!session) {
+        console.warn('Session refresh failed after project creation');
+      }
+
       enhancedToast.success({
         title: "Sucesso!",
         description: "Retirada criada com sucesso!"
       });
+      
+      // Aguardar propagação da sessão
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       navigate(`/projetos/${newProject.id}`);
     } catch (error) {
       logger.error('Error creating withdrawal', {

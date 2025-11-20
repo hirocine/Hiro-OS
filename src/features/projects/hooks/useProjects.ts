@@ -10,13 +10,34 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { queryKeys } from '@/lib/queryClient';
 
 // Fetch function
-const fetchProjects = async (): Promise<Project[]> => {
-  logger.apiCall('GET', '/projects');
-  
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const fetchProjects = async (): Promise<Project[]> => {
+    logger.apiCall('GET', '/projects');
+
+    // Log da sessão atual para debug
+    const { data: { session } } = await supabase.auth.getSession();
+    logger.debug('Fetching projects with session', { 
+      module: 'projects',
+      data: { 
+        hasSession: !!session,
+        userId: session?.user?.id,
+        expiresAt: session?.expires_at
+      }
+    });
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    // Log detalhado do resultado
+    logger.debug('Projects fetch result', {
+      module: 'projects',
+      data: {
+        count: data?.length || 0,
+        hasError: !!error,
+        errorMessage: error?.message
+      }
+    });
 
   if (error) {
     logger.database('select', 'projects', false, error);
