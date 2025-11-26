@@ -91,6 +91,7 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
           <Calendar
             mode="single"
             selected={value ? new Date(value) : undefined}
+            defaultMonth={value ? new Date(value) : undefined}
             onSelect={handleDateSelect}
             initialFocus
             className="p-3 pointer-events-auto"
