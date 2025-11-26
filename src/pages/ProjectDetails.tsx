@@ -530,7 +530,7 @@ export default function ProjectDetails() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Status do Projeto</CardTitle>
+              <CardTitle>Status da Retirada</CardTitle>
               <CardDescription>
                 Progresso atual: {stepLabels[project.step]}
               </CardDescription>
