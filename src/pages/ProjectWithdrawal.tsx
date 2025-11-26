@@ -313,7 +313,7 @@ export default function ProjectWithdrawal() {
       // Aguardar propagação da sessão
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      navigate(`/projetos/${newProject.id}`);
+      navigate(`/retiradas/${newProject.id}`);
     } catch (error) {
       logger.error('Error creating withdrawal', {
         module: 'withdrawal-page',

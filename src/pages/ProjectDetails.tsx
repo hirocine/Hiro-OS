@@ -182,9 +182,9 @@ export default function ProjectDetails() {
     return (
       <div className="container mx-auto p-6 md:p-8">
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Projeto não encontrado</h1>
-          <p className="text-muted-foreground">{error || 'O projeto solicitado não existe.'}</p>
-          <Button onClick={() => navigate('/projetos')}>Voltar aos Projetos</Button>
+          <h1 className="text-2xl font-bold text-destructive">Retirada não encontrada</h1>
+          <p className="text-muted-foreground">{error || 'A retirada solicitada não existe.'}</p>
+          <Button onClick={() => navigate('/retiradas')}>Voltar às Retiradas</Button>
         </div>
       </div>
     );
@@ -283,11 +283,11 @@ export default function ProjectDetails() {
         description: "O projeto foi excluído permanentemente.",
         variant: "destructive"
       });
-      navigate('/projetos');
+      navigate('/retiradas');
     } catch (error) {
       toast({
         title: "Erro ao excluir",
-        description: "Não foi possível excluir o projeto.",
+        description: "Não foi possível excluir a retirada.",
         variant: "destructive"
       });
     } finally {
@@ -421,7 +421,7 @@ export default function ProjectDetails() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/projetos')}
+            onClick={() => navigate('/retiradas')}
             className="p-2"
           >
             <ArrowLeft className="h-4 w-4" />

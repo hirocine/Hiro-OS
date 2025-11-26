@@ -34,7 +34,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
     !project.actualEndDate;
 
   const handleViewDetails = () => {
-    navigate(`/projetos/${project.id}`);
+    navigate(`/retiradas/${project.id}`);
   };
 
   const getStepBorderColor = (step: string) => {

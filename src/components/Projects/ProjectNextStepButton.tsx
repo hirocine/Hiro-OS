@@ -67,7 +67,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         action: 'navigate_separation',
         data: { projectId: project.id }
       });
-      navigate(`/projetos/${project.id}/separacao`);
+      navigate(`/retiradas/${project.id}/separacao`);
     } else if (isWithdrawing) {
       logger.debug('Opening withdrawal dialog', {
         module: 'project-step',
@@ -81,7 +81,7 @@ export function ProjectNextStepButton({ project, onStepUpdate, onSeparationClick
         action: 'navigate_verification',
         data: { projectId: project.id }
       });
-      navigate(`/projetos/${project.id}/verificacao`);
+      navigate(`/retiradas/${project.id}/verificacao`);
     } else if (isOfficeReceipt) {
       logger.debug('Opening office receipt dialog', {
         module: 'project-step',
