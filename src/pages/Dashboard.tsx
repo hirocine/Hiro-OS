@@ -78,11 +78,6 @@ export default function Dashboard() {
       icon: CheckCircle
     },
     {
-      title: 'Gravação',
-      value: stats.inUse,
-      icon: Clock
-    },
-    {
       title: 'Em Manutenção',
       value: stats.maintenance,
       icon: AlertTriangle
@@ -127,8 +122,8 @@ export default function Dashboard() {
           {/* Skeleton Categorias */}
           <div>
             <Skeleton className="h-8 w-64 mb-4" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {[...Array(4)].map((_, i) => <StatsCardSkeleton key={i} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              {[...Array(3)].map((_, i) => <StatsCardSkeleton key={i} />)}
             </div>
           </div>
         </div>
@@ -269,7 +264,7 @@ export default function Dashboard() {
             <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
             <h2 className="text-xl lg:text-2xl font-semibold">Visão Geral</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {mainStats.map((stat, index) => (
               <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
                 <StatsCard {...stat} />
