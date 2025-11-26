@@ -144,6 +144,9 @@ export function useTasks(filters?: TaskFilters) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
     onError: (error: Error) => {
@@ -206,6 +209,9 @@ export function updateTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
     onError: (error: Error) => {
