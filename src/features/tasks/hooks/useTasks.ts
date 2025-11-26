@@ -182,3 +182,35 @@ export function useTasks(filters?: TaskFilters) {
     deleteTask,
   };
 }
+
+// Export individual mutation hooks for direct use
+export function updateTask() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
+      const sanitizedUpdates = {
+        ...updates,
+        assigned_to: updates.assigned_to === '' ? null : updates.assigned_to,
+      };
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(sanitizedUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      enhancedToast.success({ title: 'Tarefa atualizada!' });
+    },
+    onError: (error: Error) => {
+      logger.error('Error updating task', { module: 'tasks', error });
+      enhancedToast.error({ title: 'Erro ao atualizar tarefa', description: error.message });
+    },
+  });
+}

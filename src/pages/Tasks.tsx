@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Users } from 'lucide-react';
+import { Plus, ArrowRight, Users, Eye } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,9 @@ import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
-import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
+import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
+import { useTasks, updateTask } from '@/features/tasks/hooks/useTasks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInDays } from 'date-fns';
@@ -21,6 +23,7 @@ export default function Tasks() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { tasks: teamTasks, isLoading: teamLoading } = useTasks({ is_team_task: true });
   const { tasks: myTasks, isLoading: myLoading } = useTasks();
+  const updateTaskMutation = updateTask();
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -90,31 +93,63 @@ export default function Tasks() {
                 <p className="text-muted-foreground text-center py-8">Nenhuma tarefa do time ainda</p>
               ) : (
                 <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[25%]">Título</TableHead>
-                  <TableHead className="w-[10%]">Prioridade</TableHead>
-                  <TableHead className="w-[12%]">Status</TableHead>
-                  <TableHead className="w-[20%]">Responsável</TableHead>
-                  <TableHead className="w-[18%]">Prazo</TableHead>
-                  <TableHead className="w-[15%]">Departamento</TableHead>
-                </TableRow>
-              </TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[22%]">Título</TableHead>
+                    <TableHead className="w-[10%]">Prioridade</TableHead>
+                    <TableHead className="w-[12%]">Status</TableHead>
+                    <TableHead className="w-[18%]">Responsável</TableHead>
+                    <TableHead className="w-[16%]">Prazo</TableHead>
+                    <TableHead className="w-[14%]">Departamento</TableHead>
+                    <TableHead className="w-[8%]">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
                   <TableBody>
                     {displayedTeamTasks.map((task) => (
                       <TableRow 
                         key={task.id} 
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                        className="hover:bg-muted/50"
                       >
                         <TableCell className="font-medium">
-                          {task.title}
+                          <InlineEditCell
+                            value={task.title}
+                            onSave={(newValue) => updateTaskMutation.mutate({ 
+                              id: task.id, 
+                              updates: { title: newValue } 
+                            })}
+                          />
                         </TableCell>
                         <TableCell>
-                          <PriorityBadge priority={task.priority} />
+                        <InlineSelectCell
+                          value={task.priority}
+                          options={[
+                            { value: 'baixa', label: 'Baixa' },
+                            { value: 'media', label: 'Média' },
+                            { value: 'alta', label: 'Alta' },
+                            { value: 'urgente', label: 'Urgente' },
+                          ]}
+                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                            id: task.id, 
+                            updates: { priority: newValue as any } 
+                          })}
+                          renderValue={(value) => <PriorityBadge priority={value as any} />}
+                        />
                         </TableCell>
                         <TableCell>
-                          <StatusBadge status={task.status} />
+                        <InlineSelectCell
+                          value={task.status}
+                          options={[
+                            { value: 'pendente', label: 'Pendente' },
+                            { value: 'em_andamento', label: 'Em Andamento' },
+                            { value: 'concluida', label: 'Concluída' },
+                            { value: 'cancelada', label: 'Cancelada' },
+                          ]}
+                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                            id: task.id, 
+                            updates: { status: newValue as any } 
+                          })}
+                          renderValue={(value) => <StatusBadge status={value as any} />}
+                        />
                         </TableCell>
                     <TableCell>
                       {task.is_team_task ? (
@@ -153,6 +188,15 @@ export default function Tasks() {
                     <TableCell>
                       {task.department || <span className="text-muted-foreground text-sm">-</span>}
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -182,31 +226,63 @@ export default function Tasks() {
               <p className="text-muted-foreground text-center py-8">Você não tem tarefas ainda</p>
             ) : (
               <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[25%]">Título</TableHead>
-                  <TableHead className="w-[10%]">Prioridade</TableHead>
-                  <TableHead className="w-[12%]">Status</TableHead>
-                  <TableHead className="w-[20%]">Responsável</TableHead>
-                  <TableHead className="w-[18%]">Prazo</TableHead>
-                  <TableHead className="w-[15%]">Departamento</TableHead>
-                </TableRow>
-              </TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[22%]">Título</TableHead>
+                    <TableHead className="w-[10%]">Prioridade</TableHead>
+                    <TableHead className="w-[12%]">Status</TableHead>
+                    <TableHead className="w-[18%]">Responsável</TableHead>
+                    <TableHead className="w-[16%]">Prazo</TableHead>
+                    <TableHead className="w-[14%]">Departamento</TableHead>
+                    <TableHead className="w-[8%]">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {myTasks.map((task) => (
                     <TableRow 
                       key={task.id} 
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => navigate(`/tarefas/${task.id}`)}
+                      className="hover:bg-muted/50"
                     >
                       <TableCell className="font-medium">
-                        {task.title}
+                        <InlineEditCell
+                          value={task.title}
+                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                            id: task.id, 
+                            updates: { title: newValue } 
+                          })}
+                        />
                       </TableCell>
                       <TableCell>
-                        <PriorityBadge priority={task.priority} />
+                        <InlineSelectCell
+                          value={task.priority}
+                          options={[
+                            { value: 'baixa', label: 'Baixa' },
+                            { value: 'media', label: 'Média' },
+                            { value: 'alta', label: 'Alta' },
+                            { value: 'urgente', label: 'Urgente' },
+                          ]}
+                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                            id: task.id, 
+                            updates: { priority: newValue as any } 
+                          })}
+                          renderValue={(value) => <PriorityBadge priority={value as any} />}
+                        />
                       </TableCell>
                     <TableCell>
-                      <StatusBadge status={task.status} />
+                      <InlineSelectCell
+                        value={task.status}
+                        options={[
+                          { value: 'pendente', label: 'Pendente' },
+                          { value: 'em_andamento', label: 'Em Andamento' },
+                          { value: 'concluida', label: 'Concluída' },
+                          { value: 'cancelada', label: 'Cancelada' },
+                        ]}
+                        onSave={(newValue) => updateTaskMutation.mutate({ 
+                          id: task.id, 
+                          updates: { status: newValue as any } 
+                        })}
+                        renderValue={(value) => <StatusBadge status={value as any} />}
+                      />
                     </TableCell>
                     <TableCell>
                       {task.is_team_task ? (
@@ -244,6 +320,15 @@ export default function Tasks() {
                     </TableCell>
                         <TableCell>
                           {task.department || <span className="text-muted-foreground text-sm">-</span>}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/tarefas/${task.id}`)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
                         </TableCell>
                     </TableRow>
                   ))}
