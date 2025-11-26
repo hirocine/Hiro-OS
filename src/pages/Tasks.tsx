@@ -22,7 +22,7 @@ export default function Tasks() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { tasks: teamTasks, isLoading: teamLoading } = useTasks({ is_team_task: true });
-  const { tasks: myTasks, isLoading: myLoading } = useTasks();
+  const { tasks: myTasks, isLoading: myLoading } = useTasks({ is_team_task: false });
   const updateTaskMutation = updateTask();
 
   const getDueDateLabel = (dueDate: string) => {
