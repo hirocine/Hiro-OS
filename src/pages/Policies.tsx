@@ -36,7 +36,7 @@ export default function Policies() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
-        title="📋 Políticas da Empresa"
+        title="Políticas da Empresa"
         subtitle="Acesse as políticas e diretrizes da empresa"
         actions={
           isAdmin ? (
