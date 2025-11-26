@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function TeamTasks() {
+  const navigate = useNavigate();
   const { tasks, isLoading } = useTasks({ is_team_task: true });
 
   return (
@@ -52,11 +53,13 @@ export default function TeamTasks() {
               </TableHeader>
               <TableBody>
                 {tasks.map((task) => (
-                  <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell>
-                      <Link to={`/tarefas/${task.id}`} className="font-medium hover:underline">
-                        {task.title}
-                      </Link>
+                  <TableRow 
+                    key={task.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => navigate(`/tarefas/${task.id}`)}
+                  >
+                    <TableCell className="font-medium">
+                      {task.title}
                     </TableCell>
                     <TableCell>
                       <PriorityBadge priority={task.priority} />
