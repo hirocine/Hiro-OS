@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface InlineSelectCellProps {
@@ -44,7 +45,10 @@ export function InlineSelectCell({
           }}
         >
           <SelectValue>
-            {renderValue(value)}
+            <div className="flex items-center gap-1.5">
+              {renderValue(value)}
+              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            </div>
           </SelectValue>
         </SelectTrigger>
         <SelectContent onClick={(e) => e.stopPropagation()}>
