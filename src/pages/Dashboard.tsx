@@ -29,30 +29,6 @@ export default function Dashboard() {
     }
   }, [loading, allEquipment.length]);
 
-  // Proteção de rota: apenas admins podem acessar
-  if (roleLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  // Helper function to format relative time
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'agora mesmo';
-    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
-    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
-    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
-  };
-
   // Calculate financial stats with useMemo for performance
   const totalInventoryValue = useMemo(() => 
     allEquipment.reduce((sum, item) => sum + (item.value || 0), 0),
@@ -81,7 +57,7 @@ export default function Dashboard() {
     }, { over1Year: 0, over2Years: 0, over3Years: 0 });
   }, [allEquipment]);
 
-  const mainStats = [
+  const mainStats = useMemo(() => [
     {
       title: 'Total de Equipamentos',
       value: stats.total,
@@ -97,7 +73,31 @@ export default function Dashboard() {
       value: stats.maintenance,
       icon: AlertTriangle
     }
-  ];
+  ], [stats]);
+
+  // Helper function to format relative time
+  const formatRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'agora mesmo';
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
+    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
+  };
+
+  // Proteção de rota: apenas admins podem acessar
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   // Loading state
   if (loading) {
