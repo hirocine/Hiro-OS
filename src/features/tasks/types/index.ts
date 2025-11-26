@@ -1,4 +1,4 @@
-export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente';
+export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente' | 'standby';
 export type TaskStatus = 'pendente' | 'em_progresso' | 'concluida' | 'cancelada';
 
 export interface Task {
@@ -66,6 +66,11 @@ export interface TaskStats {
 
 // Configurações visuais
 export const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string; bgColor: string }> = {
+  standby: { 
+    label: 'Stand-by', 
+    color: 'text-gray-700 dark:text-gray-300', 
+    bgColor: 'bg-gray-100 dark:bg-gray-900/30 border-gray-300 dark:border-gray-700' 
+  },
   baixa: { 
     label: 'Baixa', 
     color: 'text-blue-700 dark:text-blue-300', 
