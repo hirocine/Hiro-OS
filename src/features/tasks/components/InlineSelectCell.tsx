@@ -55,7 +55,11 @@ export function InlineSelectCell({
         </SelectTrigger>
         <SelectContent onClick={(e) => e.stopPropagation()}>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem 
+              key={option.value} 
+              value={option.value}
+              className="focus:bg-transparent focus:text-inherit"
+            >
               {renderOption ? renderOption(option.value) : option.label}
             </SelectItem>
           ))}
