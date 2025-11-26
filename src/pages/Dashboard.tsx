@@ -1,13 +1,10 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
-import { CategoryMiniCard } from '@/components/Dashboard/CategoryMiniCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/features/equipment';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
-import { getCategoryIcon } from '@/lib/categoryIconMap';
-import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3, Layers } from 'lucide-react';
+import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -17,24 +14,11 @@ import { formatCurrency } from '@/lib/utils';
 
 export default function Dashboard() {
   const { stats, allEquipment, loading } = useEquipment();
-  const { categories } = useCategoriesContext();
   const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Initialize notifications
   useNotifications();
-
-  // Get unique categories from database, sorted by order
-  const uniqueCategories = useMemo(() => {
-    const seen = new Set<string>();
-    return categories
-      .filter(c => {
-        if (seen.has(c.category)) return false;
-        seen.add(c.category);
-        return true;
-      })
-      .sort((a, b) => (a.categoryOrder ?? 999) - (b.categoryOrder ?? 999));
-  }, [categories]);
 
   // Update timestamp when data is loaded
   useEffect(() => {
@@ -294,28 +278,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Seção: Equipamentos por Categoria */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Equipamentos por Categoria</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {uniqueCategories.map((cat, index) => {
-              const Icon = getCategoryIcon(cat.category);
-              const count = stats.byCategory[cat.category] || 0;
-              return (
-                <div key={cat.category} className="animate-slide-up" style={{ animationDelay: `${(index + 4) * 50}ms` }}>
-                  <CategoryMiniCard
-                    title={cat.category}
-                    value={count}
-                    icon={Icon}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </section>
       </div>
     </ResponsiveContainer>
   );
