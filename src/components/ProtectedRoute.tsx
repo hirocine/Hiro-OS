@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import { authDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,10 +10,13 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
-  authDebug('ProtectedRoute current state', { user: user?.email, loading });
+  logger.debug('ProtectedRoute current state', { 
+    module: 'auth',
+    data: { user: user?.email, loading }
+  });
 
   if (loading) {
-    authDebug('Still loading, showing spinner');
+    logger.debug('Still loading, showing spinner', { module: 'auth' });
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -22,10 +25,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    authDebug('No user, redirecting to auth');
+    logger.debug('No user, redirecting to auth', { module: 'auth' });
     return <Navigate to="/entrar" replace />;
   }
 
-  authDebug('User authenticated, rendering children');
+  logger.debug('User authenticated, rendering children', { module: 'auth' });
   return <>{children}</>;
 }

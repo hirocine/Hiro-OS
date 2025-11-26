@@ -23,7 +23,6 @@ import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
 import { CategoryManagement } from '@/components/Settings/CategoryManagement';
 
-import { adminDebug } from '@/lib/debug';
 import { logger } from '@/lib/logger';
 
 interface User {
@@ -68,9 +67,12 @@ export default function Admin() {
   });
 
   useEffect(() => {
-    adminDebug('Effect triggered', { isAdmin, roleLoading, user: user?.email });
+    logger.debug('Effect triggered', { 
+      module: 'admin',
+      data: { isAdmin, roleLoading, user: user?.email }
+    });
     if (isAdmin && !roleLoading && user) {
-      adminDebug('Starting data fetch...');
+      logger.debug('Starting data fetch...', { module: 'admin' });
       fetchUsers();
       fetchAuditLogs();
     }
@@ -119,14 +121,17 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      adminDebug('Fetching users using RPC...');
+      logger.debug('Fetching users using RPC...', { module: 'admin' });
       setLoadingUsers(true);
       
       // Use the existing RPC function that properly combines data
       const { data, error } = await supabase.rpc('get_users_for_admin');
 
       if (error) {
-        adminDebug('Error fetching users via RPC', error);
+        logger.error('Error fetching users via RPC', { 
+          module: 'admin',
+          error 
+        });
         throw error;
       }
 
@@ -143,10 +148,16 @@ export default function Admin() {
         is_active: user.is_active ?? true
       }));
 
-      adminDebug('Users fetched successfully', { count: usersData.length });
+      logger.debug('Users fetched successfully', { 
+        module: 'admin',
+        data: { count: usersData.length }
+      });
       setUsers(usersData);
     } catch (error) {
-      adminDebug('Error fetching users', error);
+      logger.error('Error fetching users', { 
+        module: 'admin',
+        error 
+      });
       toast({
         title: 'Erro',
         description: 'Erro ao carregar usuários. Verifique se você tem permissões de administrador.',
@@ -186,7 +197,10 @@ export default function Admin() {
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
     try {
-      adminDebug('Updating user role', { userId, newRole });
+      logger.debug('Updating user role', { 
+        module: 'admin',
+        data: { userId, newRole }
+      });
       
       // Security check: prevent self-role-elevation on frontend
       if (userId === user?.id) {
@@ -225,7 +239,7 @@ export default function Admin() {
         _new_values: { role: newRole }
       });
 
-      adminDebug('User role updated successfully');
+      logger.debug('User role updated successfully', { module: 'admin' });
       toast({
         title: 'Sucesso',
         description: 'Role do usuário atualizada com sucesso',
@@ -233,7 +247,10 @@ export default function Admin() {
 
       fetchUsers();
     } catch (error: any) {
-      adminDebug('Error updating user role', error);
+      logger.error('Error updating user role', { 
+        module: 'admin',
+        error 
+      });
       
       // Check for specific security-related errors
       if (error.message?.includes('row-level security') || error.message?.includes('policy')) {

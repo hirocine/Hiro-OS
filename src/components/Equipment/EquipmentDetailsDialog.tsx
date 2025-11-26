@@ -15,7 +15,7 @@ import { Calendar, Package, User, Clock, AlertTriangle, CheckCircle, Wrench } fr
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
-import { equipmentDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 
 interface EquipmentDetailsDialogProps {
   open: boolean;
@@ -75,7 +75,10 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
     
     setLoading(true);
     try {
-      equipmentDebug('Fetching equipment details', { equipmentId });
+      logger.debug('Fetching equipment details', { 
+        module: 'equipment',
+        data: { equipmentId }
+      });
       
       const { data, error } = await supabase
         .from('equipments')
@@ -85,10 +88,16 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
       if (error) throw error;
       
-      equipmentDebug('Equipment details fetched successfully', data);
+      logger.debug('Equipment details fetched successfully', { 
+        module: 'equipment',
+        data 
+      });
       setEquipment(data);
     } catch (error) {
-      equipmentDebug('Error fetching equipment details', error);
+      logger.error('Error fetching equipment details', { 
+        module: 'equipment',
+        error 
+      });
     } finally {
       setLoading(false);
     }
@@ -98,7 +107,10 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
     if (!equipmentId) return;
     
     try {
-      equipmentDebug('Fetching loan history', { equipmentId });
+      logger.debug('Fetching loan history', { 
+        module: 'equipment',
+        data: { equipmentId }
+      });
       
       const { data, error } = await supabase
         .from('loans')
@@ -108,10 +120,16 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
 
       if (error) throw error;
       
-      equipmentDebug('Loan history fetched successfully', { count: data?.length });
+      logger.debug('Loan history fetched successfully', { 
+        module: 'equipment',
+        data: { count: data?.length }
+      });
       setLoanHistory(data || []);
     } catch (error) {
-      equipmentDebug('Error fetching loan history', error);
+      logger.error('Error fetching loan history', { 
+        module: 'equipment',
+        error 
+      });
     }
   };
 

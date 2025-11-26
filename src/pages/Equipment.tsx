@@ -26,7 +26,6 @@ import { Equipment } from '@/types/equipment';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { equipmentDebug } from '@/lib/debug';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 import { logger } from '@/lib/logger';
 import { generateEquipmentImageName } from '@/lib/imageNaming';
@@ -731,7 +730,10 @@ export default function EquipmentPage() {
         deletedEquipment={undoDeleteDialog.equipment}
         onRestore={async (equipmentId) => {
           try {
-            equipmentDebug('Restoring equipment', { equipmentId });
+            logger.debug('Restoring equipment', { 
+              module: 'equipment',
+              data: { equipmentId }
+            });
             
             const deletedEquipment = undoDeleteDialog.equipment;
             if (!deletedEquipment) {

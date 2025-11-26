@@ -11,7 +11,7 @@ import { Loader2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { profileDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 import { AvatarUploadArea } from '@/components/ui/avatar-upload-area';
 import { AvatarCropperDialog } from '@/components/ui/avatar-cropper-dialog';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
@@ -79,7 +79,10 @@ export default function Profile() {
         });
       }
     } catch (error) {
-      profileDebug('Error fetching profile', error);
+      logger.error('Error fetching profile', { 
+        module: 'profile',
+        error 
+      });
       toast({
         title: "Erro ao carregar perfil",
         description: "Não foi possível carregar as informações do perfil.",
@@ -118,9 +121,9 @@ export default function Profile() {
 
     try {
       setSaving(true);
-      profileDebug('Starting profile update', {
-        userId: user.id,
-        formData
+      logger.debug('Starting profile update', {
+        module: 'profile',
+        data: { userId: user.id, formData }
       });
       
       const updateData = {
@@ -130,7 +133,10 @@ export default function Profile() {
         department: formData.department || null
       };
 
-      profileDebug('Upsert data', updateData);
+      logger.debug('Upsert data', { 
+        module: 'profile',
+        data: updateData 
+      });
       
       const { error } = await supabase
         .from('profiles')
@@ -139,11 +145,14 @@ export default function Profile() {
         });
 
       if (error) {
-        profileDebug('Upsert error', error);
+        logger.error('Upsert error', { 
+          module: 'profile',
+          error 
+        });
         throw error;
       }
 
-      profileDebug('Update successful');
+      logger.debug('Update successful', { module: 'profile' });
 
       toast({
         title: "Perfil atualizado",
@@ -152,7 +161,10 @@ export default function Profile() {
 
       await fetchProfile();
     } catch (error: any) {
-      profileDebug('Error updating profile', error);
+      logger.error('Error updating profile', { 
+        module: 'profile',
+        error 
+      });
       toast({
         title: "Erro ao salvar",
         description: error.message || "Não foi possível salvar as alterações.",

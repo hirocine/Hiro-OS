@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { authDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 import { validateEmail, sanitizeInput } from '@/lib/validation';
 
 export default function Auth() {
@@ -31,12 +31,15 @@ export default function Auth() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  authDebug('Auth page current user state', { user: user?.email, authLoading });
+  logger.debug('Auth page current user state', { 
+    module: 'auth', 
+    data: { user: user?.email, authLoading } 
+  });
 
   // Redirect if already authenticated (but wait for loading to finish)
   useEffect(() => {
     if (!authLoading && user) {
-      authDebug('User authenticated, redirecting to dashboard');
+      logger.debug('User authenticated, redirecting to dashboard', { module: 'auth' });
       navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);
@@ -107,17 +110,18 @@ export default function Auth() {
   };
 
   const handleGoogleAuth = async () => {
-    authDebug('Iniciando processo de autenticação Google...');
+    logger.debug('Iniciando processo de autenticação Google...', { module: 'auth' });
     setLoading(true);
     setError(null);
 
       try {
-        authDebug('Chamando signInWithGoogle...');
+        logger.debug('Chamando signInWithGoogle...', { module: 'auth' });
         const result = await signInWithGoogle();
         
         if (!result.success) {
-          authDebug('Erro retornado do signInWithGoogle', { 
-            message: result.error
+          logger.debug('Erro retornado do signInWithGoogle', { 
+            module: 'auth',
+            data: { message: result.error }
           });
           
           // Mensagens de erro mais específicas
@@ -129,10 +133,13 @@ export default function Auth() {
             setError(`Erro de autenticação: ${result.error}`);
           }
         } else {
-          authDebug('signInWithGoogle executado sem erro, aguardando redirecionamento...');
+          logger.debug('signInWithGoogle executado sem erro, aguardando redirecionamento...', { module: 'auth' });
         }
       } catch (err) {
-      authDebug('Erro capturado no handleGoogleAuth', err);
+      logger.error('Erro capturado no handleGoogleAuth', { 
+        module: 'auth',
+        error: err
+      });
       setError('Erro inesperado ao conectar com Google. Tente novamente.');
     } finally {
       setLoading(false);
