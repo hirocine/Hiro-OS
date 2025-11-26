@@ -25,6 +25,8 @@ const SSDs = lazy(() => import("./pages/SSDs"));
 const PlatformAccesses = lazy(() => import("./pages/PlatformAccesses"));
 const Policies = lazy(() => import("./pages/Policies"));
 const PolicyView = lazy(() => import("./pages/PolicyView"));
+const Suppliers = lazy(() => import("./pages/Suppliers"));
+const SupplierDetails = lazy(() => import("./pages/SupplierDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -55,6 +57,8 @@ const App = () => (
               <Route path="plataformas" element={<PlatformAccesses />} />
               <Route path="politicas" element={<Policies />} />
               <Route path="politicas/:id" element={<PolicyView />} />
+              <Route path="fornecedores" element={<Suppliers />} />
+              <Route path="fornecedores/:id" element={<SupplierDetails />} />
               <Route path="perfil" element={<Profile />} />
               
               <Route path="administracao" element={<Admin />} />

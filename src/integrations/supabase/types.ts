@@ -814,6 +814,122 @@ export type Database = {
           },
         ]
       }
+      supplier_notes: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          id: string
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_notes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          is_custom: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_custom?: boolean | null
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_custom?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          daily_rate: number | null
+          expertise: string
+          full_name: string
+          id: string
+          instagram: string | null
+          is_active: boolean | null
+          portfolio_url: string | null
+          primary_role: string
+          rating: number | null
+          secondary_role: string | null
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          daily_rate?: number | null
+          expertise?: string
+          full_name: string
+          id?: string
+          instagram?: string | null
+          is_active?: boolean | null
+          portfolio_url?: string | null
+          primary_role: string
+          rating?: number | null
+          secondary_role?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          daily_rate?: number | null
+          expertise?: string
+          full_name?: string
+          id?: string
+          instagram?: string | null
+          is_active?: boolean | null
+          portfolio_url?: string | null
+          primary_role?: string
+          rating?: number | null
+          secondary_role?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       user_notification_status: {
         Row: {
           created_at: string
