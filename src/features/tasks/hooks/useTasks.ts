@@ -142,11 +142,12 @@ export function useTasks(filters?: TaskFilters) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.team }),
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.mine }),
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.stats }),
+      ]);
       enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
     onError: (error: Error) => {
@@ -207,11 +208,12 @@ export function updateTask() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.team }),
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.mine }),
+        queryClient.refetchQueries({ queryKey: queryKeys.tasks.stats }),
+      ]);
       enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
     onError: (error: Error) => {
