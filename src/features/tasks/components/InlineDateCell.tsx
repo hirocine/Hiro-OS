@@ -44,7 +44,8 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      onSave(date.toISOString());
+      // Formatar como YYYY-MM-DD para evitar problemas de timezone
+      onSave(format(date, 'yyyy-MM-dd'));
       setIsOpen(false);
     }
   };
