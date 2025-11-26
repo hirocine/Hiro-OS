@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { useTasks } from '../hooks/useTasks';
 import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Users } from 'lucide-react';
 
 interface TaskDialogProps {
   open: boolean;
@@ -147,14 +147,30 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
           <div>
             <Label htmlFor="assigned_to">Responsável</Label>
             <Select
-              value={formData.assigned_to || 'unassigned'}
-              onValueChange={(value) => setFormData({ ...formData, assigned_to: value === 'unassigned' ? '' : value })}
+              value={formData.is_team_task ? 'team_hiro' : (formData.assigned_to || 'unassigned')}
+              onValueChange={(value) => {
+                if (value === 'team_hiro') {
+                  setFormData({ ...formData, assigned_to: '', is_team_task: true });
+                } else if (value === 'unassigned') {
+                  setFormData({ ...formData, assigned_to: '', is_team_task: false });
+                } else {
+                  setFormData({ ...formData, assigned_to: value, is_team_task: false });
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um responsável" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Nenhum</SelectItem>
+                <SelectItem value="team_hiro">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-primary" />
+                    </div>
+                    Time Hiro
+                  </div>
+                </SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     <div className="flex items-center gap-2">
@@ -168,15 +184,6 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_team_task"
-              checked={formData.is_team_task}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_team_task: checked })}
-            />
-            <Label htmlFor="is_team_task">Tarefa do time (visível para todos)</Label>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
