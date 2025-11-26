@@ -140,7 +140,7 @@ export default function Tasks() {
                           value={task.status}
                           options={[
                             { value: 'pendente', label: 'Pendente' },
-                            { value: 'em_andamento', label: 'Em Andamento' },
+                            { value: 'em_progresso', label: 'Em Progresso' },
                             { value: 'concluida', label: 'Concluída' },
                             { value: 'cancelada', label: 'Cancelada' },
                           ]}
@@ -273,7 +273,7 @@ export default function Tasks() {
                         value={task.status}
                         options={[
                           { value: 'pendente', label: 'Pendente' },
-                          { value: 'em_andamento', label: 'Em Andamento' },
+                          { value: 'em_progresso', label: 'Em Progresso' },
                           { value: 'concluida', label: 'Concluída' },
                           { value: 'cancelada', label: 'Cancelada' },
                         ]}
