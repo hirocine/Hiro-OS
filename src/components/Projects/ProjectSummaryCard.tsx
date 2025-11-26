@@ -214,7 +214,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
             className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
           >
             <Eye className="mr-2 h-4 w-4" />
-            Ver Projeto
+            Ver Retirada
           </Button>
         </div>
       </CardContent>
