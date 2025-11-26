@@ -101,170 +101,168 @@ export default function TaskDetails() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Descrição</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {task.description ? (
-                <p className="whitespace-pre-wrap">{task.description}</p>
-              ) : (
-                <p className="text-muted-foreground italic">Sem descrição</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Subtasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Subtarefas ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {task.subtasks.map((subtask) => (
-                <div key={subtask.id} className="flex items-center gap-2">
-                  <Checkbox
-                    checked={subtask.is_completed}
-                    onCheckedChange={(checked) =>
-                      updateSubtask.mutateAsync({ id: subtask.id, updates: { is_completed: !!checked } })
-                    }
-                  />
-                  <span className={subtask.is_completed ? 'line-through text-muted-foreground' : ''}>
-                    {subtask.title}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteSubtask.mutateAsync(subtask.id)}
-                    className="ml-auto"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-              
-              <form onSubmit={handleAddSubtask} className="flex gap-2 mt-4">
-                <Input
-                  placeholder="Adicionar subtarefa..."
-                  value={newSubtask}
-                  onChange={(e) => setNewSubtask(e.target.value)}
-                />
-                <Button type="submit" disabled={addSubtask.isPending}>
-                  Adicionar
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Comments */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Comentários ({task.comments.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {task.comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback>{comment.user_name?.[0] || '?'}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{comment.user_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(comment.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                      </span>
-                    </div>
-                    <p className="text-sm mt-1">{comment.content}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteComment.mutateAsync(comment.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-              
-              <form onSubmit={handleAddComment} className="flex flex-col gap-2 mt-4">
-                <Textarea
-                  placeholder="Adicionar comentário..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  rows={3}
-                />
-                <Button type="submit" disabled={addComment.isPending} className="self-end">
-                  Comentar
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detalhes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Status:</span>
+      <div className="space-y-6">
+        {/* Details Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Detalhes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {/* Status */}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Status</span>
                 <StatusBadge status={task.status} />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Prioridade:</span>
+              {/* Priority */}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Prioridade</span>
                 <PriorityBadge priority={task.priority} />
               </div>
 
-              {task.assignee_name && (
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Responsável:</span>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-5 h-5">
-                      <AvatarImage src={task.assignee_avatar || undefined} />
-                      <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm">{task.assignee_name}</span>
-                  </div>
-                </div>
-              )}
-
+              {/* Due Date */}
               {task.due_date && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Prazo:</span>
-                  <span className="text-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-muted-foreground">Prazo</span>
+                  <span className="text-sm font-medium">
                     {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
                   </span>
                 </div>
               )}
 
+              {/* Department */}
               {task.department && (
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Departamento:</span>
-                  <span className="text-sm">{task.department}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-muted-foreground">Departamento</span>
+                  <span className="text-sm font-medium">{task.department}</span>
                 </div>
               )}
 
-              {task.is_team_task && (
-                <div className="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    ✓ Tarefa do time (visível para todos)
-                  </p>
+              {/* Assignee */}
+              {task.assignee_name && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-muted-foreground">Responsável</span>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={task.assignee_avatar || undefined} />
+                      <AvatarFallback className="text-xs">{task.assignee_name[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium truncate">{task.assignee_name}</span>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            {/* Team Task Indicator */}
+            {task.is_team_task && (
+              <div className="mt-4 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  ✓ Tarefa do time (visível para todos)
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Description */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Descrição</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {task.description ? (
+              <p className="whitespace-pre-wrap">{task.description}</p>
+            ) : (
+              <p className="text-muted-foreground italic">Sem descrição</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Subtasks */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Subtarefas ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {task.subtasks.map((subtask) => (
+              <div key={subtask.id} className="flex items-center gap-2">
+                <Checkbox
+                  checked={subtask.is_completed}
+                  onCheckedChange={(checked) =>
+                    updateSubtask.mutateAsync({ id: subtask.id, updates: { is_completed: !!checked } })
+                  }
+                />
+                <span className={subtask.is_completed ? 'line-through text-muted-foreground' : ''}>
+                  {subtask.title}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteSubtask.mutateAsync(subtask.id)}
+                  className="ml-auto"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            
+            <form onSubmit={handleAddSubtask} className="flex gap-2 mt-4">
+              <Input
+                placeholder="Adicionar subtarefa..."
+                value={newSubtask}
+                onChange={(e) => setNewSubtask(e.target.value)}
+              />
+              <Button type="submit" disabled={addSubtask.isPending}>
+                Adicionar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Comments */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Comentários ({task.comments.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {task.comments.map((comment) => (
+              <div key={comment.id} className="flex gap-3">
+                <Avatar className="w-8 h-8">
+                  <AvatarFallback>{comment.user_name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{comment.user_name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(comment.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                    </span>
+                  </div>
+                  <p className="text-sm mt-1">{comment.content}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteComment.mutateAsync(comment.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            
+            <form onSubmit={handleAddComment} className="flex flex-col gap-2 mt-4">
+              <Textarea
+                placeholder="Adicionar comentário..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={3}
+              />
+              <Button type="submit" disabled={addComment.isPending} className="self-end">
+                Comentar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
 
       <TaskDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
