@@ -99,9 +99,15 @@ export function useTasks(filters?: TaskFilters) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      const taskData = {
+        ...newTask,
+        created_by: user.id,
+        assigned_to: newTask.assigned_to || null,
+      };
+
       const { data, error } = await supabase
         .from('tasks')
-        .insert([{ ...newTask, created_by: user.id }])
+        .insert([taskData])
         .select()
         .single();
 
@@ -121,9 +127,14 @@ export function useTasks(filters?: TaskFilters) {
   // Update task
   const updateTask = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
+      const sanitizedUpdates = {
+        ...updates,
+        assigned_to: updates.assigned_to === '' ? null : updates.assigned_to,
+      };
+
       const { data, error } = await supabase
         .from('tasks')
-        .update(updates)
+        .update(sanitizedUpdates)
         .eq('id', id)
         .select()
         .single();
