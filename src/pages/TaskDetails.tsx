@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2, Users, Plus, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,10 @@ import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -177,102 +179,139 @@ export default function TaskDetails() {
           </CardContent>
         </Card>
 
-        {/* Description */}
+        {/* Unified Content Card */}
         <Card>
-          <CardHeader>
-            <CardTitle>Descrição</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {task.description ? (
-              <p className="whitespace-pre-wrap">{task.description}</p>
-            ) : (
-              <p className="text-muted-foreground italic">Sem descrição</p>
-            )}
-          </CardContent>
-        </Card>
+          <CardContent className="p-6 space-y-6">
+            {/* Seção: Descrição */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Descrição</h3>
+              {task.description ? (
+                <p className="whitespace-pre-wrap text-sm">{task.description}</p>
+              ) : (
+                <p className="text-muted-foreground italic text-sm">Sem descrição</p>
+              )}
+            </div>
 
-        {/* Subtasks */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Subtarefas ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {task.subtasks.map((subtask) => (
-              <div key={subtask.id} className="flex items-center gap-2">
-                <Checkbox
-                  checked={subtask.is_completed}
-                  onCheckedChange={(checked) =>
-                    updateSubtask.mutateAsync({ id: subtask.id, updates: { is_completed: !!checked } })
-                  }
-                />
-                <span className={subtask.is_completed ? 'line-through text-muted-foreground' : ''}>
-                  {subtask.title}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteSubtask.mutateAsync(subtask.id)}
-                  className="ml-auto"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-            
-            <form onSubmit={handleAddSubtask} className="flex gap-2 mt-4">
-              <Input
-                placeholder="Adicionar subtarefa..."
-                value={newSubtask}
-                onChange={(e) => setNewSubtask(e.target.value)}
-              />
-              <Button type="submit" disabled={addSubtask.isPending}>
-                Adicionar
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <Separator />
 
-        {/* Comments */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Comentários ({task.comments.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {task.comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback>{comment.user_name?.[0] || '?'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{comment.user_name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(comment.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                    </span>
-                  </div>
-                  <p className="text-sm mt-1">{comment.content}</p>
+            {/* Seção: Subtarefas */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">
+                Subtarefas ({task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length})
+              </h3>
+              {task.subtasks && task.subtasks.length > 0 ? (
+                <div className="space-y-2">
+                  {task.subtasks.map((subtask) => (
+                    <div 
+                      key={subtask.id} 
+                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 group transition-colors"
+                    >
+                      <Checkbox
+                        checked={subtask.is_completed}
+                        onCheckedChange={(checked) => 
+                          updateSubtask.mutateAsync({
+                            id: subtask.id,
+                            updates: { is_completed: checked as boolean }
+                          })
+                        }
+                        disabled={updateSubtask.isPending}
+                      />
+                      <span className={cn(
+                        "flex-1 text-sm",
+                        subtask.is_completed && "line-through text-muted-foreground"
+                      )}>
+                        {subtask.title}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                        onClick={() => deleteSubtask.mutateAsync(subtask.id)}
+                        disabled={deleteSubtask.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                <Button
-                  variant="ghost"
+              ) : (
+                <p className="text-muted-foreground text-sm">Nenhuma subtarefa</p>
+              )}
+
+              <form onSubmit={handleAddSubtask} className="flex gap-2 mt-3">
+                <Input
+                  placeholder="Adicionar subtarefa..."
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  className="h-9"
+                />
+                <Button 
+                  type="submit" 
+                  variant="secondary" 
                   size="sm"
-                  onClick={() => deleteComment.mutateAsync(comment.id)}
+                  disabled={addSubtask.isPending || !newSubtask.trim()}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Plus className="w-4 h-4 mr-1" />
+                  Adicionar
                 </Button>
-              </div>
-            ))}
-            
-            <form onSubmit={handleAddComment} className="flex flex-col gap-2 mt-4">
-              <Textarea
-                placeholder="Adicionar comentário..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-              />
-              <Button type="submit" disabled={addComment.isPending} className="self-end">
-                Comentar
-              </Button>
-            </form>
+              </form>
+            </div>
+
+            <Separator />
+
+            {/* Seção: Comentários */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Comentários ({task.comments.length})</h3>
+              {task.comments && task.comments.length > 0 ? (
+                <div className="space-y-4">
+                  {task.comments.map((comment) => (
+                    <div key={comment.id} className="border-l-2 border-primary/20 pl-4 py-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{comment.user_name || 'Usuário'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(comment.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => deleteComment.mutateAsync(comment.id)}
+                          disabled={deleteComment.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <p className="mt-2 text-sm whitespace-pre-wrap">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">Nenhum comentário</p>
+              )}
+
+              <form onSubmit={handleAddComment} className="mt-3">
+                <Textarea
+                  placeholder="Adicionar comentário..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={2}
+                  className="resize-none"
+                />
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    type="submit" 
+                    variant="secondary" 
+                    size="sm"
+                    disabled={addComment.isPending || !newComment.trim()}
+                  >
+                    <Send className="w-4 h-4 mr-1" />
+                    Comentar
+                  </Button>
+                </div>
+              </form>
+            </div>
           </CardContent>
         </Card>
       </div>
