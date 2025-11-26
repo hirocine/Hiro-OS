@@ -47,7 +47,7 @@ const fetchSSDs = async (): Promise<{ ssds: Equipment[], allocations: SSDAllocat
   const { data, error } = await supabase
     .from('equipments')
     .select('*')
-    .eq('category', 'storage')
+    .eq('category', 'Armazenamento')
     .order('display_order', { ascending: true, nullsFirst: false })
     .order('name');
 
@@ -123,7 +123,7 @@ export const useSSDs = () => {
           event: '*',
           schema: 'public',
           table: 'equipments',
-          filter: 'category=eq.storage'
+          filter: 'category=eq.Armazenamento'
         },
         () => {
           // Debounce realtime updates to avoid multiple rapid refetches
