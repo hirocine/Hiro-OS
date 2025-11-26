@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useTaskDetails } from '@/features/tasks/hooks/useTaskDetails';
-import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
@@ -35,7 +35,7 @@ export default function TaskDetails() {
   const [newComment, setNewComment] = useState('');
 
   const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment } = useTaskDetails(id!);
-  const { deleteTask } = useTasks();
+  const { deleteTask } = useTaskMutations();
 
   if (isLoading) {
     return (
