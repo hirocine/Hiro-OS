@@ -61,7 +61,7 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
           <Button
             variant="ghost"
             className={cn(
-              "h-auto min-h-0 w-full justify-start p-0 font-normal hover:bg-muted/50 rounded transition-colors",
+              "h-auto min-h-0 w-full justify-start p-0 font-normal bg-transparent hover:bg-transparent rounded transition-colors",
               !value && "text-muted-foreground"
             )}
             onClick={(e) => {
