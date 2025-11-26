@@ -9,16 +9,31 @@ import { useMemo, useState, useEffect } from 'react';
 import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Dashboard() {
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { stats, allEquipment, loading } = useEquipment();
   const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Initialize notifications
   useNotifications();
+
+  // Proteção de rota: apenas admins podem acessar
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   // Update timestamp when data is loaded
   useEffect(() => {
@@ -114,8 +129,8 @@ export default function Dashboard() {
           {/* Skeleton Visão Geral */}
           <div>
             <Skeleton className="h-8 w-48 mb-4" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {[...Array(4)].map((_, i) => <StatsCardSkeleton key={i} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              {[...Array(3)].map((_, i) => <StatsCardSkeleton key={i} />)}
             </div>
           </div>
 

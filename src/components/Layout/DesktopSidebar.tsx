@@ -23,13 +23,13 @@ const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
 ];
 
 const adminNavigation: NavigationItem[] = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
   { name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true },
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
