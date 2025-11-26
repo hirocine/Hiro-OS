@@ -4,3 +4,4 @@ export * from './TaskStatsCards';
 export * from './TaskDialog';
 export * from './InlineEditCell';
 export * from './InlineSelectCell';
+export * from './InlineDateCell';

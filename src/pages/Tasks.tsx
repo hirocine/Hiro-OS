@@ -12,11 +12,11 @@ import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
+import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { useTasks, updateTask } from '@/features/tasks/hooks/useTasks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
 
 export default function Tasks() {
   const navigate = useNavigate();
@@ -175,18 +175,13 @@ export default function Tasks() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {task.due_date ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-sm">
-                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                          </span>
-                          <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
-                            {getDueDateLabel(task.due_date).text}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">Sem prazo</span>
-                      )}
+                      <InlineDateCell
+                        value={task.due_date}
+                        onSave={(newDate) => updateTaskMutation.mutate({ 
+                          id: task.id, 
+                          updates: { due_date: newDate } 
+                        })}
+                      />
                     </TableCell>
                     <TableCell>
                       {task.department || <span className="text-muted-foreground text-sm">-</span>}
@@ -311,18 +306,13 @@ export default function Tasks() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {task.due_date ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-sm">
-                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                          </span>
-                          <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
-                            {getDueDateLabel(task.due_date).text}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">Sem prazo</span>
-                      )}
+                      <InlineDateCell
+                        value={task.due_date}
+                        onSave={(newDate) => updateTaskMutation.mutate({ 
+                          id: task.id, 
+                          updates: { due_date: newDate } 
+                        })}
+                      />
                     </TableCell>
                         <TableCell>
                           {task.department || <span className="text-muted-foreground text-sm">-</span>}
