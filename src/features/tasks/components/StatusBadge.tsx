@@ -11,7 +11,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <Badge 
       variant="outline" 
-      className={`${config.color} ${config.bgColor}`}
+      className={`${config.color} ${config.bgColor} transition-colors hover:brightness-95 dark:hover:brightness-110 cursor-pointer`}
     >
       {config.label}
     </Badge>
