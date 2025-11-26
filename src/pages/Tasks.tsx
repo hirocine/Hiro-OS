@@ -92,12 +92,12 @@ export default function Tasks() {
                 <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead>Prazo</TableHead>
-                  <TableHead>Departamento</TableHead>
+                  <TableHead className="w-[25%]">Título</TableHead>
+                  <TableHead className="w-[10%]">Prioridade</TableHead>
+                  <TableHead className="w-[12%]">Status</TableHead>
+                  <TableHead className="w-[20%]">Responsável</TableHead>
+                  <TableHead className="w-[18%]">Prazo</TableHead>
+                  <TableHead className="w-[15%]">Departamento</TableHead>
                 </TableRow>
               </TableHeader>
                   <TableBody>
@@ -184,12 +184,12 @@ export default function Tasks() {
               <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead>Prazo</TableHead>
-                  <TableHead>Departamento</TableHead>
+                  <TableHead className="w-[25%]">Título</TableHead>
+                  <TableHead className="w-[10%]">Prioridade</TableHead>
+                  <TableHead className="w-[12%]">Status</TableHead>
+                  <TableHead className="w-[20%]">Responsável</TableHead>
+                  <TableHead className="w-[18%]">Prazo</TableHead>
+                  <TableHead className="w-[15%]">Departamento</TableHead>
                 </TableRow>
               </TableHeader>
                 <TableBody>
