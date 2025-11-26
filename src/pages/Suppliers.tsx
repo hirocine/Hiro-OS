@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ExternalLink, MessageSquare } from 'lucide-react';
+import { Plus, ExternalLink, MessageSquare, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import {
@@ -112,11 +112,11 @@ export default function Suppliers() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>Função Primária</TableHead>
-              <TableHead>Contato</TableHead>
+              <TableHead>Função</TableHead>
               <TableHead>Expertise</TableHead>
-              <TableHead>Diária</TableHead>
               <TableHead>Rating</TableHead>
+              <TableHead>Diária Média</TableHead>
+              <TableHead>Contatos</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -165,6 +165,13 @@ export default function Suppliers() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <ExpertiseBadge expertise={supplier.expertise} />
+                  </TableCell>
+                  <TableCell>
+                    <StarRating rating={supplier.rating} readonly />
+                  </TableCell>
+                  <TableCell>{formatCurrency(supplier.daily_rate)}</TableCell>
+                  <TableCell>
                     <div className="flex gap-2">
                       {supplier.whatsapp && (
                         <a
@@ -190,24 +197,17 @@ export default function Suppliers() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <ExpertiseBadge expertise={supplier.expertise} />
-                  </TableCell>
-                  <TableCell>{formatCurrency(supplier.daily_rate)}</TableCell>
-                  <TableCell>
-                    <StarRating rating={supplier.rating} readonly />
-                  </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingSupplier(supplier);
                         setDialogOpen(true);
                       }}
                     >
-                      Editar
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
