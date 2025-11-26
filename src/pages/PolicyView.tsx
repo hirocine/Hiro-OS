@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePolicies } from '@/features/policies';
@@ -87,15 +88,17 @@ export default function PolicyView() {
         </div>
 
         {/* Conteúdo da política */}
-        <div 
-          className="prose prose-lg dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ 
-            __html: DOMPurify.sanitize(policy.content, {
-              ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
-              ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
-            })
-          }} 
-        />
+        <Card className="p-6 md:p-8">
+          <div 
+            className="prose prose-lg dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(policy.content, {
+                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel']
+              })
+            }} 
+          />
+        </Card>
       </div>
 
       {isAdmin && (
