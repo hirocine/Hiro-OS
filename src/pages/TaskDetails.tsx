@@ -238,22 +238,24 @@ export default function TaskDetails() {
                 <p className="text-muted-foreground text-sm">Nenhuma subtarefa</p>
               )}
 
-              <form onSubmit={handleAddSubtask} className="flex gap-2 mt-3">
-                <Input
-                  placeholder="Adicionar subtarefa..."
-                  value={newSubtask}
-                  onChange={(e) => setNewSubtask(e.target.value)}
-                  className="h-9"
-                />
-                <Button 
-                  type="submit" 
-                  variant="secondary" 
-                  size="sm"
-                  disabled={addSubtask.isPending || !newSubtask.trim()}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Adicionar
-                </Button>
+              <form onSubmit={handleAddSubtask} className="mt-3">
+                <div className="flex items-center border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                  <Input
+                    placeholder="Adicionar subtarefa..."
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  <Button 
+                    type="submit" 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-7 mr-1 px-2"
+                    disabled={addSubtask.isPending || !newSubtask.trim()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </form>
             </div>
 
@@ -292,23 +294,25 @@ export default function TaskDetails() {
               )}
 
               <form onSubmit={handleAddComment} className="mt-3">
-                <Textarea
-                  placeholder="Adicionar comentário..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  rows={2}
-                  className="resize-none"
-                />
-                <div className="flex justify-end mt-2">
-                  <Button 
-                    type="submit" 
-                    variant="secondary" 
-                    size="sm"
-                    disabled={addComment.isPending || !newComment.trim()}
-                  >
-                    <Send className="w-4 h-4 mr-1" />
-                    Comentar
-                  </Button>
+                <div className="relative border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                  <Textarea
+                    placeholder="Adicionar comentário..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    rows={2}
+                    className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 pb-10"
+                  />
+                  <div className="absolute bottom-2 right-2">
+                    <Button 
+                      type="submit" 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-7 px-2"
+                      disabled={addComment.isPending || !newComment.trim()}
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </form>
             </div>
