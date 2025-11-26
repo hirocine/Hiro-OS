@@ -111,7 +111,7 @@ export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; b
   },
   arquivada: { 
     label: 'Arquivado', 
-    color: 'text-gray-700 dark:text-gray-300', 
-    bgColor: 'bg-gray-100 dark:bg-gray-900/30 border-gray-300 dark:border-gray-700' 
+    color: 'text-red-700 dark:text-red-300', 
+    bgColor: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700' 
   },
 };
