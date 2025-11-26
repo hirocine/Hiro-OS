@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,7 +68,14 @@ export default function TeamTasks() {
                       <StatusBadge status={task.status} />
                     </TableCell>
                     <TableCell>
-                      {task.assignee_name ? (
+                      {task.is_team_task ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                          </div>
+                          <span className="text-sm">Time Hiro</span>
+                        </div>
+                      ) : task.assignee_name ? (
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
                             <AvatarImage src={task.assignee_avatar || undefined} />

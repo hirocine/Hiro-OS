@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight } from 'lucide-react';
+import { Plus, ArrowRight, Users } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -93,19 +93,26 @@ export default function Tasks() {
                         <TableCell>
                           <StatusBadge status={task.status} />
                         </TableCell>
-                        <TableCell>
-                          {task.assignee_name ? (
-                            <div className="flex items-center gap-2">
-                              <Avatar className="w-6 h-6">
-                                <AvatarImage src={task.assignee_avatar || undefined} />
-                                <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm">{task.assignee_name}</span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Não atribuída</span>
-                          )}
-                        </TableCell>
+                    <TableCell>
+                      {task.is_team_task ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                          </div>
+                          <span className="text-sm">Time Hiro</span>
+                        </div>
+                      ) : task.assignee_name ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={task.assignee_avatar || undefined} />
+                            <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{task.assignee_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Não atribuída</span>
+                      )}
+                    </TableCell>
                         <TableCell>
                           {task.due_date ? (
                             <span className="text-sm">
