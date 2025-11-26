@@ -40,7 +40,7 @@ export function InlineSelectCell({
         onOpenChange={setIsOpen}
       >
         <SelectTrigger 
-          className="h-auto min-h-0 w-auto border-0 bg-transparent p-0 shadow-none hover:bg-muted/50 rounded transition-colors focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
+          className="h-auto min-h-0 w-auto border-0 bg-transparent p-0 shadow-none rounded transition-colors focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
           onClick={(e) => {
             e.stopPropagation();
             setIsOpen(true);
