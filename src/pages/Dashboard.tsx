@@ -1,9 +1,12 @@
 import { StatsCard } from '@/components/Dashboard/StatsCard';
+import { CategoryMiniCard } from '@/components/Dashboard/CategoryMiniCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useEquipment } from '@/features/equipment';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { getCategoryIcon } from '@/lib/categoryIconMap';
 import { Package, CheckCircle, Clock, AlertTriangle, Camera, Headphones, Lightbulb, Wrench, BarChart3, Layers } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
@@ -14,11 +17,24 @@ import { formatCurrency } from '@/lib/utils';
 
 export default function Dashboard() {
   const { stats, allEquipment, loading } = useEquipment();
+  const { categories } = useCategoriesContext();
   const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Initialize notifications
   useNotifications();
+
+  // Get unique categories from database, sorted by order
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>();
+    return categories
+      .filter(c => {
+        if (seen.has(c.category)) return false;
+        seen.add(c.category);
+        return true;
+      })
+      .sort((a, b) => (a.categoryOrder ?? 999) - (b.categoryOrder ?? 999));
+  }, [categories]);
 
   // Update timestamp when data is loaded
   useEffect(() => {
@@ -86,29 +102,6 @@ export default function Dashboard() {
       title: 'Em Manutenção',
       value: stats.maintenance,
       icon: AlertTriangle
-    }
-  ];
-
-  const categoryStats = [
-    {
-      title: 'Câmeras',
-      value: stats.byCategory.camera || 0,
-      icon: Camera
-    },
-    {
-      title: 'Equipamentos de Áudio',
-      value: stats.byCategory.audio || 0,
-      icon: Headphones
-    },
-    {
-      title: 'Iluminação',
-      value: stats.byCategory.lighting || 0,
-      icon: Lightbulb
-    },
-    {
-      title: 'Acessórios',
-      value: stats.byCategory.accessories || 0,
-      icon: Wrench
     }
   ];
 
@@ -307,12 +300,20 @@ export default function Dashboard() {
             <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
             <h2 className="text-xl lg:text-2xl font-semibold">Equipamentos por Categoria</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {categoryStats.map((stat, index) => (
-              <div key={stat.title} className="animate-slide-up" style={{ animationDelay: `${(index + 4) * 100}ms` }}>
-                <StatsCard {...stat} />
-              </div>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {uniqueCategories.map((cat, index) => {
+              const Icon = getCategoryIcon(cat.category);
+              const count = stats.byCategory[cat.category] || 0;
+              return (
+                <div key={cat.category} className="animate-slide-up" style={{ animationDelay: `${(index + 4) * 50}ms` }}>
+                  <CategoryMiniCard
+                    title={cat.category}
+                    value={count}
+                    icon={Icon}
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>

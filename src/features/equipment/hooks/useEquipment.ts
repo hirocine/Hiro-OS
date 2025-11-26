@@ -231,20 +231,8 @@ export function useEquipment(): UseEquipmentReturn {
 
     return {
       total: enrichedEquipment.length,
-      byCategory: {
-        camera: categoryCounts['camera'] || 0,
-        audio: categoryCounts['audio'] || 0,
-        lighting: categoryCounts['lighting'] || 0,
-        accessories: categoryCounts['accessories'] || 0,
-        storage: categoryCounts['storage'] || 0,
-      },
-      inUseByCategory: {
-        camera: categoryInUse['camera'] || 0,
-        audio: categoryInUse['audio'] || 0,
-        lighting: categoryInUse['lighting'] || 0,
-        accessories: categoryInUse['accessories'] || 0,
-        storage: categoryInUse['storage'] || 0,
-      },
+      byCategory: categoryCounts as Record<EquipmentCategory, number>,
+      inUseByCategory: categoryInUse as Record<EquipmentCategory, number>,
       byItemType: {
         main: mainItems,
         accessory: accessories,
