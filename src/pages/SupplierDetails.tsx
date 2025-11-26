@@ -17,6 +17,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 );
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
@@ -119,28 +120,28 @@ export default function SupplierDetails() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 md:p-8 space-y-6">
+      <ResponsiveContainer maxWidth="7xl">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   if (!supplier) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
+      <ResponsiveContainer maxWidth="7xl">
         <div className="text-center py-12">
           <p className="text-muted-foreground">Fornecedor não encontrado</p>
           <Button onClick={() => navigate('/fornecedores')} className="mt-4">
             Voltar para Fornecedores
           </Button>
         </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-6">
+    <ResponsiveContainer maxWidth="7xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -345,6 +346,6 @@ export default function SupplierDetails() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </ResponsiveContainer>
   );
 }

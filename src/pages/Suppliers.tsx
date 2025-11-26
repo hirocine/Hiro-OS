@@ -17,6 +17,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 );
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import {
   Table,
   TableBody,
@@ -116,7 +117,7 @@ export default function Suppliers() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Fornecedores"
         subtitle="Gerencie sua rede de fornecedores externos"
@@ -254,6 +255,6 @@ export default function Suppliers() {
         supplier={editingSupplier}
         onSave={handleSave}
       />
-    </div>
+    </ResponsiveContainer>
   );
 }
