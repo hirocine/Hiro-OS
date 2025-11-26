@@ -1,10 +1,34 @@
 import { CheckSquare, AlertCircle, Clock } from 'lucide-react';
-import { StatsCard } from '@/components/Dashboard/StatsCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTaskStats } from '../hooks/useTaskStats';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function TaskStatsCards() {
   const { stats, isLoading } = useTaskStats();
+
+  const statsCards = [
+    {
+      title: 'Tarefas Ativas',
+      value: stats.active,
+      icon: CheckSquare,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+    },
+    {
+      title: 'Tarefas Urgentes',
+      value: stats.urgent,
+      icon: AlertCircle,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10',
+    },
+    {
+      title: 'Tarefas Atrasadas',
+      value: stats.overdue,
+      icon: Clock,
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -18,21 +42,26 @@ export function TaskStatsCards() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <StatsCard
-        title="Tarefas Ativas"
-        value={stats.active}
-        icon={CheckSquare}
-      />
-      <StatsCard
-        title="Tarefas Urgentes"
-        value={stats.urgent}
-        icon={AlertCircle}
-      />
-      <StatsCard
-        title="Tarefas Atrasadas"
-        value={stats.overdue}
-        icon={Clock}
-      />
+      {statsCards.map((stat, index) => {
+        const Icon = stat.icon;
+        return (
+          <Card key={index} className="hover:shadow-elegant transition-all duration-300 animate-fade-in">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                <Icon className={`h-4 w-4 ${stat.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-card-foreground">
+                {stat.value.toLocaleString('pt-BR')}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
