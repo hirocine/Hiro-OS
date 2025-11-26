@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import { Equipment } from '@/types/equipment';
+import { logger } from '@/lib/logger';
 
 /**
  * Converte um equipamento para formato CSV row
@@ -35,7 +36,10 @@ export function exportEquipmentToCSV(
   filename: string = 'equipamentos.csv'
 ): void {
   if (equipment.length === 0) {
-    console.warn('Nenhum equipamento para exportar');
+    logger.warn('No equipment to export', {
+      module: 'csv-exporter',
+      action: 'export_csv'
+    });
     return;
   }
 

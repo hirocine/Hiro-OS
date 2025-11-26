@@ -299,7 +299,10 @@ export default function ProjectWithdrawal() {
       const { data: session } = await supabase.auth.refreshSession();
       
       if (!session) {
-        console.warn('Session refresh failed after project creation');
+        logger.warn('Session refresh failed after project creation', {
+          module: 'project-withdrawal',
+          action: 'session_refresh'
+        });
       }
 
       enhancedToast.success({

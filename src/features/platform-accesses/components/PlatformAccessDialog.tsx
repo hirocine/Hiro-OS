@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -168,7 +169,11 @@ export function PlatformAccessDialog({
             isActive: editingAccess.is_active,
           });
         } catch (error) {
-          console.error('Error loading password:', error);
+          logger.error('Error loading password', {
+            module: 'platform-accesses',
+            action: 'load_password',
+            error
+          });
         }
       } else if (editingAccess) {
         setSelectedCategory(editingAccess.category);
@@ -216,7 +221,11 @@ export function PlatformAccessDialog({
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error submitting form:', error);
+      logger.error('Error submitting platform access form', {
+        module: 'platform-accesses',
+        action: 'submit_form',
+        error
+      });
     }
   };
 

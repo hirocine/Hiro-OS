@@ -54,7 +54,10 @@ export default function Projects() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.warn('No active session on Projects page');
+        logger.warn('No active session on Projects page', {
+          module: 'projects',
+          action: 'check_session'
+        });
         await supabase.auth.refreshSession();
       }
       

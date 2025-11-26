@@ -1,6 +1,7 @@
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Equipment, EquipmentCategory, EquipmentStatus, EquipmentItemType } from '@/types/equipment';
+import { logger } from '@/lib/logger';
 
 export interface ImportError {
   row: number;
@@ -269,7 +270,11 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
           
           if (mainItemsLookup.has(mainItemPatrimony)) {
             parentId = mainItemsLookup.get(mainItemPatrimony);
-            console.log(`[AUTO-LINK] Acessório ${patrimonyNumber} vinculado a ${mainItemPatrimony}`);
+            logger.debug('[AUTO-LINK] Accessory linked to main item', {
+              module: 'csv-parser',
+              action: 'auto_link',
+              data: { accessory: patrimonyNumber, mainItem: mainItemPatrimony }
+            });
           }
         }
       }
@@ -278,7 +283,11 @@ function validateRow(row: Record<string, any>, index: number, mainItemsLookup?: 
     // ESTRATÉGIA 2: Fallback para coluna "Item Principal" (comportamento atual)
     if (!parentId && row.parentId?.trim()) {
       parentId = row.parentId.trim();
-      console.log(`[MANUAL-LINK] Acessório usando coluna "Item Principal": ${parentId}`);
+      logger.debug('[MANUAL-LINK] Accessory using parent column', {
+        module: 'csv-parser',
+        action: 'manual_link',
+        data: { parentId }
+      });
     }
   }
 
