@@ -72,8 +72,11 @@ export function useTasks(filters?: TaskFilters) {
 
   // Real-time subscription
   useEffect(() => {
+    // Canal único baseado no tipo de tarefa (time x pessoais)
+    const channelName = filters?.is_team_task ? 'tasks-changes-team' : 'tasks-changes-mine';
+
     const channel = supabase
-      .channel('tasks-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -91,7 +94,7 @@ export function useTasks(filters?: TaskFilters) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refetch]);
+  }, [refetch, filters?.is_team_task]);
 
   // Create task
   const createTask = useMutation({
@@ -187,38 +190,3 @@ export function useTasks(filters?: TaskFilters) {
   };
 }
 
-// Export individual mutation hooks for direct use
-export function updateTask() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
-      const sanitizedUpdates = {
-        ...updates,
-        assigned_to: updates.assigned_to === '' ? null : updates.assigned_to,
-      };
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .update(sanitizedUpdates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.tasks.team }),
-        queryClient.refetchQueries({ queryKey: queryKeys.tasks.mine }),
-        queryClient.refetchQueries({ queryKey: queryKeys.tasks.stats }),
-      ]);
-      enhancedToast.success({ title: 'Tarefa atualizada!' });
-    },
-    onError: (error: Error) => {
-      logger.error('Error updating task', { module: 'tasks', error });
-      enhancedToast.error({ title: 'Erro ao atualizar tarefa', description: error.message });
-    },
-  });
-}

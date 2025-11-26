@@ -13,7 +13,7 @@ import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
-import { useTasks, updateTask } from '@/features/tasks/hooks/useTasks';
+import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays } from 'date-fns';
@@ -21,9 +21,8 @@ import { differenceInDays } from 'date-fns';
 export default function Tasks() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { tasks: teamTasks, isLoading: teamLoading } = useTasks({ is_team_task: true });
-  const { tasks: myTasks, isLoading: myLoading } = useTasks({ is_team_task: false });
-  const updateTaskMutation = updateTask();
+  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask } = useTasks({ is_team_task: true });
+  const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ is_team_task: false });
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -113,76 +112,76 @@ export default function Tasks() {
                         <TableCell className="font-medium">
                           <InlineEditCell
                             value={task.title}
-                            onSave={(newValue) => updateTaskMutation.mutate({ 
+                            onSave={(newValue) => updateTeamTask.mutate({ 
                               id: task.id, 
                               updates: { title: newValue } 
                             })}
                           />
                         </TableCell>
                         <TableCell>
-                        <InlineSelectCell
-                          value={task.priority}
-                          options={[
-                            { value: 'standby', label: 'Stand-by' },
-                            { value: 'baixa', label: 'Baixa' },
-                            { value: 'media', label: 'Média' },
-                            { value: 'alta', label: 'Alta' },
-                            { value: 'urgente', label: 'Urgente' },
-                          ]}
-                          onSave={(newValue) => updateTaskMutation.mutate({ 
-                            id: task.id, 
-                            updates: { priority: newValue as any } 
-                          })}
-                          renderValue={(value) => <PriorityBadge priority={value as any} />}
-                          renderOption={(value) => <PriorityBadge priority={value as any} />}
-                        />
+                          <InlineSelectCell
+                            value={task.priority}
+                            options={[
+                              { value: 'standby', label: 'Stand-by' },
+                              { value: 'baixa', label: 'Baixa' },
+                              { value: 'media', label: 'Média' },
+                              { value: 'alta', label: 'Alta' },
+                              { value: 'urgente', label: 'Urgente' },
+                            ]}
+                            onSave={(newValue) => updateTeamTask.mutate({ 
+                              id: task.id, 
+                              updates: { priority: newValue as any } 
+                            })}
+                            renderValue={(value) => <PriorityBadge priority={value as any} />}
+                            renderOption={(value) => <PriorityBadge priority={value as any} />}
+                          />
                         </TableCell>
                         <TableCell>
-                        <InlineSelectCell
-                          value={task.status}
-                          options={[
-                            { value: 'pendente', label: 'Pendente' },
-                            { value: 'em_progresso', label: 'Em Progresso' },
-                            { value: 'concluida', label: 'Concluída' },
-                            { value: 'arquivada', label: 'Arquivado' },
-                          ]}
-                          onSave={(newValue) => updateTaskMutation.mutate({ 
-                            id: task.id, 
-                            updates: { status: newValue as any } 
-                          })}
-                          renderValue={(value) => <StatusBadge status={value as any} />}
-                          renderOption={(value) => <StatusBadge status={value as any} />}
-                        />
+                          <InlineSelectCell
+                            value={task.status}
+                            options={[
+                              { value: 'pendente', label: 'Pendente' },
+                              { value: 'em_progresso', label: 'Em Progresso' },
+                              { value: 'concluida', label: 'Concluída' },
+                              { value: 'arquivada', label: 'Arquivado' },
+                            ]}
+                            onSave={(newValue) => updateTeamTask.mutate({ 
+                              id: task.id, 
+                              updates: { status: newValue as any } 
+                            })}
+                            renderValue={(value) => <StatusBadge status={value as any} />}
+                            renderOption={(value) => <StatusBadge status={value as any} />}
+                          />
                         </TableCell>
-                    <TableCell>
-                      {task.is_team_task ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users className="w-3.5 h-3.5 text-primary" />
-                          </div>
-                          <span className="text-sm">Time Hiro</span>
-                        </div>
-                      ) : task.assignee_name ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage src={task.assignee_avatar || undefined} />
-                            <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{task.assignee_name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">Não atribuída</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <InlineDateCell
-                        value={task.due_date}
-                        onSave={(newDate) => updateTaskMutation.mutate({ 
-                          id: task.id, 
-                          updates: { due_date: newDate } 
-                        })}
-                      />
-                    </TableCell>
+                        <TableCell>
+                          {task.is_team_task ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Users className="w-3.5 h-3.5 text-primary" />
+                              </div>
+                              <span className="text-sm">Time Hiro</span>
+                            </div>
+                          ) : task.assignee_name ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar className="w-6 h-6">
+                                <AvatarImage src={task.assignee_avatar || undefined} />
+                                <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{task.assignee_name}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Não atribuída</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <InlineDateCell
+                            value={task.due_date}
+                            onSave={(newDate) => updateTeamTask.mutate({ 
+                              id: task.id, 
+                              updates: { due_date: newDate } 
+                            })}
+                          />
+                        </TableCell>
                     <TableCell>
                       {task.department || <span className="text-muted-foreground text-sm">-</span>}
                     </TableCell>
@@ -244,7 +243,7 @@ export default function Tasks() {
                       <TableCell className="font-medium">
                         <InlineEditCell
                           value={task.title}
-                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                          onSave={(newValue) => updateMyTask.mutate({ 
                             id: task.id, 
                             updates: { title: newValue } 
                           })}
@@ -260,7 +259,7 @@ export default function Tasks() {
                             { value: 'alta', label: 'Alta' },
                             { value: 'urgente', label: 'Urgente' },
                           ]}
-                          onSave={(newValue) => updateTaskMutation.mutate({ 
+                          onSave={(newValue) => updateMyTask.mutate({ 
                             id: task.id, 
                             updates: { priority: newValue as any } 
                           })}
@@ -268,7 +267,7 @@ export default function Tasks() {
                           renderOption={(value) => <PriorityBadge priority={value as any} />}
                         />
                       </TableCell>
-                    <TableCell>
+                      <TableCell>
                         <InlineSelectCell
                           value={task.status}
                           options={[
@@ -277,43 +276,43 @@ export default function Tasks() {
                             { value: 'concluida', label: 'Concluída' },
                             { value: 'arquivada', label: 'Arquivado' },
                           ]}
-                        onSave={(newValue) => updateTaskMutation.mutate({ 
-                          id: task.id, 
-                          updates: { status: newValue as any } 
-                        })}
-                        renderValue={(value) => <StatusBadge status={value as any} />}
-                        renderOption={(value) => <StatusBadge status={value as any} />}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {task.is_team_task ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users className="w-3.5 h-3.5 text-primary" />
+                          onSave={(newValue) => updateMyTask.mutate({ 
+                            id: task.id, 
+                            updates: { status: newValue as any } 
+                          })}
+                          renderValue={(value) => <StatusBadge status={value as any} />}
+                          renderOption={(value) => <StatusBadge status={value as any} />}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {task.is_team_task ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Users className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span className="text-sm">Time Hiro</span>
                           </div>
-                          <span className="text-sm">Time Hiro</span>
-                        </div>
-                      ) : task.assignee_name ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage src={task.assignee_avatar || undefined} />
-                            <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{task.assignee_name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">Não atribuída</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <InlineDateCell
-                        value={task.due_date}
-                        onSave={(newDate) => updateTaskMutation.mutate({ 
-                          id: task.id, 
-                          updates: { due_date: newDate } 
-                        })}
-                      />
-                    </TableCell>
+                        ) : task.assignee_name ? (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="w-6 h-6">
+                              <AvatarImage src={task.assignee_avatar || undefined} />
+                              <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm">{task.assignee_name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Não atribuída</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <InlineDateCell
+                          value={task.due_date}
+                          onSave={(newDate) => updateMyTask.mutate({ 
+                            id: task.id, 
+                            updates: { due_date: newDate } 
+                          })}
+                        />
+                      </TableCell>
                         <TableCell>
                           {task.department || <span className="text-muted-foreground text-sm">-</span>}
                         </TableCell>
