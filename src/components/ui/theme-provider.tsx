@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from "react"
-import { debugLog } from "@/lib/debug"
+import { logger } from "@/lib/logger"
 
 type Theme = "dark" | "light" | "system"
 
@@ -45,10 +45,9 @@ export function ThemeProvider({
       root.setAttribute("data-theme", systemTheme)
       root.style.colorScheme = systemTheme
       
-      debugLog("theme", "Theme applied (system)", { 
-        theme: themeState, 
-        resolved: systemTheme,
-        classList: root.classList.toString()
+      logger.debug("Theme applied (system)", { 
+        module: 'theme',
+        data: { theme: themeState, resolved: systemTheme, classList: root.classList.toString() }
       })
       return
     }
@@ -57,16 +56,19 @@ export function ThemeProvider({
     root.setAttribute("data-theme", themeState)
     root.style.colorScheme = themeState
     
-    debugLog("theme", "Theme applied", { 
-      theme: themeState,
-      classList: root.classList.toString()
+    logger.debug("Theme applied", { 
+      module: 'theme',
+      data: { theme: themeState, classList: root.classList.toString() }
     })
   }, [themeState])
 
   const value = useMemo(() => ({
     theme: themeState,
     setTheme: (theme: Theme) => {
-      debugLog("theme", "setTheme called", { currentTheme: themeState, newTheme: theme })
+      logger.debug("setTheme called", { 
+        module: 'theme',
+        data: { currentTheme: themeState, newTheme: theme }
+      })
       localStorage.setItem(storageKey, theme)
       setThemeState(theme)
     },

@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react"
 import { Button, ButtonProps } from "@/components/ui/button"
 import { useTheme } from "@/components/ui/theme-provider"
 import { cn } from "@/lib/utils"
-import { debugLog } from "@/lib/debug"
+import { logger } from "@/lib/logger"
 
 interface ThemeSwitcherProps extends Omit<ButtonProps, 'onClick'> {}
 
@@ -31,11 +31,9 @@ export const ThemeSwitcher = forwardRef<HTMLButtonElement, ThemeSwitcherProps>(
           root.style.colorScheme = nextTheme
           localStorage.setItem("vite-ui-theme", nextTheme)
 
-          debugLog("theme", "Toggle clicked (applying immediately)", {
-            theme,
-            resolvedTheme,
-            nextTheme,
-            classList: root.classList.toString(),
+          logger.debug("Toggle clicked (applying immediately)", {
+            module: 'theme',
+            data: { theme, resolvedTheme, nextTheme, classList: root.classList.toString() }
           })
 
           setTheme(nextTheme)
