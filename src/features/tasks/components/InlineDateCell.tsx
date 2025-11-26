@@ -13,13 +13,19 @@ interface InlineDateCellProps {
   className?: string;
 }
 
+// Converte string "YYYY-MM-DD" para Date no timezone local
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day); // month é 0-indexed no JavaScript
+};
+
 export function InlineDateCell({ value, onSave, className = '' }: InlineDateCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
+    const due = parseLocalDate(dueDate);
     due.setHours(0, 0, 0, 0);
     const daysUntilDue = differenceInDays(due, today);
 
@@ -74,7 +80,7 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
               <div className="flex items-center gap-2 w-full">
                 <div className="flex flex-col gap-0.5 flex-1">
                   <span className="text-sm">
-                    {format(new Date(value), "dd/MM/yyyy", { locale: ptBR })}
+                    {format(parseLocalDate(value), "dd/MM/yyyy", { locale: ptBR })}
                   </span>
                   {getDueDateLabel(value)}
                 </div>
@@ -91,8 +97,8 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
         <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
           <Calendar
             mode="single"
-            selected={value ? new Date(value) : undefined}
-            defaultMonth={value ? new Date(value) : undefined}
+            selected={value ? parseLocalDate(value) : undefined}
+            defaultMonth={value ? parseLocalDate(value) : undefined}
             onSelect={handleDateSelect}
             initialFocus
             className="p-3 pointer-events-auto"
