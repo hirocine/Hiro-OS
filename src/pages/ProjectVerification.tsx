@@ -99,7 +99,7 @@ export default function ProjectVerification() {
         title: "Verificação concluída",
         description: "A verificação dos equipamentos foi confirmada com sucesso.",
       });
-      navigate(`/projetos/${id}`);
+      navigate(`/retiradas/${id}`);
     } catch (error) {
       toast({
         title: "Erro ao confirmar verificação",

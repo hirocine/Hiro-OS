@@ -98,7 +98,7 @@ export default function ProjectSeparation() {
         title: "Equipamentos separados",
         description: "A separação dos equipamentos foi confirmada com sucesso.",
       });
-      navigate(`/projetos/${id}`);
+      navigate(`/retiradas/${id}`);
     } catch (error) {
       toast({
         title: "Erro ao confirmar separação",

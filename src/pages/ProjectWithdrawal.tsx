@@ -942,10 +942,10 @@ export default function ProjectWithdrawal() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <span 
               className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
-              onClick={() => navigate('/projetos')}
+              onClick={() => navigate('/retiradas')}
             >
               <Package className="h-3.5 w-3.5" />
-              Projetos
+              Retiradas
             </span>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-foreground font-medium">Nova Retirada</span>
@@ -956,7 +956,7 @@ export default function ProjectWithdrawal() {
               variant="ghost" 
               size="icon"
               className="mt-1"
-              onClick={() => navigate('/projetos')}
+              onClick={() => navigate('/retiradas')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -1027,7 +1027,7 @@ export default function ProjectWithdrawal() {
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/projetos')}
+                onClick={() => navigate('/retiradas')}
                 className="w-full sm:w-auto h-11 sm:h-10"
               >
                 Cancelar
