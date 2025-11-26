@@ -47,7 +47,7 @@ export function InlineSelectCell({
           }}
         >
           <SelectValue>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
               {renderValue(value)}
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
