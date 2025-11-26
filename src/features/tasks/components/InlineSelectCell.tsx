@@ -58,7 +58,7 @@ export function InlineSelectCell({
             <SelectItem 
               key={option.value} 
               value={option.value}
-              className="focus:bg-transparent focus:text-inherit"
+              className="focus:bg-transparent focus:text-inherit pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
             >
               {renderOption ? renderOption(option.value) : option.label}
             </SelectItem>
