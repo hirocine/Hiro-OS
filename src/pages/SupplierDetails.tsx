@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 
 // Componentes SVG para logos oficiais
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -35,6 +36,7 @@ import type { Supplier } from '@/features/suppliers/types';
 export default function SupplierDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { suppliers, loading, updateSupplier, deleteSupplier } = useSuppliers();
   const { notes, loading: notesLoading, createNote, deleteNote } = useSupplierNotes(id);
 
@@ -101,6 +103,19 @@ export default function SupplierDetails() {
       currency: 'BRL',
     }).format(value);
   };
+
+  // Proteção de rota: apenas admins podem acessar
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   if (loading) {
     return (
