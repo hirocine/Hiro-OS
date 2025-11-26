@@ -4,6 +4,7 @@ import { Plus, ArrowRight, Users, Eye } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
@@ -21,7 +22,10 @@ import { differenceInDays } from 'date-fns';
 export default function Tasks() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask } = useTasks({ is_team_task: true });
+  const [newTeamTaskTitle, setNewTeamTaskTitle] = useState('');
+  const [newMyTaskTitle, setNewMyTaskTitle] = useState('');
+  
+  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks({ is_team_task: true });
   const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ is_team_task: false });
 
   const getDueDateLabel = (dueDate: string) => {
@@ -44,6 +48,19 @@ export default function Tasks() {
     } else {
       return { text: `(Entrega em ${diffDays} dias)`, className: 'text-muted-foreground' };
     }
+  };
+
+  const handleCreateInlineTask = async (title: string, isTeamTask: boolean, resetFn: () => void) => {
+    if (!title.trim()) return;
+    
+    await createTask.mutateAsync({
+      title: title.trim(),
+      is_team_task: isTeamTask,
+      priority: 'media',
+      status: 'pendente',
+    });
+    
+    resetFn();
   };
 
   // Show only first 8 team tasks with blur effect
@@ -196,6 +213,31 @@ export default function Tasks() {
                     </TableCell>
                   </TableRow>
                 ))}
+                    
+                    {/* Inline creation row */}
+                    <TableRow className="border-dashed hover:bg-transparent">
+                      <TableCell colSpan={7}>
+                        <div className="flex items-center gap-2">
+                          <Plus className="w-4 h-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Nova tarefa do time..."
+                            value={newTeamTaskTitle}
+                            onChange={(e) => setNewTeamTaskTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleCreateInlineTask(newTeamTaskTitle, true, () => setNewTeamTaskTitle(''));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (newTeamTaskTitle.trim()) {
+                                handleCreateInlineTask(newTeamTaskTitle, true, () => setNewTeamTaskTitle(''));
+                              }
+                            }}
+                            className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
               </TableBody>
                 </Table>
               )}
@@ -327,6 +369,31 @@ export default function Tasks() {
                         </TableCell>
                     </TableRow>
                   ))}
+                  
+                  {/* Inline creation row */}
+                  <TableRow className="border-dashed hover:bg-transparent">
+                    <TableCell colSpan={7}>
+                      <div className="flex items-center gap-2">
+                        <Plus className="w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Nova tarefa pessoal..."
+                          value={newMyTaskTitle}
+                          onChange={(e) => setNewMyTaskTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleCreateInlineTask(newMyTaskTitle, false, () => setNewMyTaskTitle(''));
+                            }
+                          }}
+                          onBlur={() => {
+                            if (newMyTaskTitle.trim()) {
+                              handleCreateInlineTask(newMyTaskTitle, false, () => setNewMyTaskTitle(''));
+                            }
+                          }}
+                          className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             )}
