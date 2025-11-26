@@ -101,7 +101,7 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start text-muted-foreground hover:text-destructive"
+                className="w-full justify-start hover:bg-background"
                 onClick={handleRemoveDate}
               >
                 <X className="w-4 h-4 mr-2" />
