@@ -1,5 +1,5 @@
 import { CheckSquare, AlertCircle, Clock } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTaskStats } from '../hooks/useTaskStats';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -13,6 +13,8 @@ export function TaskStatsCards() {
       icon: CheckSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
+      borderColor: 'border-l-primary',
+      cardBg: 'bg-primary/5',
     },
     {
       title: 'Tarefas Urgentes',
@@ -20,6 +22,8 @@ export function TaskStatsCards() {
       icon: AlertCircle,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
+      borderColor: 'border-l-orange-500',
+      cardBg: 'bg-orange-500/5',
     },
     {
       title: 'Tarefas Atrasadas',
@@ -27,6 +31,8 @@ export function TaskStatsCards() {
       icon: Clock,
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
+      borderColor: 'border-l-destructive',
+      cardBg: 'bg-destructive/5',
     },
   ];
 
@@ -45,20 +51,20 @@ export function TaskStatsCards() {
       {statsCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <Icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground font-medium">
+          <Card key={index} className={`border-l-4 ${stat.borderColor} ${stat.cardBg} hover:shadow-elegant transition-all duration-300 animate-fade-in`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
-              </p>
-              <p className="text-2xl font-bold text-foreground">
+              </CardTitle>
+              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                <Icon className={`h-4 w-4 ${stat.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${stat.color}`}>
                 {stat.value.toLocaleString('pt-BR')}
-              </p>
-            </div>
+              </div>
+            </CardContent>
           </Card>
         );
       })}
