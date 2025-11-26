@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2, Users, Plus, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,9 +35,16 @@ export default function TaskDetails() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [description, setDescription] = useState('');
 
   const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment } = useTaskDetails(id!);
-  const { deleteTask } = useTaskMutations();
+  const { deleteTask, updateTask } = useTaskMutations();
+
+  useEffect(() => {
+    if (task?.description) {
+      setDescription(task.description);
+    }
+  }, [task?.description]);
 
   if (isLoading) {
     return (
@@ -74,6 +81,14 @@ export default function TaskDetails() {
     if (!newComment.trim()) return;
     await addComment.mutateAsync(newComment);
     setNewComment('');
+  };
+
+  const handleSaveDescription = async () => {
+    if (description === task?.description) return;
+    await updateTask.mutateAsync({ 
+      id: task!.id, 
+      updates: { description: description || null } 
+    });
   };
 
   return (
@@ -185,11 +200,16 @@ export default function TaskDetails() {
             {/* Seção: Descrição */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Descrição</h3>
-              {task.description ? (
-                <p className="whitespace-pre-wrap text-sm">{task.description}</p>
-              ) : (
-                <p className="text-muted-foreground italic text-sm">Sem descrição</p>
-              )}
+              <div className="relative border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                <Textarea
+                  placeholder="Adicionar descrição..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onBlur={handleSaveDescription}
+                  rows={3}
+                  className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
             </div>
 
             <Separator />
