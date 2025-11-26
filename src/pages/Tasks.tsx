@@ -123,6 +123,7 @@ export default function Tasks() {
                         <InlineSelectCell
                           value={task.priority}
                           options={[
+                            { value: 'standby', label: 'Stand-by' },
                             { value: 'baixa', label: 'Baixa' },
                             { value: 'media', label: 'Média' },
                             { value: 'alta', label: 'Alta' },
@@ -258,6 +259,7 @@ export default function Tasks() {
                         <InlineSelectCell
                           value={task.priority}
                           options={[
+                            { value: 'standby', label: 'Stand-by' },
                             { value: 'baixa', label: 'Baixa' },
                             { value: 'media', label: 'Média' },
                             { value: 'alta', label: 'Alta' },
