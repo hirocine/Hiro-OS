@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { profileDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 
 interface CroppedImageData {
   file: Blob;
@@ -88,14 +88,17 @@ export const useAvatarUpload = () => {
   ): Promise<string> => {
     try {
       setUploading(true);
-      profileDebug('Avatar: Starting optimized upload process');
+      logger.debug('Avatar: Starting optimized upload process', { module: 'profile' });
 
       // Compress the image
       const compressedFile = await compressImage(croppedImageData.file, options);
       
       const fileExt = 'webp';
       const filePath = `${userId}/avatar.${fileExt}`;
-      profileDebug('Avatar: Upload path', filePath);
+      logger.debug('Avatar: Upload path', { 
+        module: 'profile',
+        data: { filePath }
+      });
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -106,18 +109,24 @@ export const useAvatarUpload = () => {
         });
 
       if (uploadError) {
-        profileDebug('Avatar: Upload error', uploadError);
+        logger.error('Avatar: Upload error', { 
+          module: 'profile',
+          error: uploadError 
+        });
         throw uploadError;
       }
 
-      profileDebug('Avatar: Upload successful, getting public URL');
+      logger.debug('Avatar: Upload successful, getting public URL', { module: 'profile' });
 
       // Get public URL
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      profileDebug('Avatar: Public URL obtained', data.publicUrl);
+      logger.debug('Avatar: Public URL obtained', { 
+        module: 'profile',
+        data: { publicUrl: data.publicUrl }
+      });
 
       // Update profile with avatar URL
       const updateData = {
@@ -132,11 +141,14 @@ export const useAvatarUpload = () => {
         });
 
       if (updateError) {
-        profileDebug('Avatar: Profile update error', updateError);
+        logger.error('Avatar: Profile update error', { 
+          module: 'profile',
+          error: updateError 
+        });
         throw updateError;
       }
 
-      profileDebug('Avatar: Profile updated successfully');
+      logger.debug('Avatar: Profile updated successfully', { module: 'profile' });
       setImageUrl(data.publicUrl);
 
       toast({
@@ -146,7 +158,10 @@ export const useAvatarUpload = () => {
 
       return data.publicUrl;
     } catch (error: unknown) {
-      profileDebug('Avatar: Error in upload process', error);
+      logger.error('Avatar: Error in upload process', { 
+        module: 'profile',
+        error: error as Error
+      });
       toast({
         title: "Erro ao fazer upload",
         description: error instanceof Error ? error.message : "Não foi possível atualizar o avatar.",

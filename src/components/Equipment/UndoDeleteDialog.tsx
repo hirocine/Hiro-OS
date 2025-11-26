@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { RotateCcw, Clock, Package, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { equipmentDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 import { MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -76,9 +76,12 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
 
     setRestoring(true);
     try {
-      equipmentDebug('Restoring deleted equipment', { 
-        equipmentId: deletedEquipment.id,
-        equipmentName: deletedEquipment.name 
+      logger.debug('Restoring deleted equipment', { 
+        module: 'equipment',
+        data: {
+          equipmentId: deletedEquipment.id,
+          equipmentName: deletedEquipment.name 
+        }
       });
 
       await onRestore(deletedEquipment.id);
@@ -90,7 +93,10 @@ export function UndoDeleteDialog({ open, onOpenChange, deletedEquipment, onResto
 
       onOpenChange(false);
     } catch (error) {
-      equipmentDebug('Error restoring equipment', error);
+      logger.error('Error restoring equipment', { 
+        module: 'equipment',
+        error 
+      });
       toast({
         title: "Erro ao Restaurar",
         description: "Não foi possível restaurar o equipamento. Tente novamente.",

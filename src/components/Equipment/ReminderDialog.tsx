@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Mail, MessageSquare, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { equipmentDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 import { sendReminderNotification } from '@/lib/communication';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -71,10 +71,13 @@ Equipe de Inventário`,
 
     setSending(true);
     try {
-      equipmentDebug('Sending reminder', { 
-        loanId: loanData.id, 
-        type: reminderType,
-        recipient: reminderType === 'email' ? loanData.borrowerEmail : loanData.borrowerPhone
+      logger.debug('Sending reminder', { 
+        module: 'equipment',
+        data: {
+          loanId: loanData.id, 
+          type: reminderType,
+          recipient: reminderType === 'email' ? loanData.borrowerEmail : loanData.borrowerPhone
+        }
       });
 
       // Integração com serviços de comunicação
@@ -92,7 +95,10 @@ Equipe de Inventário`,
         responsible_user_email: loanData.borrowerEmail || null
       };
 
-      equipmentDebug('Creating notification record', notificationData);
+      logger.debug('Creating notification record', { 
+        module: 'equipment',
+        data: notificationData 
+      });
 
       toast({
         title: "Lembrete Enviado",
@@ -102,7 +108,10 @@ Equipe de Inventário`,
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      equipmentDebug('Error sending reminder', error);
+      logger.error('Error sending reminder', { 
+        module: 'equipment',
+        error 
+      });
       toast({
         title: "Erro ao enviar",
         description: "Não foi possível enviar o lembrete. Tente novamente.",

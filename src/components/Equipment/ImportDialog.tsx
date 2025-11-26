@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Upload, Download, AlertCircle, CheckCircle, FileText, FileSpreadsheet } from 'lucide-react';
 import { parseCSV, parseExcel, generateTemplate, ImportResult, ImportError } from '@/lib/csvParser';
 import { useToast } from '@/hooks/use-toast';
-import { importDebug } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 import { MobileFriendlyForm, MobileFriendlyFormActions } from '@/components/ui/mobile-friendly-form';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -96,13 +96,30 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
 
     setIsProcessing(true);
     try {
-      importDebug('Starting import of items', { count: importResult.data.length });
+      logger.debug('Starting import of items', { 
+        module: 'import',
+        data: { count: importResult.data.length }
+      });
       const summary = await onImport(importResult.data);
       setImportSummary(summary);
       setStep('complete');
-      importDebug('Import completed successfully', summary);
+      logger.debug('Import completed successfully', { 
+        module: 'import',
+        data: {
+          totalParsed: summary.totalParsed,
+          mainsNew: summary.mainsNew,
+          accessoriesNew: summary.accessoriesNew,
+          mainsExisting: summary.mainsExisting,
+          accessoriesExisting: summary.accessoriesExisting,
+          skippedMissingParent: summary.skippedMissingParent,
+          errorsCount: summary.errors.length
+        }
+      });
     } catch (error) {
-      importDebug('Import failed', error);
+      logger.error('Import failed', { 
+        module: 'import',
+        error: error as Error
+      });
       toast({
         title: "Erro na importação",
         description: error instanceof Error ? error.message : 'Erro desconhecido na importação',

@@ -1,6 +1,12 @@
 /**
+ * ⚠️ DEPRECATED: Este arquivo está obsoleto
+ * 
+ * Use src/lib/logger.ts em vez deste arquivo.
+ * 
  * Sistema de Debug Configurável
  * Permite controlar logs em desenvolvimento sem afetar produção
+ * 
+ * @deprecated Migrado para src/lib/logger.ts - use logger.debug(), logger.info(), etc.
  */
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
