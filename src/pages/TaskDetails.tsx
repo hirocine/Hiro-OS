@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -108,17 +108,29 @@ export default function TaskDetails() {
             <CardTitle>Detalhes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {/* Status */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <StatusBadge status={task.status} />
+                <div className="w-fit">
+                  <StatusBadge status={task.status} />
+                </div>
               </div>
 
               {/* Priority */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Prioridade</span>
-                <PriorityBadge priority={task.priority} />
+                <div className="w-fit">
+                  <PriorityBadge priority={task.priority} />
+                </div>
+              </div>
+
+              {/* Created Date */}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Criada em</span>
+                <span className="text-sm font-medium">
+                  {format(new Date(task.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                </span>
               </div>
 
               {/* Due Date */}
@@ -139,10 +151,17 @@ export default function TaskDetails() {
                 </div>
               )}
 
-              {/* Assignee */}
-              {task.assignee_name && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm text-muted-foreground">Responsável</span>
+              {/* Responsável */}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Responsável</span>
+                {task.is_team_task ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">Time Hiro</span>
+                  </div>
+                ) : task.assignee_name ? (
                   <div className="flex items-center gap-2">
                     <Avatar className="w-6 h-6">
                       <AvatarImage src={task.assignee_avatar || undefined} />
@@ -150,18 +169,11 @@ export default function TaskDetails() {
                     </Avatar>
                     <span className="text-sm font-medium truncate">{task.assignee_name}</span>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Team Task Indicator */}
-            {task.is_team_task && (
-              <div className="mt-4 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  ✓ Tarefa do time (visível para todos)
-                </p>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Não atribuída</span>
+                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
