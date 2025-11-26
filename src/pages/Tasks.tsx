@@ -13,7 +13,7 @@ import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function Tasks() {
@@ -21,6 +21,28 @@ export default function Tasks() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { tasks: teamTasks, isLoading: teamLoading } = useTasks({ is_team_task: true });
   const { tasks: myTasks, isLoading: myLoading } = useTasks();
+
+  const getDueDateLabel = (dueDate: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+    
+    const diffDays = differenceInDays(due, today);
+    
+    if (diffDays < 0) {
+      return { 
+        text: `(Atrasada há ${Math.abs(diffDays)} dia${Math.abs(diffDays) > 1 ? 's' : ''})`, 
+        className: 'text-destructive' 
+      };
+    } else if (diffDays === 0) {
+      return { text: '(Vence hoje)', className: 'text-yellow-600' };
+    } else if (diffDays === 1) {
+      return { text: '(Entrega amanhã)', className: 'text-yellow-600' };
+    } else {
+      return { text: `(Entrega em ${diffDays} dias)`, className: 'text-muted-foreground' };
+    }
+  };
 
   // Show only first 8 team tasks with blur effect
   const displayedTeamTasks = teamTasks.slice(0, 8);
@@ -115,9 +137,14 @@ export default function Tasks() {
                     </TableCell>
                         <TableCell>
                           {task.due_date ? (
-                            <span className="text-sm">
-                              {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                            </span>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-sm">
+                                {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
+                              </span>
+                              <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
+                                {getDueDateLabel(task.due_date).text}
+                              </span>
+                            </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">Sem prazo</span>
                           )}
@@ -176,18 +203,23 @@ export default function Tasks() {
                       <TableCell>
                         <StatusBadge status={task.status} />
                       </TableCell>
-                      <TableCell>
-                        {task.due_date ? (
-                          <span className="text-sm">
-                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">Sem prazo</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {task.department || <span className="text-muted-foreground text-sm">-</span>}
-                      </TableCell>
+                        <TableCell>
+                          {task.due_date ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-sm">
+                                {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
+                              </span>
+                              <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
+                                {getDueDateLabel(task.due_date).text}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Sem prazo</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {task.department || <span className="text-muted-foreground text-sm">-</span>}
+                        </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
