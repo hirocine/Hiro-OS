@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, ArrowRight } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function Tasks() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { tasks: teamTasks, isLoading: teamLoading } = useTasks({ is_team_task: true });
   const { tasks: myTasks, isLoading: myLoading } = useTasks();
@@ -78,11 +79,13 @@ export default function Tasks() {
                   </TableHeader>
                   <TableBody>
                     {displayedTeamTasks.map((task) => (
-                      <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell>
-                          <Link to={`/tarefas/${task.id}`} className="font-medium hover:underline">
-                            {task.title}
-                          </Link>
+                      <TableRow 
+                        key={task.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                      >
+                        <TableCell className="font-medium">
+                          {task.title}
                         </TableCell>
                         <TableCell>
                           <PriorityBadge priority={task.priority} />
@@ -152,11 +155,13 @@ export default function Tasks() {
                 </TableHeader>
                 <TableBody>
                   {myTasks.map((task) => (
-                    <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell>
-                        <Link to={`/tarefas/${task.id}`} className="font-medium hover:underline">
-                          {task.title}
-                        </Link>
+                    <TableRow 
+                      key={task.id} 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/tarefas/${task.id}`)}
+                    >
+                      <TableCell className="font-medium">
+                        {task.title}
                       </TableCell>
                       <TableCell>
                         <PriorityBadge priority={task.priority} />
