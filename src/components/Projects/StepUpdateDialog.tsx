@@ -43,7 +43,7 @@ export function StepUpdateDialog({ project, open, onOpenChange, onUpdate }: Step
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Atualizar Status do Projeto</DialogTitle>
+          <DialogTitle>Atualizar Status da Retirada</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
