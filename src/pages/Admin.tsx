@@ -14,14 +14,18 @@ import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
 import { BackupSystem } from '@/components/Settings/BackupSystem';
 import { CategoryManagement } from '@/components/Settings/CategoryManagement';
+import { ImportDialog } from '@/components/Equipment/ImportDialog';
+import { useEquipment } from '@/features/equipment';
+import { exportEquipmentToCSV } from '@/lib/csvExporter';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { logger } from '@/lib/logger';
 
@@ -65,6 +69,14 @@ export default function Admin() {
     maintenanceAlerts: true,
     equipmentUsageAlerts: false,
   });
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
+  // Use equipment hook for CSV functionality
+  const { 
+    equipment: filteredEquipment, 
+    allEquipment,
+    importEquipment 
+  } = useEquipment();
 
   useEffect(() => {
     logger.debug('Effect triggered', { 
@@ -329,6 +341,16 @@ export default function Admin() {
     toast({
       title: "Configuração atualizada",
       description: "Configuração de notificação atualizada com sucesso.",
+    });
+  };
+
+  const handleExportCSV = () => {
+    const filename = `equipamentos-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    exportEquipmentToCSV(allEquipment, filename);
+    
+    toast({
+      title: 'CSV exportado!',
+      description: `${allEquipment.length} equipamento(s) exportados com sucesso.`
     });
   };
 
@@ -685,10 +707,73 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-5 w-5" />
+                  Importar/Exportar Equipamentos
+                </CardTitle>
+                <CardDescription>
+                  Gerenciar dados de equipamentos via CSV/Excel
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Atenção:</strong> A importação pode adicionar ou atualizar equipamentos em massa. 
+                    Faça um backup antes de importar.
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    onClick={handleExportCSV}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    disabled={allEquipment.length === 0}
+                  >
+                    <Download className="h-4 w-4" />
+                    Exportar CSV ({allEquipment.length} itens)
+                  </Button>
+                  <Button 
+                    onClick={() => setIsImportDialogOpen(true)}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Importar CSV/Excel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
       </Tabs>
+
+      <ImportDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onImport={async (data) => {
+          const result = await importEquipment(data);
+          if (result.success && result.data) {
+            const { summary } = result.data;
+            setIsImportDialogOpen(false);
+            
+            const totalNew = summary.mainsNew + summary.accessoriesNew;
+            
+            toast({
+              title: 'Importação concluída',
+              description: `${totalNew} equipamento(s) importado(s) com sucesso.`
+            });
+            
+            return summary;
+          }
+          throw new Error('Falha na importação');
+        }}
+      />
     </ResponsiveContainer>
   );
 }
