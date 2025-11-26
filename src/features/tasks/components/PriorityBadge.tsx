@@ -11,7 +11,7 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
   return (
     <Badge 
       variant="outline" 
-      className={`${config.color} ${config.bgColor}`}
+      className={`${config.color} ${config.bgColor} transition-colors hover:brightness-95 dark:hover:brightness-110 cursor-pointer`}
     >
       {priority === 'urgente' && <span className="mr-1">🔥</span>}
       {config.label}
