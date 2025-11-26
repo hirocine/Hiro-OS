@@ -90,15 +90,16 @@ export default function Tasks() {
                 <p className="text-muted-foreground text-center py-8">Nenhuma tarefa do time ainda</p>
               ) : (
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Título</TableHead>
-                      <TableHead>Prioridade</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Responsável</TableHead>
-                      <TableHead>Prazo</TableHead>
-                    </TableRow>
-                  </TableHeader>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Prioridade</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Prazo</TableHead>
+                  <TableHead>Departamento</TableHead>
+                </TableRow>
+              </TableHeader>
                   <TableBody>
                     {displayedTeamTasks.map((task) => (
                       <TableRow 
@@ -135,23 +136,26 @@ export default function Tasks() {
                         <span className="text-muted-foreground text-sm">Não atribuída</span>
                       )}
                     </TableCell>
-                        <TableCell>
-                          {task.due_date ? (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm">
-                                {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                              </span>
-                              <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
-                                {getDueDateLabel(task.due_date).text}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Sem prazo</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
+                    <TableCell>
+                      {task.due_date ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm">
+                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
+                          </span>
+                          <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
+                            {getDueDateLabel(task.due_date).text}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Sem prazo</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {task.department || <span className="text-muted-foreground text-sm">-</span>}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
                 </Table>
               )}
               
@@ -178,15 +182,16 @@ export default function Tasks() {
               <p className="text-muted-foreground text-center py-8">Você não tem tarefas ainda</p>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Prioridade</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Prazo</TableHead>
-                    <TableHead>Departamento</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Prioridade</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Prazo</TableHead>
+                  <TableHead>Departamento</TableHead>
+                </TableRow>
+              </TableHeader>
                 <TableBody>
                   {myTasks.map((task) => (
                     <TableRow 
@@ -200,23 +205,43 @@ export default function Tasks() {
                       <TableCell>
                         <PriorityBadge priority={task.priority} />
                       </TableCell>
-                      <TableCell>
-                        <StatusBadge status={task.status} />
-                      </TableCell>
-                        <TableCell>
-                          {task.due_date ? (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm">
-                                {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                              </span>
-                              <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
-                                {getDueDateLabel(task.due_date).text}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Sem prazo</span>
-                          )}
-                        </TableCell>
+                    <TableCell>
+                      <StatusBadge status={task.status} />
+                    </TableCell>
+                    <TableCell>
+                      {task.is_team_task ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                          </div>
+                          <span className="text-sm">Time Hiro</span>
+                        </div>
+                      ) : task.assignee_name ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={task.assignee_avatar || undefined} />
+                            <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{task.assignee_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Não atribuída</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {task.due_date ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm">
+                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
+                          </span>
+                          <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
+                            {getDueDateLabel(task.due_date).text}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Sem prazo</span>
+                      )}
+                    </TableCell>
                         <TableCell>
                           {task.department || <span className="text-muted-foreground text-sm">-</span>}
                         </TableCell>
