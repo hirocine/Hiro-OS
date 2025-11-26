@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface PlatformIconPickerProps {
   selectedIconUrl?: string;
@@ -118,7 +119,11 @@ export function PlatformIconPicker({ selectedIconUrl, onSelectIcon }: PlatformIc
       onSelectIcon(data.publicUrl);
       toast.success('Ícone carregado e otimizado com sucesso!');
     } catch (error) {
-      console.error('Error uploading icon:', error);
+      logger.error('Error uploading platform icon', {
+        module: 'platform-accesses',
+        action: 'upload_icon',
+        error
+      });
       toast.error('Erro ao carregar ícone');
     } finally {
       setUploading(false);

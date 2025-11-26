@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryIcon } from '@/lib/categoryIconMap';
+import { logger } from '@/lib/logger';
 import {
   DndContext,
   closestCenter,
@@ -389,7 +390,11 @@ export function CategoryManagement() {
       
       await refetch();
     } catch (error) {
-      console.error('Erro ao reordenar categorias:', error);
+      logger.error('Error reordering categories', {
+        module: 'category-management',
+        action: 'reorder_categories',
+        error
+      });
       toast({
         title: 'Erro',
         description: 'Erro ao reordenar categorias',
@@ -424,7 +429,11 @@ export function CategoryManagement() {
       
       await refetch();
     } catch (error) {
-      console.error('Erro ao reordenar subcategorias:', error);
+      logger.error('Error reordering subcategories', {
+        module: 'category-management',
+        action: 'reorder_subcategories',
+        error
+      });
       toast({
         title: 'Erro',
         description: 'Erro ao reordenar subcategorias',
