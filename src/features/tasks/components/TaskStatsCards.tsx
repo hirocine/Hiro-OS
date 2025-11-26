@@ -13,6 +13,8 @@ export function TaskStatsCards() {
       icon: CheckSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
+      borderColor: 'border-l-primary',
+      cardBg: 'bg-primary/5',
     },
     {
       title: 'Tarefas Urgentes',
@@ -20,6 +22,8 @@ export function TaskStatsCards() {
       icon: AlertCircle,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
+      borderColor: 'border-l-orange-500',
+      cardBg: 'bg-orange-500/5',
     },
     {
       title: 'Tarefas Atrasadas',
@@ -27,6 +31,8 @@ export function TaskStatsCards() {
       icon: Clock,
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
+      borderColor: 'border-l-destructive',
+      cardBg: 'bg-destructive/5',
     },
   ];
 
@@ -45,7 +51,7 @@ export function TaskStatsCards() {
       {statsCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="hover:shadow-elegant transition-all duration-300 animate-fade-in">
+          <Card key={index} className={`border-l-4 ${stat.borderColor} ${stat.cardBg} hover:shadow-elegant transition-all duration-300 animate-fade-in`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -55,7 +61,7 @@ export function TaskStatsCards() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">
+              <div className={`text-2xl font-bold ${stat.color}`}>
                 {stat.value.toLocaleString('pt-BR')}
               </div>
             </CardContent>
