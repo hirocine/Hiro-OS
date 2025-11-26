@@ -1,5 +1,5 @@
 export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente' | 'standby';
-export type TaskStatus = 'pendente' | 'em_progresso' | 'concluida' | 'cancelada';
+export type TaskStatus = 'pendente' | 'em_progresso' | 'concluida' | 'arquivada';
 
 export interface Task {
   id: string;
@@ -109,9 +109,9 @@ export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; b
     color: 'text-green-700 dark:text-green-300', 
     bgColor: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700' 
   },
-  cancelada: { 
-    label: 'Cancelada', 
-    color: 'text-red-700 dark:text-red-300', 
-    bgColor: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700' 
+  arquivada: { 
+    label: 'Arquivado', 
+    color: 'text-gray-700 dark:text-gray-300', 
+    bgColor: 'bg-gray-100 dark:bg-gray-900/30 border-gray-300 dark:border-gray-700' 
   },
 };
