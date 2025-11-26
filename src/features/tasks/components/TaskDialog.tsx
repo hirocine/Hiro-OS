@@ -10,6 +10,8 @@ import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users } from 'lucide-react';
+import { PriorityBadge } from './PriorityBadge';
+import { StatusBadge } from './StatusBadge';
 
 interface TaskDialogProps {
   open: boolean;
@@ -90,12 +92,14 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                 onValueChange={(value: TaskPriority) => setFormData({ ...formData, priority: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    <PriorityBadge priority={formData.priority} />
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PRIORITY_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.label}
+                  {(Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map((key) => (
+                    <SelectItem key={key} value={key} className="focus:bg-transparent">
+                      <PriorityBadge priority={key} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -109,12 +113,14 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                 onValueChange={(value: TaskStatus) => setFormData({ ...formData, status: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    <StatusBadge status={formData.status} />
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.label}
+                  {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map((key) => (
+                    <SelectItem key={key} value={key} className="focus:bg-transparent">
+                      <StatusBadge status={key} />
                     </SelectItem>
                   ))}
                 </SelectContent>
