@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, Grid3X3, List, Monitor, Tablet, Smartphone, Download, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Grid3X3, List, Monitor, Tablet, Smartphone, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +9,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 import { usePageLayout } from '@/hooks/usePageLayout';
 import { useEquipment } from '@/features/equipment';
-import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { ConvertToAccessoryDialog } from '@/components/Equipment/ConvertToAccessoryDialog';
 import { UnifiedEquipmentFilters } from '@/components/Equipment/UnifiedEquipmentFilters';
 import { EquipmentTableHeader } from '@/components/Equipment/EquipmentTableHeader';
@@ -30,11 +28,9 @@ import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 import { logger } from '@/lib/logger';
 import { generateEquipmentImageName } from '@/lib/imageNaming';
 
-import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
 import { useBulkSelection } from '@/hooks/useBulkSelection';
 import { BulkActionsBar } from '@/components/Equipment/BulkActionsBar';
-import { exportEquipmentToCSV } from '@/lib/csvExporter';
 
 type ViewMode = 'table' | 'grid' | 'cards';
 
@@ -56,8 +52,6 @@ export default function EquipmentPage() {
     toggleEquipmentExpansion,
     handleSort,
   } = useEquipment();
-
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [convertingEquipment, setConvertingEquipment] = useState<Equipment | null>(null);
@@ -352,16 +346,7 @@ export default function EquipmentPage() {
   };
 
   // Bulk action handlers
-  const handleBulkExport = useCallback((items: Equipment[]) => {
-    const filename = `equipamentos-selecionados-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    exportEquipmentToCSV(items, filename);
-    
-    enhancedToast.success({
-      title: 'CSV exportado!',
-      description: `${items.length} equipamento(s) foram exportados com sucesso.`
-    });
-  }, []);
-
+  // Bulk action handlers
   const handleBulkDelete = useCallback(async (items: Equipment[]) => {
     // Deleta múltiplos equipamentos
     for (const item of items) {
@@ -377,15 +362,13 @@ export default function EquipmentPage() {
     });
   }, []);
 
-  const handleExportAll = useCallback(() => {
-    const filename = `todos-equipamentos-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    exportEquipmentToCSV(filteredEquipment, filename);
-    
-    enhancedToast.success({
-      title: 'CSV exportado!',
-      description: `${filteredEquipment.length} equipamento(s) foram exportados com sucesso.`
+  const handleBulkExport = useCallback((items: Equipment[]) => {
+    enhancedToast.info({
+      title: 'Funcionalidade movida',
+      description: 'A exportação CSV agora está disponível apenas na página de Administração.'
     });
-  }, [filteredEquipment]);
+  }, []);
+
 
 
   const loadingSkeletons = useMemo(() => {
@@ -539,23 +522,6 @@ export default function EquipmentPage() {
         actions={
           <div className="flex flex-col sm:flex-row gap-2">
             <ResponsiveButton
-              onClick={handleExportAll}
-              variant="outline"
-              icon={Download}
-              mobileText="Exportar"
-              desktopText="Exportar CSV"
-              disabled={filteredEquipment.length === 0}
-            />
-            <AdminOnly>
-              <ResponsiveButton
-                onClick={() => setIsImportDialogOpen(true)}
-                variant="outline"
-                icon={Upload}
-                mobileText="Importar"
-                desktopText="Importar CSV"
-              />
-            </AdminOnly>
-            <ResponsiveButton
               onClick={() => navigate('/inventario/novo')}
               icon={Plus}
               mobileText="Adicionar"
@@ -630,38 +596,6 @@ export default function EquipmentPage() {
       </div>
 
       {/* Dialogs */}
-      <ImportDialog
-        open={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
-        onImport={async (data) => {
-          const result = await importEquipment(data);
-          if (result.success && result.data) {
-            const { summary } = result.data;
-            setIsImportDialogOpen(false);
-            
-            const totalNew = summary.mainsNew + summary.accessoriesNew;
-            const totalExisting = summary.mainsExisting + summary.accessoriesExisting;
-            
-            let description = `${totalNew} novo(s) (${summary.mainsNew} principais, ${summary.accessoriesNew} acessórios).`;
-            if (totalExisting > 0) {
-              description += ` ${totalExisting} já cadastrado(s).`;
-            }
-            if (summary.skippedMissingParent > 0) {
-              description += ` ${summary.skippedMissingParent} acessório(s) ignorado(s) (sem item principal).`;
-            }
-            
-            enhancedToast.success({
-              title: 'Importação concluída!',
-              description
-            });
-            
-            return summary;
-          } else {
-            throw new Error(result.error || 'Erro na importação');
-          }
-        }}
-      />
-
       {convertingEquipment && (
         <ConvertToAccessoryDialog
           open={isConvertDialogOpen}
