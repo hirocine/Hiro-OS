@@ -1,8 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -33,8 +31,7 @@ const TeamTasks = lazy(() => import("./pages/TeamTasks"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  <TooltipProvider>
       <Sonner position="top-center" />
       <BrowserRouter>
         <Suspense fallback={<LoadingScreenSkeleton />}>
@@ -74,7 +71,6 @@ const App = () => (
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
 );
 
 export default App;

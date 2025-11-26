@@ -4,7 +4,6 @@ import { queryKeys } from '@/lib/queryClient';
 import { Task, TaskPriority, TaskStatus } from '../types';
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { useEffect, useRef } from 'react';
 
 interface TaskFilters {
   status?: TaskStatus;
@@ -70,44 +69,6 @@ export function useTasks(filters?: TaskFilters) {
     },
   });
 
-  // Flag para pausar subscription durante mutações
-  const isMutatingRef = useRef(false);
-
-  // Real-time subscription com debounce e pausa durante mutações
-  useEffect(() => {
-    const channelName = filters?.is_team_task ? 'tasks-changes-team' : 'tasks-changes-mine';
-    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'tasks',
-        },
-        () => {
-          // Ignorar eventos durante mutações para evitar race conditions
-          if (isMutatingRef.current) {
-            logger.debug('Ignoring real-time event during mutation', { module: 'tasks' });
-            return;
-          }
-
-          if (debounceTimer) clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            logger.debug('Task changed, refetching', { module: 'tasks' });
-            refetch();
-          }, 300);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
-  }, [refetch, filters?.is_team_task]);
 
   // Create task
   const createTask = useMutation({
@@ -140,7 +101,7 @@ export function useTasks(filters?: TaskFilters) {
     },
   });
 
-  // Update task com optimistic update
+  // Update task
   const updateTask = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
       const sanitizedUpdates = {
@@ -158,54 +119,15 @@ export function useTasks(filters?: TaskFilters) {
       if (error) throw error;
       return data;
     },
-    // Optimistic update - atualiza cache imediatamente
-    onMutate: async ({ id, updates }) => {
-      // Pausar subscription durante mutação
-      isMutatingRef.current = true;
-
-      // Cancelar queries em andamento para evitar race conditions
-      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.team });
-      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.mine });
-
-      // Snapshot do estado anterior
-      const previousTeamTasks = queryClient.getQueryData<Task[]>(queryKeys.tasks.team);
-      const previousMyTasks = queryClient.getQueryData<Task[]>(queryKeys.tasks.mine);
-
-      const updateCache = (oldTasks?: Task[]) => {
-        if (!oldTasks) return oldTasks;
-        return oldTasks.map((task) =>
-          task.id === id
-            ? {
-                ...task,
-                ...updates,
-              }
-            : task
-        );
-      };
-
-      queryClient.setQueryData<Task[] | undefined>(queryKeys.tasks.team, updateCache(previousTeamTasks));
-      queryClient.setQueryData<Task[] | undefined>(queryKeys.tasks.mine, updateCache(previousMyTasks));
-
-      return { previousTeamTasks, previousMyTasks };
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
+      enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
-    onError: (error: Error, _variables, context) => {
-      if (context?.previousTeamTasks) {
-        queryClient.setQueryData(queryKeys.tasks.team, context.previousTeamTasks);
-      }
-      if (context?.previousMyTasks) {
-        queryClient.setQueryData(queryKeys.tasks.mine, context.previousMyTasks);
-      }
+    onError: (error: Error) => {
       logger.error('Error updating task', { module: 'tasks', error });
       enhancedToast.error({ title: 'Erro ao atualizar tarefa', description: error.message });
-    },
-    onSettled: () => {
-      // Aguardar antes de reativar subscription para evitar capturar o próprio evento de update
-      setTimeout(() => {
-        isMutatingRef.current = false;
-      }, 500);
-    },
-    onSuccess: () => {
-      enhancedToast.success({ title: 'Tarefa atualizada!' });
     },
   });
 
@@ -220,7 +142,9 @@ export function useTasks(filters?: TaskFilters) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa excluída!' });
     },
     onError: (error: Error) => {
