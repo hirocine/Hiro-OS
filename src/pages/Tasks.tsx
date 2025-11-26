@@ -133,6 +133,7 @@ export default function Tasks() {
                             updates: { priority: newValue as any } 
                           })}
                           renderValue={(value) => <PriorityBadge priority={value as any} />}
+                          renderOption={(value) => <PriorityBadge priority={value as any} />}
                         />
                         </TableCell>
                         <TableCell>
@@ -149,6 +150,7 @@ export default function Tasks() {
                             updates: { status: newValue as any } 
                           })}
                           renderValue={(value) => <StatusBadge status={value as any} />}
+                          renderOption={(value) => <StatusBadge status={value as any} />}
                         />
                         </TableCell>
                     <TableCell>
@@ -266,6 +268,7 @@ export default function Tasks() {
                             updates: { priority: newValue as any } 
                           })}
                           renderValue={(value) => <PriorityBadge priority={value as any} />}
+                          renderOption={(value) => <PriorityBadge priority={value as any} />}
                         />
                       </TableCell>
                     <TableCell>
@@ -282,6 +285,7 @@ export default function Tasks() {
                           updates: { status: newValue as any } 
                         })}
                         renderValue={(value) => <StatusBadge status={value as any} />}
+                        renderOption={(value) => <StatusBadge status={value as any} />}
                       />
                     </TableCell>
                     <TableCell>
