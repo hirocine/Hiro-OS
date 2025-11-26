@@ -13,6 +13,7 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
       variant="outline" 
       className={`${config.color} ${config.bgColor}`}
     >
+      {priority === 'urgente' && <span className="mr-1">🔥</span>}
       {config.label}
     </Badge>
   );
