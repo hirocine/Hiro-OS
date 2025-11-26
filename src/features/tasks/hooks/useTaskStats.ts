@@ -23,9 +23,9 @@ export function useTaskStats() {
       today.setHours(0, 0, 0, 0);
 
       const active = tasks.filter(t => t.status === 'pendente' || t.status === 'em_progresso').length;
-      const urgent = tasks.filter(t => t.priority === 'urgente' && t.status !== 'concluida' && t.status !== 'cancelada').length;
+      const urgent = tasks.filter(t => t.priority === 'urgente' && t.status !== 'concluida' && t.status !== 'arquivada').length;
       const overdue = tasks.filter(t => {
-        if (!t.due_date || t.status === 'concluida' || t.status === 'cancelada') return false;
+        if (!t.due_date || t.status === 'concluida' || t.status === 'arquivada') return false;
         const dueDate = new Date(t.due_date);
         return dueDate < today;
       }).length;

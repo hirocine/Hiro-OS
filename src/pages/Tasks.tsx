@@ -144,7 +144,7 @@ export default function Tasks() {
                             { value: 'pendente', label: 'Pendente' },
                             { value: 'em_progresso', label: 'Em Progresso' },
                             { value: 'concluida', label: 'Concluída' },
-                            { value: 'cancelada', label: 'Cancelada' },
+                            { value: 'arquivada', label: 'Arquivado' },
                           ]}
                           onSave={(newValue) => updateTaskMutation.mutate({ 
                             id: task.id, 
@@ -274,14 +274,14 @@ export default function Tasks() {
                         />
                       </TableCell>
                     <TableCell>
-                      <InlineSelectCell
-                        value={task.status}
-                        options={[
-                          { value: 'pendente', label: 'Pendente' },
-                          { value: 'em_progresso', label: 'Em Progresso' },
-                          { value: 'concluida', label: 'Concluída' },
-                          { value: 'cancelada', label: 'Cancelada' },
-                        ]}
+                        <InlineSelectCell
+                          value={task.status}
+                          options={[
+                            { value: 'pendente', label: 'Pendente' },
+                            { value: 'em_progresso', label: 'Em Progresso' },
+                            { value: 'concluida', label: 'Concluída' },
+                            { value: 'arquivada', label: 'Arquivado' },
+                          ]}
                         onSave={(newValue) => updateTaskMutation.mutate({ 
                           id: task.id, 
                           updates: { status: newValue as any } 
