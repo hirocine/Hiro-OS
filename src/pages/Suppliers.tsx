@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Plus, Pencil } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 // Componentes SVG para logos oficiais
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -129,23 +128,15 @@ export default function Suppliers() {
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Fornecedores</CardTitle>
-          <CardDescription>
-            Visualize e gerencie seus fornecedores externos
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SupplierFilters
-            onSearchChange={handleSearchChange}
-            onRoleChange={handleRoleChange}
-            onExpertiseChange={handleExpertiseChange}
-            onRatingChange={handleRatingChange}
-          />
+      <SupplierFilters
+        onSearchChange={handleSearchChange}
+        onRoleChange={handleRoleChange}
+        onExpertiseChange={handleExpertiseChange}
+        onRatingChange={handleRatingChange}
+      />
 
-          <div className="mt-4">
-            <Table>
+      <div className="rounded-lg border bg-card">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
@@ -252,9 +243,7 @@ export default function Suppliers() {
             )}
           </TableBody>
         </Table>
-          </div>
-        </CardContent>
-      </Card>
+      </div>
 
       <SupplierDialog
         open={dialogOpen}
