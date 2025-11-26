@@ -97,72 +97,47 @@ export function SettingsActions() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Backup dos Dados</Label>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExportData}
-            disabled={isExporting}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            {isExporting ? 'Exportando...' : 'Fazer Backup'}
-          </Button>
-          
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
-                Restaurar
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Restaurar Backup</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Selecione um arquivo de backup para restaurar os dados do sistema.
-                </p>
-                <Input 
-                  type="file" 
-                  accept=".json"
-                  onChange={handleImportData}
-                  disabled={isImporting}
-                />
-                {isImporting && (
-                  <p className="text-sm text-primary">Importando dados...</p>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label>Importar/Exportar</Label>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExportData}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Exportar CSV
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Upload className="h-4 w-4" />
-            Importar CSV
-          </Button>
-        </div>
+    <div className="space-y-2">
+      <Label>Backup dos Dados</Label>
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleExportData}
+          disabled={isExporting}
+          className="flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          {isExporting ? 'Exportando...' : 'Fazer Backup'}
+        </Button>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Restaurar
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Restaurar Backup</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Selecione um arquivo de backup para restaurar os dados do sistema.
+              </p>
+              <Input 
+                type="file" 
+                accept=".json"
+                onChange={handleImportData}
+                disabled={isImporting}
+              />
+              {isImporting && (
+                <p className="text-sm text-primary">Importando dados...</p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

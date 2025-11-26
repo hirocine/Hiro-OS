@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
-import { BackupSystem } from '@/components/Settings/BackupSystem';
+
 import { CategoryManagement } from '@/components/Settings/CategoryManagement';
 import { ImportDialog } from '@/components/Equipment/ImportDialog';
 import { useEquipment } from '@/features/equipment';
@@ -655,22 +655,8 @@ export default function Admin() {
                   Gerenciamento de dados e informações do sistema
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <SettingsActions />
-                <BackupSystem 
-                  onExportData={async () => {
-                    toast({
-                      title: "Export iniciado",
-                      description: "O download dos dados será iniciado em breve.",
-                    });
-                  }}
-                  onImportData={async (file: File) => {
-                    toast({
-                      title: "Import iniciado",
-                      description: "Os dados estão sendo processados.",
-                    });
-                  }}
-                />
               </CardContent>
             </Card>
 
