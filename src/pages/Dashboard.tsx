@@ -22,6 +22,13 @@ export default function Dashboard() {
   // Initialize notifications
   useNotifications();
 
+  // Update timestamp when data is loaded
+  useEffect(() => {
+    if (!loading && allEquipment.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [loading, allEquipment.length]);
+
   // Proteção de rota: apenas admins podem acessar
   if (roleLoading) {
     return (
@@ -34,13 +41,6 @@ export default function Dashboard() {
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
-
-  // Update timestamp when data is loaded
-  useEffect(() => {
-    if (!loading && allEquipment.length > 0) {
-      setLastUpdate(new Date());
-    }
-  }, [loading, allEquipment.length]);
 
   // Helper function to format relative time
   const formatRelativeTime = (date: Date) => {
