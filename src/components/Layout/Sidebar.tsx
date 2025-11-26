@@ -18,8 +18,8 @@ const navigation: NavigationItem[] = [
     icon: Home,
   },
   {
-    name: 'Projetos',
-    href: '/projetos',
+    name: 'Retiradas',
+    href: '/retiradas',
     icon: Camera,
   },
   {

@@ -113,7 +113,7 @@ export default function ProjectVerification() {
   };
 
   const handleCancel = () => {
-    navigate(`/projetos/${id}`);
+    navigate(`/retiradas/${id}`);
   };
 
   const progressPercentage = totalCount > 0 ? (checkedCount / totalCount) * 100 : 0;
@@ -165,7 +165,7 @@ export default function ProjectVerification() {
             </h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               <Home className="w-4 h-4" />
-              <span>Projetos</span>
+              <span>Retiradas</span>
               <span>•</span>
               <span className="font-medium">{project.name}</span>
               <span>•</span>

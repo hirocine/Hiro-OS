@@ -188,7 +188,7 @@ export default function Projects() {
     return (
     <ResponsiveContainer maxWidth="7xl">
         <PageHeader 
-          title="Projetos" 
+          title="Retiradas" 
           subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         />
 
@@ -214,7 +214,7 @@ export default function Projects() {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <PageHeader 
-          title="Projetos" 
+          title="Retiradas" 
         />
 
         <Card className="shadow-card">
@@ -237,11 +237,11 @@ export default function Projects() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
-        title="Projetos" 
+        title="Retiradas" 
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         actions={
           <ResponsiveButton 
-            onClick={() => navigate('/projetos/novo')}
+            onClick={() => navigate('/retiradas/nova')}
             icon={Plus}
             className="shadow-elegant"
             mobileText="Nova"
@@ -255,14 +255,14 @@ export default function Projects() {
         <Card className="shadow-card">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium">Projetos Ativos</span>
+              <span className="text-sm font-medium">Retiradas Ativas</span>
               <FolderOpen className="h-4 w-4 text-muted-foreground" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.active}</div>
             <p className="text-xs text-muted-foreground">
-              projetos em andamento
+              retiradas em andamento
             </p>
           </CardContent>
         </Card>
@@ -306,7 +306,7 @@ export default function Projects() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Próximos Projetos</h2>
+              <h2 className="text-xl font-semibold">Próximas Retiradas</h2>
               <span className="text-sm text-muted-foreground">({upcomingProjects.length})</span>
             </div>
             
@@ -363,7 +363,7 @@ export default function Projects() {
             >
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-success" />
-                <h2 className="text-xl font-semibold">Finalizados</h2>
+                <h2 className="text-xl font-semibold">Retiradas Finalizadas</h2>
                 <span className="text-sm text-muted-foreground">({completedProjects.length})</span>
                 {showCompleted ? (
                   <ChevronUp className="h-4 w-4" />
@@ -402,7 +402,7 @@ export default function Projects() {
             >
               <div className="flex items-center gap-2">
                 <Archive className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-xl font-semibold">Arquivados</h2>
+                <h2 className="text-xl font-semibold">Retiradas Arquivadas</h2>
                 <span className="text-sm text-muted-foreground">({archivedProjects.length})</span>
                 {showArchived ? (
                   <ChevronUp className="h-4 w-4" />
@@ -436,13 +436,13 @@ export default function Projects() {
           <Card className="shadow-card">
             <CardContent className="text-center py-12">
               <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhum projeto encontrado</h3>
+              <h3 className="text-lg font-semibold mb-2">Nenhuma retirada encontrada</h3>
               <p className="text-muted-foreground mb-4">
-                Comece criando seu primeiro projeto de retirada de equipamentos
+                Comece criando sua primeira retirada de equipamentos
               </p>
-              <Button onClick={() => navigate('/projetos/novo')}>
+              <Button onClick={() => navigate('/retiradas/nova')}>
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Projeto
+                Criar Retirada
               </Button>
             </CardContent>
           </Card>

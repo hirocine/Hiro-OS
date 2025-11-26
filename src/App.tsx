@@ -48,12 +48,12 @@ const App = () => (
               <Route path="inventario/novo" element={<AddEquipment />} />
               <Route path="inventario/editar/:id" element={<AddEquipment />} />
               <Route path="ssds" element={<SSDs />} />
-              <Route path="projetos" element={<Projects />} />
-              <Route path="projetos/novo" element={<ProjectWithdrawal />} />
-              <Route path="projetos/:id" element={<ProjectDetails />} />
-              <Route path="projetos/:id/separacao" element={<ProjectSeparation />} />
-              <Route path="projetos/:id/verificacao" element={<ProjectVerification />} />
-              <Route path="projetos/:id/retirada" element={<ProjectWithdrawal />} />
+          <Route path="retiradas" element={<Projects />} />
+          <Route path="retiradas/nova" element={<ProjectWithdrawal />} />
+          <Route path="retiradas/:id" element={<ProjectDetails />} />
+          <Route path="retiradas/:id/separacao" element={<ProjectSeparation />} />
+          <Route path="retiradas/:id/verificacao" element={<ProjectVerification />} />
+          <Route path="retiradas/:id/retirada" element={<ProjectWithdrawal />} />
               <Route path="plataformas" element={<PlatformAccesses />} />
               <Route path="politicas" element={<Policies />} />
               <Route path="politicas/:id" element={<PolicyView />} />

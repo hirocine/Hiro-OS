@@ -21,7 +21,7 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Projetos', href: '/projetos', icon: Camera },
+  { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
