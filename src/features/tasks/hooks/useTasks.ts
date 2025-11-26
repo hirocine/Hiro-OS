@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/queryClient';
 import { Task, TaskPriority, TaskStatus } from '../types';
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface TaskFilters {
   status?: TaskStatus;
@@ -70,7 +70,10 @@ export function useTasks(filters?: TaskFilters) {
     },
   });
 
-  // Real-time subscription com debounce para evitar múltiplos refetch em sequência
+  // Flag para pausar subscription durante mutações
+  const isMutatingRef = useRef(false);
+
+  // Real-time subscription com debounce e pausa durante mutações
   useEffect(() => {
     const channelName = filters?.is_team_task ? 'tasks-changes-team' : 'tasks-changes-mine';
     let debounceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -85,6 +88,12 @@ export function useTasks(filters?: TaskFilters) {
           table: 'tasks',
         },
         () => {
+          // Ignorar eventos durante mutações para evitar race conditions
+          if (isMutatingRef.current) {
+            logger.debug('Ignoring real-time event during mutation', { module: 'tasks' });
+            return;
+          }
+
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             logger.debug('Task changed, refetching', { module: 'tasks' });
@@ -151,6 +160,9 @@ export function useTasks(filters?: TaskFilters) {
     },
     // Optimistic update - atualiza cache imediatamente
     onMutate: async ({ id, updates }) => {
+      // Pausar subscription durante mutação
+      isMutatingRef.current = true;
+
       // Cancelar queries em andamento para evitar race conditions
       await queryClient.cancelQueries({ queryKey: queryKeys.tasks.team });
       await queryClient.cancelQueries({ queryKey: queryKeys.tasks.mine });
@@ -187,9 +199,10 @@ export function useTasks(filters?: TaskFilters) {
       enhancedToast.error({ title: 'Erro ao atualizar tarefa', description: error.message });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
+      // Aguardar antes de reativar subscription para evitar capturar o próprio evento de update
+      setTimeout(() => {
+        isMutatingRef.current = false;
+      }, 500);
     },
     onSuccess: () => {
       enhancedToast.success({ title: 'Tarefa atualizada!' });

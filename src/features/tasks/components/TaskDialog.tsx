@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTasks } from '../hooks/useTasks';
+import { useTaskMutations } from '../hooks/useTaskMutations';
 import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -18,7 +18,7 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
-  const { createTask, updateTask } = useTasks();
+  const { createTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
   
   const [formData, setFormData] = useState({
