@@ -7,6 +7,7 @@ interface InlineSelectCellProps {
   options: Array<{ value: string; label: string }>;
   onSave: (newValue: string) => void;
   renderValue: (value: string) => React.ReactNode;
+  renderOption?: (value: string) => React.ReactNode;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export function InlineSelectCell({
   options, 
   onSave, 
   renderValue,
+  renderOption,
   className = '' 
 }: InlineSelectCellProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +56,7 @@ export function InlineSelectCell({
         <SelectContent onClick={(e) => e.stopPropagation()}>
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              {renderOption ? renderOption(option.value) : option.label}
             </SelectItem>
           ))}
         </SelectContent>
