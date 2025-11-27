@@ -284,9 +284,7 @@ export default function Tasks() {
                       {/* Título */}
                       <TableCell className="w-[25%]">
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                            <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-                          </div>
+                          <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <Input
                             placeholder="+ Adicionar nova tarefa..."
                             value={newTeamTask.title}
@@ -533,9 +531,7 @@ export default function Tasks() {
                     {/* Título */}
                     <TableCell className="w-[25%]">
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                          <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-                        </div>
+                        <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <Input
                           placeholder="+ Adicionar nova tarefa..."
                           value={newMyTask.title}
