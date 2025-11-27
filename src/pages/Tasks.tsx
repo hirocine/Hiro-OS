@@ -15,7 +15,9 @@ import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
+import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +29,7 @@ export default function Tasks() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { users } = useUsers();
+  const { departments } = useDepartments();
   
   const [newTeamTask, setNewTeamTask] = useState({
     title: '',
@@ -265,7 +268,14 @@ export default function Tasks() {
                           />
                         </TableCell>
                     <TableCell>
-                      {task.department || <span className="text-muted-foreground text-sm">-</span>}
+                      <InlineDepartmentCell
+                        value={task.department}
+                        departments={departments}
+                        onSave={(newDept) => updateTeamTask.mutate({ 
+                          id: task.id, 
+                          updates: { department: newDept } 
+                        })}
+                      />
                     </TableCell>
                     <TableCell>
                       <Button
@@ -395,12 +405,26 @@ export default function Tasks() {
                       
                       {/* Departamento */}
                       <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
-                        <Input
-                          placeholder="Dept..."
-                          value={newTeamTask.department}
-                          onChange={(e) => setNewTeamTask(prev => ({ ...prev, department: e.target.value }))}
-                          className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/40 placeholder:italic"
-                        />
+                        <Select
+                          value={newTeamTask.department || 'none'}
+                          onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, department: value === 'none' ? '' : value }))}
+                        >
+                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
+                            <SelectValue>
+                              <span className="text-muted-foreground/60 text-sm italic">
+                                {newTeamTask.department || 'Selecionar'}
+                              </span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {departments.map((dept) => (
+                              <SelectItem key={dept.id} value={dept.name}>
+                                {dept.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       
                       {/* Ações */}
@@ -534,7 +558,14 @@ export default function Tasks() {
                         />
                       </TableCell>
                         <TableCell>
-                          {task.department || <span className="text-muted-foreground text-sm">-</span>}
+                          <InlineDepartmentCell
+                            value={task.department}
+                            departments={departments}
+                            onSave={(newDept) => updateMyTask.mutate({ 
+                              id: task.id, 
+                              updates: { department: newDept } 
+                            })}
+                          />
                         </TableCell>
                         <TableCell>
                           <Button
@@ -664,12 +695,26 @@ export default function Tasks() {
                     
                     {/* Departamento */}
                     <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
-                      <Input
-                        placeholder="Dept..."
-                        value={newMyTask.department}
-                        onChange={(e) => setNewMyTask(prev => ({ ...prev, department: e.target.value }))}
-                        className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/40 placeholder:italic"
-                      />
+                      <Select
+                        value={newMyTask.department || 'none'}
+                        onValueChange={(value) => setNewMyTask(prev => ({ ...prev, department: value === 'none' ? '' : value }))}
+                      >
+                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
+                          <SelectValue>
+                            <span className="text-muted-foreground/60 text-sm italic">
+                              {newMyTask.department || 'Selecionar'}
+                            </span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum</SelectItem>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.name}>
+                              {dept.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     
                     {/* Ações */}
