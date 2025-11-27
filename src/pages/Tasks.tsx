@@ -307,7 +307,11 @@ export default function Tasks() {
                           value={newTeamTask.priority}
                           options={priorityOptions}
                           onSave={(val) => setNewTeamTask(prev => ({ ...prev, priority: val as TaskPriority }))}
-                          renderValue={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                          renderValue={(v) => 
+                            newTeamTask.title.trim() 
+                              ? <PriorityBadge priority={v as TaskPriority} />
+                              : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                          }
                           renderOption={(v) => <PriorityBadge priority={v as TaskPriority} />}
                         />
                       </TableCell>
@@ -318,14 +322,47 @@ export default function Tasks() {
                           value={newTeamTask.status}
                           options={statusOptions}
                           onSave={(val) => setNewTeamTask(prev => ({ ...prev, status: val as TaskStatus }))}
-                          renderValue={(v) => <StatusBadge status={v as TaskStatus} />}
+                          renderValue={(v) => 
+                            newTeamTask.title.trim() 
+                              ? <StatusBadge status={v as TaskStatus} />
+                              : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                          }
                           renderOption={(v) => <StatusBadge status={v as TaskStatus} />}
                         />
                       </TableCell>
                       
                       {/* Responsável */}
                       <TableCell className={cn("w-[20%] transition-opacity", !newTeamTask.title && "opacity-40")}>
-...
+                        <Select
+                          value={newTeamTask.assigned_to || "none"}
+                          onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
+                        >
+                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
+                            <SelectValue>
+                              <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            <SelectItem value="team">
+                              <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                Time Hiro
+                              </div>
+                            </SelectItem>
+                            {users?.map((user) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="w-4 h-4">
+                                    <AvatarImage src={user.avatar_url || undefined} />
+                                    <AvatarFallback className="text-[10px]">{user.display_name?.[0] || '?'}</AvatarFallback>
+                                  </Avatar>
+                                  {user.display_name || 'Sem nome'}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       
                       {/* Prazo */}
@@ -397,8 +434,8 @@ export default function Tasks() {
                     <TableHead className="w-[8%]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {myTasks.map((task) => (
+                  <TableBody>
+                    {myTasks.map((task) => (
                     <TableRow 
                       key={task.id} 
                       className="hover:bg-muted/50"
@@ -519,7 +556,11 @@ export default function Tasks() {
                         value={newMyTask.priority}
                         options={priorityOptions}
                         onSave={(val) => setNewMyTask(prev => ({ ...prev, priority: val as TaskPriority }))}
-                        renderValue={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                        renderValue={(v) => 
+                          newMyTask.title.trim() 
+                            ? <PriorityBadge priority={v as TaskPriority} />
+                            : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                        }
                         renderOption={(v) => <PriorityBadge priority={v as TaskPriority} />}
                       />
                     </TableCell>
@@ -530,14 +571,47 @@ export default function Tasks() {
                         value={newMyTask.status}
                         options={statusOptions}
                         onSave={(val) => setNewMyTask(prev => ({ ...prev, status: val as TaskStatus }))}
-                        renderValue={(v) => <StatusBadge status={v as TaskStatus} />}
+                        renderValue={(v) => 
+                          newMyTask.title.trim() 
+                            ? <StatusBadge status={v as TaskStatus} />
+                            : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                        }
                         renderOption={(v) => <StatusBadge status={v as TaskStatus} />}
                       />
                     </TableCell>
                     
                     {/* Responsável */}
                     <TableCell className={cn("w-[20%] transition-opacity", !newMyTask.title && "opacity-40")}>
-...
+                      <Select
+                        value={newMyTask.assigned_to || "none"}
+                        onValueChange={(value) => setNewMyTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
+                      >
+                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
+                          <SelectValue>
+                            <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum</SelectItem>
+                          <SelectItem value="team">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              Time Hiro
+                            </div>
+                          </SelectItem>
+                          {users?.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-4 h-4">
+                                  <AvatarImage src={user.avatar_url || undefined} />
+                                  <AvatarFallback className="text-[10px]">{user.display_name?.[0] || '?'}</AvatarFallback>
+                                </Avatar>
+                                {user.display_name || 'Sem nome'}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     
                     {/* Prazo */}
@@ -571,14 +645,18 @@ export default function Tasks() {
                       </Button>
                     </TableCell>
                   </TableRow>
-                </TableBody>
+              </TableBody>
               </Table>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      {/* Task Dialog */}
+      <TaskDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </ResponsiveContainer>
   );
 }
