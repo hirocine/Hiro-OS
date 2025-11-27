@@ -282,7 +282,7 @@ export default function Tasks() {
                     {/* Inline creation row */}
                     <TableRow className="border-dashed border-t-2 border-muted-foreground/30 opacity-70 hover:opacity-100 transition-all duration-200">
                       {/* Título */}
-                      <TableCell className="w-[22%]">
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <Input
@@ -300,7 +300,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Prioridade */}
-                      <TableCell className={cn("w-[10%] transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
                         <InlineSelectCell
                           value={newTeamTask.priority}
                           options={priorityOptions}
@@ -315,7 +315,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Status */}
-                      <TableCell className={cn("w-[12%] transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
                         <InlineSelectCell
                           value={newTeamTask.status}
                           options={statusOptions}
@@ -330,7 +330,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Responsável */}
-                      <TableCell className={cn("w-[18%] transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
                         <Select
                           value={newTeamTask.assigned_to || "none"}
                           onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
@@ -386,7 +386,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Prazo */}
-                      <TableCell className={cn("w-[16%] transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
                         <InlineDateCell
                           value={newTeamTask.due_date}
                           onSave={(date) => setNewTeamTask(prev => ({ ...prev, due_date: date }))}
@@ -394,7 +394,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Departamento */}
-                      <TableCell className={cn("w-[14%] transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
                         <Input
                           placeholder="Dept..."
                           value={newTeamTask.department}
@@ -404,7 +404,7 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Ações */}
-                      <TableCell className="w-[8%] transition-opacity">
+                      <TableCell className="transition-opacity">
                         <Button
                           variant="ghost" 
                           size="sm"
@@ -551,7 +551,7 @@ export default function Tasks() {
                   {/* Inline creation row */}
                   <TableRow className="border-dashed border-t-2 border-muted-foreground/30 opacity-70 hover:opacity-100 transition-all duration-200">
                     {/* Título */}
-                    <TableCell className="w-[22%]">
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <Input
@@ -569,7 +569,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Prioridade */}
-                    <TableCell className={cn("w-[10%] transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
                       <InlineSelectCell
                         value={newMyTask.priority}
                         options={priorityOptions}
@@ -584,7 +584,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Status */}
-                    <TableCell className={cn("w-[12%] transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
                       <InlineSelectCell
                         value={newMyTask.status}
                         options={statusOptions}
@@ -599,7 +599,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Responsável */}
-                    <TableCell className={cn("w-[18%] transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
                       <Select
                         value={newMyTask.assigned_to || "none"}
                         onValueChange={(value) => setNewMyTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
@@ -655,7 +655,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Prazo */}
-                    <TableCell className={cn("w-[16%] transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
                       <InlineDateCell
                         value={newMyTask.due_date}
                         onSave={(date) => setNewMyTask(prev => ({ ...prev, due_date: date }))}
@@ -663,7 +663,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Departamento */}
-                    <TableCell className={cn("w-[14%] transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
                       <Input
                         placeholder="Dept..."
                         value={newMyTask.department}
@@ -673,7 +673,7 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Ações */}
-                    <TableCell className="w-[8%] transition-opacity">
+                    <TableCell className="transition-opacity">
                       <Button
                         variant="ghost" 
                         size="sm"
