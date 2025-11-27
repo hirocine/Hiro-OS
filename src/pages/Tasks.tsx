@@ -173,7 +173,7 @@ export default function Tasks() {
               ) : displayedTeamTasks.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">Nenhuma tarefa do time ainda</p>
               ) : (
-                <Table>
+                <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[22%]">Título</TableHead>
@@ -442,7 +442,7 @@ export default function Tasks() {
             ) : myTasks.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">Você não tem tarefas ainda</p>
             ) : (
-              <Table>
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[22%]">Título</TableHead>
