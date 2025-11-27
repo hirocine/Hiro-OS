@@ -176,13 +176,13 @@ export default function Tasks() {
                 <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%]">Título</TableHead>
-                    <TableHead className="w-[10%]">Prioridade</TableHead>
-                    <TableHead className="w-[12%]">Status</TableHead>
-                    <TableHead className="w-[18%]">Responsável</TableHead>
-                    <TableHead className="w-[16%]">Prazo</TableHead>
-                    <TableHead className="w-[14%]">Departamento</TableHead>
-                    <TableHead className="w-[8%]">Ações</TableHead>
+                    <TableHead className="w-[22%] text-left">Título</TableHead>
+                    <TableHead className="w-[10%] text-left">Prioridade</TableHead>
+                    <TableHead className="w-[12%] text-left">Status</TableHead>
+                    <TableHead className="w-[18%] text-left">Responsável</TableHead>
+                    <TableHead className="w-[16%] text-left">Prazo</TableHead>
+                    <TableHead className="w-[14%] text-left">Departamento</TableHead>
+                    <TableHead className="w-[8%] text-left">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                   <TableBody>
@@ -445,13 +445,13 @@ export default function Tasks() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%]">Título</TableHead>
-                    <TableHead className="w-[10%]">Prioridade</TableHead>
-                    <TableHead className="w-[12%]">Status</TableHead>
-                    <TableHead className="w-[18%]">Responsável</TableHead>
-                    <TableHead className="w-[16%]">Prazo</TableHead>
-                    <TableHead className="w-[14%]">Departamento</TableHead>
-                    <TableHead className="w-[8%]">Ações</TableHead>
+                    <TableHead className="w-[22%] text-left">Título</TableHead>
+                    <TableHead className="w-[10%] text-left">Prioridade</TableHead>
+                    <TableHead className="w-[12%] text-left">Status</TableHead>
+                    <TableHead className="w-[18%] text-left">Responsável</TableHead>
+                    <TableHead className="w-[16%] text-left">Prazo</TableHead>
+                    <TableHead className="w-[14%] text-left">Departamento</TableHead>
+                    <TableHead className="w-[8%] text-left">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                   <TableBody>
