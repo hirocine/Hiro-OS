@@ -77,17 +77,17 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
             }}
           >
             {value ? (
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex flex-col gap-0.5 flex-1">
+              <div className="flex items-start gap-2 w-full text-left">
+                <div className="flex flex-col gap-0.5">
                   <span className="text-sm">
                     {format(parseLocalDate(value), "dd/MM/yyyy", { locale: ptBR })}
                   </span>
                   {getDueDateLabel(value)}
                 </div>
-                <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
               </div>
             ) : (
-              <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-2 w-full text-left">
                 <span className="text-sm">Sem prazo</span>
                 <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
               </div>
