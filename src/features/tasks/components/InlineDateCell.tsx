@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, ChevronDown, X } from 'lucide-react';
+import { CalendarIcon, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
@@ -77,19 +77,15 @@ export function InlineDateCell({ value, onSave, className = '' }: InlineDateCell
             }}
           >
             {value ? (
-              <div className="flex items-start gap-2 w-full text-left">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm">
-                    {format(parseLocalDate(value), "dd/MM/yyyy", { locale: ptBR })}
-                  </span>
-                  {getDueDateLabel(value)}
-                </div>
-                <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-0.5 w-full text-left">
+                <span className="text-sm">
+                  {format(parseLocalDate(value), "dd/MM/yyyy", { locale: ptBR })}
+                </span>
+                {getDueDateLabel(value)}
               </div>
             ) : (
-              <div className="flex items-center gap-2 w-full text-left">
+              <div className="flex items-center w-full text-left">
                 <span className="text-sm">Sem prazo</span>
-                <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
               </div>
             )}
           </Button>
