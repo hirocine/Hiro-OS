@@ -280,7 +280,7 @@ export default function Tasks() {
                 ))}
                     
                     {/* Inline creation row */}
-                    <TableRow className="border-dashed border-t-2 border-muted-foreground/30 bg-muted/20 opacity-70 hover:opacity-100 hover:bg-muted/30 transition-all duration-200">
+                    <TableRow className="border-dashed border-t-2 border-muted-foreground/30 opacity-70 hover:opacity-100 transition-all duration-200">
                       {/* Título */}
                       <TableCell className="w-[25%]">
                         <div className="flex items-center gap-2">
@@ -527,7 +527,7 @@ export default function Tasks() {
                   ))}
                   
                   {/* Inline creation row */}
-                  <TableRow className="border-dashed border-t-2 border-muted-foreground/30 bg-muted/20 opacity-70 hover:opacity-100 hover:bg-muted/30 transition-all duration-200">
+                  <TableRow className="border-dashed border-t-2 border-muted-foreground/30 opacity-70 hover:opacity-100 transition-all duration-200">
                     {/* Título */}
                     <TableCell className="w-[25%]">
                       <div className="flex items-center gap-2">
