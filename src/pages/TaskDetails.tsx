@@ -171,14 +171,7 @@ export default function TaskDetails() {
               {/* Responsável */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Responsável</span>
-                {task.is_team_task ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium">Time Hiro</span>
-                  </div>
-                ) : task.assignee_name ? (
+                {task.assignee_name ? (
                   <div className="flex items-center gap-2">
                     <Avatar className="w-6 h-6">
                       <AvatarImage src={task.assignee_avatar || undefined} />

@@ -241,14 +241,7 @@ export default function Tasks() {
                           />
                         </TableCell>
                         <TableCell>
-                          {task.is_team_task ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Users className="w-3.5 h-3.5 text-primary" />
-                              </div>
-                              <span className="text-sm">Time Hiro</span>
-                            </div>
-                          ) : task.assignee_name ? (
+                          {task.assignee_name ? (
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
                                 <AvatarImage src={task.assignee_avatar || undefined} />
@@ -346,7 +339,7 @@ export default function Tasks() {
                     <InlineAssigneeCell
                       value={newTeamTask.assigned_to}
                       users={users || []}
-                      onSave={(newValue, isTeamTask) => {
+                      onSave={(newValue) => {
                         setNewTeamTask(prev => ({ ...prev, assigned_to: newValue }));
                       }}
                       isActive={isTaskActive(newTeamTask)}
@@ -475,14 +468,7 @@ export default function Tasks() {
                         />
                       </TableCell>
                       <TableCell>
-                        {task.is_team_task ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Users className="w-3.5 h-3.5 text-primary" />
-                            </div>
-                            <span className="text-sm">Time Hiro</span>
-                          </div>
-                        ) : task.assignee_name ? (
+                        {task.assignee_name ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="w-6 h-6">
                               <AvatarImage src={task.assignee_avatar || undefined} />
@@ -580,7 +566,7 @@ export default function Tasks() {
                       <InlineAssigneeCell
                         value={newMyTask.assigned_to}
                         users={users || []}
-                        onSave={(newValue, isTeamTask) => {
+                        onSave={(newValue) => {
                           setNewMyTask(prev => ({ ...prev, assigned_to: newValue }));
                         }}
                         isActive={isTaskActive(newMyTask)}
