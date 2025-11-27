@@ -5,7 +5,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
@@ -15,6 +14,7 @@ import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
+import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
@@ -334,61 +334,17 @@ export default function Tasks() {
                         />
                       </TableCell>
                       
-                      {/* Responsável */}
-                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
-                        <Select
-                          value={newTeamTask.assigned_to || "none"}
-                          onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
-                        >
-                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
-                            <SelectValue>
-                              {!newTeamTask.assigned_to || newTeamTask.assigned_to === "none" ? (
-                                <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
-                              ) : newTeamTask.assigned_to === "team" ? (
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4" />
-                                  Time Hiro
-                                </div>
-                              ) : (
-                                (() => {
-                                  const selectedUser = users?.find(u => u.id === newTeamTask.assigned_to);
-                                  return selectedUser ? (
-                                    <div className="flex items-center gap-2">
-                                      <Avatar className="w-4 h-4">
-                                        <AvatarImage src={selectedUser.avatar_url || undefined} />
-                                        <AvatarFallback className="text-[10px]">{selectedUser.display_name?.[0] || '?'}</AvatarFallback>
-                                      </Avatar>
-                                      {selectedUser.display_name || 'Sem nome'}
-                                    </div>
-                                  ) : (
-                                    <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
-                                  );
-                                })()
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            <SelectItem value="team">
-                              <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4" />
-                                Time Hiro
-                              </div>
-                            </SelectItem>
-                            {users?.map((user) => (
-                              <SelectItem key={user.id} value={user.id}>
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="w-4 h-4">
-                                    <AvatarImage src={user.avatar_url || undefined} />
-                                    <AvatarFallback className="text-[10px]">{user.display_name?.[0] || '?'}</AvatarFallback>
-                                  </Avatar>
-                                  {user.display_name || 'Sem nome'}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
+                  {/* Responsável */}
+                  <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                    <InlineAssigneeCell
+                      value={newTeamTask.assigned_to}
+                      users={users || []}
+                      onSave={(newValue, isTeamTask) => {
+                        setNewTeamTask(prev => ({ ...prev, assigned_to: newValue }));
+                      }}
+                      placeholder="Selecionar"
+                    />
+                  </TableCell>
                       
                       {/* Prazo */}
                       <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
@@ -398,29 +354,16 @@ export default function Tasks() {
                         />
                       </TableCell>
                       
-                      {/* Departamento */}
-                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
-                        <Select
-                          value={newTeamTask.department || 'none'}
-                          onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, department: value === 'none' ? '' : value }))}
-                        >
-                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
-                            <SelectValue>
-                              <span className="text-muted-foreground/60 text-sm italic">
-                                {newTeamTask.department || 'Selecionar'}
-                              </span>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            {departments.map((dept) => (
-                              <SelectItem key={dept.id} value={dept.name}>
-                                {dept.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
+                  {/* Departamento */}
+                  <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                    <InlineDepartmentCell
+                      value={newTeamTask.department}
+                      departments={departments}
+                      onSave={(newValue) => {
+                        setNewTeamTask(prev => ({ ...prev, department: newValue || '' }));
+                      }}
+                    />
+                  </TableCell>
                       
                       {/* Ações */}
                       <TableCell className="transition-opacity">
@@ -626,58 +569,14 @@ export default function Tasks() {
                     
                     {/* Responsável */}
                     <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
-                      <Select
-                        value={newMyTask.assigned_to || "none"}
-                        onValueChange={(value) => setNewMyTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
-                      >
-                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
-                          <SelectValue>
-                            {!newMyTask.assigned_to || newMyTask.assigned_to === "none" ? (
-                              <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
-                            ) : newMyTask.assigned_to === "team" ? (
-                              <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4" />
-                                Time Hiro
-                              </div>
-                            ) : (
-                              (() => {
-                                const selectedUser = users?.find(u => u.id === newMyTask.assigned_to);
-                                return selectedUser ? (
-                                  <div className="flex items-center gap-2">
-                                    <Avatar className="w-4 h-4">
-                                      <AvatarImage src={selectedUser.avatar_url || undefined} />
-                                      <AvatarFallback className="text-[10px]">{selectedUser.display_name?.[0] || '?'}</AvatarFallback>
-                                    </Avatar>
-                                    {selectedUser.display_name || 'Sem nome'}
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
-                                );
-                              })()
-                            )}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Nenhum</SelectItem>
-                          <SelectItem value="team">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" />
-                              Time Hiro
-                            </div>
-                          </SelectItem>
-                          {users?.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="w-4 h-4">
-                                  <AvatarImage src={user.avatar_url || undefined} />
-                                  <AvatarFallback className="text-[10px]">{user.display_name?.[0] || '?'}</AvatarFallback>
-                                </Avatar>
-                                {user.display_name || 'Sem nome'}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <InlineAssigneeCell
+                        value={newMyTask.assigned_to}
+                        users={users || []}
+                        onSave={(newValue, isTeamTask) => {
+                          setNewMyTask(prev => ({ ...prev, assigned_to: newValue }));
+                        }}
+                        placeholder="Selecionar"
+                      />
                     </TableCell>
                     
                     {/* Prazo */}
@@ -690,26 +589,13 @@ export default function Tasks() {
                     
                     {/* Departamento */}
                     <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
-                      <Select
-                        value={newMyTask.department || 'none'}
-                        onValueChange={(value) => setNewMyTask(prev => ({ ...prev, department: value === 'none' ? '' : value }))}
-                      >
-                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
-                          <SelectValue>
-                            <span className="text-muted-foreground/60 text-sm italic">
-                              {newMyTask.department || 'Selecionar'}
-                            </span>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Nenhum</SelectItem>
-                          {departments.map((dept) => (
-                            <SelectItem key={dept.id} value={dept.name}>
-                              {dept.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <InlineDepartmentCell
+                        value={newMyTask.department}
+                        departments={departments}
+                        onSave={(newValue) => {
+                          setNewMyTask(prev => ({ ...prev, department: newValue || '' }));
+                        }}
+                      />
                     </TableCell>
                     
                     {/* Ações */}
