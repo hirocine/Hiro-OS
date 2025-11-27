@@ -335,7 +335,7 @@ export default function Tasks() {
                           value={newTeamTask.assigned_to || "none"}
                           onValueChange={(value) => setNewTeamTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
                         >
-                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
+                          <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
                             <SelectValue>
                               {!newTeamTask.assigned_to || newTeamTask.assigned_to === "none" ? (
                                 <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
@@ -604,7 +604,7 @@ export default function Tasks() {
                         value={newMyTask.assigned_to || "none"}
                         onValueChange={(value) => setNewMyTask(prev => ({ ...prev, assigned_to: value === "none" ? null : value }))}
                       >
-                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
+                        <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0 text-left justify-start">
                           <SelectValue>
                             {!newMyTask.assigned_to || newMyTask.assigned_to === "none" ? (
                               <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
