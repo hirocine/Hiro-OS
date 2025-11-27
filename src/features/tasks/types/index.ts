@@ -10,7 +10,6 @@ export interface Task {
   due_date: string | null;
   department: string | null;
   assigned_to: string | null;
-  is_team_task: boolean;
   created_by: string;
   created_at: string;
   updated_at: string;

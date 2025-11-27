@@ -1077,7 +1077,6 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
-          is_team_task: boolean
           priority: string
           status: string
           title: string
@@ -1091,7 +1090,6 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
-          is_team_task?: boolean
           priority?: string
           status?: string
           title: string
@@ -1105,7 +1103,6 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
-          is_team_task?: boolean
           priority?: string
           status?: string
           title?: string

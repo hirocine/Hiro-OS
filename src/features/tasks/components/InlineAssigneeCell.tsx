@@ -16,7 +16,7 @@ interface InlineAssigneeCellProps {
     avatar_url: string | null;
     user_metadata?: any;
   }>;
-  onSave: (newValue: string | null, isTeamTask?: boolean) => void;
+  onSave: (newValue: string | null) => void;
   className?: string;
   isActive?: boolean;
 }
@@ -39,11 +39,9 @@ export function InlineAssigneeCell({
 
   const handleValueChange = (newValue: string) => {
     if (newValue === 'none') {
-      onSave(null, false);
-    } else if (newValue === 'team') {
-      onSave(null, true); // Time Hiro - assigned_to = null, is_team_task = true
+      onSave(null);
     } else if (newValue !== value) {
-      onSave(newValue, false);
+      onSave(newValue);
     }
     setIsOpen(false);
   };
@@ -95,18 +93,6 @@ export function InlineAssigneeCell({
                 >
                   <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
                   Nenhum
-                </CommandItem>
-                <CommandItem 
-                  onSelect={() => handleValueChange('team')}
-                  className="cursor-pointer"
-                >
-                  <Check className={cn("mr-2 h-4 w-4", false ? "opacity-100" : "opacity-0")} />
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="w-3 h-3 text-primary" />
-                    </div>
-                    <span>Time Hiro</span>
-                  </div>
                 </CommandItem>
                 {users.map((user) => {
                   const userData = getAvatarData(

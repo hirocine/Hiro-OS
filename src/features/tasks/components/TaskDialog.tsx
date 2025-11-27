@@ -36,7 +36,6 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
     due_date: task?.due_date || '',
     department: task?.department || '',
     assigned_to: task?.assigned_to || '',
-    is_team_task: task?.is_team_task || false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +56,6 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
       due_date: '',
       department: '',
       assigned_to: '',
-      is_team_task: false,
     });
   };
 
@@ -234,14 +232,12 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
           <div>
             <Label htmlFor="assigned_to">Responsável</Label>
             <Select
-              value={formData.is_team_task ? 'team_hiro' : (formData.assigned_to || 'unassigned')}
+              value={formData.assigned_to || 'unassigned'}
               onValueChange={(value) => {
-                if (value === 'team_hiro') {
-                  setFormData({ ...formData, assigned_to: '', is_team_task: true });
-                } else if (value === 'unassigned') {
-                  setFormData({ ...formData, assigned_to: '', is_team_task: false });
+                if (value === 'unassigned') {
+                  setFormData({ ...formData, assigned_to: '' });
                 } else {
-                  setFormData({ ...formData, assigned_to: value, is_team_task: false });
+                  setFormData({ ...formData, assigned_to: value });
                 }
               }}
             >
@@ -250,14 +246,6 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Nenhum</SelectItem>
-                <SelectItem value="team_hiro">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="w-4 h-4 text-primary" />
-                    </div>
-                    Time Hiro
-                  </div>
-                </SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     <div className="flex items-center gap-2">
