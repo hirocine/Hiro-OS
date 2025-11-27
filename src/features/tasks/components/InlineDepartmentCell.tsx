@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronDown, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface InlineDepartmentCellProps {
   value: string | null;
@@ -31,47 +34,52 @@ export function InlineDepartmentCell({
       onClick={(e) => e.stopPropagation()}
       className={className}
     >
-      <Select 
-        value={value || 'none'} 
-        onValueChange={handleValueChange}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <SelectTrigger 
-          className="h-auto min-h-0 w-auto border-0 bg-transparent p-0 shadow-none rounded transition-colors focus:ring-0 focus:ring-offset-0 [&>svg]:hidden text-left justify-start"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(true);
-          }}
-        >
-          <SelectValue>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-auto min-h-0 w-auto p-0 font-normal bg-transparent hover:bg-transparent"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(true);
+            }}
+          >
             <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
               <span className="text-sm">{value || 'Sem departamento'}</span>
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent 
-          position="item-aligned"
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-[200px] p-0" 
+          align="start"
           onClick={(e) => e.stopPropagation()}
         >
-          <SelectItem 
-            value="none"
-            className="focus:bg-transparent focus:text-inherit pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
-          >
-            Sem departamento
-          </SelectItem>
-          {departments.map((dept) => (
-            <SelectItem 
-              key={dept.id} 
-              value={dept.name}
-              className="focus:bg-transparent focus:text-inherit pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
-            >
-              {dept.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          <Command>
+            <CommandList>
+              <CommandGroup>
+                <CommandItem 
+                  onSelect={() => handleValueChange('none')}
+                  className="cursor-pointer"
+                >
+                  <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
+                  Sem departamento
+                </CommandItem>
+                {departments.map((dept) => (
+                  <CommandItem 
+                    key={dept.id} 
+                    onSelect={() => handleValueChange(dept.name)}
+                    className="cursor-pointer"
+                  >
+                    <Check className={cn("mr-2 h-4 w-4", value === dept.name ? "opacity-100" : "opacity-0")} />
+                    {dept.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
