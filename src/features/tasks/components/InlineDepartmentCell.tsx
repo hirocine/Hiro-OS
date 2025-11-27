@@ -51,7 +51,10 @@ export function InlineDepartmentCell({
             </div>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent onClick={(e) => e.stopPropagation()}>
+        <SelectContent 
+          position="item-aligned"
+          onClick={(e) => e.stopPropagation()}
+        >
           <SelectItem 
             value="none"
             className="focus:bg-transparent focus:text-inherit pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
