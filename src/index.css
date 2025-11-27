@@ -6,6 +6,11 @@
 All colors MUST be HSL.
 */
 
+/* Prevent layout shift when dropdowns/modals open */
+html {
+  scrollbar-gutter: stable;
+}
+
 @layer base {
   :root {
     --background: 210 11% 97%;
