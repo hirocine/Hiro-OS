@@ -10,13 +10,15 @@ interface InlineDepartmentCellProps {
   departments: Array<{ id: string; name: string }>;
   onSave: (newValue: string | null) => void;
   className?: string;
+  isActive?: boolean;
 }
 
 export function InlineDepartmentCell({ 
   value, 
   departments,
   onSave, 
-  className = '' 
+  className = '',
+  isActive = true
 }: InlineDepartmentCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,7 +47,11 @@ export function InlineDepartmentCell({
             }}
           >
             <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
-              <span className="text-sm">{value || 'Sem departamento'}</span>
+              {!isActive ? (
+                <span className="text-sm text-muted-foreground/60 italic">Selecionar</span>
+              ) : (
+                <span className="text-sm">{value || 'Sem departamento'}</span>
+              )}
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
           </Button>

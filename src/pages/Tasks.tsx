@@ -31,23 +31,30 @@ export default function Tasks() {
   const { users } = useUsers();
   const { departments } = useDepartments();
   
-  const [newTeamTask, setNewTeamTask] = useState({
+  // Default task state for comparison
+  const defaultTaskState = {
     title: '',
     priority: 'standby' as TaskPriority,
     status: 'pendente' as TaskStatus,
     assigned_to: null as string | null,
     due_date: null as string | null,
     department: '',
-  });
+  };
 
-  const [newMyTask, setNewMyTask] = useState({
-    title: '',
-    priority: 'standby' as TaskPriority,
-    status: 'pendente' as TaskStatus,
-    assigned_to: null as string | null,
-    due_date: null as string | null,
-    department: '',
-  });
+  // Helper function to check if any field has been modified
+  const isTaskActive = (task: typeof defaultTaskState) => {
+    return (
+      task.title.trim() !== '' ||
+      task.priority !== 'standby' ||
+      task.status !== 'pendente' ||
+      task.assigned_to !== null ||
+      task.due_date !== null ||
+      task.department !== ''
+    );
+  };
+  
+  const [newTeamTask, setNewTeamTask] = useState(defaultTaskState);
+  const [newMyTask, setNewMyTask] = useState(defaultTaskState);
   
   const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
   const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
@@ -305,13 +312,13 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Prioridade */}
-                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !isTaskActive(newTeamTask) && "opacity-40")}>
                         <InlineSelectCell
                           value={newTeamTask.priority}
                           options={priorityOptions}
                           onSave={(val) => setNewTeamTask(prev => ({ ...prev, priority: val as TaskPriority }))}
                           renderValue={(v) => 
-                            newTeamTask.title.trim() 
+                            isTaskActive(newTeamTask) 
                               ? <PriorityBadge priority={v as TaskPriority} />
                               : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
                           }
@@ -320,13 +327,13 @@ export default function Tasks() {
                       </TableCell>
                       
                       {/* Status */}
-                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !isTaskActive(newTeamTask) && "opacity-40")}>
                         <InlineSelectCell
                           value={newTeamTask.status}
                           options={statusOptions}
                           onSave={(val) => setNewTeamTask(prev => ({ ...prev, status: val as TaskStatus }))}
                           renderValue={(v) => 
-                            newTeamTask.title.trim() 
+                            isTaskActive(newTeamTask) 
                               ? <StatusBadge status={v as TaskStatus} />
                               : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
                           }
@@ -335,19 +342,19 @@ export default function Tasks() {
                       </TableCell>
                       
                   {/* Responsável */}
-                  <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                  <TableCell className={cn("transition-opacity", !isTaskActive(newTeamTask) && "opacity-40")}>
                     <InlineAssigneeCell
                       value={newTeamTask.assigned_to}
                       users={users || []}
                       onSave={(newValue, isTeamTask) => {
                         setNewTeamTask(prev => ({ ...prev, assigned_to: newValue }));
                       }}
-                      placeholder="Selecionar"
+                      isActive={isTaskActive(newTeamTask)}
                     />
                   </TableCell>
                       
                       {/* Prazo */}
-                      <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                      <TableCell className={cn("transition-opacity", !isTaskActive(newTeamTask) && "opacity-40")}>
                         <InlineDateCell
                           value={newTeamTask.due_date}
                           onSave={(date) => setNewTeamTask(prev => ({ ...prev, due_date: date }))}
@@ -355,13 +362,14 @@ export default function Tasks() {
                       </TableCell>
                       
                   {/* Departamento */}
-                  <TableCell className={cn("transition-opacity", !newTeamTask.title && "opacity-40")}>
+                  <TableCell className={cn("transition-opacity", !isTaskActive(newTeamTask) && "opacity-40")}>
                     <InlineDepartmentCell
                       value={newTeamTask.department}
                       departments={departments}
                       onSave={(newValue) => {
                         setNewTeamTask(prev => ({ ...prev, department: newValue || '' }));
                       }}
+                      isActive={isTaskActive(newTeamTask)}
                     />
                   </TableCell>
                       
@@ -538,13 +546,13 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Prioridade */}
-                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !isTaskActive(newMyTask) && "opacity-40")}>
                       <InlineSelectCell
                         value={newMyTask.priority}
                         options={priorityOptions}
                         onSave={(val) => setNewMyTask(prev => ({ ...prev, priority: val as TaskPriority }))}
                         renderValue={(v) => 
-                          newMyTask.title.trim() 
+                          isTaskActive(newMyTask) 
                             ? <PriorityBadge priority={v as TaskPriority} />
                             : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
                         }
@@ -553,13 +561,13 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Status */}
-                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !isTaskActive(newMyTask) && "opacity-40")}>
                       <InlineSelectCell
                         value={newMyTask.status}
                         options={statusOptions}
                         onSave={(val) => setNewMyTask(prev => ({ ...prev, status: val as TaskStatus }))}
                         renderValue={(v) => 
-                          newMyTask.title.trim() 
+                          isTaskActive(newMyTask) 
                             ? <StatusBadge status={v as TaskStatus} />
                             : <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
                         }
@@ -568,19 +576,19 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Responsável */}
-                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !isTaskActive(newMyTask) && "opacity-40")}>
                       <InlineAssigneeCell
                         value={newMyTask.assigned_to}
                         users={users || []}
                         onSave={(newValue, isTeamTask) => {
                           setNewMyTask(prev => ({ ...prev, assigned_to: newValue }));
                         }}
-                        placeholder="Selecionar"
+                        isActive={isTaskActive(newMyTask)}
                       />
                     </TableCell>
                     
                     {/* Prazo */}
-                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !isTaskActive(newMyTask) && "opacity-40")}>
                       <InlineDateCell
                         value={newMyTask.due_date}
                         onSave={(date) => setNewMyTask(prev => ({ ...prev, due_date: date }))}
@@ -588,13 +596,14 @@ export default function Tasks() {
                     </TableCell>
                     
                     {/* Departamento */}
-                    <TableCell className={cn("transition-opacity", !newMyTask.title && "opacity-40")}>
+                    <TableCell className={cn("transition-opacity", !isTaskActive(newMyTask) && "opacity-40")}>
                       <InlineDepartmentCell
                         value={newMyTask.department}
                         departments={departments}
                         onSave={(newValue) => {
                           setNewMyTask(prev => ({ ...prev, department: newValue || '' }));
                         }}
+                        isActive={isTaskActive(newMyTask)}
                       />
                     </TableCell>
                     
