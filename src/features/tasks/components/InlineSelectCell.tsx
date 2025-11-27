@@ -1,6 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface InlineSelectCellProps {
   value: string;
@@ -33,38 +36,45 @@ export function InlineSelectCell({
       onClick={(e) => e.stopPropagation()}
       className={className}
     >
-      <Select 
-        value={value} 
-        onValueChange={handleValueChange}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <SelectTrigger 
-          className="h-auto min-h-0 w-auto border-0 bg-transparent p-0 shadow-none rounded transition-colors focus:ring-0 focus:ring-offset-0 [&>svg]:hidden"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(true);
-          }}
-        >
-          <SelectValue>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-auto min-h-0 w-auto p-0 font-normal bg-transparent hover:bg-transparent"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(true);
+            }}
+          >
             <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
               {renderValue(value)}
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent onClick={(e) => e.stopPropagation()}>
-          {options.map((option) => (
-            <SelectItem 
-              key={option.value} 
-              value={option.value}
-              className="focus:bg-transparent focus:text-inherit pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
-            >
-              {renderOption ? renderOption(option.value) : option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-[180px] p-0" 
+          align="start"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Command>
+            <CommandList>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem 
+                    key={option.value} 
+                    onSelect={() => handleValueChange(option.value)}
+                    className="cursor-pointer"
+                  >
+                    <Check className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")} />
+                    {renderOption ? renderOption(option.value) : option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
