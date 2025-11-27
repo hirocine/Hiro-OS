@@ -38,7 +38,6 @@ export default function Tasks() {
     assigned_to: null as string | null,
     due_date: null as string | null,
     department: '',
-    is_team_task: true,
   });
 
   const [newMyTask, setNewMyTask] = useState({
@@ -48,11 +47,10 @@ export default function Tasks() {
     assigned_to: null as string | null,
     due_date: null as string | null,
     department: '',
-    is_team_task: false,
   });
   
-  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks({ is_team_task: true });
-  const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ is_team_task: false });
+  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
+  const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -86,7 +84,6 @@ export default function Tasks() {
       assigned_to: taskData.assigned_to,
       due_date: taskData.due_date,
       department: taskData.department || null,
-      is_team_task: taskData.is_team_task,
     });
     
     resetFn();
@@ -100,7 +97,6 @@ export default function Tasks() {
       assigned_to: null,
       due_date: null,
       department: '',
-      is_team_task: true,
     });
   };
 
@@ -112,7 +108,6 @@ export default function Tasks() {
       assigned_to: null,
       due_date: null,
       department: '',
-      is_team_task: false,
     });
   };
 
@@ -156,12 +151,12 @@ export default function Tasks() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Tarefas do Time</CardTitle>
-              <CardDescription>Tarefas visíveis para toda a equipe</CardDescription>
+              <CardTitle>Todas as Tarefas</CardTitle>
+              <CardDescription>Todas as tarefas da plataforma</CardDescription>
             </div>
             {hasMoreTeamTasks && (
               <Button variant="ghost" asChild>
-                <Link to="/tarefas/equipe">
+                <Link to="/tarefas/todas">
                   Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
@@ -174,7 +169,7 @@ export default function Tasks() {
                   {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
                 </div>
               ) : displayedTeamTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Nenhuma tarefa do time ainda</p>
+                <p className="text-muted-foreground text-center py-8">Nenhuma tarefa ainda</p>
               ) : (
                 <Table className="table-fixed">
                 <TableHeader>
