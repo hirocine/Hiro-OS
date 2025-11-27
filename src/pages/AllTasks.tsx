@@ -12,9 +12,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export default function TeamTasks() {
+export default function AllTasks() {
   const navigate = useNavigate();
-  const { tasks, isLoading } = useTasks({ is_team_task: true });
+  const { tasks, isLoading } = useTasks();
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -51,8 +51,8 @@ export default function TeamTasks() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Todas as Tarefas do Time</CardTitle>
-          <CardDescription>Tarefas visíveis para toda a equipe ({tasks.length})</CardDescription>
+          <CardTitle>Todas as Tarefas</CardTitle>
+          <CardDescription>Todas as tarefas da plataforma ({tasks.length})</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -60,7 +60,7 @@ export default function TeamTasks() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
             </div>
           ) : tasks.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhuma tarefa do time ainda</p>
+            <p className="text-muted-foreground text-center py-8">Nenhuma tarefa ainda</p>
           ) : (
             <Table>
               <TableHeader>

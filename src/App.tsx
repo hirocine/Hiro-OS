@@ -27,7 +27,7 @@ const Suppliers = lazy(() => import("./pages/Suppliers"));
 const SupplierDetails = lazy(() => import("./pages/SupplierDetails"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
-const TeamTasks = lazy(() => import("./pages/TeamTasks"));
+const TeamTasks = lazy(() => import("./pages/AllTasks"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -59,7 +59,7 @@ const App = () => (
               <Route path="politicas/:id" element={<PolicyView />} />
               <Route path="tarefas" element={<Tasks />} />
               <Route path="tarefas/:id" element={<TaskDetails />} />
-              <Route path="tarefas/equipe" element={<TeamTasks />} />
+              <Route path="tarefas/todas" element={<TeamTasks />} />
               <Route path="fornecedores" element={<Suppliers />} />
               <Route path="fornecedores/:id" element={<SupplierDetails />} />
               <Route path="perfil" element={<Profile />} />

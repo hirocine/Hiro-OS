@@ -35,7 +35,7 @@ export function useTaskMutations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa criada com sucesso!' });
@@ -65,7 +65,7 @@ export function useTaskMutations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa atualizada!' });
@@ -87,7 +87,7 @@ export function useTaskMutations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa excluída com sucesso!' });

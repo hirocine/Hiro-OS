@@ -41,7 +41,7 @@ export const queryKeys = {
   },
   tasks: {
     all: ['tasks'] as const,
-    team: ['tasks', 'team'] as const,
+    list: ['tasks', 'list'] as const,
     mine: ['tasks', 'mine'] as const,
     detail: (id: string) => ['tasks', id] as const,
     stats: ['tasks', 'stats'] as const,

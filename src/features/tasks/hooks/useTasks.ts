@@ -9,7 +9,7 @@ interface TaskFilters {
   status?: TaskStatus;
   priority?: TaskPriority;
   assigned_to?: string;
-  is_team_task?: boolean;
+  assigned_to_me?: boolean;
   search?: string;
 }
 
@@ -18,7 +18,7 @@ export function useTasks(filters?: TaskFilters) {
 
   // Fetch tasks
   const { data: tasks = [], isLoading, error, refetch } = useQuery({
-    queryKey: filters?.is_team_task ? queryKeys.tasks.team : queryKeys.tasks.mine,
+    queryKey: filters?.assigned_to_me ? queryKeys.tasks.mine : queryKeys.tasks.list,
     queryFn: async () => {
       logger.debug('Fetching tasks', { module: 'tasks', data: { filters } });
 
@@ -43,8 +43,11 @@ export function useTasks(filters?: TaskFilters) {
       if (filters?.assigned_to) {
         query = query.eq('assigned_to', filters.assigned_to);
       }
-      if (filters?.is_team_task !== undefined) {
-        query = query.eq('is_team_task', filters.is_team_task);
+      if (filters?.assigned_to_me) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          query = query.eq('assigned_to', user.id);
+        }
       }
       if (filters?.search) {
         query = query.ilike('title', `%${filters.search}%`);
@@ -120,7 +123,7 @@ export function useTasks(filters?: TaskFilters) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa atualizada!' });
@@ -142,7 +145,7 @@ export function useTasks(filters?: TaskFilters) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.team });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa excluída!' });
