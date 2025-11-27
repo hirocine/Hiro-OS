@@ -30,7 +30,7 @@ export default function Tasks() {
   
   const [newTeamTask, setNewTeamTask] = useState({
     title: '',
-    priority: 'media' as TaskPriority,
+    priority: 'standby' as TaskPriority,
     status: 'pendente' as TaskStatus,
     assigned_to: null as string | null,
     due_date: null as string | null,
@@ -40,7 +40,7 @@ export default function Tasks() {
 
   const [newMyTask, setNewMyTask] = useState({
     title: '',
-    priority: 'media' as TaskPriority,
+    priority: 'standby' as TaskPriority,
     status: 'pendente' as TaskStatus,
     assigned_to: null as string | null,
     due_date: null as string | null,
@@ -92,7 +92,7 @@ export default function Tasks() {
   const resetTeamTask = () => {
     setNewTeamTask({
       title: '',
-      priority: 'media',
+      priority: 'standby',
       status: 'pendente',
       assigned_to: null,
       due_date: null,
@@ -104,7 +104,7 @@ export default function Tasks() {
   const resetMyTask = () => {
     setNewMyTask({
       title: '',
-      priority: 'media',
+      priority: 'standby',
       status: 'pendente',
       assigned_to: null,
       due_date: null,
@@ -337,7 +337,29 @@ export default function Tasks() {
                         >
                           <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
                             <SelectValue>
-                              <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                              {!newTeamTask.assigned_to || newTeamTask.assigned_to === "none" ? (
+                                <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                              ) : newTeamTask.assigned_to === "team" ? (
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4" />
+                                  Time Hiro
+                                </div>
+                              ) : (
+                                (() => {
+                                  const selectedUser = users?.find(u => u.id === newTeamTask.assigned_to);
+                                  return selectedUser ? (
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="w-4 h-4">
+                                        <AvatarImage src={selectedUser.avatar_url || undefined} />
+                                        <AvatarFallback className="text-[10px]">{selectedUser.display_name?.[0] || '?'}</AvatarFallback>
+                                      </Avatar>
+                                      {selectedUser.display_name || 'Sem nome'}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                                  );
+                                })()
+                              )}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
@@ -584,7 +606,29 @@ export default function Tasks() {
                       >
                         <SelectTrigger className="w-full h-8 border-0 bg-transparent focus:ring-0 focus:ring-offset-0">
                           <SelectValue>
-                            <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                            {!newMyTask.assigned_to || newMyTask.assigned_to === "none" ? (
+                              <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                            ) : newMyTask.assigned_to === "team" ? (
+                              <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                Time Hiro
+                              </div>
+                            ) : (
+                              (() => {
+                                const selectedUser = users?.find(u => u.id === newMyTask.assigned_to);
+                                return selectedUser ? (
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="w-4 h-4">
+                                      <AvatarImage src={selectedUser.avatar_url || undefined} />
+                                      <AvatarFallback className="text-[10px]">{selectedUser.display_name?.[0] || '?'}</AvatarFallback>
+                                    </Avatar>
+                                    {selectedUser.display_name || 'Sem nome'}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground/60 text-sm italic">Selecionar</span>
+                                );
+                              })()
+                            )}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
