@@ -5,6 +5,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
@@ -15,15 +16,36 @@ import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays } from 'date-fns';
+import type { TaskPriority, TaskStatus } from '@/features/tasks/types';
 
 export default function Tasks() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newTeamTaskTitle, setNewTeamTaskTitle] = useState('');
-  const [newMyTaskTitle, setNewMyTaskTitle] = useState('');
+  const { users } = useUsers();
+  
+  const [newTeamTask, setNewTeamTask] = useState({
+    title: '',
+    priority: 'media' as TaskPriority,
+    status: 'pendente' as TaskStatus,
+    assigned_to: null as string | null,
+    due_date: null as string | null,
+    department: '',
+    is_team_task: true,
+  });
+
+  const [newMyTask, setNewMyTask] = useState({
+    title: '',
+    priority: 'media' as TaskPriority,
+    status: 'pendente' as TaskStatus,
+    assigned_to: null as string | null,
+    due_date: null as string | null,
+    department: '',
+    is_team_task: false,
+  });
   
   const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks({ is_team_task: true });
   const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ is_team_task: false });
@@ -50,18 +72,60 @@ export default function Tasks() {
     }
   };
 
-  const handleCreateInlineTask = async (title: string, isTeamTask: boolean, resetFn: () => void) => {
-    if (!title.trim()) return;
+  const handleCreateInlineTask = async (taskData: typeof newTeamTask, resetFn: () => void) => {
+    if (!taskData.title.trim()) return;
     
     await createTask.mutateAsync({
-      title: title.trim(),
-      is_team_task: isTeamTask,
-      priority: 'media',
-      status: 'pendente',
+      title: taskData.title.trim(),
+      priority: taskData.priority,
+      status: taskData.status,
+      assigned_to: taskData.assigned_to,
+      due_date: taskData.due_date,
+      department: taskData.department || null,
+      is_team_task: taskData.is_team_task,
     });
     
     resetFn();
   };
+
+  const resetTeamTask = () => {
+    setNewTeamTask({
+      title: '',
+      priority: 'media',
+      status: 'pendente',
+      assigned_to: null,
+      due_date: null,
+      department: '',
+      is_team_task: true,
+    });
+  };
+
+  const resetMyTask = () => {
+    setNewMyTask({
+      title: '',
+      priority: 'media',
+      status: 'pendente',
+      assigned_to: null,
+      due_date: null,
+      department: '',
+      is_team_task: false,
+    });
+  };
+
+  const priorityOptions = [
+    { value: 'standby', label: 'Stand-by' },
+    { value: 'baixa', label: 'Baixa' },
+    { value: 'media', label: 'Média' },
+    { value: 'alta', label: 'Alta' },
+    { value: 'urgente', label: 'Urgente' },
+  ];
+
+  const statusOptions = [
+    { value: 'pendente', label: 'Pendente' },
+    { value: 'em_progresso', label: 'Em Progresso' },
+    { value: 'concluida', label: 'Concluída' },
+    { value: 'arquivada', label: 'Arquivado' },
+  ];
 
   // Show only first 8 team tasks with blur effect
   const displayedTeamTasks = teamTasks.slice(0, 8);
@@ -215,27 +279,134 @@ export default function Tasks() {
                 ))}
                     
                     {/* Inline creation row */}
-                    <TableRow className="border-dashed hover:bg-transparent">
-                      <TableCell colSpan={7}>
+                    <TableRow className="border-dashed border-t-2 hover:bg-muted/30">
+                      {/* Título */}
+                      <TableCell className="w-[25%]">
                         <div className="flex items-center gap-2">
-                          <Plus className="w-4 h-4 text-muted-foreground" />
+                          <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <Input
                             placeholder="Nova tarefa do time..."
-                            value={newTeamTaskTitle}
-                            onChange={(e) => setNewTeamTaskTitle(e.target.value)}
+                            value={newTeamTask.title}
+                            onChange={(e) => setNewTeamTask(prev => ({ ...prev, title: e.target.value }))}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
-                                handleCreateInlineTask(newTeamTaskTitle, true, () => setNewTeamTaskTitle(''));
-                              }
-                            }}
-                            onBlur={() => {
-                              if (newTeamTaskTitle.trim()) {
-                                handleCreateInlineTask(newTeamTaskTitle, true, () => setNewTeamTaskTitle(''));
+                                handleCreateInlineTask(newTeamTask, resetTeamTask);
                               }
                             }}
                             className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
                           />
                         </div>
+                      </TableCell>
+                      
+                      {/* Prioridade */}
+                      <TableCell className="w-[10%]">
+                        <InlineSelectCell
+                          value={newTeamTask.priority}
+                          options={priorityOptions}
+                          onSave={(val) => setNewTeamTask(prev => ({ ...prev, priority: val as TaskPriority }))}
+                          renderValue={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                          renderOption={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                        />
+                      </TableCell>
+                      
+                      {/* Status */}
+                      <TableCell className="w-[12%]">
+                        <InlineSelectCell
+                          value={newTeamTask.status}
+                          options={statusOptions}
+                          onSave={(val) => setNewTeamTask(prev => ({ ...prev, status: val as TaskStatus }))}
+                          renderValue={(v) => <StatusBadge status={v as TaskStatus} />}
+                          renderOption={(v) => <StatusBadge status={v as TaskStatus} />}
+                        />
+                      </TableCell>
+                      
+                      {/* Responsável */}
+                      <TableCell className="w-[20%]">
+                        <Select 
+                          value={newTeamTask.assigned_to || 'team_hiro'} 
+                          onValueChange={(val) => setNewTeamTask(prev => ({ 
+                            ...prev, 
+                            assigned_to: val === 'team_hiro' ? null : val,
+                            is_team_task: val === 'team_hiro'
+                          }))}
+                        >
+                          <SelectTrigger className="h-8 border-0 bg-transparent shadow-none focus:ring-0 [&>svg]:hidden">
+                            <SelectValue>
+                              <div className="flex items-center gap-2">
+                                {newTeamTask.assigned_to ? (
+                                  <>
+                                    <Avatar className="w-6 h-6">
+                                      <AvatarImage src={users?.find(u => u.id === newTeamTask.assigned_to)?.avatar_url || undefined} />
+                                      <AvatarFallback className="text-xs">
+                                        {users?.find(u => u.id === newTeamTask.assigned_to)?.display_name?.[0] || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">{users?.find(u => u.id === newTeamTask.assigned_to)?.display_name || 'Usuário'}</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                      <Users className="w-3 h-3 text-primary" />
+                                    </div>
+                                    <span className="text-sm text-primary font-medium">Time Hiro</span>
+                                  </>
+                                )}
+                              </div>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="team_hiro">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Users className="w-3 h-3 text-primary" />
+                                </div>
+                                <span>Time Hiro</span>
+                              </div>
+                            </SelectItem>
+                            {users?.map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="w-6 h-6">
+                                    <AvatarImage src={user.avatar_url || undefined} />
+                                    <AvatarFallback className="text-xs">{user.display_name?.[0] || '?'}</AvatarFallback>
+                                  </Avatar>
+                                  <span>{user.display_name || user.email}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      
+                      {/* Prazo */}
+                      <TableCell className="w-[18%]">
+                        <InlineDateCell
+                          value={newTeamTask.due_date}
+                          onSave={(date) => setNewTeamTask(prev => ({ ...prev, due_date: date }))}
+                        />
+                      </TableCell>
+                      
+                      {/* Departamento */}
+                      <TableCell className="w-[15%]">
+                        <Input
+                          placeholder="Dept..."
+                          value={newTeamTask.department}
+                          onChange={(e) => setNewTeamTask(prev => ({ ...prev, department: e.target.value }))}
+                          className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                        />
+                      </TableCell>
+                      
+                      {/* Ações */}
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          disabled={!newTeamTask.title.trim()}
+                          onClick={() => handleCreateInlineTask(newTeamTask, resetTeamTask)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
               </TableBody>
@@ -371,27 +542,134 @@ export default function Tasks() {
                   ))}
                   
                   {/* Inline creation row */}
-                  <TableRow className="border-dashed hover:bg-transparent">
-                    <TableCell colSpan={7}>
+                  <TableRow className="border-dashed border-t-2 hover:bg-muted/30">
+                    {/* Título */}
+                    <TableCell className="w-[25%]">
                       <div className="flex items-center gap-2">
-                        <Plus className="w-4 h-4 text-muted-foreground" />
+                        <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <Input
                           placeholder="Nova tarefa pessoal..."
-                          value={newMyTaskTitle}
-                          onChange={(e) => setNewMyTaskTitle(e.target.value)}
+                          value={newMyTask.title}
+                          onChange={(e) => setNewMyTask(prev => ({ ...prev, title: e.target.value }))}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              handleCreateInlineTask(newMyTaskTitle, false, () => setNewMyTaskTitle(''));
-                            }
-                          }}
-                          onBlur={() => {
-                            if (newMyTaskTitle.trim()) {
-                              handleCreateInlineTask(newMyTaskTitle, false, () => setNewMyTaskTitle(''));
+                              handleCreateInlineTask(newMyTask, resetMyTask);
                             }
                           }}
                           className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
                         />
                       </div>
+                    </TableCell>
+                    
+                    {/* Prioridade */}
+                    <TableCell className="w-[10%]">
+                      <InlineSelectCell
+                        value={newMyTask.priority}
+                        options={priorityOptions}
+                        onSave={(val) => setNewMyTask(prev => ({ ...prev, priority: val as TaskPriority }))}
+                        renderValue={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                        renderOption={(v) => <PriorityBadge priority={v as TaskPriority} />}
+                      />
+                    </TableCell>
+                    
+                    {/* Status */}
+                    <TableCell className="w-[12%]">
+                      <InlineSelectCell
+                        value={newMyTask.status}
+                        options={statusOptions}
+                        onSave={(val) => setNewMyTask(prev => ({ ...prev, status: val as TaskStatus }))}
+                        renderValue={(v) => <StatusBadge status={v as TaskStatus} />}
+                        renderOption={(v) => <StatusBadge status={v as TaskStatus} />}
+                      />
+                    </TableCell>
+                    
+                    {/* Responsável */}
+                    <TableCell className="w-[20%]">
+                      <Select 
+                        value={newMyTask.assigned_to || 'team_hiro'} 
+                        onValueChange={(val) => setNewMyTask(prev => ({ 
+                          ...prev, 
+                          assigned_to: val === 'team_hiro' ? null : val,
+                          is_team_task: val === 'team_hiro'
+                        }))}
+                      >
+                        <SelectTrigger className="h-8 border-0 bg-transparent shadow-none focus:ring-0 [&>svg]:hidden">
+                          <SelectValue>
+                            <div className="flex items-center gap-2">
+                              {newMyTask.assigned_to ? (
+                                <>
+                                  <Avatar className="w-6 h-6">
+                                    <AvatarImage src={users?.find(u => u.id === newMyTask.assigned_to)?.avatar_url || undefined} />
+                                    <AvatarFallback className="text-xs">
+                                      {users?.find(u => u.id === newMyTask.assigned_to)?.display_name?.[0] || '?'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">{users?.find(u => u.id === newMyTask.assigned_to)?.display_name || 'Usuário'}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <Users className="w-3 h-3 text-primary" />
+                                  </div>
+                                  <span className="text-sm text-primary font-medium">Time Hiro</span>
+                                </>
+                              )}
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="team_hiro">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Users className="w-3 h-3 text-primary" />
+                              </div>
+                              <span>Time Hiro</span>
+                            </div>
+                          </SelectItem>
+                          {users?.map(user => (
+                            <SelectItem key={user.id} value={user.id}>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-6 h-6">
+                                  <AvatarImage src={user.avatar_url || undefined} />
+                                  <AvatarFallback className="text-xs">{user.display_name?.[0] || '?'}</AvatarFallback>
+                                </Avatar>
+                                <span>{user.display_name || user.email}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    
+                    {/* Prazo */}
+                    <TableCell className="w-[18%]">
+                      <InlineDateCell
+                        value={newMyTask.due_date}
+                        onSave={(date) => setNewMyTask(prev => ({ ...prev, due_date: date }))}
+                      />
+                    </TableCell>
+                    
+                    {/* Departamento */}
+                    <TableCell className="w-[15%]">
+                      <Input
+                        placeholder="Dept..."
+                        value={newMyTask.department}
+                        onChange={(e) => setNewMyTask(prev => ({ ...prev, department: e.target.value }))}
+                        className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                      />
+                    </TableCell>
+                    
+                    {/* Ações */}
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        disabled={!newMyTask.title.trim()}
+                        onClick={() => handleCreateInlineTask(newMyTask, resetMyTask)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 </TableBody>
