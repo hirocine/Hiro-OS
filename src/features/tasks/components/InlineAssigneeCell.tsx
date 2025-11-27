@@ -18,7 +18,7 @@ interface InlineAssigneeCellProps {
   }>;
   onSave: (newValue: string | null, isTeamTask?: boolean) => void;
   className?: string;
-  placeholder?: string;
+  isActive?: boolean;
 }
 
 export function InlineAssigneeCell({ 
@@ -26,7 +26,7 @@ export function InlineAssigneeCell({
   users,
   onSave, 
   className = '',
-  placeholder = 'Selecionar'
+  isActive = true
 }: InlineAssigneeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -64,7 +64,9 @@ export function InlineAssigneeCell({
             }}
           >
             <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
-              {avatarData ? (
+              {!isActive ? (
+                <span className="text-sm text-muted-foreground/60 italic">Selecionar</span>
+              ) : avatarData ? (
                 <>
                   <Avatar className="w-6 h-6">
                     <AvatarImage src={avatarData.url || undefined} />
@@ -73,7 +75,7 @@ export function InlineAssigneeCell({
                   <span className="text-sm">{avatarData.displayName || selectedUser?.email}</span>
                 </>
               ) : (
-                <span className="text-sm text-muted-foreground">{placeholder}</span>
+                <span className="text-sm text-muted-foreground">Sem responsável</span>
               )}
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
