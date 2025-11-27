@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTaskMutations } from '../hooks/useTaskMutations';
 import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
 import { useUsers } from '@/hooks/useUsers';
+import { useDepartments } from '../hooks/useDepartments';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Users } from 'lucide-react';
+import { Users, Plus, Check, X } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
 
@@ -22,6 +23,10 @@ interface TaskDialogProps {
 export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
   const { createTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
+  const { departments, createDepartment } = useDepartments();
+  
+  const [isCreatingNewDept, setIsCreatingNewDept] = useState(false);
+  const [newDeptName, setNewDeptName] = useState('');
   
   const [formData, setFormData] = useState({
     title: task?.title || '',
@@ -141,12 +146,88 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
 
             <div>
               <Label htmlFor="department">Departamento</Label>
-              <Input
-                id="department"
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                placeholder="Ex: Audiovisual"
-              />
+              {!isCreatingNewDept ? (
+                <Select
+                  value={formData.department || 'none'}
+                  onValueChange={(value) => {
+                    if (value === 'create_new') {
+                      setIsCreatingNewDept(true);
+                      setNewDeptName('');
+                    } else if (value === 'none') {
+                      setFormData({ ...formData, department: '' });
+                    } else {
+                      setFormData({ ...formData, department: value });
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um departamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="create_new">
+                      <div className="flex items-center gap-2 text-primary">
+                        <Plus className="w-4 h-4" />
+                        Criar novo departamento...
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={newDeptName}
+                    onChange={(e) => setNewDeptName(e.target.value)}
+                    placeholder="Nome do novo departamento"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newDeptName.trim()) {
+                        e.preventDefault();
+                        createDepartment.mutateAsync(newDeptName).then((dept) => {
+                          setFormData({ ...formData, department: dept.name });
+                          setIsCreatingNewDept(false);
+                          setNewDeptName('');
+                        });
+                      } else if (e.key === 'Escape') {
+                        setIsCreatingNewDept(false);
+                        setNewDeptName('');
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      if (newDeptName.trim()) {
+                        createDepartment.mutateAsync(newDeptName).then((dept) => {
+                          setFormData({ ...formData, department: dept.name });
+                          setIsCreatingNewDept(false);
+                          setNewDeptName('');
+                        });
+                      }
+                    }}
+                    disabled={!newDeptName.trim() || createDepartment.isPending}
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setIsCreatingNewDept(false);
+                      setNewDeptName('');
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
