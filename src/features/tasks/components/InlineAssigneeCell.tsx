@@ -70,7 +70,7 @@ export function InlineAssigneeCell({
                     <AvatarImage src={avatarData.url || undefined} />
                     <AvatarFallback className="text-xs">{avatarData.initials}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm">{avatarData.displayName || selectedUser?.email}</span>
+                  <span className="text-sm">{avatarData.displayName?.split(' ')[0] || selectedUser?.email}</span>
                 </>
               ) : (
                 <span className="text-sm text-muted-foreground">Sem responsável</span>
