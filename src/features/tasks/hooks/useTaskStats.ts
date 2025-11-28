@@ -22,11 +22,17 @@ export function useTaskStats() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // Parse date string in local timezone to avoid UTC conversion issues
+      const parseLocalDate = (dateStr: string): Date => {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+      };
+
       const active = tasks.filter(t => t.status === 'pendente' || t.status === 'em_progresso').length;
       const urgent = tasks.filter(t => t.priority === 'urgente' && t.status !== 'concluida' && t.status !== 'arquivada').length;
       const overdue = tasks.filter(t => {
         if (!t.due_date || t.status === 'concluida' || t.status === 'arquivada') return false;
-        const dueDate = new Date(t.due_date);
+        const dueDate = parseLocalDate(t.due_date);
         return dueDate < today;
       }).length;
 
