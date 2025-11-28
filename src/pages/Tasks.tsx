@@ -241,17 +241,14 @@ export default function Tasks() {
                           />
                         </TableCell>
                         <TableCell>
-                          {task.assignee_name ? (
-                            <div className="flex items-center gap-2">
-                              <Avatar className="w-6 h-6">
-                                <AvatarImage src={task.assignee_avatar || undefined} />
-                                <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm">{task.assignee_name}</span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Não atribuída</span>
-                          )}
+                          <InlineAssigneeCell
+                            value={task.assigned_to}
+                            users={users || []}
+                            onSave={(newValue) => updateTeamTask.mutate({ 
+                              id: task.id, 
+                              updates: { assigned_to: newValue } 
+                            })}
+                          />
                         </TableCell>
                         <TableCell>
                           <InlineDateCell
@@ -468,17 +465,14 @@ export default function Tasks() {
                         />
                       </TableCell>
                       <TableCell>
-                        {task.assignee_name ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="w-6 h-6">
-                              <AvatarImage src={task.assignee_avatar || undefined} />
-                              <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{task.assignee_name}</span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">Não atribuída</span>
-                        )}
+                        <InlineAssigneeCell
+                          value={task.assigned_to}
+                          users={users || []}
+                          onSave={(newValue) => updateMyTask.mutate({ 
+                            id: task.id, 
+                            updates: { assigned_to: newValue } 
+                          })}
+                        />
                       </TableCell>
                       <TableCell>
                         <InlineDateCell
