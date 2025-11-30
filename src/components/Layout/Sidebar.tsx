@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -16,6 +16,11 @@ const navigation: NavigationItem[] = [
     name: 'Home',
     href: '/',
     icon: Home,
+  },
+  {
+    name: 'Tarefas',
+    href: '/tarefas',
+    icon: CheckSquare,
   },
   {
     name: 'Retiradas',
