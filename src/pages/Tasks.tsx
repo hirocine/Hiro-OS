@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Users, Eye } from 'lucide-react';
+import { Plus, ArrowRight, Eye, CheckCircle } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
@@ -22,7 +23,7 @@ import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { TaskPriority, TaskStatus, TaskSortableField, TaskSortOrder } from '@/features/tasks/types';
 import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
@@ -66,8 +67,24 @@ export default function Tasks() {
   const [mySortBy, setMySortBy] = useState<TaskSortableField>('due_date');
   const [mySortOrder, setMySortOrder] = useState<TaskSortOrder>('asc');
   
-  const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
-  const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
+  // Sorting state for completed tasks
+  const [completedSortBy, setCompletedSortBy] = useState<TaskSortableField>('due_date');
+  const [completedSortOrder, setCompletedSortOrder] = useState<TaskSortOrder>('desc');
+  
+  const { tasks: allTeamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
+  const { tasks: allMyTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
+  const { tasks: completedTasks, isLoading: completedLoading } = useTasks({ status: 'concluida' });
+
+  // Filter out completed and archived tasks from active sections
+  const teamTasks = useMemo(() => 
+    allTeamTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
+    [allTeamTasks]
+  );
+  
+  const myTasks = useMemo(() => 
+    allMyTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
+    [allMyTasks]
+  );
 
   // Helper to parse date without timezone issues
   const parseLocalDate = (dateStr: string): Date => {
@@ -75,14 +92,18 @@ export default function Tasks() {
     return new Date(year, month - 1, day);
   };
 
-  // Sort team tasks
-  const sortedTeamTasks = useMemo(() => {
-    if (!teamTasks.length) return [];
+  // Generic sorting function
+  const sortTasks = <T extends typeof allTeamTasks[0]>(
+    tasks: T[],
+    sortBy: TaskSortableField,
+    sortOrder: TaskSortOrder
+  ): T[] => {
+    if (!tasks.length) return [];
     
-    return [...teamTasks].sort((a, b) => {
+    return [...tasks].sort((a, b) => {
       let comparison = 0;
       
-      switch (teamSortBy) {
+      switch (sortBy) {
         case 'title':
           comparison = (a.title || '').localeCompare(b.title || '');
           break;
@@ -116,54 +137,31 @@ export default function Tasks() {
           break;
       }
       
-      return teamSortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [teamTasks, teamSortBy, teamSortOrder]);
+  };
+
+  // Sort team tasks
+  const sortedTeamTasks = useMemo(() => 
+    sortTasks(teamTasks, teamSortBy, teamSortOrder),
+    [teamTasks, teamSortBy, teamSortOrder]
+  );
 
   // Sort my tasks
-  const sortedMyTasks = useMemo(() => {
-    if (!myTasks.length) return [];
-    
-    return [...myTasks].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (mySortBy) {
-        case 'title':
-          comparison = (a.title || '').localeCompare(b.title || '');
-          break;
-        case 'priority':
-          const aPriority = PRIORITY_ORDER[a.priority as TaskPriority] ?? 0;
-          const bPriority = PRIORITY_ORDER[b.priority as TaskPriority] ?? 0;
-          comparison = aPriority - bPriority;
-          break;
-        case 'status':
-          const aStatus = STATUS_ORDER[a.status as TaskStatus] ?? 0;
-          const bStatus = STATUS_ORDER[b.status as TaskStatus] ?? 0;
-          comparison = aStatus - bStatus;
-          break;
-        case 'assignee_name':
-          if (!a.assignee_name && !b.assignee_name) comparison = 0;
-          else if (!a.assignee_name) comparison = 1;
-          else if (!b.assignee_name) comparison = -1;
-          else comparison = a.assignee_name.localeCompare(b.assignee_name);
-          break;
-        case 'due_date':
-          if (!a.due_date && !b.due_date) comparison = 0;
-          else if (!a.due_date) comparison = 1;
-          else if (!b.due_date) comparison = -1;
-          else comparison = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
-          break;
-        case 'department':
-          if (!a.department && !b.department) comparison = 0;
-          else if (!a.department) comparison = 1;
-          else if (!b.department) comparison = -1;
-          else comparison = a.department.localeCompare(b.department);
-          break;
-      }
-      
-      return mySortOrder === 'asc' ? comparison : -comparison;
-    });
-  }, [myTasks, mySortBy, mySortOrder]);
+  const sortedMyTasks = useMemo(() => 
+    sortTasks(myTasks, mySortBy, mySortOrder),
+    [myTasks, mySortBy, mySortOrder]
+  );
+
+  // Sort completed tasks
+  const sortedCompletedTasks = useMemo(() => 
+    sortTasks(completedTasks, completedSortBy, completedSortOrder),
+    [completedTasks, completedSortBy, completedSortOrder]
+  );
+
+  // Show only first 5 completed tasks
+  const displayedCompletedTasks = sortedCompletedTasks.slice(0, 5);
+  const hasMoreCompletedTasks = sortedCompletedTasks.length > 5;
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -251,6 +249,11 @@ export default function Tasks() {
   const handleMySort = (field: TaskSortableField, order: TaskSortOrder) => {
     setMySortBy(field);
     setMySortOrder(order);
+  };
+
+  const handleCompletedSort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setCompletedSortBy(field);
+    setCompletedSortOrder(order);
   };
 
   return (
@@ -741,6 +744,110 @@ export default function Tasks() {
                     </TableCell>
                   </TableRow>
               </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Completed Tasks Section */}
+        <Card className="border-success/30 bg-success/5">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-success/10">
+                <CheckCircle className="w-5 h-5 text-success" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle>Tarefas Concluídas</CardTitle>
+                  <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                    {completedTasks.length}
+                  </Badge>
+                </div>
+                <CardDescription>Histórico de tarefas finalizadas</CardDescription>
+              </div>
+            </div>
+            {hasMoreCompletedTasks && (
+              <Button variant="ghost" asChild>
+                <Link to="/tarefas/todas?status=concluida">
+                  Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {completedLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
+              </div>
+            ) : displayedCompletedTasks.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">Nenhuma tarefa concluída ainda</p>
+            ) : (
+              <Table className="table-fixed">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[28%] text-left p-0">
+                      <TaskSortableHeader field="title" label="Título" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[12%] text-left p-0">
+                      <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[20%] text-left p-0">
+                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[18%] text-left p-0">
+                      <TaskSortableHeader field="due_date" label="Conclusão" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[14%] text-left p-0">
+                      <TaskSortableHeader field="department" label="Departamento" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[8%] text-left">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayedCompletedTasks.map((task) => (
+                    <TableRow 
+                      key={task.id} 
+                      className="hover:bg-success/10"
+                    >
+                      <TableCell className="font-medium text-muted-foreground">
+                        {task.title}
+                      </TableCell>
+                      <TableCell>
+                        <PriorityBadge priority={task.priority as TaskPriority} />
+                      </TableCell>
+                      <TableCell>
+                        {task.assignee_name ? (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={task.assignee_avatar || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {task.assignee_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm text-muted-foreground truncate">{task.assignee_name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground/50 text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {task.updated_at ? format(new Date(task.updated_at), 'dd/MM/yyyy') : '—'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {task.department || '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/tarefas/${task.id}`)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             )}
           </CardContent>
