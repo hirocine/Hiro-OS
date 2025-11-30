@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, ArrowRight, Users, Eye } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -16,6 +16,7 @@ import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
+import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
@@ -23,7 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { TaskPriority, TaskStatus } from '@/features/tasks/types';
+import type { TaskPriority, TaskStatus, TaskSortableField, TaskSortOrder } from '@/features/tasks/types';
+import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
 
 export default function Tasks() {
   const navigate = useNavigate();
@@ -56,8 +58,112 @@ export default function Tasks() {
   const [newTeamTask, setNewTeamTask] = useState(defaultTaskState);
   const [newMyTask, setNewMyTask] = useState(defaultTaskState);
   
+  // Sorting state for team tasks
+  const [teamSortBy, setTeamSortBy] = useState<TaskSortableField>('due_date');
+  const [teamSortOrder, setTeamSortOrder] = useState<TaskSortOrder>('asc');
+  
+  // Sorting state for my tasks
+  const [mySortBy, setMySortBy] = useState<TaskSortableField>('due_date');
+  const [mySortOrder, setMySortOrder] = useState<TaskSortOrder>('asc');
+  
   const { tasks: teamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
   const { tasks: myTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
+
+  // Helper to parse date without timezone issues
+  const parseLocalDate = (dateStr: string): Date => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  // Sort team tasks
+  const sortedTeamTasks = useMemo(() => {
+    if (!teamTasks.length) return [];
+    
+    return [...teamTasks].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (teamSortBy) {
+        case 'title':
+          comparison = (a.title || '').localeCompare(b.title || '');
+          break;
+        case 'priority':
+          const aPriority = PRIORITY_ORDER[a.priority as TaskPriority] ?? 0;
+          const bPriority = PRIORITY_ORDER[b.priority as TaskPriority] ?? 0;
+          comparison = aPriority - bPriority;
+          break;
+        case 'status':
+          const aStatus = STATUS_ORDER[a.status as TaskStatus] ?? 0;
+          const bStatus = STATUS_ORDER[b.status as TaskStatus] ?? 0;
+          comparison = aStatus - bStatus;
+          break;
+        case 'assignee_name':
+          if (!a.assignee_name && !b.assignee_name) comparison = 0;
+          else if (!a.assignee_name) comparison = 1;
+          else if (!b.assignee_name) comparison = -1;
+          else comparison = a.assignee_name.localeCompare(b.assignee_name);
+          break;
+        case 'due_date':
+          if (!a.due_date && !b.due_date) comparison = 0;
+          else if (!a.due_date) comparison = 1;
+          else if (!b.due_date) comparison = -1;
+          else comparison = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
+          break;
+        case 'department':
+          if (!a.department && !b.department) comparison = 0;
+          else if (!a.department) comparison = 1;
+          else if (!b.department) comparison = -1;
+          else comparison = a.department.localeCompare(b.department);
+          break;
+      }
+      
+      return teamSortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [teamTasks, teamSortBy, teamSortOrder]);
+
+  // Sort my tasks
+  const sortedMyTasks = useMemo(() => {
+    if (!myTasks.length) return [];
+    
+    return [...myTasks].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (mySortBy) {
+        case 'title':
+          comparison = (a.title || '').localeCompare(b.title || '');
+          break;
+        case 'priority':
+          const aPriority = PRIORITY_ORDER[a.priority as TaskPriority] ?? 0;
+          const bPriority = PRIORITY_ORDER[b.priority as TaskPriority] ?? 0;
+          comparison = aPriority - bPriority;
+          break;
+        case 'status':
+          const aStatus = STATUS_ORDER[a.status as TaskStatus] ?? 0;
+          const bStatus = STATUS_ORDER[b.status as TaskStatus] ?? 0;
+          comparison = aStatus - bStatus;
+          break;
+        case 'assignee_name':
+          if (!a.assignee_name && !b.assignee_name) comparison = 0;
+          else if (!a.assignee_name) comparison = 1;
+          else if (!b.assignee_name) comparison = -1;
+          else comparison = a.assignee_name.localeCompare(b.assignee_name);
+          break;
+        case 'due_date':
+          if (!a.due_date && !b.due_date) comparison = 0;
+          else if (!a.due_date) comparison = 1;
+          else if (!b.due_date) comparison = -1;
+          else comparison = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
+          break;
+        case 'department':
+          if (!a.department && !b.department) comparison = 0;
+          else if (!a.department) comparison = 1;
+          else if (!b.department) comparison = -1;
+          else comparison = a.department.localeCompare(b.department);
+          break;
+      }
+      
+      return mySortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [myTasks, mySortBy, mySortOrder]);
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -134,8 +240,18 @@ export default function Tasks() {
   ];
 
   // Show only first 8 team tasks with blur effect
-  const displayedTeamTasks = teamTasks.slice(0, 8);
-  const hasMoreTeamTasks = teamTasks.length > 8;
+  const displayedTeamTasks = sortedTeamTasks.slice(0, 8);
+  const hasMoreTeamTasks = sortedTeamTasks.length > 8;
+  
+  const handleTeamSort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setTeamSortBy(field);
+    setTeamSortOrder(order);
+  };
+  
+  const handleMySort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setMySortBy(field);
+    setMySortOrder(order);
+  };
 
   return (
     <ResponsiveContainer maxWidth="7xl">
@@ -181,12 +297,24 @@ export default function Tasks() {
                 <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%] text-left">Título</TableHead>
-                    <TableHead className="w-[10%] text-left">Prioridade</TableHead>
-                    <TableHead className="w-[12%] text-left">Status</TableHead>
-                    <TableHead className="w-[18%] text-left">Responsável</TableHead>
-                    <TableHead className="w-[16%] text-left">Prazo</TableHead>
-                    <TableHead className="w-[14%] text-left">Departamento</TableHead>
+                    <TableHead className="w-[22%] text-left p-0">
+                      <TaskSortableHeader field="title" label="Título" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
+                    <TableHead className="w-[10%] text-left p-0">
+                      <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
+                    <TableHead className="w-[12%] text-left p-0">
+                      <TaskSortableHeader field="status" label="Status" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
+                    <TableHead className="w-[18%] text-left p-0">
+                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
+                    <TableHead className="w-[16%] text-left p-0">
+                      <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
+                    <TableHead className="w-[14%] text-left p-0">
+                      <TaskSortableHeader field="department" label="Departamento" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
+                    </TableHead>
                     <TableHead className="w-[8%] text-left">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -405,17 +533,29 @@ export default function Tasks() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%] text-left">Título</TableHead>
-                    <TableHead className="w-[10%] text-left">Prioridade</TableHead>
-                    <TableHead className="w-[12%] text-left">Status</TableHead>
-                    <TableHead className="w-[18%] text-left">Responsável</TableHead>
-                    <TableHead className="w-[16%] text-left">Prazo</TableHead>
-                    <TableHead className="w-[14%] text-left">Departamento</TableHead>
+                    <TableHead className="w-[22%] text-left p-0">
+                      <TaskSortableHeader field="title" label="Título" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
+                    <TableHead className="w-[10%] text-left p-0">
+                      <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
+                    <TableHead className="w-[12%] text-left p-0">
+                      <TaskSortableHeader field="status" label="Status" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
+                    <TableHead className="w-[18%] text-left p-0">
+                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
+                    <TableHead className="w-[16%] text-left p-0">
+                      <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
+                    <TableHead className="w-[14%] text-left p-0">
+                      <TaskSortableHeader field="department" label="Departamento" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
+                    </TableHead>
                     <TableHead className="w-[8%] text-left">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                   <TableBody>
-                    {myTasks.map((task) => (
+                    {sortedMyTasks.map((task) => (
                     <TableRow 
                       key={task.id} 
                       className="hover:bg-muted/50"
