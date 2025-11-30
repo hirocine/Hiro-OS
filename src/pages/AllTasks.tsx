@@ -1,12 +1,22 @@
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
+import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { 
+  TaskSortableField, 
+  TaskSortOrder, 
+  PRIORITY_ORDER, 
+  STATUS_ORDER,
+  TaskPriority,
+  TaskStatus
+} from '@/features/tasks/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInDays } from 'date-fns';
@@ -15,12 +25,83 @@ import { ptBR } from 'date-fns/locale';
 export default function AllTasks() {
   const navigate = useNavigate();
   const { tasks, isLoading } = useTasks();
+  
+  // Sorting state - default by due_date ascending
+  const [sortBy, setSortBy] = useState<TaskSortableField>('due_date');
+  const [sortOrder, setSortOrder] = useState<TaskSortOrder>('asc');
+
+  const handleSort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setSortBy(field);
+    setSortOrder(order);
+  };
+
+  // Parse date in local timezone
+  const parseLocalDate = (dateStr: string): Date => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  // Sorted tasks
+  const sortedTasks = useMemo(() => {
+    if (!tasks.length) return tasks;
+
+    return [...tasks].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case 'title':
+          comparison = (a.title || '').localeCompare(b.title || '', 'pt-BR');
+          break;
+
+        case 'priority':
+          const priorityA = PRIORITY_ORDER[a.priority as TaskPriority] ?? -1;
+          const priorityB = PRIORITY_ORDER[b.priority as TaskPriority] ?? -1;
+          comparison = priorityA - priorityB;
+          break;
+
+        case 'status':
+          const statusA = STATUS_ORDER[a.status as TaskStatus] ?? -1;
+          const statusB = STATUS_ORDER[b.status as TaskStatus] ?? -1;
+          comparison = statusA - statusB;
+          break;
+
+        case 'assignee_name':
+          // Null values go to the end
+          if (!a.assignee_name && !b.assignee_name) comparison = 0;
+          else if (!a.assignee_name) comparison = 1;
+          else if (!b.assignee_name) comparison = -1;
+          else comparison = a.assignee_name.localeCompare(b.assignee_name, 'pt-BR');
+          break;
+
+        case 'due_date':
+          // Null values go to the end
+          if (!a.due_date && !b.due_date) comparison = 0;
+          else if (!a.due_date) comparison = 1;
+          else if (!b.due_date) comparison = -1;
+          else {
+            const dateA = parseLocalDate(a.due_date);
+            const dateB = parseLocalDate(b.due_date);
+            comparison = dateA.getTime() - dateB.getTime();
+          }
+          break;
+
+        case 'department':
+          // Null values go to the end
+          if (!a.department && !b.department) comparison = 0;
+          else if (!a.department) comparison = 1;
+          else if (!b.department) comparison = -1;
+          else comparison = a.department.localeCompare(b.department, 'pt-BR');
+          break;
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [tasks, sortBy, sortOrder]);
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
-    due.setHours(0, 0, 0, 0);
+    const due = parseLocalDate(dueDate);
     
     const diffDays = differenceInDays(due, today);
     
@@ -65,16 +146,64 @@ export default function AllTasks() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead>Prazo</TableHead>
-                  <TableHead>Departamento</TableHead>
+                  <TableHead className="w-[25%]">
+                    <TaskSortableHeader 
+                      field="title" 
+                      label="Título" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead className="w-[12%]">
+                    <TaskSortableHeader 
+                      field="priority" 
+                      label="Prioridade" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead className="w-[12%]">
+                    <TaskSortableHeader 
+                      field="status" 
+                      label="Status" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead className="w-[18%]">
+                    <TaskSortableHeader 
+                      field="assignee_name" 
+                      label="Responsável" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead className="w-[18%]">
+                    <TaskSortableHeader 
+                      field="due_date" 
+                      label="Prazo" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    <TaskSortableHeader 
+                      field="department" 
+                      label="Departamento" 
+                      currentSortBy={sortBy}
+                      currentSortOrder={sortOrder}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.map((task) => (
+                {sortedTasks.map((task) => (
                   <TableRow 
                     key={task.id} 
                     className="cursor-pointer hover:bg-muted/50"
@@ -106,7 +235,7 @@ export default function AllTasks() {
                       {task.due_date ? (
                         <div className="flex flex-col gap-0.5">
                           <span className="text-sm">
-                            {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
+                            {format(parseLocalDate(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
                           </span>
                           <span className={`text-xs ${getDueDateLabel(task.due_date).className}`}>
                             {getDueDateLabel(task.due_date).text}

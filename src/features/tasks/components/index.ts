@@ -6,3 +6,4 @@ export * from './InlineEditCell';
 export * from './InlineSelectCell';
 export * from './InlineDateCell';
 export * from './InlineAssigneeCell';
+export * from './TaskSortableHeader';

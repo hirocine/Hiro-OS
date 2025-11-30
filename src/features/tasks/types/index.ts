@@ -1,6 +1,27 @@
 export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente' | 'standby';
 export type TaskStatus = 'pendente' | 'em_progresso' | 'concluida' | 'arquivada';
 
+// Sorting types
+export type TaskSortableField = 'title' | 'priority' | 'status' | 'assignee_name' | 'due_date' | 'department';
+export type TaskSortOrder = 'asc' | 'desc';
+
+// Numeric order for priority sorting
+export const PRIORITY_ORDER: Record<TaskPriority, number> = {
+  standby: 0,
+  baixa: 1,
+  media: 2,
+  alta: 3,
+  urgente: 4,
+};
+
+// Numeric order for status sorting
+export const STATUS_ORDER: Record<TaskStatus, number> = {
+  pendente: 0,
+  em_progresso: 1,
+  concluida: 2,
+  arquivada: 3,
+};
+
 export interface Task {
   id: string;
   title: string;
