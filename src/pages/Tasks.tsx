@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Eye, CheckCircle } from 'lucide-react';
+import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
@@ -276,9 +276,11 @@ export default function Tasks() {
         {/* Team Tasks Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <ListTodo className="w-5 h-5 text-primary" />
+              </div>
               <CardTitle>Todas as Tarefas</CardTitle>
-              <CardDescription>Todas as tarefas da plataforma</CardDescription>
             </div>
             {hasMoreTeamTasks && (
               <Button variant="ghost" asChild>
@@ -522,8 +524,12 @@ export default function Tasks() {
         {/* My Tasks Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Minhas Tarefas</CardTitle>
-            <CardDescription>Tarefas atribuídas a você ou criadas por você</CardDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <User className="w-5 h-5 text-orange-500" />
+              </div>
+              <CardTitle>Minhas Tarefas</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             {myLoading ? (
@@ -756,14 +762,11 @@ export default function Tasks() {
               <div className="p-2 rounded-lg bg-success/10">
                 <CheckCircle className="w-5 h-5 text-success" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <CardTitle>Tarefas Concluídas</CardTitle>
-                  <Badge variant="outline" className="bg-success/10 text-success border-success/30">
-                    {completedTasks.length}
-                  </Badge>
-                </div>
-                <CardDescription>Histórico de tarefas finalizadas</CardDescription>
+              <div className="flex items-center gap-2">
+                <CardTitle>Tarefas Concluídas</CardTitle>
+                <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                  {completedTasks.length}
+                </Badge>
               </div>
             </div>
             {hasMoreCompletedTasks && (
