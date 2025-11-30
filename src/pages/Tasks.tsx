@@ -785,17 +785,20 @@ export default function Tasks() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[28%] text-left p-0">
+                    <TableHead className="w-[22%] text-left p-0">
                       <TaskSortableHeader field="title" label="Título" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                     </TableHead>
-                    <TableHead className="w-[12%] text-left p-0">
+                    <TableHead className="w-[10%] text-left p-0">
                       <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                     </TableHead>
-                    <TableHead className="w-[20%] text-left p-0">
-                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    <TableHead className="w-[12%] text-left p-0">
+                      <TaskSortableHeader field="status" label="Status" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                     </TableHead>
                     <TableHead className="w-[18%] text-left p-0">
-                      <TaskSortableHeader field="due_date" label="Conclusão" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                    </TableHead>
+                    <TableHead className="w-[16%] text-left p-0">
+                      <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                     </TableHead>
                     <TableHead className="w-[14%] text-left p-0">
                       <TaskSortableHeader field="department" label="Departamento" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
@@ -814,6 +817,9 @@ export default function Tasks() {
                       </TableCell>
                       <TableCell>
                         <PriorityBadge priority={task.priority as TaskPriority} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={task.status as TaskStatus} />
                       </TableCell>
                       <TableCell>
                         {task.assignee_name ? (
