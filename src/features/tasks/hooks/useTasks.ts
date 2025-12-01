@@ -18,7 +18,11 @@ export function useTasks(filters?: TaskFilters) {
 
   // Fetch tasks
   const { data: tasks = [], isLoading, error, refetch } = useQuery({
-    queryKey: filters?.assigned_to_me ? queryKeys.tasks.mine : queryKeys.tasks.list,
+    queryKey: filters?.assigned_to_me 
+      ? queryKeys.tasks.mine 
+      : filters?.status 
+        ? [...queryKeys.tasks.list, filters.status]
+        : queryKeys.tasks.list,
     queryFn: async () => {
       logger.debug('Fetching tasks', { module: 'tasks', data: { filters } });
 
