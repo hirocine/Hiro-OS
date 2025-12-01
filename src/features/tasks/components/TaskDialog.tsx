@@ -42,7 +42,20 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
     e.preventDefault();
     
     if (task) {
-      await updateTask.mutateAsync({ id: task.id, updates: formData });
+      // Pass oldTask for history tracking
+      await updateTask.mutateAsync({ 
+        id: task.id, 
+        updates: formData,
+        oldTask: {
+          title: task.title,
+          description: task.description,
+          priority: task.priority,
+          status: task.status,
+          due_date: task.due_date,
+          department: task.department,
+          assigned_to: task.assigned_to,
+        }
+      });
     } else {
       await createTask.mutateAsync(formData);
     }
