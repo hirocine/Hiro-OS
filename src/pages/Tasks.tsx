@@ -307,7 +307,7 @@ export default function Tasks() {
               <div className="p-2 rounded-lg bg-primary/10">
                 <ListTodo className="w-5 h-5 text-primary" />
               </div>
-              <CardTitle>Todas as Tarefas</CardTitle>
+              <CardTitle className="text-lg">Todas as Tarefas</CardTitle>
             </div>
             {hasMoreTeamTasks && (
               <Button variant="ghost" asChild>
@@ -555,7 +555,7 @@ export default function Tasks() {
               <div className="p-2 rounded-lg bg-orange-500/10">
                 <User className="w-5 h-5 text-orange-500" />
               </div>
-              <CardTitle>Minhas Tarefas</CardTitle>
+              <CardTitle className="text-lg">Minhas Tarefas</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -791,7 +791,7 @@ export default function Tasks() {
                   <div className="p-2 rounded-lg bg-success/10">
                     <CheckCircle className="w-5 h-5 text-success" />
                   </div>
-                  <CardTitle>Tarefas Concluídas</CardTitle>
+                  <CardTitle className="text-lg">Tarefas Concluídas</CardTitle>
                   <Badge variant="secondary" className="bg-success/20 text-success border-success/30">
                     {completedTasks.length}
                   </Badge>
@@ -909,7 +909,7 @@ export default function Tasks() {
                   <div className="p-2 rounded-lg bg-destructive/10">
                     <Archive className="w-5 h-5 text-destructive" />
                   </div>
-                  <CardTitle>Tarefas Arquivadas</CardTitle>
+                  <CardTitle className="text-lg">Tarefas Arquivadas</CardTitle>
                   <Badge variant="secondary" className="bg-destructive/20 text-destructive border-destructive/30">
                     {archivedTasks.length}
                   </Badge>
