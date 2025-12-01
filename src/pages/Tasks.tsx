@@ -321,12 +321,10 @@ export default function Tasks() {
           </CardHeader>
           <CardContent>
             <div className="relative">
-              {teamLoading ? (
+            {teamLoading ? (
                 <div className="space-y-2">
                   {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
                 </div>
-              ) : displayedTeamTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Nenhuma tarefa ainda</p>
               ) : (
                 <Table className="table-fixed">
                 <TableHeader>
@@ -571,8 +569,6 @@ export default function Tasks() {
               <div className="space-y-2">
                 {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
               </div>
-            ) : myTasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Você não tem tarefas ainda</p>
             ) : (
               <Table className="table-fixed">
                 <TableHeader>
