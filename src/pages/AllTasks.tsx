@@ -143,10 +143,10 @@ export default function AllTasks() {
           ) : tasks.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">Nenhuma tarefa ainda</p>
           ) : (
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[25%]">
+                  <TableHead className="w-[25%] text-left">
                     <TaskSortableHeader 
                       field="title" 
                       label="Título" 
@@ -155,7 +155,7 @@ export default function AllTasks() {
                       onSort={handleSort}
                     />
                   </TableHead>
-                  <TableHead className="w-[12%]">
+                  <TableHead className="w-[12%] text-left">
                     <TaskSortableHeader 
                       field="priority" 
                       label="Prioridade" 
@@ -164,7 +164,7 @@ export default function AllTasks() {
                       onSort={handleSort}
                     />
                   </TableHead>
-                  <TableHead className="w-[12%]">
+                  <TableHead className="w-[12%] text-left">
                     <TaskSortableHeader 
                       field="status" 
                       label="Status" 
@@ -173,7 +173,7 @@ export default function AllTasks() {
                       onSort={handleSort}
                     />
                   </TableHead>
-                  <TableHead className="w-[18%]">
+                  <TableHead className="w-[18%] text-left">
                     <TaskSortableHeader 
                       field="assignee_name" 
                       label="Responsável" 
@@ -182,7 +182,7 @@ export default function AllTasks() {
                       onSort={handleSort}
                     />
                   </TableHead>
-                  <TableHead className="w-[18%]">
+                  <TableHead className="w-[18%] text-left">
                     <TaskSortableHeader 
                       field="due_date" 
                       label="Prazo" 
@@ -191,7 +191,7 @@ export default function AllTasks() {
                       onSort={handleSort}
                     />
                   </TableHead>
-                  <TableHead className="w-[15%]">
+                  <TableHead className="w-[15%] text-left">
                     <TaskSortableHeader 
                       field="department" 
                       label="Departamento" 
