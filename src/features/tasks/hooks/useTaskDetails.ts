@@ -5,6 +5,38 @@ import { TaskWithDetails, TaskSubtask, TaskComment, TaskAttachment } from '../ty
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
+// Helper to add history entry
+async function addTaskHistoryEntry(
+  taskId: string,
+  action: string,
+  fieldChanged?: string,
+  oldValue?: string,
+  newValue?: string
+) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('user_id', user.id)
+      .single();
+
+    await supabase.from('task_history').insert([{
+      task_id: taskId,
+      user_id: user.id,
+      user_name: profile?.display_name || user.email || 'Usuário',
+      action,
+      field_changed: fieldChanged || null,
+      old_value: oldValue || null,
+      new_value: newValue || null,
+    }]);
+  } catch (error) {
+    logger.error('Failed to add history entry', { module: 'tasks', data: { error } });
+  }
+}
+
 export function useTaskDetails(taskId: string) {
   const queryClient = useQueryClient();
 
@@ -80,14 +112,15 @@ export function useTaskDetails(taskId: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Subtarefa "${data.title}" adicionada`, 'subtasks');
     },
   });
 
   // Update subtask
   const updateSubtask = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<TaskSubtask> }) => {
+    mutationFn: async ({ id, updates, subtaskTitle }: { id: string; updates: Partial<TaskSubtask>; subtaskTitle?: string }) => {
       const { data, error } = await supabase
         .from('task_subtasks')
         .update(updates)
@@ -96,25 +129,34 @@ export function useTaskDetails(taskId: string) {
         .single();
 
       if (error) throw error;
-      return data;
+      return { data, updates, subtaskTitle };
     },
-    onSuccess: () => {
+    onSuccess: ({ data, updates, subtaskTitle }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      if (updates.is_completed !== undefined) {
+        const title = subtaskTitle || data.title;
+        const action = updates.is_completed 
+          ? `Subtarefa "${title}" marcada como concluída`
+          : `Subtarefa "${title}" desmarcada`;
+        addTaskHistoryEntry(taskId, action, 'subtasks');
+      }
     },
   });
 
   // Delete subtask
   const deleteSubtask = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, title }: { id: string; title: string }) => {
       const { error } = await supabase
         .from('task_subtasks')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return title;
     },
-    onSuccess: () => {
+    onSuccess: (title) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Subtarefa "${title}" removida`, 'subtasks');
     },
   });
 
@@ -147,6 +189,7 @@ export function useTaskDetails(taskId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, 'Comentário adicionado', 'comments');
       enhancedToast.success({ title: 'Comentário adicionado!' });
     },
   });
@@ -163,6 +206,7 @@ export function useTaskDetails(taskId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, 'Comentário removido', 'comments');
     },
   });
 

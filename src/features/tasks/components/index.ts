@@ -8,3 +8,4 @@ export * from './InlineDateCell';
 export * from './InlineAssigneeCell';
 export * from './InlineDepartmentCell';
 export * from './TaskSortableHeader';
+export * from './TaskHistorySection';
