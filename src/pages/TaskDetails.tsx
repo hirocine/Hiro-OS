@@ -204,7 +204,7 @@ export default function TaskDetails() {
             <CardTitle>Detalhes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {/* Status */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Status</span>
@@ -227,14 +227,6 @@ export default function TaskDetails() {
                   renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
                   renderOption={(val) => <PriorityBadge priority={val as TaskPriority} />}
                 />
-              </div>
-
-              {/* Created Date */}
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Criada em</span>
-                <span className="text-sm font-medium">
-                  {format(new Date(task.created_at), 'dd/MM/yyyy', { locale: ptBR })}
-                </span>
               </div>
 
               {/* Due Date */}
