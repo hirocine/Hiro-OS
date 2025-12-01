@@ -95,7 +95,16 @@ export default function TaskDetails() {
     if (description === task?.description) return;
     await updateTask.mutateAsync({ 
       id: task!.id, 
-      updates: { description: description || null } 
+      updates: { description: description || null },
+      oldTask: {
+        title: task!.title,
+        status: task!.status,
+        priority: task!.priority,
+        due_date: task!.due_date,
+        department: task!.department,
+        assigned_to: task!.assigned_to,
+        description: task!.description,
+      }
     });
   };
 
