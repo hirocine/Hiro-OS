@@ -306,10 +306,10 @@ export default function Tasks() {
                 <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%] text-left">
+                    <TableHead className="w-[21%] text-left">
                       <TaskSortableHeader field="title" label="Título" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
                     </TableHead>
-                    <TableHead className="w-[10%] text-left">
+                    <TableHead className="w-[12%] text-left">
                       <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
                     </TableHead>
                     <TableHead className="w-[12%] text-left">
@@ -321,7 +321,7 @@ export default function Tasks() {
                     <TableHead className="w-[16%] text-left">
                       <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
                     </TableHead>
-                    <TableHead className="w-[14%] text-left">
+                    <TableHead className="w-[13%] text-left">
                       <TaskSortableHeader field="department" label="Departamento" currentSortBy={teamSortBy} currentSortOrder={teamSortOrder} onSort={handleTeamSort} />
                     </TableHead>
                     <TableHead className="w-[8%] text-left">Ações</TableHead>
@@ -546,10 +546,10 @@ export default function Tasks() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[22%] text-left">
+                    <TableHead className="w-[21%] text-left">
                       <TaskSortableHeader field="title" label="Título" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
                     </TableHead>
-                    <TableHead className="w-[10%] text-left">
+                    <TableHead className="w-[12%] text-left">
                       <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
                     </TableHead>
                     <TableHead className="w-[12%] text-left">
@@ -561,7 +561,7 @@ export default function Tasks() {
                     <TableHead className="w-[16%] text-left">
                       <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
                     </TableHead>
-                    <TableHead className="w-[14%] text-left">
+                    <TableHead className="w-[13%] text-left">
                       <TaskSortableHeader field="department" label="Departamento" currentSortBy={mySortBy} currentSortOrder={mySortOrder} onSort={handleMySort} />
                     </TableHead>
                     <TableHead className="w-[8%] text-left">Ações</TableHead>
@@ -801,10 +801,10 @@ export default function Tasks() {
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[22%] text-left">
+                        <TableHead className="w-[21%] text-left">
                           <TaskSortableHeader field="title" label="Título" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                         </TableHead>
-                        <TableHead className="w-[10%] text-left">
+                        <TableHead className="w-[12%] text-left">
                           <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                         </TableHead>
                         <TableHead className="w-[12%] text-left">
@@ -816,7 +816,7 @@ export default function Tasks() {
                         <TableHead className="w-[16%] text-left">
                           <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                         </TableHead>
-                        <TableHead className="w-[14%] text-left">
+                        <TableHead className="w-[13%] text-left">
                           <TaskSortableHeader field="department" label="Departamento" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
                         </TableHead>
                         <TableHead className="w-[8%] text-left">Ações</TableHead>

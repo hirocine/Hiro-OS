@@ -46,7 +46,7 @@ export function InlineSelectCell({
               setIsOpen(true);
             }}
           >
-            <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
+            <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap">
               {renderValue(value)}
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
