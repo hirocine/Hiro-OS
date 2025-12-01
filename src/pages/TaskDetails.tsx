@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Trash2, Plus, Send } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
-import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus } from '@/features/tasks/types';
+import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus, TaskLinkType } from '@/features/tasks/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,32 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+// Helper to get link icon based on type
+function getLinkIcon(linkType: TaskLinkType) {
+  switch (linkType) {
+    case 'google_drive':
+      return <HardDrive className="w-4 h-4 text-blue-500" />;
+    case 'dropbox':
+      return <Cloud className="w-4 h-4 text-blue-600" />;
+    case 'notion':
+      return <FileText className="w-4 h-4 text-foreground" />;
+    case 'onedrive':
+      return <Cloud className="w-4 h-4 text-sky-500" />;
+    default:
+      return <Link2 className="w-4 h-4 text-muted-foreground" />;
+  }
+}
+
+// Helper to extract domain from URL
+function getDomain(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace('www.', '');
+  } catch {
+    return url;
+  }
+}
+
 export default function TaskDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -42,8 +68,10 @@ export default function TaskDetails() {
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
   const [description, setDescription] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [newLinkTitle, setNewLinkTitle] = useState('');
 
-  const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment } = useTaskDetails(id!);
+  const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment, addLink, deleteLink } = useTaskDetails(id!);
   const { deleteTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
   const { departments } = useDepartments();
@@ -89,6 +117,14 @@ export default function TaskDetails() {
     if (!newComment.trim()) return;
     await addComment.mutateAsync(newComment);
     setNewComment('');
+  };
+
+  const handleAddLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLinkUrl.trim() || !newLinkTitle.trim()) return;
+    await addLink.mutateAsync({ url: newLinkUrl, title: newLinkTitle });
+    setNewLinkUrl('');
+    setNewLinkTitle('');
   };
 
   const handleSaveDescription = async () => {
@@ -372,7 +408,84 @@ export default function TaskDetails() {
                     >
                       <Send className="w-4 h-4" />
                     </Button>
+            </div>
+
+            <Separator />
+
+            {/* Seção: Links Externos */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Link2 className="w-5 h-5" />
+                Links Externos ({task.links?.length || 0})
+              </h3>
+              {task.links && task.links.length > 0 ? (
+                <div className="space-y-2">
+                  {task.links.map((link) => (
+                    <div 
+                      key={link.id} 
+                      className="flex items-center gap-3 p-3 rounded-md border hover:bg-muted/50 group transition-colors"
+                    >
+                      {getLinkIcon(link.link_type)}
+                      <div className="flex-1 min-w-0">
+                        <a 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="font-medium text-sm hover:underline flex items-center gap-1"
+                        >
+                          {link.title}
+                          <ExternalLink className="w-3 h-3 opacity-50" />
+                        </a>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {getDomain(link.url)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                        onClick={() => deleteLink.mutateAsync({ id: link.id, title: link.title })}
+                        disabled={deleteLink.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">Nenhum link externo</p>
+              )}
+
+              <form onSubmit={handleAddLink} className="mt-3 space-y-2">
+                <div className="flex gap-2">
+                  <div className="flex-1 border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                    <Input
+                      placeholder="https://drive.google.com/..."
+                      value={newLinkUrl}
+                      onChange={(e) => setNewLinkUrl(e.target.value)}
+                      className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
                   </div>
+                  <div className="w-48 border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                    <Input
+                      placeholder="Título do link"
+                      value={newLinkTitle}
+                      onChange={(e) => setNewLinkTitle(e.target.value)}
+                      className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3"
+                    disabled={addLink.isPending || !newLinkUrl.trim() || !newLinkTitle.trim()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </form>
+            </div>
                 </div>
               </form>
             </div>

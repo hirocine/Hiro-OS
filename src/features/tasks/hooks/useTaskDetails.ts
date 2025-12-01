@@ -1,9 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryClient';
-import { TaskWithDetails, TaskSubtask, TaskComment, TaskAttachment } from '../types';
+import { TaskWithDetails, TaskSubtask, TaskComment, TaskAttachment, TaskLink, TaskLinkType } from '../types';
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+
+// Helper to detect link type from URL
+function detectLinkType(url: string): TaskLinkType {
+  const lowerUrl = url.toLowerCase();
+  if (lowerUrl.includes('drive.google.com') || lowerUrl.includes('docs.google.com')) {
+    return 'google_drive';
+  }
+  if (lowerUrl.includes('dropbox.com')) {
+    return 'dropbox';
+  }
+  if (lowerUrl.includes('notion.so') || lowerUrl.includes('notion.site')) {
+    return 'notion';
+  }
+  if (lowerUrl.includes('onedrive.live.com') || lowerUrl.includes('sharepoint.com')) {
+    return 'onedrive';
+  }
+  return 'other';
+}
 
 // Helper to add history entry
 async function addTaskHistoryEntry(
@@ -88,6 +106,15 @@ export function useTaskDetails(taskId: string) {
 
       if (attachmentsError) throw attachmentsError;
 
+      // Fetch links
+      const { data: links, error: linksError } = await supabase
+        .from('task_links')
+        .select('*')
+        .eq('task_id', taskId)
+        .order('created_at', { ascending: false });
+
+      if (linksError) throw linksError;
+
       return {
         ...taskData,
         assignee_name: taskData.profiles?.display_name || null,
@@ -95,6 +122,7 @@ export function useTaskDetails(taskId: string) {
         subtasks: (subtasks || []) as TaskSubtask[],
         comments: (comments || []) as TaskComment[],
         attachments: (attachments || []) as TaskAttachment[],
+        links: (links || []) as TaskLink[],
       } as TaskWithDetails;
     },
     enabled: !!taskId,
@@ -227,6 +255,53 @@ export function useTaskDetails(taskId: string) {
     },
   });
 
+  // Add link
+  const addLink = useMutation({
+    mutationFn: async ({ url, title }: { url: string; title: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const linkType = detectLinkType(url);
+
+      const { data, error } = await supabase
+        .from('task_links')
+        .insert([{
+          task_id: taskId,
+          url,
+          title,
+          link_type: linkType,
+          created_by: user.id,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Link "${data.title}" adicionado`, 'links');
+      enhancedToast.success({ title: 'Link adicionado!' });
+    },
+  });
+
+  // Delete link
+  const deleteLink = useMutation({
+    mutationFn: async ({ id, title }: { id: string; title: string }) => {
+      const { error } = await supabase
+        .from('task_links')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return title;
+    },
+    onSuccess: (title) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Link "${title}" removido`, 'links');
+    },
+  });
+
   return {
     task,
     isLoading,
@@ -237,5 +312,7 @@ export function useTaskDetails(taskId: string) {
     addComment,
     deleteComment,
     deleteAttachment,
+    addLink,
+    deleteLink,
   };
 }
