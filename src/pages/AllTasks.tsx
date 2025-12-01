@@ -225,7 +225,7 @@ export default function AllTasks() {
                             <AvatarImage src={task.assignee_avatar || undefined} />
                             <AvatarFallback>{task.assignee_name[0]}</AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{task.assignee_name}</span>
+                          <span className="text-sm">{task.assignee_name.split(' ')[0]}</span>
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-sm">Não atribuída</span>
