@@ -846,7 +846,7 @@ export default function Tasks() {
                                     {task.assignee_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm text-muted-foreground truncate">{task.assignee_name}</span>
+                                <span className="text-sm text-muted-foreground truncate">{task.assignee_name.split(' ')[0]}</span>
                               </div>
                             ) : (
                               <span className="text-muted-foreground/50 text-sm">—</span>
