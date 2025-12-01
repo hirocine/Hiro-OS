@@ -14,6 +14,7 @@ import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
+import { TaskHistorySection } from '@/features/tasks/components/TaskHistorySection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
@@ -99,7 +100,19 @@ export default function TaskDetails() {
   };
 
   const handleUpdateTask = async (updates: Partial<typeof task>) => {
-    await updateTask.mutateAsync({ id: task.id, updates });
+    await updateTask.mutateAsync({ 
+      id: task.id, 
+      updates,
+      oldTask: {
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+        due_date: task.due_date,
+        department: task.department,
+        assigned_to: task.assigned_to,
+        description: task.description,
+      }
+    });
   };
 
   const priorityOptions = Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ 
@@ -245,10 +258,11 @@ export default function TaskDetails() {
                     >
                       <Checkbox
                         checked={subtask.is_completed}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           updateSubtask.mutateAsync({
                             id: subtask.id,
-                            updates: { is_completed: checked as boolean }
+                            updates: { is_completed: checked as boolean },
+                            subtaskTitle: subtask.title
                           })
                         }
                         disabled={updateSubtask.isPending}
@@ -263,7 +277,7 @@ export default function TaskDetails() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
-                        onClick={() => deleteSubtask.mutateAsync(subtask.id)}
+                        onClick={() => deleteSubtask.mutateAsync({ id: subtask.id, title: subtask.title })}
                         disabled={deleteSubtask.isPending}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -356,6 +370,9 @@ export default function TaskDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Histórico de Ações */}
+      <TaskHistorySection taskId={task.id} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
