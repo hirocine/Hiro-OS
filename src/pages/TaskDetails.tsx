@@ -486,7 +486,7 @@ export default function TaskDetails() {
         </Card>
 
         {/* Histórico de Ações */}
-        <TaskHistorySection taskId={task.id} />
+        <TaskHistorySection taskId={task.id} taskCreatedAt={task.created_at} />
       </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

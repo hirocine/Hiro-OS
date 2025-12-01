@@ -8,10 +8,27 @@ import { ptBR } from 'date-fns/locale';
 
 interface TaskHistorySectionProps {
   taskId: string;
+  taskCreatedAt: string;
 }
 
-export function TaskHistorySection({ taskId }: TaskHistorySectionProps) {
+export function TaskHistorySection({ taskId, taskCreatedAt }: TaskHistorySectionProps) {
   const { history, isLoading } = useTaskHistory(taskId);
+
+  // Create virtual entry for task creation (always show at the end)
+  const creationEntry = {
+    id: 'creation',
+    task_id: taskId,
+    user_id: 'system',
+    user_name: 'Sistema',
+    action: 'Tarefa criada',
+    field_changed: null,
+    old_value: null,
+    new_value: null,
+    created_at: taskCreatedAt,
+  };
+
+  // Combine real history + creation entry (creation is always last since history is desc)
+  const allHistory = [...history, creationEntry];
 
   if (isLoading) {
     return (
@@ -46,14 +63,9 @@ export function TaskHistorySection({ taskId }: TaskHistorySectionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            Nenhuma ação registrada ainda
-          </p>
-        ) : (
-          <ScrollArea className="max-h-[400px]">
-            <div className="space-y-3">
-              {history.map((entry) => (
+        <ScrollArea className="max-h-[400px]">
+          <div className="space-y-3">
+            {allHistory.map((entry) => (
                 <div
                   key={entry.id}
                   className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
@@ -70,10 +82,9 @@ export function TaskHistorySection({ taskId }: TaskHistorySectionProps) {
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        )}
+            ))}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
