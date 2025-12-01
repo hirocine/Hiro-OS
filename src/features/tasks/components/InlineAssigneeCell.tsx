@@ -55,7 +55,7 @@ export function InlineAssigneeCell({
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            className="h-auto min-h-0 w-auto p-0 font-normal bg-transparent hover:bg-transparent"
+            className="h-auto min-h-0 w-full justify-start text-left p-0 font-normal bg-transparent hover:bg-transparent"
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(true);
