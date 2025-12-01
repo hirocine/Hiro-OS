@@ -46,7 +46,7 @@ export function TaskSortableHeader({
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className={`h-7 px-2 py-1 w-full font-medium justify-between hover:bg-accent/20 transition-colors min-w-0 ${
+      className={`h-7 px-0 py-1 w-full font-medium justify-start gap-1 hover:bg-accent/20 transition-colors min-w-0 ${
         isActive 
           ? 'text-primary bg-accent/10' 
           : 'text-muted-foreground hover:text-foreground'
