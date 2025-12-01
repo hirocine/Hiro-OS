@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, User, Tag, Edit2, Trash2, Users, Plus, Send } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,17 @@ import { useTaskDetails } from '@/features/tasks/hooks/useTaskDetails';
 import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
-import { TaskDialog } from '@/features/tasks/components/TaskDialog';
+import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
+import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
+import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
+import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
+import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { useUsers } from '@/hooks/useUsers';
+import { useDepartments } from '@/features/tasks/hooks/useDepartments';
+import { PRIORITY_CONFIG, STATUS_CONFIG, TaskPriority, TaskStatus } from '@/features/tasks/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -31,7 +37,6 @@ import {
 export default function TaskDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -39,6 +44,8 @@ export default function TaskDetails() {
 
   const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment } = useTaskDetails(id!);
   const { deleteTask, updateTask } = useTaskMutations();
+  const { users } = useUsers();
+  const { departments } = useDepartments();
 
   useEffect(() => {
     if (task?.description) {
@@ -91,6 +98,20 @@ export default function TaskDetails() {
     });
   };
 
+  const handleUpdateTask = async (updates: Partial<typeof task>) => {
+    await updateTask.mutateAsync({ id: task.id, updates });
+  };
+
+  const priorityOptions = Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ 
+    value, 
+    label: config.label 
+  }));
+  
+  const statusOptions = Object.entries(STATUS_CONFIG).map(([value, config]) => ({ 
+    value, 
+    label: config.label 
+  }));
+
   return (
     <div className="container mx-auto p-6 md:p-8">
       {/* Header */}
@@ -100,17 +121,17 @@ export default function TaskDetails() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{task.title}</h1>
+            <InlineEditCell
+              value={task.title}
+              onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
+              className="text-3xl font-bold"
+            />
             <p className="text-sm text-muted-foreground mt-1">
               Criada em {format(new Date(task.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setEditOpen(true)}>
-            <Edit2 className="w-4 h-4 mr-2" />
-            Editar
-          </Button>
           <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="w-4 h-4 mr-2" />
             Excluir
@@ -129,17 +150,25 @@ export default function TaskDetails() {
               {/* Status */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <div className="w-fit">
-                  <StatusBadge status={task.status} />
-                </div>
+                <InlineSelectCell
+                  value={task.status}
+                  options={statusOptions}
+                  onSave={(newStatus) => handleUpdateTask({ status: newStatus as TaskStatus })}
+                  renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
+                  renderOption={(val) => <StatusBadge status={val as TaskStatus} />}
+                />
               </div>
 
               {/* Priority */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Prioridade</span>
-                <div className="w-fit">
-                  <PriorityBadge priority={task.priority} />
-                </div>
+                <InlineSelectCell
+                  value={task.priority}
+                  options={priorityOptions}
+                  onSave={(newPriority) => handleUpdateTask({ priority: newPriority as TaskPriority })}
+                  renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
+                  renderOption={(val) => <PriorityBadge priority={val as TaskPriority} />}
+                />
               </div>
 
               {/* Created Date */}
@@ -151,37 +180,32 @@ export default function TaskDetails() {
               </div>
 
               {/* Due Date */}
-              {task.due_date && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm text-muted-foreground">Prazo</span>
-                  <span className="text-sm font-medium">
-                    {format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })}
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Prazo</span>
+                <InlineDateCell
+                  value={task.due_date}
+                  onSave={(newDate) => handleUpdateTask({ due_date: newDate })}
+                />
+              </div>
 
               {/* Department */}
-              {task.department && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm text-muted-foreground">Departamento</span>
-                  <span className="text-sm font-medium">{task.department}</span>
-                </div>
-              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Departamento</span>
+                <InlineDepartmentCell
+                  value={task.department}
+                  departments={departments}
+                  onSave={(newDept) => handleUpdateTask({ department: newDept })}
+                />
+              </div>
 
               {/* Responsável */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Responsável</span>
-                {task.assignee_name ? (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarImage src={task.assignee_avatar || undefined} />
-                      <AvatarFallback className="text-xs">{task.assignee_name[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium truncate">{task.assignee_name}</span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Não atribuída</span>
-                )}
+                <InlineAssigneeCell
+                  value={task.assigned_to}
+                  users={users}
+                  onSave={(newAssignee) => handleUpdateTask({ assigned_to: newAssignee })}
+                />
               </div>
             </div>
           </CardContent>
@@ -332,8 +356,6 @@ export default function TaskDetails() {
           </CardContent>
         </Card>
       </div>
-
-      <TaskDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
