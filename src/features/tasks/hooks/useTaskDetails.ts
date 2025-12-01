@@ -212,16 +212,18 @@ export function useTaskDetails(taskId: string) {
 
   // Delete attachment
   const deleteAttachment = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, fileName }: { id: string; fileName: string }) => {
       const { error } = await supabase
         .from('task_attachments')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return fileName;
     },
-    onSuccess: () => {
+    onSuccess: (fileName) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      addTaskHistoryEntry(taskId, `Anexo "${fileName}" removido`, 'attachments');
     },
   });
 
