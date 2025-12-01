@@ -20,6 +20,7 @@ import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCe
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -82,8 +83,9 @@ export default function Tasks() {
   // Collapsible state for archived section (closed by default)
   const [archivedOpen, setArchivedOpen] = useState(false);
   
-  const { tasks: allTeamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
-  const { tasks: allMyTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
+  const { tasks: allTeamTasks, isLoading: teamLoading } = useTasks();
+  const { tasks: allMyTasks, isLoading: myLoading } = useTasks({ assigned_to_me: true });
+  const { createTask, updateTask } = useTaskMutations();
   const { tasks: completedTasks, isLoading: completedLoading } = useTasks({ status: 'concluida' });
   const { tasks: archivedTasks, isLoading: archivedLoading } = useTasks({ status: 'arquivada' });
 
@@ -359,9 +361,10 @@ export default function Tasks() {
                         <TableCell className="font-medium">
                           <InlineEditCell
                             value={task.title}
-                            onSave={(newValue) => updateTeamTask.mutate({ 
+                            onSave={(newValue) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { title: newValue } 
+                              updates: { title: newValue },
+                              oldTask: { title: task.title }
                             })}
                           />
                         </TableCell>
@@ -375,9 +378,10 @@ export default function Tasks() {
                               { value: 'alta', label: 'Alta' },
                               { value: 'urgente', label: 'Urgente' },
                             ]}
-                            onSave={(newValue) => updateTeamTask.mutate({ 
+                            onSave={(newValue) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { priority: newValue as any } 
+                              updates: { priority: newValue as any },
+                              oldTask: { priority: task.priority }
                             })}
                             renderValue={(value) => <PriorityBadge priority={value as any} />}
                             renderOption={(value) => <PriorityBadge priority={value as any} />}
@@ -392,9 +396,10 @@ export default function Tasks() {
                               { value: 'concluida', label: 'Concluída' },
                               { value: 'arquivada', label: 'Arquivado' },
                             ]}
-                            onSave={(newValue) => updateTeamTask.mutate({ 
+                            onSave={(newValue) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { status: newValue as any } 
+                              updates: { status: newValue as any },
+                              oldTask: { status: task.status }
                             })}
                             renderValue={(value) => <StatusBadge status={value as any} />}
                             renderOption={(value) => <StatusBadge status={value as any} />}
@@ -404,18 +409,20 @@ export default function Tasks() {
                           <InlineAssigneeCell
                             value={task.assigned_to}
                             users={users || []}
-                            onSave={(newValue) => updateTeamTask.mutate({ 
+                            onSave={(newValue) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { assigned_to: newValue } 
+                              updates: { assigned_to: newValue },
+                              oldTask: { assigned_to: task.assigned_to }
                             })}
                           />
                         </TableCell>
                         <TableCell>
                           <InlineDateCell
                             value={task.due_date}
-                            onSave={(newDate) => updateTeamTask.mutate({ 
+                            onSave={(newDate) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { due_date: newDate } 
+                              updates: { due_date: newDate },
+                              oldTask: { due_date: task.due_date }
                             })}
                           />
                         </TableCell>
@@ -423,9 +430,10 @@ export default function Tasks() {
                       <InlineDepartmentCell
                         value={task.department}
                         departments={departments}
-                        onSave={(newDept) => updateTeamTask.mutate({ 
+                        onSave={(newDept) => updateTask.mutate({ 
                           id: task.id, 
-                          updates: { department: newDept } 
+                          updates: { department: newDept },
+                          oldTask: { department: task.department }
                         })}
                       />
                     </TableCell>
@@ -599,9 +607,10 @@ export default function Tasks() {
                       <TableCell className="font-medium">
                         <InlineEditCell
                           value={task.title}
-                          onSave={(newValue) => updateMyTask.mutate({ 
+                          onSave={(newValue) => updateTask.mutate({ 
                             id: task.id, 
-                            updates: { title: newValue } 
+                            updates: { title: newValue },
+                            oldTask: { title: task.title }
                           })}
                         />
                       </TableCell>
@@ -615,9 +624,10 @@ export default function Tasks() {
                             { value: 'alta', label: 'Alta' },
                             { value: 'urgente', label: 'Urgente' },
                           ]}
-                          onSave={(newValue) => updateMyTask.mutate({ 
+                          onSave={(newValue) => updateTask.mutate({ 
                             id: task.id, 
-                            updates: { priority: newValue as any } 
+                            updates: { priority: newValue as any },
+                            oldTask: { priority: task.priority }
                           })}
                           renderValue={(value) => <PriorityBadge priority={value as any} />}
                           renderOption={(value) => <PriorityBadge priority={value as any} />}
@@ -632,9 +642,10 @@ export default function Tasks() {
                             { value: 'concluida', label: 'Concluída' },
                             { value: 'arquivada', label: 'Arquivado' },
                           ]}
-                          onSave={(newValue) => updateMyTask.mutate({ 
+                          onSave={(newValue) => updateTask.mutate({ 
                             id: task.id, 
-                            updates: { status: newValue as any } 
+                            updates: { status: newValue as any },
+                            oldTask: { status: task.status }
                           })}
                           renderValue={(value) => <StatusBadge status={value as any} />}
                           renderOption={(value) => <StatusBadge status={value as any} />}
@@ -644,18 +655,20 @@ export default function Tasks() {
                         <InlineAssigneeCell
                           value={task.assigned_to}
                           users={users || []}
-                          onSave={(newValue) => updateMyTask.mutate({ 
+                          onSave={(newValue) => updateTask.mutate({ 
                             id: task.id, 
-                            updates: { assigned_to: newValue } 
+                            updates: { assigned_to: newValue },
+                            oldTask: { assigned_to: task.assigned_to }
                           })}
                         />
                       </TableCell>
                       <TableCell>
                         <InlineDateCell
                           value={task.due_date}
-                          onSave={(newDate) => updateMyTask.mutate({ 
+                          onSave={(newDate) => updateTask.mutate({ 
                             id: task.id, 
-                            updates: { due_date: newDate } 
+                            updates: { due_date: newDate },
+                            oldTask: { due_date: task.due_date }
                           })}
                         />
                       </TableCell>
@@ -663,9 +676,10 @@ export default function Tasks() {
                           <InlineDepartmentCell
                             value={task.department}
                             departments={departments}
-                            onSave={(newDept) => updateMyTask.mutate({ 
+                            onSave={(newDept) => updateTask.mutate({ 
                               id: task.id, 
-                              updates: { department: newDept } 
+                              updates: { department: newDept },
+                              oldTask: { department: task.department }
                             })}
                           />
                         </TableCell>
