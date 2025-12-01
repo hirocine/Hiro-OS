@@ -72,10 +72,23 @@ export interface TaskAttachment {
   created_at: string;
 }
 
+export type TaskLinkType = 'google_drive' | 'dropbox' | 'notion' | 'onedrive' | 'other';
+
+export interface TaskLink {
+  id: string;
+  task_id: string;
+  url: string;
+  title: string;
+  link_type: TaskLinkType;
+  created_by: string;
+  created_at: string;
+}
+
 export interface TaskWithDetails extends Task {
   subtasks: TaskSubtask[];
   comments: TaskComment[];
   attachments: TaskAttachment[];
+  links: TaskLink[];
 }
 
 export interface TaskStats {

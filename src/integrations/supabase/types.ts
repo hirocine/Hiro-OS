@@ -1074,6 +1074,44 @@ export type Database = {
           },
         ]
       }
+      task_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          link_type: string
+          task_id: string
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          link_type?: string
+          task_id: string
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          link_type?: string
+          task_id?: string
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_links_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_subtasks: {
         Row: {
           created_at: string
