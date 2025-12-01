@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User } from 'lucide-react';
+import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,9 @@ export default function Tasks() {
   // Sorting state for completed tasks
   const [completedSortBy, setCompletedSortBy] = useState<TaskSortableField>('due_date');
   const [completedSortOrder, setCompletedSortOrder] = useState<TaskSortOrder>('desc');
+  
+  // Collapsible state for completed section (closed by default)
+  const [completedOpen, setCompletedOpen] = useState(false);
   
   const { tasks: allTeamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
   const { tasks: allMyTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
@@ -755,107 +759,123 @@ export default function Tasks() {
           </CardContent>
         </Card>
 
-        {/* Completed Tasks Section */}
-        <Card className="border-success/30 bg-success/5">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-success/10">
-                <CheckCircle className="w-5 h-5 text-success" />
-              </div>
-              <CardTitle>Tarefas Concluídas</CardTitle>
-            </div>
-            {hasMoreCompletedTasks && (
-              <Button variant="ghost" asChild>
-                <Link to="/tarefas/todas?status=concluida">
-                  Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {completedLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
-              </div>
-            ) : displayedCompletedTasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Nenhuma tarefa concluída ainda</p>
-            ) : (
-              <Table className="table-fixed">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[22%] text-left p-0">
-                      <TaskSortableHeader field="title" label="Título" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[10%] text-left p-0">
-                      <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[12%] text-left p-0">
-                      <TaskSortableHeader field="status" label="Status" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[18%] text-left p-0">
-                      <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[16%] text-left p-0">
-                      <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[14%] text-left p-0">
-                      <TaskSortableHeader field="department" label="Departamento" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
-                    </TableHead>
-                    <TableHead className="w-[8%] text-left">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {displayedCompletedTasks.map((task) => (
-                    <TableRow 
-                      key={task.id} 
-                      className="hover:bg-success/10"
-                    >
-                      <TableCell className="font-medium text-muted-foreground">
-                        {task.title}
-                      </TableCell>
-                      <TableCell>
-                        <PriorityBadge priority={task.priority as TaskPriority} />
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={task.status as TaskStatus} />
-                      </TableCell>
-                      <TableCell>
-                        {task.assignee_name ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={task.assignee_avatar || undefined} />
-                              <AvatarFallback className="text-xs">
-                                {task.assignee_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-muted-foreground truncate">{task.assignee_name}</span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground/50 text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {task.updated_at ? format(new Date(task.updated_at), 'dd/MM/yyyy') : '—'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {task.department || '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/tarefas/${task.id}`)}
+        {/* Completed Tasks Section - Collapsible */}
+        <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
+          <Card className="border-success/30 bg-success/5">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="flex flex-row items-center justify-between cursor-pointer hover:bg-success/10 transition-colors rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-success/10">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
+                  <CardTitle>Tarefas Concluídas</CardTitle>
+                  <Badge variant="secondary" className="bg-success/20 text-success border-success/30">
+                    {completedTasks.length}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  {completedOpen && hasMoreCompletedTasks && (
+                    <Button variant="ghost" asChild onClick={(e) => e.stopPropagation()}>
+                      <Link to="/tarefas/todas?status=concluida">
+                        Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                  )}
+                  <ChevronDown className={cn(
+                    "w-5 h-5 text-muted-foreground transition-transform duration-200",
+                    completedOpen && "rotate-180"
+                  )} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent>
+                {completedLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
+                  </div>
+                ) : displayedCompletedTasks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma tarefa concluída ainda</p>
+                ) : (
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[22%] text-left p-0">
+                          <TaskSortableHeader field="title" label="Título" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[10%] text-left p-0">
+                          <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[12%] text-left p-0">
+                          <TaskSortableHeader field="status" label="Status" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[18%] text-left p-0">
+                          <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[16%] text-left p-0">
+                          <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[14%] text-left p-0">
+                          <TaskSortableHeader field="department" label="Departamento" currentSortBy={completedSortBy} currentSortOrder={completedSortOrder} onSort={handleCompletedSort} />
+                        </TableHead>
+                        <TableHead className="w-[8%] text-left">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayedCompletedTasks.map((task) => (
+                        <TableRow 
+                          key={task.id} 
+                          className="hover:bg-success/10"
                         >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                          <TableCell className="font-medium text-muted-foreground">
+                            {task.title}
+                          </TableCell>
+                          <TableCell>
+                            <PriorityBadge priority={task.priority as TaskPriority} />
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={task.status as TaskStatus} />
+                          </TableCell>
+                          <TableCell>
+                            {task.assignee_name ? (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={task.assignee_avatar || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {task.assignee_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm text-muted-foreground truncate">{task.assignee_name}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground/50 text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {task.updated_at ? format(new Date(task.updated_at), 'dd/MM/yyyy') : '—'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {task.department || '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/tarefas/${task.id}`)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </div>
 
       {/* Task Dialog */}
