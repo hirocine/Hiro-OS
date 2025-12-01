@@ -762,12 +762,7 @@ export default function Tasks() {
               <div className="p-2 rounded-lg bg-success/10">
                 <CheckCircle className="w-5 h-5 text-success" />
               </div>
-              <div className="flex items-center gap-2">
-                <CardTitle>Tarefas Concluídas</CardTitle>
-                <Badge variant="outline" className="bg-success/10 text-success border-success/30">
-                  {completedTasks.length}
-                </Badge>
-              </div>
+              <CardTitle>Tarefas Concluídas</CardTitle>
             </div>
             {hasMoreCompletedTasks && (
               <Button variant="ghost" asChild>
