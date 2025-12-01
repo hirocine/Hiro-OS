@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown } from 'lucide-react';
+import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown, Archive } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
@@ -75,9 +75,17 @@ export default function Tasks() {
   // Collapsible state for completed section (closed by default)
   const [completedOpen, setCompletedOpen] = useState(false);
   
+  // Sorting state for archived tasks
+  const [archivedSortBy, setArchivedSortBy] = useState<TaskSortableField>('due_date');
+  const [archivedSortOrder, setArchivedSortOrder] = useState<TaskSortOrder>('desc');
+  
+  // Collapsible state for archived section (closed by default)
+  const [archivedOpen, setArchivedOpen] = useState(false);
+  
   const { tasks: allTeamTasks, isLoading: teamLoading, updateTask: updateTeamTask, createTask } = useTasks();
   const { tasks: allMyTasks, isLoading: myLoading, updateTask: updateMyTask } = useTasks({ assigned_to_me: true });
   const { tasks: completedTasks, isLoading: completedLoading } = useTasks({ status: 'concluida' });
+  const { tasks: archivedTasks, isLoading: archivedLoading } = useTasks({ status: 'arquivada' });
 
   // Filter out completed and archived tasks from active sections
   const teamTasks = useMemo(() => 
@@ -166,6 +174,16 @@ export default function Tasks() {
   // Show only first 5 completed tasks
   const displayedCompletedTasks = sortedCompletedTasks.slice(0, 5);
   const hasMoreCompletedTasks = sortedCompletedTasks.length > 5;
+
+  // Sort archived tasks
+  const sortedArchivedTasks = useMemo(() => 
+    sortTasks(archivedTasks, archivedSortBy, archivedSortOrder),
+    [archivedTasks, archivedSortBy, archivedSortOrder]
+  );
+
+  // Show only first 5 archived tasks
+  const displayedArchivedTasks = sortedArchivedTasks.slice(0, 5);
+  const hasMoreArchivedTasks = sortedArchivedTasks.length > 5;
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -258,6 +276,11 @@ export default function Tasks() {
   const handleCompletedSort = (field: TaskSortableField, order: TaskSortOrder) => {
     setCompletedSortBy(field);
     setCompletedSortOrder(order);
+  };
+
+  const handleArchivedSort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setArchivedSortBy(field);
+    setArchivedSortOrder(order);
   };
 
   return (
@@ -827,6 +850,124 @@ export default function Tasks() {
                         <TableRow 
                           key={task.id} 
                           className="hover:bg-success/10"
+                        >
+                          <TableCell className="font-medium text-muted-foreground">
+                            {task.title}
+                          </TableCell>
+                          <TableCell>
+                            <PriorityBadge priority={task.priority as TaskPriority} />
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={task.status as TaskStatus} />
+                          </TableCell>
+                          <TableCell>
+                            {task.assignee_name ? (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={task.assignee_avatar || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {task.assignee_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm text-muted-foreground truncate">{task.assignee_name.split(' ')[0]}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground/50 text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {task.updated_at ? format(new Date(task.updated_at), 'dd/MM/yyyy') : '—'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {task.department || '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/tarefas/${task.id}`)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* Archived Tasks Section - Collapsible */}
+        <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="flex flex-row items-center justify-between cursor-pointer hover:bg-destructive/10 transition-colors rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-destructive/10">
+                    <Archive className="w-5 h-5 text-destructive" />
+                  </div>
+                  <CardTitle>Tarefas Arquivadas</CardTitle>
+                  <Badge variant="secondary" className="bg-destructive/20 text-destructive border-destructive/30">
+                    {archivedTasks.length}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  {archivedOpen && hasMoreArchivedTasks && (
+                    <Button variant="ghost" asChild onClick={(e) => e.stopPropagation()}>
+                      <Link to="/tarefas/todas?status=arquivada">
+                        Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                  )}
+                  <ChevronDown className={cn(
+                    "w-5 h-5 text-muted-foreground transition-transform duration-200",
+                    archivedOpen && "rotate-180"
+                  )} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent>
+                {archivedLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
+                  </div>
+                ) : displayedArchivedTasks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma tarefa arquivada ainda</p>
+                ) : (
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[21%] text-left">
+                          <TaskSortableHeader field="title" label="Título" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[12%] text-left">
+                          <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[12%] text-left">
+                          <TaskSortableHeader field="status" label="Status" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[18%] text-left">
+                          <TaskSortableHeader field="assignee_name" label="Responsável" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[16%] text-left">
+                          <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[13%] text-left">
+                          <TaskSortableHeader field="department" label="Departamento" currentSortBy={archivedSortBy} currentSortOrder={archivedSortOrder} onSort={handleArchivedSort} />
+                        </TableHead>
+                        <TableHead className="w-[8%] text-left">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayedArchivedTasks.map((task) => (
+                        <TableRow 
+                          key={task.id} 
+                          className="hover:bg-destructive/10"
                         >
                           <TableCell className="font-medium text-muted-foreground">
                             {task.title}
