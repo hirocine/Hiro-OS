@@ -408,6 +408,9 @@ export default function TaskDetails() {
                     >
                       <Send className="w-4 h-4" />
                     </Button>
+                  </div>
+                </div>
+              </form>
             </div>
 
             <Separator />
@@ -418,8 +421,9 @@ export default function TaskDetails() {
                 <Link2 className="w-5 h-5" />
                 Links Externos ({task.links?.length || 0})
               </h3>
+              
               {task.links && task.links.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-2 mb-4">
                   {task.links.map((link) => (
                     <div 
                       key={link.id} 
@@ -453,48 +457,45 @@ export default function TaskDetails() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">Nenhum link externo</p>
+                <p className="text-muted-foreground text-sm mb-4">Nenhum link externo</p>
               )}
 
-              <form onSubmit={handleAddLink} className="mt-3 space-y-2">
+              <form onSubmit={handleAddLink} className="space-y-3">
+                <div className="border rounded-md focus-within:ring-1 focus-within:ring-ring">
+                  <Input
+                    placeholder="https://drive.google.com/..."
+                    value={newLinkUrl}
+                    onChange={(e) => setNewLinkUrl(e.target.value)}
+                    className="h-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
                 <div className="flex gap-2">
                   <div className="flex-1 border rounded-md focus-within:ring-1 focus-within:ring-ring">
                     <Input
-                      placeholder="https://drive.google.com/..."
-                      value={newLinkUrl}
-                      onChange={(e) => setNewLinkUrl(e.target.value)}
-                      className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                  </div>
-                  <div className="w-48 border rounded-md focus-within:ring-1 focus-within:ring-ring">
-                    <Input
-                      placeholder="Título do link"
+                      placeholder="Título do link (ex: Briefing do projeto)"
                       value={newLinkTitle}
                       onChange={(e) => setNewLinkTitle(e.target.value)}
-                      className="h-9 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="h-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-3"
+                    size="default"
+                    className="h-10 px-4"
                     disabled={addLink.isPending || !newLinkUrl.trim() || !newLinkTitle.trim()}
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar
                   </Button>
-                </div>
-              </form>
-            </div>
                 </div>
               </form>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Histórico de Ações */}
-      <TaskHistorySection taskId={task.id} />
+        {/* Histórico de Ações */}
+        <TaskHistorySection taskId={task.id} />
+      </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
