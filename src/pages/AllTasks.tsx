@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
 import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   TaskSortableField, 
   TaskSortOrder, 
@@ -24,7 +25,38 @@ import { ptBR } from 'date-fns/locale';
 
 export default function AllTasks() {
   const navigate = useNavigate();
-  const { tasks, isLoading } = useTasks();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  
+  // Read filters from query string
+  const statusFilter = searchParams.get('status') as TaskStatus | null;
+  const assignedToMe = searchParams.get('assigned_to') === 'me';
+
+  // Build filters for useTasks
+  const taskFilters = useMemo(() => {
+    const filters: { status?: TaskStatus; assigned_to_me?: boolean } = {};
+    
+    if (statusFilter) {
+      filters.status = statusFilter;
+    }
+    
+    if (assignedToMe) {
+      filters.assigned_to_me = true;
+    }
+    
+    return Object.keys(filters).length > 0 ? filters : undefined;
+  }, [statusFilter, assignedToMe]);
+
+  const { tasks: allTasks, isLoading } = useTasks(taskFilters);
+
+  // Filter out completed/archived if no status filter (default behavior)
+  const tasks = useMemo(() => {
+    if (statusFilter) {
+      return allTasks; // Already filtered by status
+    }
+    // Default: exclude completed and archived
+    return allTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada');
+  }, [allTasks, statusFilter]);
   
   // Sorting state - default by due_date ascending
   const [sortBy, setSortBy] = useState<TaskSortableField>('due_date');
@@ -119,6 +151,21 @@ export default function AllTasks() {
     }
   };
 
+  // Dynamic title based on filters
+  const getPageTitle = () => {
+    if (assignedToMe) return 'Minhas Tarefas';
+    if (statusFilter === 'concluida') return 'Tarefas Concluídas';
+    if (statusFilter === 'arquivada') return 'Tarefas Arquivadas';
+    return 'Todas as Tarefas';
+  };
+
+  const getPageDescription = () => {
+    if (assignedToMe) return `Tarefas atribuídas a você (${tasks.length})`;
+    if (statusFilter === 'concluida') return `Tarefas concluídas (${tasks.length})`;
+    if (statusFilter === 'arquivada') return `Tarefas arquivadas (${tasks.length})`;
+    return `Todas as tarefas da plataforma (${tasks.length})`;
+  };
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <div className="mb-6">
@@ -132,8 +179,8 @@ export default function AllTasks() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Todas as Tarefas</CardTitle>
-          <CardDescription>Todas as tarefas da plataforma ({tasks.length})</CardDescription>
+          <CardTitle>{getPageTitle()}</CardTitle>
+          <CardDescription>{getPageDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -141,7 +188,7 @@ export default function AllTasks() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
             </div>
           ) : tasks.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhuma tarefa ainda</p>
+            <p className="text-muted-foreground text-center py-8">Nenhuma tarefa encontrada</p>
           ) : (
             <Table className="table-fixed">
               <TableHeader>
