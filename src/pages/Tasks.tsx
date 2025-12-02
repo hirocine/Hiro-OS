@@ -261,9 +261,13 @@ export default function Tasks() {
     { value: 'arquivada', label: 'Arquivado' },
   ];
 
-  // Show only first 8 team tasks with blur effect
-  const displayedTeamTasks = sortedTeamTasks.slice(0, 8);
-  const hasMoreTeamTasks = sortedTeamTasks.length > 8;
+  // Show only first 5 team tasks with blur effect
+  const displayedTeamTasks = sortedTeamTasks.slice(0, 5);
+  const hasMoreTeamTasks = sortedTeamTasks.length > 5;
+
+  // Show only first 5 my tasks
+  const displayedMyTasks = sortedMyTasks.slice(0, 5);
+  const hasMoreMyTasks = sortedMyTasks.length > 5;
   
   const handleTeamSort = (field: TaskSortableField, order: TaskSortOrder) => {
     setTeamSortBy(field);
@@ -556,15 +560,23 @@ export default function Tasks() {
 
         {/* My Tasks Section */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-500/10">
                 <User className="w-5 h-5 text-orange-500" />
               </div>
               <CardTitle className="text-lg">Minhas Tarefas</CardTitle>
             </div>
+            {hasMoreMyTasks && (
+              <Button variant="ghost" asChild>
+                <Link to="/tarefas/todas?assigned_to=me">
+                  Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
+            <div className="relative">
             {myLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
@@ -595,7 +607,7 @@ export default function Tasks() {
                   </TableRow>
                 </TableHeader>
                   <TableBody>
-                    {sortedMyTasks.map((task) => (
+                    {displayedMyTasks.map((task) => (
                     <TableRow 
                       key={task.id} 
                       className="hover:bg-muted/50"
@@ -789,6 +801,10 @@ export default function Tasks() {
               </TableBody>
               </Table>
             )}
+              {hasMoreMyTasks && (
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+              )}
+            </div>
           </CardContent>
         </Card>
 
