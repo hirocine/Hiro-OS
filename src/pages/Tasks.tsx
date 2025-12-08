@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown, Archive, Lock } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -32,6 +33,7 @@ import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
 
 export default function Tasks() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { users } = useUsers();
   const { departments } = useDepartments();
@@ -310,10 +312,10 @@ export default function Tasks() {
       title: newPrivateTask.title.trim(),
       priority: newPrivateTask.priority,
       status: newPrivateTask.status,
-      assigned_to: null, // Private tasks have no assignee
+      assigned_to: user?.id || null, // Auto-assign to creator
       due_date: newPrivateTask.due_date,
       department: newPrivateTask.department || null,
-      is_private: true, // Always force true
+      is_private: true,
     });
     
     resetPrivateTask();
