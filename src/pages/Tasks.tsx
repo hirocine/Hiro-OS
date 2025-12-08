@@ -1021,68 +1021,66 @@ export default function Tasks() {
                       ))}
 
                       {/* Inline creation row for private tasks */}
-                      <TableRow className={cn(
-                        "border-dashed border-2 border-purple-500/30 hover:opacity-100 transition-all",
-                        isPrivateTaskActive(newPrivateTask) ? "opacity-100" : "opacity-70"
-                      )}>
+                      <TableRow className="border-dashed border-t-2 border-muted-foreground/30 opacity-70 hover:opacity-100 transition-all duration-200">
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Lock className="w-3 h-3 text-purple-500 flex-shrink-0" />
+                            <Plus className={cn("w-4 h-4 flex-shrink-0 text-muted-foreground/50", isPrivateTaskActive(newPrivateTask) && "text-purple-500")} />
                             <Input
                               value={newPrivateTask.title}
                               onChange={(e) => setNewPrivateTask({ ...newPrivateTask, title: e.target.value })}
                               onKeyDown={(e) => e.key === 'Enter' && handleCreatePrivateTask()}
-                              placeholder="Nova tarefa privada..."
-                              className="h-8 bg-transparent border-0 p-0 focus-visible:ring-0 text-left"
+                              placeholder="+ Adicionar nova tarefa privada..."
+                              className="h-8 border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/40 placeholder:italic"
                             />
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {isPrivateTaskActive(newPrivateTask) ? (
-                            <InlineSelectCell
-                              value={newPrivateTask.priority}
-                              options={priorityOptions}
-                              onSave={(value) => setNewPrivateTask({ ...newPrivateTask, priority: value as TaskPriority })}
-                              renderValue={(value) => <PriorityBadge priority={value as any} />}
-                              renderOption={(value) => <PriorityBadge priority={value as any} />}
-                            />
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Selecionar</span>
-                          )}
+                        <TableCell className={cn("transition-opacity", !isPrivateTaskActive(newPrivateTask) && "opacity-40")}>
+                          <InlineSelectCell
+                            value={newPrivateTask.priority}
+                            options={priorityOptions}
+                            onSave={(value) => setNewPrivateTask({ ...newPrivateTask, priority: value as TaskPriority })}
+                            renderValue={(value) => 
+                              isPrivateTaskActive(newPrivateTask) 
+                                ? <PriorityBadge priority={value as any} />
+                                : <span className="text-muted-foreground/60 text-sm italic flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
+                            }
+                            renderOption={(value) => <PriorityBadge priority={value as any} />}
+                          />
                         </TableCell>
-                        <TableCell>
-                          {isPrivateTaskActive(newPrivateTask) ? (
-                            <InlineSelectCell
-                              value={newPrivateTask.status}
-                              options={statusOptions}
-                              onSave={(value) => setNewPrivateTask({ ...newPrivateTask, status: value as TaskStatus })}
-                              renderValue={(value) => <StatusBadge status={value as any} />}
-                              renderOption={(value) => <StatusBadge status={value as any} />}
-                            />
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Selecionar</span>
-                          )}
+                        <TableCell className={cn("transition-opacity", !isPrivateTaskActive(newPrivateTask) && "opacity-40")}>
+                          <InlineSelectCell
+                            value={newPrivateTask.status}
+                            options={statusOptions}
+                            onSave={(value) => setNewPrivateTask({ ...newPrivateTask, status: value as TaskStatus })}
+                            renderValue={(value) => 
+                              isPrivateTaskActive(newPrivateTask) 
+                                ? <StatusBadge status={value as any} />
+                                : <span className="text-muted-foreground/60 text-sm italic flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
+                            }
+                            renderOption={(value) => <StatusBadge status={value as any} />}
+                          />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={cn("transition-opacity", !isPrivateTaskActive(newPrivateTask) && "opacity-40")}>
                           <InlineDateCell
                             value={newPrivateTask.due_date}
                             onSave={(date) => setNewPrivateTask({ ...newPrivateTask, due_date: date })}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={cn("transition-opacity", !isPrivateTaskActive(newPrivateTask) && "opacity-40")}>
                           <InlineDepartmentCell
                             value={newPrivateTask.department}
                             departments={departments}
                             onSave={(dept) => setNewPrivateTask({ ...newPrivateTask, department: dept || '' })}
+                            isActive={isPrivateTaskActive(newPrivateTask)}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={cn("transition-opacity", !newPrivateTask.title && "opacity-40")}>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleCreatePrivateTask}
                             disabled={!newPrivateTask.title.trim()}
-                            className="text-purple-500 hover:text-purple-600"
+                            className="h-8 w-8 p-0"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
