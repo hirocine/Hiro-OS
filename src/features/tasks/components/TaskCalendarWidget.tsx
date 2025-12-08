@@ -106,7 +106,7 @@ export function TaskCalendarWidget() {
                   cell: "flex-1 h-12 md:h-14 text-center text-sm p-0.5 relative focus-within:relative focus-within:z-20",
                   day: "h-full w-full p-0 font-medium rounded-lg transition-all duration-200 hover:bg-accent/70 hover:scale-[1.02] aria-selected:opacity-100",
                   day_selected: "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105 hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                  day_today: "bg-accent ring-2 ring-primary/40 text-accent-foreground font-bold",
+                  day_today: "bg-muted/50 font-semibold",
                   day_outside: "text-muted-foreground/40 opacity-50",
                   day_disabled: "text-muted-foreground opacity-30",
                   nav: "space-x-2 flex items-center",
