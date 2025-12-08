@@ -124,33 +124,32 @@ export function TaskCalendarWidget() {
                   DayContent: ({ date }) => {
                     const dateKey = format(date, 'yyyy-MM-dd');
                     const dayTasks = tasksByDate.get(dateKey) || [];
-                    const hasUrgent = dayTasks.some(t => t.priority === 'urgente' && t.status !== 'concluida');
-                    const hasOverdue = dayTasks.some(t => {
+                    const pendingTasks = dayTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada');
+                    const pendingCount = pendingTasks.length;
+                    const hasOverdue = pendingTasks.some(t => {
                       const dueDate = new Date(t.due_date!);
                       return dueDate < new Date() && t.status !== 'concluida';
                     });
-                    const hasNormal = dayTasks.some(t => t.status !== 'concluida');
-                    const hasTasks = dayTasks.length > 0;
+                    const hasUrgent = pendingTasks.some(t => t.priority === 'urgente');
                     const isToday = isSameDay(date, new Date());
                     
                     return (
                       <div className={cn(
-                        "relative flex flex-col items-center justify-center w-full h-full rounded-lg transition-colors",
-                        hasTasks && !isToday && "bg-primary/5"
+                        "group relative flex flex-col items-center justify-center w-full h-full rounded-lg transition-colors",
+                        pendingCount > 0 && !isToday && "bg-primary/5"
                       )}>
                         <span className="text-sm md:text-base">{date.getDate()}</span>
-                        {hasTasks && (
-                          <div className="absolute bottom-1 md:bottom-1.5 flex gap-1">
-                            {hasOverdue && (
-                              <div className="w-2 h-2 rounded-full bg-destructive shadow-sm shadow-destructive/50 animate-pulse" />
-                            )}
-                            {hasUrgent && !hasOverdue && (
-                              <div className="w-2 h-2 rounded-full bg-orange-500 shadow-sm shadow-orange-500/50" />
-                            )}
-                            {hasNormal && !hasOverdue && !hasUrgent && (
-                              <div className="w-2 h-2 rounded-full bg-primary shadow-sm shadow-primary/50" />
-                            )}
-                          </div>
+                        {pendingCount > 0 && (
+                          <span className={cn(
+                            "absolute -top-0.5 -right-0.5 flex items-center justify-center",
+                            "min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold",
+                            "shadow-sm transition-transform group-hover:scale-110",
+                            hasOverdue && "bg-destructive text-white shadow-destructive/40",
+                            hasUrgent && !hasOverdue && "bg-orange-500 text-white shadow-orange-500/40",
+                            !hasOverdue && !hasUrgent && "bg-background border border-border text-foreground"
+                          )}>
+                            {pendingCount}
+                          </span>
                         )}
                       </div>
                     );
@@ -161,16 +160,16 @@ export function TaskCalendarWidget() {
             
             {/* Legend */}
             <div className="flex items-center justify-center gap-6 mt-5 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-destructive shadow-sm shadow-destructive/40" />
+              <div className="flex items-center gap-1.5">
+                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-destructive text-[9px] font-bold text-white">2</span>
                 <span className="text-muted-foreground font-medium">Atrasada</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/40" />
+              <div className="flex items-center gap-1.5">
+                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-orange-500 text-[9px] font-bold text-white">3</span>
                 <span className="text-muted-foreground font-medium">Urgente</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm shadow-primary/40" />
+              <div className="flex items-center gap-1.5">
+                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-background border border-border text-[9px] font-bold text-foreground">1</span>
                 <span className="text-muted-foreground font-medium">Normal</span>
               </div>
             </div>
