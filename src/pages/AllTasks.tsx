@@ -31,10 +31,11 @@ export default function AllTasks() {
   // Read filters from query string
   const statusFilter = searchParams.get('status') as TaskStatus | null;
   const assignedToMe = searchParams.get('assigned_to') === 'me';
+  const privateOnly = searchParams.get('private') === 'true';
 
   // Build filters for useTasks
   const taskFilters = useMemo(() => {
-    const filters: { status?: TaskStatus; assigned_to_me?: boolean } = {};
+    const filters: { status?: TaskStatus; assigned_to_me?: boolean; is_private?: boolean } = {};
     
     if (statusFilter) {
       filters.status = statusFilter;
@@ -44,8 +45,12 @@ export default function AllTasks() {
       filters.assigned_to_me = true;
     }
     
+    if (privateOnly) {
+      filters.is_private = true;
+    }
+    
     return Object.keys(filters).length > 0 ? filters : undefined;
-  }, [statusFilter, assignedToMe]);
+  }, [statusFilter, assignedToMe, privateOnly]);
 
   const { tasks: allTasks, isLoading } = useTasks(taskFilters);
 
@@ -153,6 +158,7 @@ export default function AllTasks() {
 
   // Dynamic title based on filters
   const getPageTitle = () => {
+    if (privateOnly) return 'Tarefas Privadas';
     if (assignedToMe) return 'Minhas Tarefas';
     if (statusFilter === 'concluida') return 'Tarefas Concluídas';
     if (statusFilter === 'arquivada') return 'Tarefas Arquivadas';
@@ -160,6 +166,7 @@ export default function AllTasks() {
   };
 
   const getPageDescription = () => {
+    if (privateOnly) return `Suas tarefas privadas (${tasks.length})`;
     if (assignedToMe) return `Tarefas atribuídas a você (${tasks.length})`;
     if (statusFilter === 'concluida') return `Tarefas concluídas (${tasks.length})`;
     if (statusFilter === 'arquivada') return `Tarefas arquivadas (${tasks.length})`;

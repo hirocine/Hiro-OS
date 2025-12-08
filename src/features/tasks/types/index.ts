@@ -34,6 +34,7 @@ export interface Task {
   created_by: string;
   created_at: string;
   updated_at: string;
+  is_private: boolean;
   
   // Joined data
   assignee_name?: string;

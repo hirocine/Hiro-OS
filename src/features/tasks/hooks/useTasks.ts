@@ -10,6 +10,7 @@ interface TaskFilters {
   assigned_to?: string;
   assigned_to_me?: boolean;
   search?: string;
+  is_private?: boolean;
 }
 
 /**
@@ -19,11 +20,13 @@ interface TaskFilters {
 export function useTasks(filters?: TaskFilters) {
   // Fetch tasks
   const { data: tasks = [], isLoading, error, refetch } = useQuery({
-    queryKey: filters?.assigned_to_me 
-      ? queryKeys.tasks.mine 
-      : filters?.status 
-        ? [...queryKeys.tasks.list, filters.status]
-        : queryKeys.tasks.list,
+    queryKey: filters?.is_private 
+      ? [...queryKeys.tasks.list, 'private']
+      : filters?.assigned_to_me 
+        ? queryKeys.tasks.mine 
+        : filters?.status 
+          ? [...queryKeys.tasks.list, filters.status]
+          : queryKeys.tasks.list,
     queryFn: async () => {
       logger.debug('Fetching tasks', { module: 'tasks', data: { filters } });
 
@@ -56,6 +59,9 @@ export function useTasks(filters?: TaskFilters) {
       }
       if (filters?.search) {
         query = query.ilike('title', `%${filters.search}%`);
+      }
+      if (filters?.is_private !== undefined) {
+        query = query.eq('is_private', filters.is_private);
       }
 
       const { data, error } = await query;

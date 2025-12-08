@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useTaskMutations } from '../hooks/useTaskMutations';
 import { Task, TaskPriority, TaskStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
 import { useUsers } from '@/hooks/useUsers';
 import { useDepartments } from '../hooks/useDepartments';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Users, Plus, Check, X } from 'lucide-react';
+import { Users, Plus, Check, X, Lock } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TaskDialogProps {
   open: boolean;
@@ -24,6 +26,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
   const { createTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
   const { departments, createDepartment } = useDepartments();
+  const { user } = useAuth();
   
   const [isCreatingNewDept, setIsCreatingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState('');
@@ -36,7 +39,15 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
     due_date: task?.due_date || '',
     department: task?.department || '',
     assigned_to: task?.assigned_to || '',
+    is_private: task?.is_private || false,
   });
+
+  // When marking as private, clear assigned_to if it's someone else
+  useEffect(() => {
+    if (formData.is_private && formData.assigned_to && formData.assigned_to !== user?.id) {
+      setFormData(prev => ({ ...prev, assigned_to: '' }));
+    }
+  }, [formData.is_private, formData.assigned_to, user?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +80,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
       due_date: '',
       department: '',
       assigned_to: '',
+      is_private: false,
     });
   };
 
@@ -242,6 +254,24 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
             </div>
           </div>
 
+          {/* Private task switch */}
+          <div className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-purple-500" />
+                <Label htmlFor="is_private" className="font-medium">Tarefa Privada</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Somente você poderá ver esta tarefa
+              </p>
+            </div>
+            <Switch
+              id="is_private"
+              checked={formData.is_private}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_private: checked })}
+            />
+          </div>
+
           <div>
             <Label htmlFor="assigned_to">Responsável</Label>
             <Select
@@ -253,25 +283,31 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                   setFormData({ ...formData, assigned_to: value });
                 }
               }}
+              disabled={formData.is_private}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um responsável" />
+                <SelectValue placeholder={formData.is_private ? "Você (tarefa privada)" : "Selecione um responsável"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Nenhum</SelectItem>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
+                {users.map((u) => (
+                  <SelectItem key={u.id} value={u.id} disabled={formData.is_private && u.id !== user?.id}>
                     <div className="flex items-center gap-2">
                       <Avatar className="w-6 h-6">
-                        <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback>{user.display_name?.[0] || '?'}</AvatarFallback>
+                        <AvatarImage src={u.avatar_url || undefined} />
+                        <AvatarFallback>{u.display_name?.[0] || '?'}</AvatarFallback>
                       </Avatar>
-                      {user.display_name}
+                      {u.display_name}
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {formData.is_private && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Tarefas privadas não podem ser atribuídas a outros usuários
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
