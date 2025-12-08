@@ -13,3 +13,4 @@ export * from './UrgentTasksWidget';
 export * from './UpcomingDeadlinesWidget';
 export * from './RecentActivityWidget';
 export * from './QuickActionsCard';
+export * from './TaskCalendarWidget';

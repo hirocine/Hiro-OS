@@ -9,6 +9,7 @@ import { UrgentTasksWidget } from '@/features/tasks/components/UrgentTasksWidget
 import { UpcomingDeadlinesWidget } from '@/features/tasks/components/UpcomingDeadlinesWidget';
 import { RecentActivityWidget } from '@/features/tasks/components/RecentActivityWidget';
 import { QuickActionsCard } from '@/features/tasks/components/QuickActionsCard';
+import { TaskCalendarWidget } from '@/features/tasks/components/TaskCalendarWidget';
 
 export default function Tasks() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -29,6 +30,9 @@ export default function Tasks() {
       <div className="space-y-6">
         {/* Stats Cards */}
         <TaskStatsCards />
+
+        {/* Calendar Widget - Full Width */}
+        <TaskCalendarWidget />
 
         {/* Main Widgets Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
