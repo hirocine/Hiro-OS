@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
-import { format, isSameDay, startOfMonth, endOfMonth } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useTasks } from '../hooks/useTasks';
 import { PriorityBadge, StatusBadge } from './index';
 
@@ -66,141 +68,169 @@ export function TaskCalendarWidget() {
   }, [tasksByDate]);
 
   const modifiersStyles = {
-    urgent: {
-      position: 'relative' as const,
-    },
-    overdue: {
-      position: 'relative' as const,
-    },
-    normal: {
-      position: 'relative' as const,
-    },
+    urgent: { position: 'relative' as const },
+    overdue: { position: 'relative' as const },
+    normal: { position: 'relative' as const },
   };
 
   return (
-    <Card className="col-span-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary/10">
+    <Card className="col-span-full overflow-hidden">
+      <CardHeader className="pb-4 border-b bg-muted/30">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10 shadow-sm">
             <CalendarIcon className="h-5 w-5 text-primary" />
           </div>
-          <CardTitle>Calendário de Tarefas</CardTitle>
+          <CardTitle className="text-lg">Calendário de Tarefas</CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Calendar */}
           <div className="flex flex-col">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              month={month}
-              onMonthChange={setMonth}
-              locale={ptBR}
-              className="rounded-md border pointer-events-auto w-full"
-              classNames={{
-                months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
-                month: "space-y-4 w-full",
-                table: "w-full border-collapse",
-                head_row: "flex w-full",
-                head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] text-center",
-                row: "flex w-full mt-2",
-                cell: "flex-1 h-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                day: "h-10 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors",
-                day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                day_today: "bg-accent text-accent-foreground",
-                day_outside: "day-outside text-muted-foreground opacity-50",
-                day_disabled: "text-muted-foreground opacity-50",
-                nav: "space-x-1 flex items-center",
-                nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border rounded-md",
-                nav_button_previous: "absolute left-1",
-                nav_button_next: "absolute right-1",
-                caption: "flex justify-center pt-1 relative items-center h-10",
-                caption_label: "text-sm font-medium",
-              }}
-              modifiers={modifiers}
-              modifiersStyles={modifiersStyles}
-              components={{
-                DayContent: ({ date }) => {
-                  const dateKey = format(date, 'yyyy-MM-dd');
-                  const dayTasks = tasksByDate.get(dateKey) || [];
-                  const hasUrgent = dayTasks.some(t => t.priority === 'urgente' && t.status !== 'concluida');
-                  const hasOverdue = dayTasks.some(t => {
-                    const dueDate = new Date(t.due_date!);
-                    return dueDate < new Date() && t.status !== 'concluida';
-                  });
-                  const hasNormal = dayTasks.some(t => t.status !== 'concluida');
-                  
-                  return (
-                    <div className="relative flex flex-col items-center justify-center w-full h-full">
-                      <span>{date.getDate()}</span>
-                      {dayTasks.length > 0 && (
-                        <div className="absolute bottom-0.5 flex gap-0.5">
-                          {hasOverdue && <div className="w-1.5 h-1.5 rounded-full bg-destructive" />}
-                          {hasUrgent && !hasOverdue && <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
-                          {hasNormal && !hasOverdue && !hasUrgent && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                        </div>
-                      )}
-                    </div>
-                  );
-                },
-              }}
-            />
+            <div className="bg-card rounded-xl border shadow-sm p-5">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                month={month}
+                onMonthChange={setMonth}
+                locale={ptBR}
+                className="pointer-events-auto w-full"
+                classNames={{
+                  months: "flex flex-col w-full",
+                  month: "space-y-6 w-full",
+                  table: "w-full border-collapse",
+                  head_row: "flex w-full bg-muted/40 rounded-lg py-2 mb-3",
+                  head_cell: "text-muted-foreground flex-1 font-semibold text-xs uppercase tracking-wider text-center",
+                  row: "flex w-full mt-1",
+                  cell: "flex-1 h-12 md:h-14 text-center text-sm p-0.5 relative focus-within:relative focus-within:z-20",
+                  day: "h-full w-full p-0 font-medium rounded-lg transition-all duration-200 hover:bg-accent/70 hover:scale-[1.02] aria-selected:opacity-100",
+                  day_selected: "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105 hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  day_today: "bg-accent ring-2 ring-primary/40 text-accent-foreground font-bold",
+                  day_outside: "text-muted-foreground/40 opacity-50",
+                  day_disabled: "text-muted-foreground opacity-30",
+                  nav: "space-x-2 flex items-center",
+                  nav_button: "h-9 w-9 bg-muted/50 hover:bg-muted rounded-lg transition-all duration-200 flex items-center justify-center hover:scale-105",
+                  nav_button_previous: "absolute left-0",
+                  nav_button_next: "absolute right-0",
+                  caption: "flex justify-center pt-1 pb-2 relative items-center h-12",
+                  caption_label: "text-base md:text-lg font-semibold capitalize",
+                }}
+                modifiers={modifiers}
+                modifiersStyles={modifiersStyles}
+                components={{
+                  IconLeft: () => <ChevronLeft className="h-5 w-5" />,
+                  IconRight: () => <ChevronRight className="h-5 w-5" />,
+                  DayContent: ({ date }) => {
+                    const dateKey = format(date, 'yyyy-MM-dd');
+                    const dayTasks = tasksByDate.get(dateKey) || [];
+                    const hasUrgent = dayTasks.some(t => t.priority === 'urgente' && t.status !== 'concluida');
+                    const hasOverdue = dayTasks.some(t => {
+                      const dueDate = new Date(t.due_date!);
+                      return dueDate < new Date() && t.status !== 'concluida';
+                    });
+                    const hasNormal = dayTasks.some(t => t.status !== 'concluida');
+                    const hasTasks = dayTasks.length > 0;
+                    const isToday = isSameDay(date, new Date());
+                    
+                    return (
+                      <div className={cn(
+                        "relative flex flex-col items-center justify-center w-full h-full rounded-lg transition-colors",
+                        hasTasks && !isToday && "bg-primary/5"
+                      )}>
+                        <span className="text-sm md:text-base">{date.getDate()}</span>
+                        {hasTasks && (
+                          <div className="absolute bottom-1 md:bottom-1.5 flex gap-1">
+                            {hasOverdue && (
+                              <div className="w-2 h-2 rounded-full bg-destructive shadow-sm shadow-destructive/50 animate-pulse" />
+                            )}
+                            {hasUrgent && !hasOverdue && (
+                              <div className="w-2 h-2 rounded-full bg-orange-500 shadow-sm shadow-orange-500/50" />
+                            )}
+                            {hasNormal && !hasOverdue && !hasUrgent && (
+                              <div className="w-2 h-2 rounded-full bg-primary shadow-sm shadow-primary/50" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  },
+                }}
+              />
+            </div>
             
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-destructive" />
-                <span>Atrasada</span>
+            <div className="flex items-center justify-center gap-6 mt-5 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-destructive shadow-sm shadow-destructive/40" />
+                <span className="text-muted-foreground font-medium">Atrasada</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                <span>Urgente</span>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/40" />
+                <span className="text-muted-foreground font-medium">Urgente</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span>Normal</span>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm shadow-primary/40" />
+                <span className="text-muted-foreground font-medium">Normal</span>
               </div>
             </div>
           </div>
 
           {/* Task list for selected date */}
           <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-sm">
-                {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
-              </h4>
-              <Badge variant="secondary" className="text-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-1 rounded-full bg-primary" />
+                <h4 className="font-semibold text-base md:text-lg capitalize">
+                  {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
+                </h4>
+              </div>
+              <Badge 
+                variant="secondary" 
+                className={cn(
+                  "text-xs font-semibold px-3 py-1",
+                  selectedDateTasks.length > 0 && "bg-primary/10 text-primary border-primary/20"
+                )}
+              >
                 {selectedDateTasks.length} {selectedDateTasks.length === 1 ? 'tarefa' : 'tarefas'}
               </Badge>
             </div>
             
-            <ScrollArea className="flex-1 h-[280px] pr-3">
+            <ScrollArea className="flex-1 h-[320px] pr-4">
               {selectedDateTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm">
-                  <CalendarIcon className="h-8 w-8 mb-2 opacity-50" />
-                  <p>Nenhuma tarefa para este dia</p>
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
+                  <div className="p-4 rounded-2xl bg-muted/30 mb-4">
+                    <CalendarIcon className="h-10 w-10 opacity-40" />
+                  </div>
+                  <p className="text-sm font-medium">Nenhuma tarefa para este dia</p>
+                  <p className="text-xs mt-1 opacity-70">Selecione outro dia no calendário</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {selectedDateTasks.map(task => (
+                <div className="space-y-3">
+                  {selectedDateTasks.map((task, index) => (
                     <button
                       key={task.id}
                       onClick={() => navigate(`/tarefas/${task.id}`)}
-                      className="w-full p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left group"
+                      className={cn(
+                        "w-full p-4 rounded-xl border bg-card transition-all duration-200 text-left group",
+                        "hover:shadow-md hover:border-primary/30 hover:bg-accent/30 hover:-translate-y-0.5",
+                        "animate-fade-in"
+                      )}
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                          <p className="font-medium text-sm md:text-base truncate group-hover:text-primary transition-colors">
                             {task.title}
                           </p>
-                          <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex items-center gap-2 mt-2">
                             <PriorityBadge priority={task.priority} />
                             <StatusBadge status={task.status} />
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+                        <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/10 transition-colors shrink-0">
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
                       </div>
                     </button>
                   ))}
