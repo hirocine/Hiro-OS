@@ -9,3 +9,7 @@ export * from './InlineAssigneeCell';
 export * from './InlineDepartmentCell';
 export * from './TaskSortableHeader';
 export * from './TaskHistorySection';
+export * from './UrgentTasksWidget';
+export * from './UpcomingDeadlinesWidget';
+export * from './RecentActivityWidget';
+export * from './QuickActionsCard';
