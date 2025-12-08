@@ -61,6 +61,28 @@ export default function Tasks() {
   const [newTeamTask, setNewTeamTask] = useState(defaultTaskState);
   const [newMyTask, setNewMyTask] = useState(defaultTaskState);
   
+  // Default private task state - is_private is always true
+  const defaultPrivateTaskState = {
+    title: '',
+    priority: 'standby' as TaskPriority,
+    status: 'pendente' as TaskStatus,
+    due_date: null as string | null,
+    department: '',
+    is_private: true,
+  };
+  const [newPrivateTask, setNewPrivateTask] = useState(defaultPrivateTaskState);
+  
+  // Helper function to check if private task is active
+  const isPrivateTaskActive = (task: typeof defaultPrivateTaskState) => {
+    return (
+      task.title.trim() !== '' ||
+      task.priority !== 'standby' ||
+      task.status !== 'pendente' ||
+      task.due_date !== null ||
+      task.department !== ''
+    );
+  };
+  
   // Sorting state for team tasks
   const [teamSortBy, setTeamSortBy] = useState<TaskSortableField>('due_date');
   const [teamSortOrder, setTeamSortOrder] = useState<TaskSortOrder>('asc');
@@ -268,6 +290,33 @@ export default function Tasks() {
       due_date: null,
       department: '',
     });
+  };
+
+  const resetPrivateTask = () => {
+    setNewPrivateTask({
+      title: '',
+      priority: 'standby',
+      status: 'pendente',
+      due_date: null,
+      department: '',
+      is_private: true,
+    });
+  };
+
+  const handleCreatePrivateTask = async () => {
+    if (!newPrivateTask.title.trim()) return;
+    
+    await createTask.mutateAsync({
+      title: newPrivateTask.title.trim(),
+      priority: newPrivateTask.priority,
+      status: newPrivateTask.status,
+      assigned_to: null, // Private tasks have no assignee
+      due_date: newPrivateTask.due_date,
+      department: newPrivateTask.department || null,
+      is_private: true, // Always force true
+    });
+    
+    resetPrivateTask();
   };
 
   const priorityOptions = [
@@ -873,37 +922,101 @@ export default function Tasks() {
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
                   </div>
-                ) : displayedPrivateTasks.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Lock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>Nenhuma tarefa privada</p>
-                    <p className="text-sm">Crie tarefas privadas marcando a opção no formulário</p>
-                  </div>
                 ) : (
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[25%] text-left">
+                        <TableHead className="w-[27%] text-left">
                           <TaskSortableHeader field="title" label="Título" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
                         </TableHead>
-                        <TableHead className="w-[12%] text-left">
+                        <TableHead className="w-[14%] text-left">
                           <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
                         </TableHead>
-                        <TableHead className="w-[12%] text-left">
+                        <TableHead className="w-[14%] text-left">
                           <TaskSortableHeader field="status" label="Status" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
                         </TableHead>
                         <TableHead className="w-[18%] text-left">
                           <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
                         </TableHead>
-                        <TableHead className="w-[15%] text-left">
+                        <TableHead className="w-[17%] text-left">
                           <TaskSortableHeader field="department" label="Departamento" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
                         </TableHead>
-                        <TableHead className="w-[8%] text-left">Ações</TableHead>
+                        <TableHead className="w-[10%] text-left">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      {/* Inline creation row for private tasks */}
+                      <TableRow className={cn(
+                        "border-dashed border-2 border-purple-500/30 hover:opacity-100 transition-all",
+                        isPrivateTaskActive(newPrivateTask) ? "opacity-100" : "opacity-70"
+                      )}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-3 h-3 text-purple-500 flex-shrink-0" />
+                            <Input
+                              value={newPrivateTask.title}
+                              onChange={(e) => setNewPrivateTask({ ...newPrivateTask, title: e.target.value })}
+                              onKeyDown={(e) => e.key === 'Enter' && handleCreatePrivateTask()}
+                              placeholder="Nova tarefa privada..."
+                              className="h-8 bg-transparent border-0 p-0 focus-visible:ring-0 text-left"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {isPrivateTaskActive(newPrivateTask) ? (
+                            <InlineSelectCell
+                              value={newPrivateTask.priority}
+                              options={priorityOptions}
+                              onSave={(value) => setNewPrivateTask({ ...newPrivateTask, priority: value as TaskPriority })}
+                              renderValue={(value) => <PriorityBadge priority={value as any} />}
+                              renderOption={(value) => <PriorityBadge priority={value as any} />}
+                            />
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Selecionar</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isPrivateTaskActive(newPrivateTask) ? (
+                            <InlineSelectCell
+                              value={newPrivateTask.status}
+                              options={statusOptions}
+                              onSave={(value) => setNewPrivateTask({ ...newPrivateTask, status: value as TaskStatus })}
+                              renderValue={(value) => <StatusBadge status={value as any} />}
+                              renderOption={(value) => <StatusBadge status={value as any} />}
+                            />
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Selecionar</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <InlineDateCell
+                            value={newPrivateTask.due_date}
+                            onSave={(date) => setNewPrivateTask({ ...newPrivateTask, due_date: date })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <InlineDepartmentCell
+                            value={newPrivateTask.department}
+                            departments={departments}
+                            onSave={(dept) => setNewPrivateTask({ ...newPrivateTask, department: dept || '' })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCreatePrivateTask}
+                            disabled={!newPrivateTask.title.trim()}
+                            className="text-purple-500 hover:text-purple-600"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Existing private tasks */}
                       {displayedPrivateTasks.map((task) => (
-                        <TableRow key={task.id} className="hover:bg-muted/50">
+                        <TableRow key={task.id} className="hover:bg-purple-500/10">
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <Lock className="w-3 h-3 text-purple-500 flex-shrink-0" />
