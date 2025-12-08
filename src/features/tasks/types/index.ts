@@ -96,6 +96,7 @@ export interface TaskStats {
   active: number;
   urgent: number;
   overdue: number;
+  private: number;
 }
 
 // Configurações visuais

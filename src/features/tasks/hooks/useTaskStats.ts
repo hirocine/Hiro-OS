@@ -12,7 +12,7 @@ export function useTaskStats() {
 
       const { data: tasks, error } = await supabase
         .from('tasks')
-        .select('status, priority, due_date');
+        .select('status, priority, due_date, is_private');
 
       if (error) {
         logger.error('Error fetching task stats', { module: 'tasks', error });
@@ -35,16 +35,17 @@ export function useTaskStats() {
         const dueDate = parseLocalDate(t.due_date);
         return dueDate < today;
       }).length;
+      const privateCount = tasks.filter(t => t.is_private && t.status !== 'concluida' && t.status !== 'arquivada').length;
 
-      logger.debug('Task stats calculated', { module: 'tasks', data: { active, urgent, overdue } });
+      logger.debug('Task stats calculated', { module: 'tasks', data: { active, urgent, overdue, private: privateCount } });
 
-      return { active, urgent, overdue };
+      return { active, urgent, overdue, private: privateCount };
     },
     refetchInterval: 30000, // Atualiza a cada 30s
   });
 
   return {
-    stats: stats || { active: 0, urgent: 0, overdue: 0 },
+    stats: stats || { active: 0, urgent: 0, overdue: 0, private: 0 },
     isLoading,
     error,
   };

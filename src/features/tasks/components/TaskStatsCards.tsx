@@ -1,4 +1,4 @@
-import { CheckSquare, AlertCircle, Clock } from 'lucide-react';
+import { CheckSquare, AlertCircle, Clock, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTaskStats } from '../hooks/useTaskStats';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,12 +34,21 @@ export function TaskStatsCards() {
       borderColor: 'border-l-destructive',
       cardBg: 'bg-destructive/5',
     },
+    {
+      title: 'Tarefas Privadas',
+      value: stats.private,
+      icon: Lock,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
+      borderColor: 'border-l-purple-500',
+      cardBg: 'bg-purple-500/5',
+    },
   ];
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-32" />
         ))}
       </div>
@@ -47,7 +56,7 @@ export function TaskStatsCards() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {statsCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
