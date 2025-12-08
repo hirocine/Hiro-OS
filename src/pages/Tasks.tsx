@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown, Archive } from 'lucide-react';
+import { Plus, ArrowRight, Eye, CheckCircle, ListTodo, User, ChevronDown, Archive, Lock } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
@@ -83,11 +83,19 @@ export default function Tasks() {
   // Collapsible state for archived section (closed by default)
   const [archivedOpen, setArchivedOpen] = useState(false);
   
-  const { tasks: allTeamTasks, isLoading: teamLoading } = useTasks();
-  const { tasks: allMyTasks, isLoading: myLoading } = useTasks({ assigned_to_me: true });
+  // Sorting state for private tasks
+  const [privateSortBy, setPrivateSortBy] = useState<TaskSortableField>('due_date');
+  const [privateSortOrder, setPrivateSortOrder] = useState<TaskSortOrder>('asc');
+  
+  // Collapsible state for private section (open by default)
+  const [privateOpen, setPrivateOpen] = useState(true);
+  
+  const { tasks: allTeamTasks, isLoading: teamLoading } = useTasks({ is_private: false });
+  const { tasks: allMyTasks, isLoading: myLoading } = useTasks({ assigned_to_me: true, is_private: false });
   const { createTask, updateTask } = useTaskMutations();
   const { tasks: completedTasks, isLoading: completedLoading } = useTasks({ status: 'concluida' });
   const { tasks: archivedTasks, isLoading: archivedLoading } = useTasks({ status: 'arquivada' });
+  const { tasks: privateTasks, isLoading: privateLoading } = useTasks({ is_private: true });
 
   // Filter out completed and archived tasks from active sections
   const teamTasks = useMemo(() => 
@@ -98,6 +106,12 @@ export default function Tasks() {
   const myTasks = useMemo(() => 
     allMyTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
     [allMyTasks]
+  );
+
+  // Filter out completed and archived tasks from private tasks
+  const activePrivateTasks = useMemo(() => 
+    privateTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada'),
+    [privateTasks]
   );
 
   // Helper to parse date without timezone issues
@@ -186,6 +200,16 @@ export default function Tasks() {
   // Show only first 5 archived tasks
   const displayedArchivedTasks = sortedArchivedTasks.slice(0, 5);
   const hasMoreArchivedTasks = sortedArchivedTasks.length > 5;
+
+  // Sort private tasks
+  const sortedPrivateTasks = useMemo(() => 
+    sortTasks(activePrivateTasks, privateSortBy, privateSortOrder),
+    [activePrivateTasks, privateSortBy, privateSortOrder]
+  );
+
+  // Show only first 5 private tasks
+  const displayedPrivateTasks = sortedPrivateTasks.slice(0, 5);
+  const hasMorePrivateTasks = sortedPrivateTasks.length > 5;
 
   const getDueDateLabel = (dueDate: string) => {
     const today = new Date();
@@ -287,6 +311,11 @@ export default function Tasks() {
   const handleArchivedSort = (field: TaskSortableField, order: TaskSortOrder) => {
     setArchivedSortBy(field);
     setArchivedSortOrder(order);
+  };
+
+  const handlePrivateSort = (field: TaskSortableField, order: TaskSortOrder) => {
+    setPrivateSortBy(field);
+    setPrivateSortOrder(order);
   };
 
   return (
@@ -807,6 +836,152 @@ export default function Tasks() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Private Tasks Section - Collapsible */}
+        <Collapsible open={privateOpen} onOpenChange={setPrivateOpen}>
+          <Card className="border-purple-500/30 bg-purple-500/5">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="flex flex-row items-center justify-between cursor-pointer hover:bg-purple-500/10 transition-colors rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Lock className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <CardTitle className="text-lg">Tarefas Privadas</CardTitle>
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                    {activePrivateTasks.length}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  {privateOpen && hasMorePrivateTasks && (
+                    <Button variant="ghost" asChild onClick={(e) => e.stopPropagation()}>
+                      <Link to="/tarefas/todas?private=true">
+                        Ver Todas <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                  )}
+                  <ChevronDown className={cn(
+                    "w-5 h-5 text-muted-foreground transition-transform duration-200",
+                    privateOpen && "rotate-180"
+                  )} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent>
+                {privateLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}
+                  </div>
+                ) : displayedPrivateTasks.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Lock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhuma tarefa privada</p>
+                    <p className="text-sm">Crie tarefas privadas marcando a opção no formulário</p>
+                  </div>
+                ) : (
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[25%] text-left">
+                          <TaskSortableHeader field="title" label="Título" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
+                        </TableHead>
+                        <TableHead className="w-[12%] text-left">
+                          <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
+                        </TableHead>
+                        <TableHead className="w-[12%] text-left">
+                          <TaskSortableHeader field="status" label="Status" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
+                        </TableHead>
+                        <TableHead className="w-[18%] text-left">
+                          <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
+                        </TableHead>
+                        <TableHead className="w-[15%] text-left">
+                          <TaskSortableHeader field="department" label="Departamento" currentSortBy={privateSortBy} currentSortOrder={privateSortOrder} onSort={handlePrivateSort} />
+                        </TableHead>
+                        <TableHead className="w-[8%] text-left">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayedPrivateTasks.map((task) => (
+                        <TableRow key={task.id} className="hover:bg-muted/50">
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <Lock className="w-3 h-3 text-purple-500 flex-shrink-0" />
+                              <InlineEditCell
+                                value={task.title}
+                                onSave={(newValue) => updateTask.mutate({ 
+                                  id: task.id, 
+                                  updates: { title: newValue },
+                                  oldTask: { title: task.title }
+                                })}
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <InlineSelectCell
+                              value={task.priority}
+                              options={priorityOptions}
+                              onSave={(newValue) => updateTask.mutate({ 
+                                id: task.id, 
+                                updates: { priority: newValue as any },
+                                oldTask: { priority: task.priority }
+                              })}
+                              renderValue={(value) => <PriorityBadge priority={value as any} />}
+                              renderOption={(value) => <PriorityBadge priority={value as any} />}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <InlineSelectCell
+                              value={task.status}
+                              options={statusOptions}
+                              onSave={(newValue) => updateTask.mutate({ 
+                                id: task.id, 
+                                updates: { status: newValue as any },
+                                oldTask: { status: task.status }
+                              })}
+                              renderValue={(value) => <StatusBadge status={value as any} />}
+                              renderOption={(value) => <StatusBadge status={value as any} />}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <InlineDateCell
+                              value={task.due_date}
+                              onSave={(newDate) => updateTask.mutate({ 
+                                id: task.id, 
+                                updates: { due_date: newDate },
+                                oldTask: { due_date: task.due_date }
+                              })}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <InlineDepartmentCell
+                              value={task.department}
+                              departments={departments}
+                              onSave={(newDept) => updateTask.mutate({ 
+                                id: task.id, 
+                                updates: { department: newDept },
+                                oldTask: { department: task.department }
+                              })}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/tarefas/${task.id}`)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Completed Tasks Section - Collapsible */}
         <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
