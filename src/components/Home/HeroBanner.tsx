@@ -11,6 +11,7 @@ export function HeroBanner() {
   const { bannerSettings, isLoading } = useSiteSettings();
   const [showCropper, setShowCropper] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Animação de entrada: zoom out suave ao carregar
   useEffect(() => {
@@ -19,6 +20,13 @@ export function HeroBanner() {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Calcular scale dinamicamente
+  const getScale = () => {
+    if (!hasAnimated) return 'scale(1.05)';
+    if (isHovered) return 'scale(1.05)';
+    return 'scale(1)';
+  };
 
   // Get user's first name
   const displayName = user?.user_metadata?.full_name || 
@@ -35,13 +43,15 @@ export function HeroBanner() {
       <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl group">
         {/* Background image */}
         <div 
-          className={`absolute inset-0 bg-cover bg-center ${hasAnimated ? 'group-hover:scale-105' : ''}`}
+          className="absolute inset-0 bg-cover bg-center"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
             backgroundPosition: bannerSettings?.crop 
               ? `${bannerSettings.crop.x}% ${bannerSettings.crop.y}%` 
               : "center",
-            transform: hasAnimated ? 'scale(1)' : 'scale(1.05)',
+            transform: getScale(),
             transition: "transform 1.5s ease-out"
           }}
         />
