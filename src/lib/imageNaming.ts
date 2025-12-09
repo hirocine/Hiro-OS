@@ -38,33 +38,37 @@ export function sanitizePatrimonyNumber(patrimony: string | null | undefined): s
 
 /**
  * Generates a standardized filename for equipment images
- * Format: {equipment_id}_{patrimony_sanitized}.webp
+ * Format: {equipment_id}_{patrimony_sanitized}_{timestamp}.webp
+ * 
+ * The timestamp ensures each upload generates a unique filename,
+ * eliminating browser cache issues without needing query parameters.
  * 
  * @param equipmentId - UUID of the equipment (required)
  * @param patrimonyNumber - Patrimony number (optional, can be null/undefined)
- * @returns Standardized filename with .webp extension
+ * @returns Standardized filename with .webp extension and unique timestamp
  * 
  * @example
  * generateEquipmentImageName('123-abc', 'PAT-001')
- * // Returns: "123-abc_PAT-001.webp"
+ * // Returns: "123-abc_PAT-001_1733857200000.webp"
  * 
  * @example
  * generateEquipmentImageName('123-abc', null)
- * // Returns: "123-abc.webp"
+ * // Returns: "123-abc_1733857200000.webp"
  * 
  * @example
  * generateEquipmentImageName('123-abc', 'PAT/001*TEST')
- * // Returns: "123-abc_PAT001TEST.webp"
+ * // Returns: "123-abc_PAT001TEST_1733857200000.webp"
  */
 export function generateEquipmentImageName(
   equipmentId: string,
   patrimonyNumber?: string | null
 ): string {
   const sanitizedPatrimony = sanitizePatrimonyNumber(patrimonyNumber);
+  const timestamp = Date.now();
   
   if (sanitizedPatrimony) {
-    return `${equipmentId}_${sanitizedPatrimony}.webp`;
+    return `${equipmentId}_${sanitizedPatrimony}_${timestamp}.webp`;
   }
   
-  return `${equipmentId}.webp`;
+  return `${equipmentId}_${timestamp}.webp`;
 }
