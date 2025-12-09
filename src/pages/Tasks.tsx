@@ -12,11 +12,11 @@ export default function Tasks() {
       />
 
       <div className="space-y-6">
-        {/* Calendar Widget */}
-        <TaskCalendarWidget />
-
         {/* Section Navigation Cards */}
         <TaskSectionCards />
+
+        {/* Calendar Widget */}
+        <TaskCalendarWidget />
       </div>
     </ResponsiveContainer>
   );
