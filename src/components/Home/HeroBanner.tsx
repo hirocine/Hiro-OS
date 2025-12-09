@@ -41,11 +41,8 @@ export function HeroBanner() {
         {/* Content */}
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 lg:px-12">
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
-            Bem-Vindo à Hiro Hub,
+            Bem-Vindo à Hiro Hub, {firstName}.
           </h1>
-          <p className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mt-1 md:mt-2 drop-shadow-lg">
-            {firstName}.
-          </p>
         </div>
 
         {/* Edit button for admins */}
