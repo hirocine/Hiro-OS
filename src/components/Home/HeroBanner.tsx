@@ -26,12 +26,13 @@ export function HeroBanner() {
       <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl group">
         {/* Background image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[2500ms] ease-out group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center group-hover:scale-105"
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
             backgroundPosition: bannerSettings?.crop 
               ? `${bannerSettings.crop.x}% ${bannerSettings.crop.y}%` 
-              : "center"
+              : "center",
+            transition: "transform 2.5s ease-out"
           }}
         />
         
