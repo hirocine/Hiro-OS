@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, Lock, Users, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -195,33 +196,69 @@ export function TaskCalendarWidget() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {selectedDateTasks.map((task, index) => (
-                    <button
-                      key={task.id}
-                      onClick={() => navigate(`/tarefas/${task.id}`)}
-                      className={cn(
-                        "w-full p-4 rounded-xl border bg-card transition-all duration-200 text-left group",
-                        "hover:shadow-md hover:border-primary/30 hover:bg-accent/30 hover:-translate-y-0.5",
-                        "animate-fade-in"
-                      )}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm md:text-base truncate group-hover:text-primary transition-colors">
-                            {task.title}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <PriorityBadge priority={task.priority} />
-                            <StatusBadge status={task.status} />
+                  {selectedDateTasks.map((task, index) => {
+                    const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'concluida';
+                    
+                    return (
+                      <button
+                        key={task.id}
+                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                        className={cn(
+                          "w-full p-4 rounded-xl border bg-card transition-all duration-200 text-left group",
+                          "hover:shadow-md hover:border-primary/30 hover:bg-accent/30 hover:-translate-y-0.5",
+                          "animate-fade-in",
+                          isOverdue && "border-destructive/30 bg-destructive/5"
+                        )}
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            {/* Title with private/team indicator */}
+                            <div className="flex items-center gap-2">
+                              {task.is_private ? (
+                                <Lock className="w-4 h-4 text-purple-500 shrink-0" />
+                              ) : (
+                                <Users className="w-4 h-4 text-primary shrink-0" />
+                              )}
+                              <p className="font-medium text-sm md:text-base truncate group-hover:text-primary transition-colors">
+                                {task.title}
+                              </p>
+                            </div>
+                            
+                            {/* Badges row */}
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <PriorityBadge priority={task.priority} />
+                              <StatusBadge status={task.status} />
+                              {isOverdue && (
+                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5 h-5">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  Atrasada
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Assignee */}
+                            {task.assignee_name && (
+                              <div className="flex items-center gap-2 mt-2.5 text-xs text-muted-foreground">
+                                <Avatar className="w-5 h-5">
+                                  {task.assignee_avatar ? (
+                                    <AvatarImage src={task.assignee_avatar} />
+                                  ) : null}
+                                  <AvatarFallback className="text-[8px] bg-muted">
+                                    {task.assignee_name.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate">{task.assignee_name}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/10 transition-colors shrink-0">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                           </div>
                         </div>
-                        <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/10 transition-colors shrink-0">
-                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>
