@@ -20,10 +20,11 @@ interface BannerCropperDialogProps {
 }
 
 export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogProps) {
-  const { bannerSettings, updateBanner, uploadBannerImage, isUpdating } = useSiteSettings();
+  const { bannerSettings, updateBanner, uploadBannerImage, uploadOriginalBanner, isUpdating } = useSiteSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null); // URL do original no storage
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -32,6 +33,8 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isNewUpload, setIsNewUpload] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -46,16 +49,13 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
       });
       setIsLoadingImage(true);
       setFileName(file.name);
+      setIsNewUpload(true);
+      setPendingFile(file);
       
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        logger.debug("BannerCropperDialog: FileReader completed", { 
-          module: "banner", 
-          data: { resultLength: result?.length } 
-        });
         
-        // Get image dimensions
         const img = new Image();
         img.onload = () => {
           setImageDimensions({ width: img.width, height: img.height });
@@ -64,10 +64,6 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
           setZoom(1);
           setRotation(0);
           setIsLoadingImage(false);
-          logger.debug("BannerCropperDialog: Image loaded", { 
-            module: "banner", 
-            data: { width: img.width, height: img.height } 
-          });
         };
         img.onerror = () => {
           logger.error("BannerCropperDialog: Failed to load image", { module: "banner" });
@@ -83,10 +79,55 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
     }
   };
 
+  const loadExistingBanner = () => {
+    // Priorizar original_url se existir, senão usar url
+    const sourceUrl = bannerSettings?.original_url || bannerSettings?.url;
+    if (!sourceUrl) return;
+
+    setIsLoadingImage(true);
+    setFileName("Banner atual");
+    setIsNewUpload(false);
+    setOriginalUrl(bannerSettings?.original_url || null);
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      setImageDimensions({ width: img.width, height: img.height });
+      setImageSrc(sourceUrl);
+      
+      // Restaurar configurações salvas
+      if (bannerSettings?.crop) {
+        // react-easy-crop usa crop como {x, y} para posição, não pixels
+        // Precisamos calcular a posição baseada no crop salvo
+        setCrop({ x: 0, y: 0 }); // Iniciar centralizado
+      } else {
+        setCrop({ x: 0, y: 0 });
+      }
+      setZoom(bannerSettings?.zoom ?? 1);
+      setRotation(bannerSettings?.rotation ?? 0);
+      setIsLoadingImage(false);
+      
+      logger.debug("BannerCropperDialog: Existing banner loaded with settings", { 
+        module: "banner",
+        data: { 
+          hasOriginal: !!bannerSettings?.original_url,
+          zoom: bannerSettings?.zoom,
+          rotation: bannerSettings?.rotation
+        }
+      });
+    };
+    img.onerror = () => {
+      logger.error("BannerCropperDialog: Failed to load current banner", { module: "banner" });
+      setIsLoadingImage(false);
+    };
+    img.src = sourceUrl;
+  };
+
   const createCroppedImage = async (): Promise<Blob | null> => {
     if (!imageSrc || !croppedAreaPixels) return null;
 
     const image = new Image();
+    image.crossOrigin = "anonymous";
     image.src = imageSrc;
     await new Promise((resolve) => (image.onload = resolve));
 
@@ -130,24 +171,36 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
     
     setIsProcessing(true);
     try {
+      let finalOriginalUrl = originalUrl;
+
+      // Se é novo upload, fazer upload do original primeiro
+      if (isNewUpload && pendingFile) {
+        finalOriginalUrl = await uploadOriginalBanner(pendingFile);
+        if (!finalOriginalUrl) throw new Error("Failed to upload original image");
+      }
+
+      // Criar e fazer upload da imagem recortada
       const croppedBlob = await createCroppedImage();
       if (!croppedBlob) throw new Error("Failed to create cropped image");
 
-      const url = await uploadBannerImage(croppedBlob);
-      if (!url) throw new Error("Failed to upload image");
+      const croppedUrl = await uploadBannerImage(croppedBlob);
+      if (!croppedUrl) throw new Error("Failed to upload cropped image");
 
+      // Salvar ambas URLs e configurações
       updateBanner({
-        url,
+        url: croppedUrl,
+        original_url: finalOriginalUrl,
         crop: croppedAreaPixels ? {
           x: croppedAreaPixels.x,
           y: croppedAreaPixels.y,
           width: croppedAreaPixels.width,
           height: croppedAreaPixels.height,
         } : null,
+        zoom,
+        rotation,
       });
 
-      onOpenChange(false);
-      setImageSrc(null);
+      handleClose();
     } catch (error) {
       console.error("Error saving banner:", error);
     } finally {
@@ -167,11 +220,14 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
   const handleClose = () => {
     onOpenChange(false);
     setImageSrc(null);
+    setOriginalUrl(null);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setRotation(0);
     setFileName(null);
     setImageDimensions(null);
+    setIsNewUpload(false);
+    setPendingFile(null);
   };
 
   return (
@@ -212,25 +268,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                   {/* Opção 2: Editar atual (só se existir) */}
                   {bannerSettings?.url && (
                     <button
-                      onClick={() => {
-                        setIsLoadingImage(true);
-                        setFileName("Banner atual");
-                        const img = new Image();
-                        img.crossOrigin = "anonymous";
-                        img.onload = () => {
-                          setImageDimensions({ width: img.width, height: img.height });
-                          setImageSrc(bannerSettings.url!);
-                          setCrop({ x: 0, y: 0 });
-                          setZoom(1);
-                          setRotation(0);
-                          setIsLoadingImage(false);
-                        };
-                        img.onerror = () => {
-                          logger.error("BannerCropperDialog: Failed to load current banner", { module: "banner" });
-                          setIsLoadingImage(false);
-                        };
-                        img.src = bannerSettings.url!;
-                      }}
+                      onClick={loadExistingBanner}
                       className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary hover:bg-muted/50 transition-colors"
                     >
                       <ImageIcon className="h-12 w-12 text-muted-foreground mb-3" />
@@ -238,6 +276,11 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
                       <span className="text-sm text-muted-foreground mt-1 text-center">
                         Ajustar crop, zoom ou rotação
                       </span>
+                      {bannerSettings.original_url && (
+                        <span className="text-xs text-success mt-2">
+                          ✓ Imagem original preservada
+                        </span>
+                      )}
                     </button>
                   )}
                 </div>
