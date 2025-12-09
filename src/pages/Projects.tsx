@@ -200,8 +200,8 @@ export default function Projects() {
 
         <FiltersSkeleton />
 
-        <div className="grid grid-cols-1 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
             <ProjectCardSkeleton key={i} />
           ))}
         </div>
@@ -310,7 +310,7 @@ export default function Projects() {
               <span className="text-sm text-muted-foreground">({upcomingProjects.length})</span>
             </div>
             
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {upcomingProjects.map((project) => (
                 <ProjectSummaryCard
                   key={project.id}
@@ -336,7 +336,7 @@ export default function Projects() {
               <span className="text-sm text-muted-foreground">({overdueProjects.length})</span>
             </div>
             
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {overdueProjects.map((project) => (
                 <ProjectSummaryCard
                   key={project.id}
@@ -374,7 +374,7 @@ export default function Projects() {
             </Button>
             
             {showCompleted && (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {completedProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
@@ -413,7 +413,7 @@ export default function Projects() {
             </Button>
             
             {showArchived && (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {archivedProjects.map((project) => (
                   <ProjectSummaryCard
                     key={project.id}
