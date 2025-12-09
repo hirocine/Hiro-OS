@@ -40,12 +40,14 @@ export function HeroBanner() {
 
   return (
     <>
-      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl group">
+      <div 
+        className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
             backgroundPosition: bannerSettings?.crop 
@@ -57,7 +59,7 @@ export function HeroBanner() {
         />
         
         {/* Dark overlay for text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent pointer-events-none" />
         
         {/* Content */}
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 lg:px-12">
