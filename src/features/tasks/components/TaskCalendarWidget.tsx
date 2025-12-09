@@ -13,6 +13,12 @@ import { cn } from '@/lib/utils';
 import { useTasks } from '../hooks/useTasks';
 import { PriorityBadge, StatusBadge } from './index';
 
+// Parse date string to local timezone (prevents UTC rollback issue)
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export function TaskCalendarWidget() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -31,7 +37,7 @@ export function TaskCalendarWidget() {
     
     activeTasks.forEach(task => {
       if (task.due_date) {
-        const dateKey = format(new Date(task.due_date), 'yyyy-MM-dd');
+        const dateKey = task.due_date.split('T')[0]; // Use date string directly
         const existing = map.get(dateKey) || [];
         map.set(dateKey, [...existing, task]);
       }
@@ -54,10 +60,10 @@ export function TaskCalendarWidget() {
     const today = new Date();
 
     tasksByDate.forEach((dayTasks, dateKey) => {
-      const date = new Date(dateKey);
+      const date = parseLocalDate(dateKey);
       const hasUrgent = dayTasks.some(t => t.priority === 'urgente' && t.status !== 'concluida');
       const hasOverdue = dayTasks.some(t => {
-        const dueDate = new Date(t.due_date!);
+        const dueDate = parseLocalDate(t.due_date!.split('T')[0]);
         return dueDate < today && t.status !== 'concluida';
       });
       
@@ -132,8 +138,10 @@ export function TaskCalendarWidget() {
                     const dayTasks = tasksByDate.get(dateKey) || [];
                     const pendingCount = dayTasks.length;
                     const hasOverdue = dayTasks.some(t => {
-                      const dueDate = new Date(t.due_date!);
-                      return dueDate < new Date();
+                      const dueDate = parseLocalDate(t.due_date!.split('T')[0]);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return dueDate < today;
                     });
                     const hasUrgent = dayTasks.some(t => t.priority === 'urgente');
                     const isToday = isSameDay(date, new Date());
@@ -200,7 +208,7 @@ export function TaskCalendarWidget() {
                     // Calculate due date label
                     const getDueDateLabel = () => {
                       if (!task.due_date) return null;
-                      const due = new Date(task.due_date);
+                      const due = parseLocalDate(task.due_date.split('T')[0]);
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       due.setHours(0, 0, 0, 0);
