@@ -12,14 +12,30 @@ export function HeroBanner() {
   const [showCropper, setShowCropper] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Animação de entrada: zoom out suave ao carregar
+  // Determine banner image URL
+  const bannerUrl = bannerSettings?.url || defaultBanner;
+
+  // Pré-carregar a imagem antes de exibir
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setHasAnimated(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isLoading && bannerUrl) {
+      setImageLoaded(false);
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.src = bannerUrl;
+    }
+  }, [bannerUrl, isLoading]);
+
+  // Animação de entrada: zoom out suave APÓS imagem carregar
+  useEffect(() => {
+    if (imageLoaded) {
+      const timer = setTimeout(() => {
+        setHasAnimated(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [imageLoaded]);
 
   // Calcular scale dinamicamente
   const getScale = () => {
@@ -35,8 +51,14 @@ export function HeroBanner() {
                       "Usuário";
   const firstName = displayName.split(" ")[0];
 
-  // Determine banner image URL
-  const bannerUrl = bannerSettings?.url || defaultBanner;
+  // Skeleton enquanto carrega dados ou imagem
+  if (isLoading || !imageLoaded) {
+    return (
+      <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl bg-muted animate-pulse">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-transparent" />
+      </div>
+    );
+  }
 
   return (
     <>
