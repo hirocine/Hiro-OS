@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, Lock, Users, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, Lock, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -197,49 +197,48 @@ export function TaskCalendarWidget() {
               ) : (
                 <div className="space-y-3">
                   {selectedDateTasks.map((task, index) => {
-                    const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'concluida';
+                    // Calculate due date label
+                    const getDueDateLabel = () => {
+                      if (!task.due_date) return null;
+                      const due = new Date(task.due_date);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      due.setHours(0, 0, 0, 0);
+                      const diffDays = differenceInDays(due, today);
+                      
+                      if (diffDays < 0) return { text: `Atrasada há ${Math.abs(diffDays)} dia${Math.abs(diffDays) > 1 ? 's' : ''}`, isOverdue: true, isUrgent: false };
+                      if (diffDays === 0) return { text: 'Termina hoje', isOverdue: false, isUrgent: true };
+                      if (diffDays === 1) return { text: 'Termina amanhã', isOverdue: false, isUrgent: true };
+                      return { text: `Termina em ${diffDays} dias`, isOverdue: false, isUrgent: false };
+                    };
+                    
+                    const dueDateInfo = getDueDateLabel();
+                    const isOverdue = dueDateInfo?.isOverdue;
                     
                     return (
-                      <button
+                      <div
                         key={task.id}
-                        onClick={() => navigate(`/tarefas/${task.id}`)}
                         className={cn(
                           "w-full p-4 rounded-xl border bg-card transition-all duration-200 text-left group",
-                          "hover:shadow-md hover:border-primary/30 hover:bg-accent/30 hover:-translate-y-0.5",
+                          "hover:shadow-md hover:border-primary/30 hover:bg-accent/30",
                           "animate-fade-in",
                           isOverdue && "border-destructive/30 bg-destructive/5"
                         )}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
+                        {/* Row 1: Icon + Title + Assignee | Due Date Badge */}
                         <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            {/* Title with private/team indicator */}
-                            <div className="flex items-center gap-2">
-                              {task.is_private ? (
-                                <Lock className="w-4 h-4 text-purple-500 shrink-0" />
-                              ) : (
-                                <Users className="w-4 h-4 text-primary shrink-0" />
-                              )}
-                              <p className="font-medium text-sm md:text-base truncate group-hover:text-primary transition-colors">
-                                {task.title}
-                              </p>
-                            </div>
-                            
-                            {/* Badges row */}
-                            <div className="flex items-center gap-2 mt-2 flex-wrap">
-                              <PriorityBadge priority={task.priority} />
-                              <StatusBadge status={task.status} />
-                              {isOverdue && (
-                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5 h-5">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  Atrasada
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            {/* Assignee */}
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {task.is_private ? (
+                              <Lock className="w-4 h-4 text-purple-500 shrink-0" />
+                            ) : (
+                              <Users className="w-4 h-4 text-primary shrink-0" />
+                            )}
+                            <p className="font-medium text-sm md:text-base truncate">
+                              {task.title}
+                            </p>
                             {task.assignee_name && (
-                              <div className="flex items-center gap-2 mt-2.5 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                                 <Avatar className="w-5 h-5">
                                   {task.assignee_avatar ? (
                                     <AvatarImage src={task.assignee_avatar} />
@@ -248,15 +247,44 @@ export function TaskCalendarWidget() {
                                     {task.assignee_name.slice(0, 2).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="truncate">{task.assignee_name}</span>
+                                <span className="truncate max-w-[80px]">{task.assignee_name}</span>
                               </div>
                             )}
                           </div>
-                          <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/10 transition-colors shrink-0">
-                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                          </div>
+                          
+                          {/* Due date badge - top right */}
+                          {dueDateInfo && (
+                            <Badge 
+                              variant="outline"
+                              className={cn(
+                                "text-[10px] px-2 py-0.5 h-5 shrink-0 whitespace-nowrap",
+                                dueDateInfo.isOverdue && "text-destructive bg-destructive/10 border-destructive/30",
+                                dueDateInfo.isUrgent && "text-yellow-600 bg-yellow-500/10 border-yellow-500/30",
+                                !dueDateInfo.isOverdue && !dueDateInfo.isUrgent && "text-muted-foreground bg-muted border-border"
+                              )}
+                            >
+                              {dueDateInfo.text}
+                            </Badge>
+                          )}
                         </div>
-                      </button>
+                        
+                        {/* Row 2: Priority + Status Badges | Ver Button */}
+                        <div className="flex items-center justify-between mt-2.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <PriorityBadge priority={task.priority} />
+                            <StatusBadge status={task.status} />
+                          </div>
+                          
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/tarefas/${task.id}`)}
+                            className="h-7 px-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
