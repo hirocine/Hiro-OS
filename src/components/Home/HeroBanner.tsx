@@ -30,10 +30,13 @@ export function HeroBanner() {
   // Animação de entrada: zoom out suave APÓS imagem carregar
   useEffect(() => {
     if (imageLoaded) {
-      const timer = setTimeout(() => {
-        setHasAnimated(true);
-      }, 100);
-      return () => clearTimeout(timer);
+      // Esperar o browser pintar o primeiro frame com scale(1.05)
+      requestAnimationFrame(() => {
+        // Então agendar a transição para o próximo frame
+        requestAnimationFrame(() => {
+          setHasAnimated(true);
+        });
+      });
     }
   }, [imageLoaded]);
 
