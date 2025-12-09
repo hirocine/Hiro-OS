@@ -75,29 +75,9 @@ export function AIAssistant() {
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <Sparkles className="h-12 w-12 text-primary/30 mx-auto mb-4" />
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground">
                   Olá! Sou o assistente da Hiro. Posso ajudar você com informações sobre equipamentos, projetos, tarefas e mais.
                 </p>
-                
-                {/* Suggestions */}
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Sugestões
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {SUGGESTIONS.map((suggestion, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSuggestion(suggestion)}
-                        className="text-xs"
-                      >
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -153,8 +133,25 @@ export function AIAssistant() {
           </div>
         </ScrollArea>
 
-        {/* Input area */}
-        <form onSubmit={handleSubmit} className="flex gap-2 mt-4 flex-shrink-0">
+        {/* Suggestions - above input when no messages */}
+        {messages.length === 0 && (
+          <div className="flex flex-wrap gap-2 justify-start mb-3">
+            {SUGGESTIONS.map((suggestion, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestion(suggestion)}
+                className="text-xs"
+              >
+                {suggestion}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Input form */}
+        <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             ref={inputRef}
             value={input}
