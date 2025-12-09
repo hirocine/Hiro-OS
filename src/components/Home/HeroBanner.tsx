@@ -21,19 +21,22 @@ export function HeroBanner() {
   useEffect(() => {
     if (!isLoading && bannerUrl) {
       setImageLoaded(false);
+      setHasAnimated(false); // Resetar animação quando URL muda
       const img = new Image();
       img.onload = () => setImageLoaded(true);
       img.src = bannerUrl;
     }
   }, [bannerUrl, isLoading]);
 
-  // Animação de entrada: zoom out suave APÓS imagem carregar
+  // Animação de entrada: zoom out suave APÓS imagem carregar e fade-in completar
   useEffect(() => {
     if (imageLoaded) {
-      // Delay mínimo para garantir que o browser pinte o scale(1.05) primeiro
+      // Delay de 100ms para garantir que:
+      // 1. O fade-in (opacity) do banner começou
+      // 2. O browser pintou o frame com scale(1.05)
       const timer = setTimeout(() => {
         setHasAnimated(true);
-      }, 50);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [imageLoaded]);
@@ -52,8 +55,8 @@ export function HeroBanner() {
                       "Usuário";
   const firstName = displayName.split(" ")[0];
 
-  // Skeleton enquanto carrega dados ou imagem
-  if (isLoading || !imageLoaded) {
+  // Skeleton apenas durante loading inicial dos dados
+  if (isLoading) {
     return (
       <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl bg-muted animate-pulse">
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-transparent" />
@@ -68,9 +71,18 @@ export function HeroBanner() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Background image */}
+        {/* Skeleton overlay - fade out quando imagem carrega */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className={`absolute inset-0 bg-muted rounded-xl transition-opacity duration-300 z-10 ${
+            imageLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-transparent animate-pulse" />
+        </div>
+
+        {/* Background image - sempre montado, fade in quando carrega */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-300"
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
             backgroundPosition: bannerSettings?.crop 
@@ -78,7 +90,10 @@ export function HeroBanner() {
               : "center",
             transform: getScale(),
             transformOrigin: "center center",
-            transition: "transform 1.5s ease-out"
+            transitionProperty: "transform, opacity",
+            transitionDuration: "1.5s, 0.3s",
+            transitionTimingFunction: "ease-out, ease-in",
+            opacity: imageLoaded ? 1 : 0
           }}
         />
         
