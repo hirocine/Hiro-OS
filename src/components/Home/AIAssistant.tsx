@@ -42,8 +42,12 @@ export function AIAssistant() {
     }
   };
 
+  const hasMessages = messages.length > 0;
+
   return (
-    <Card className="h-[500px] flex flex-col">
+    <Card className={`flex flex-col transition-all duration-300 ${
+      hasMessages ? "h-[500px]" : "h-auto"
+    }`}>
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -69,10 +73,11 @@ export function AIAssistant() {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
-        {/* Messages area */}
-        <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
-          <div className="space-y-4">
-            {messages.map((message, index) => (
+        {/* Messages area - only show when there are messages */}
+        {hasMessages && (
+          <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
+            <div className="space-y-4">
+              {messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex gap-3 ${
@@ -108,23 +113,22 @@ export function AIAssistant() {
                   )}
                 </div>
               ))}
-            
-            {/* Loading indicator */}
-            {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-primary" />
+              
+              {/* Loading indicator */}
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
+                <div className="flex gap-3 justify-start">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="bg-muted rounded-lg px-4 py-2 flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Pensando...</span>
+                  </div>
                 </div>
-                <div className="bg-muted rounded-lg px-4 py-2 flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Pensando...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Suggestions - above input when no messages */}
+              )}
+            </div>
+          </ScrollArea>
+        )}
         {messages.length === 0 && (
           <div className="flex flex-wrap gap-2 justify-start mb-3">
             {SUGGESTIONS.map((suggestion, index) => (
