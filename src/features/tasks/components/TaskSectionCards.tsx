@@ -74,16 +74,28 @@ export function TaskSectionCards() {
           className="overflow-hidden hover:shadow-lg transition-shadow"
         >
           <CardContent className="p-6">
-            {/* Header with icon and title */}
-            <div className="flex items-center gap-3 mb-5">
-              <div className={`p-2.5 rounded-xl ${section.iconBg}`}>
-                <section.icon className={`h-6 w-6 ${section.iconColor}`} />
+            {/* Header with icon, title and navigation button */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl ${section.iconBg}`}>
+                  <section.icon className={`h-6 w-6 ${section.iconColor}`} />
+                </div>
+                <h3 className="font-semibold text-lg">{section.label}</h3>
               </div>
-              <h3 className="font-semibold text-lg">{section.label}</h3>
+              
+              <Link to={section.to}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className={`h-8 w-8 ${section.iconColor} hover:${section.iconBg}`}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
 
             {/* Mini stats grid */}
-            <div className="grid grid-cols-3 gap-4 mb-5 py-4 px-2 bg-muted/30 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 py-4 px-2 bg-muted/30 rounded-lg">
               <div className="flex flex-col items-center gap-1">
                 <ListChecks className="h-4 w-4 text-muted-foreground" />
                 <StatItem value={section.stats.active} label="Ativas" />
@@ -105,17 +117,6 @@ export function TaskSectionCards() {
                 />
               </div>
             </div>
-
-            {/* Navigation button */}
-            <Link to={section.to} className="block">
-              <Button 
-                variant={section.buttonVariant}
-                className={`w-full ${section.buttonClass || ''}`}
-              >
-                Ver Tarefas
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
           </CardContent>
         </Card>
       ))}
