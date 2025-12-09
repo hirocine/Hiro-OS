@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectStep, ProjectStatus, StepChange } from '@/types/project';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, NotFoundError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
@@ -11,7 +11,7 @@ export function useProjectDetails(projectId: string) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
 
   useEffect(() => {
     if (projectId) {

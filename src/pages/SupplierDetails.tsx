@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 // Componentes SVG para logos oficiais
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -37,7 +37,7 @@ import type { Supplier } from '@/features/suppliers/types';
 export default function SupplierDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, roleLoading } = useAuthContext();
   const { suppliers, loading, updateSupplier, deleteSupplier } = useSuppliers();
   const { notes, loading: notesLoading, createNote, deleteNote } = useSupplierNotes(id);
 

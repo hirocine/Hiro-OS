@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { usePolicies, POLICY_CATEGORIES } from '@/features/policies';
 import { PolicyCard, PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
@@ -13,7 +13,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import type { PolicyForm } from '@/features/policies';
 
 export default function Policies() {
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
   const { policies, loading, addPolicy } = usePolicies();
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');

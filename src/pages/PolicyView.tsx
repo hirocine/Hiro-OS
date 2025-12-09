@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { usePolicies } from '@/features/policies';
 import { PolicyEditor } from '@/features/policies';
 import { LoadingScreen } from '@/components/ui/loading-screen';
@@ -14,7 +14,7 @@ import DOMPurify from 'dompurify';
 export default function PolicyView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
   const { getPolicyById, updatePolicy, deletePolicy, loading } = usePolicies();
   const [editorOpen, setEditorOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
