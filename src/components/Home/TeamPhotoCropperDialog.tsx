@@ -137,14 +137,14 @@ export function TeamPhotoCropperDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Ajustar Foto</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Cropper Area */}
-          <div className="relative h-64 bg-muted rounded-lg overflow-hidden">
+          <div className="relative h-96 bg-muted rounded-lg overflow-hidden">
             <Cropper
               image={imageSrc}
               crop={crop}
