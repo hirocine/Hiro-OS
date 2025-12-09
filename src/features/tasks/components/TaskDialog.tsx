@@ -20,9 +20,12 @@ interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task?: Task;
+  defaultValues?: Partial<{
+    is_private: boolean;
+  }>;
 }
 
-export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
+export function TaskDialog({ open, onOpenChange, task, defaultValues }: TaskDialogProps) {
   const { createTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
   const { departments, createDepartment } = useDepartments();
@@ -39,7 +42,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
     due_date: task?.due_date || '',
     department: task?.department || '',
     assigned_to: task?.assigned_to || '',
-    is_private: task?.is_private || false,
+    is_private: task?.is_private ?? defaultValues?.is_private ?? false,
   });
 
   // When marking as private, clear assigned_to if it's someone else
