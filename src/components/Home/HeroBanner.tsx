@@ -32,7 +32,7 @@ export function HeroBanner() {
             backgroundPosition: bannerSettings?.crop 
               ? `${bannerSettings.crop.x}% ${bannerSettings.crop.y}%` 
               : "center",
-            transition: "transform 2.5s ease-out"
+            transition: "transform 1.5s ease-out"
           }}
         />
         
