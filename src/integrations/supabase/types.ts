@@ -1227,6 +1227,45 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          name: string
+          photo_url: string | null
+          position: string | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          name: string
+          photo_url?: string | null
+          position?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          name?: string
+          photo_url?: string | null
+          position?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_notification_status: {
         Row: {
           created_at: string

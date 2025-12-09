@@ -1,6 +1,7 @@
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { HeroBanner } from "@/components/Home/HeroBanner";
 import { AIAssistant } from "@/components/Home/AIAssistant";
+import { TeamDirectory } from "@/components/Home/TeamDirectory";
 
 export default function Home() {
   return (
@@ -13,6 +14,9 @@ export default function Home() {
         <div className="space-y-6">
           {/* AI Assistant */}
           <AIAssistant />
+
+          {/* Team Directory */}
+          <TeamDirectory />
         </div>
       </div>
     </ResponsiveContainer>
