@@ -4,15 +4,16 @@ import { toast } from "sonner";
 
 interface BannerSettings {
   url: string | null;
-  original_url: string | null;  // Preservar imagem original
+  original_url: string | null;
   crop: {
     x: number;
     y: number;
     width: number;
     height: number;
   } | null;
-  zoom?: number;      // Salvar zoom para restaurar
-  rotation?: number;  // Salvar rotação para restaurar
+  crop_position: { x: number; y: number } | null;  // Posição de arraste do react-easy-crop
+  zoom?: number;
+  rotation?: number;
 }
 
 export function useSiteSettings() {
@@ -28,14 +29,13 @@ export function useSiteSettings() {
         .single();
 
       if (error) {
-        // Se não existir, retornar valores default
         if (error.code === "PGRST116") {
-          return { url: null, original_url: null, crop: null, zoom: 1, rotation: 0 };
+          return { url: null, original_url: null, crop: null, crop_position: null, zoom: 1, rotation: 0 };
         }
         throw error;
       }
       const value = data?.value as unknown as BannerSettings | null;
-      return value || { url: null, original_url: null, crop: null, zoom: 1, rotation: 0 };
+      return value || { url: null, original_url: null, crop: null, crop_position: null, zoom: 1, rotation: 0 };
     },
   });
 
