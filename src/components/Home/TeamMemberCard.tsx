@@ -61,19 +61,11 @@ export function TeamMemberCard({ member, onEdit, onDelete }: TeamMemberCardProps
 
       {/* Info Section */}
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-            <AvatarImage src={member.photo_url || undefined} alt={member.name} />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{member.name}</h3>
-            {member.position && (
-              <p className="text-sm text-muted-foreground truncate">{member.position}</p>
-            )}
-          </div>
+        <div>
+          <h3 className="font-semibold text-foreground truncate">{member.name}</h3>
+          {member.position && (
+            <p className="text-sm text-muted-foreground truncate">{member.position}</p>
+          )}
         </div>
 
         {/* Tags */}
