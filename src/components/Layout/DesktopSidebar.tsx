@@ -1,6 +1,6 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
@@ -36,7 +36,7 @@ const adminNavigation: NavigationItem[] = [
 ];
 
 export function DesktopSidebar() {
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
   const location = useLocation();
   const isPWA = useIsPWA();
 

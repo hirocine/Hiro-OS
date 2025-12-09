@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useUserRole, UserRole } from '@/hooks/useUserRole';
+import { useAuthContext, UserRole } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface RoleGuardProps {
@@ -15,7 +15,7 @@ export function RoleGuard({
   fallback = null, 
   showLoading = false 
 }: RoleGuardProps) {
-  const { role, loading } = useUserRole();
+  const { role, roleLoading: loading } = useAuthContext();
 
   if (loading && showLoading) {
     return (

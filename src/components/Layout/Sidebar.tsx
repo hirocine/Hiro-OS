@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -64,7 +64,7 @@ const adminNavigation: NavigationItem[] = [
 ];
 
 export function Sidebar() {
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
 
   return (
     <div className="w-64 bg-card border-r border-border shadow-card flex flex-col">

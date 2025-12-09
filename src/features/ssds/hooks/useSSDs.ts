@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { useToast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { queryKeys } from '@/lib/queryClient';
 
 export type SSDStatus = 'available' | 'in_use' | 'loaned';
@@ -99,7 +99,7 @@ const fetchSSDs = async (): Promise<{ ssds: Equipment[], allocations: SSDAllocat
 export const useSSDs = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
 
   // Query for fetching SSDs
   const { data, isLoading: loading } = useQuery({

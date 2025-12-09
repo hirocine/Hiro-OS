@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -55,8 +55,7 @@ interface AuditLog {
 
 export default function Admin() {
   // TODOS OS HOOKS DEVEM VIR PRIMEIRO - ANTES DE QUALQUER RETURN CONDICIONAL
-  const { user } = useAuth();
-  const { isAdmin, loading: roleLoading, role } = useUserRole();
+  const { user, isAdmin, roleLoading, role } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);

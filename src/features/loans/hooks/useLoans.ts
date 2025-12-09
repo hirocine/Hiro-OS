@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loan, LoanFilters, LoanStats } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, NotFoundError, AuthorizationError } from '@/lib/errors';
 import type { LoanDbRow, LoanDbInsert, LoanDbUpdate } from '@/types/database';
@@ -46,7 +46,7 @@ const fetchLoans = async (isAdmin: boolean): Promise<Loan[]> => {
 
 export function useLoans() {
   const queryClient = useQueryClient();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, roleLoading } = useAuthContext();
   const [filters, setFilters] = useState<LoanFilters>({});
 
   // Query for fetching loans

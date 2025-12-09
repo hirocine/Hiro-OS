@@ -2,7 +2,7 @@ import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDriv
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { SidebarTools } from './SidebarTools';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import { cn } from '@/lib/utils';
@@ -37,7 +37,7 @@ const adminNavigation: NavigationItem[] = [
 ];
 
 export function MobileSidebar() {
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
   const { openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const isPWA = useIsPWA();
