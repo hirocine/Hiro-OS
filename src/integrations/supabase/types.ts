@@ -1235,6 +1235,7 @@ export type Database = {
           id: string
           is_visible: boolean | null
           name: string
+          original_photo_url: string | null
           photo_url: string | null
           position: string | null
           tags: string[] | null
@@ -1247,6 +1248,7 @@ export type Database = {
           id?: string
           is_visible?: boolean | null
           name: string
+          original_photo_url?: string | null
           photo_url?: string | null
           position?: string | null
           tags?: string[] | null
@@ -1259,6 +1261,7 @@ export type Database = {
           id?: string
           is_visible?: boolean | null
           name?: string
+          original_photo_url?: string | null
           photo_url?: string | null
           position?: string | null
           tags?: string[] | null
