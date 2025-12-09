@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { RecentActivityWidget } from '@/features/tasks/components/RecentActivityWidget';
 import { TaskCalendarWidget } from '@/features/tasks/components/TaskCalendarWidget';
+import { TaskSectionCards } from '@/features/tasks/components/TaskSectionCards';
 
 export default function Tasks() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -26,6 +27,9 @@ export default function Tasks() {
       <div className="space-y-6">
         {/* Calendar Widget */}
         <TaskCalendarWidget />
+
+        {/* Section Navigation Cards */}
+        <TaskSectionCards />
 
         {/* Recent Activity */}
         <RecentActivityWidget />
