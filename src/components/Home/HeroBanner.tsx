@@ -85,9 +85,7 @@ export function HeroBanner() {
           className="absolute inset-0 bg-cover bg-center transition-all duration-300"
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
-            backgroundPosition: bannerSettings?.crop 
-              ? `${bannerSettings.crop.x}% ${bannerSettings.crop.y}%` 
-              : "center",
+            backgroundPosition: "center",
             transform: getScale(),
             transformOrigin: "center center",
             transitionProperty: "transform, opacity",
