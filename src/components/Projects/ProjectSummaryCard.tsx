@@ -51,38 +51,28 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
 
   return (
     <Card className={cn(
-      "hover:shadow-lg hover:scale-[1.01] transition-all duration-300 cursor-pointer group border-l-4 overflow-hidden",
+      "hover:shadow-lg transition-all duration-300 cursor-pointer group border-l-4 overflow-hidden",
       getStepBorderColor(project.step)
     )}>
-      <CardContent className="p-5 md:p-6">
+      <CardContent className="p-4">
         {/* Header with project info and menu */}
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0" onClick={handleViewDetails}>
             {/* Project Number */}
             {project.projectNumber && (
-              <p className="text-xs font-medium text-muted-foreground/70 mb-1">
+              <p className="text-xs font-medium text-muted-foreground/70 mb-0.5">
                 Nº {project.projectNumber}
               </p>
             )}
             
-            {/* Project Name with inline badges */}
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h3 className="font-semibold text-xl leading-tight group-hover:text-primary transition-colors">
-                {project.name}
-              </h3>
-              <Badge variant={getStatusVariant(project.status)} className="shrink-0 text-xs">
-                {getStatusLabel(project.status)}
-              </Badge>
-              {isOverdue && (
-                <Badge variant="destructive" className="shrink-0 text-xs">
-                  Atrasado
-                </Badge>
-              )}
-            </div>
+            {/* Project Name */}
+            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">
+              {project.name}
+            </h3>
             
             {/* Company */}
             {project.company && (
-              <p className="text-sm text-muted-foreground/80 truncate">
+              <p className="text-xs text-muted-foreground/80 truncate">
                 {project.company}
               </p>
             )}
@@ -94,7 +84,7 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="shrink-0 ml-2 h-8 w-8 p-0"
+                className="shrink-0 ml-2 h-7 w-7 p-0"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -132,91 +122,65 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
         </div>
 
         <div onClick={handleViewDetails}>
-          {/* Current Step Badge */}
-          <div className="mb-4">
+          {/* Status + Step Badges */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            <Badge variant={getStatusVariant(project.status)} className="text-xs px-2 py-0.5">
+              {getStatusLabel(project.status)}
+            </Badge>
+            {isOverdue && (
+              <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                Atrasado
+              </Badge>
+            )}
             <Badge 
               variant={stepColors[project.step] as any}
-              className="text-sm px-3 py-1"
+              className="text-xs px-2 py-0.5"
             >
               {stepLabels[project.step]}
             </Badge>
           </div>
 
-          {/* Project Info Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          {/* Project Info - Compact */}
+          <div className="space-y-1.5 text-xs mb-3">
             {/* Responsible */}
-            <div className="flex items-start gap-3">
-              <User className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{project.responsibleName}</p>
-                {project.department && (
-                  <p className="text-xs text-muted-foreground/70 truncate">{project.department}</p>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <User className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+              <span className="truncate">{project.responsibleName}</span>
             </div>
 
             {/* Equipment Count */}
-            <div className="flex items-start gap-3">
-              <Package className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{project.equipmentCount} equipamentos</p>
-                <p className="text-xs text-muted-foreground/70">Vinculados</p>
-              </div>
+            <div className="flex items-center gap-2">
+              <Package className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+              <span>{project.equipmentCount} equipamentos</span>
             </div>
 
-            {/* Start Date */}
-            <div className="flex items-start gap-3">
-              <Calendar className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">
-                  {new Date(project.startDate).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-xs text-muted-foreground/70">Data de início</p>
-              </div>
-            </div>
-
-            {/* End Date */}
-            <div className="flex items-start gap-3">
-              <Clock className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className={cn(
-                  "text-sm font-medium",
-                  isOverdue && "text-destructive"
-                )}>
+            {/* Dates */}
+            <div className="flex items-center gap-2">
+              <Calendar className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+              <span>
+                {new Date(project.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                {' → '}
+                <span className={cn(isOverdue && "text-destructive font-medium")}>
                   {project.actualEndDate 
-                    ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
-                    : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
+                    ? new Date(project.actualEndDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                    : new Date(project.expectedEndDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                   }
-                </p>
-                <p className="text-xs text-muted-foreground/70">
-                  {project.actualEndDate ? 'Finalizado em' : 'Previsão de fim'}
-                </p>
-              </div>
+                </span>
+              </span>
             </div>
           </div>
-
-          {/* Description */}
-          {project.description && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground/80 line-clamp-2">
-                {project.description}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Action Button */}
-        <div className="mt-5 pt-4 border-t">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleViewDetails}
-            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            Ver Retirada
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleViewDetails}
+          className="w-full h-8 text-xs group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
+        >
+          <Eye className="mr-1.5 h-3 w-3" />
+          Ver Retirada
+        </Button>
       </CardContent>
     </Card>
   );
