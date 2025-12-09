@@ -298,7 +298,10 @@ export default function EquipmentPage() {
         .from('equipment-images')
         .getPublicUrl(fileName);
 
-      await updateEquipment(equipment.id, { image: publicUrl });
+      // Adicionar cache-busting para forçar navegador a buscar nova imagem
+      const publicUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
+      await updateEquipment(equipment.id, { image: publicUrlWithCacheBust });
       
       enhancedToast.success({
         title: 'Imagem otimizada e atualizada!',
