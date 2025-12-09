@@ -7,6 +7,7 @@ export interface TeamMember {
   name: string;
   position: string | null;
   photo_url: string | null;
+  original_photo_url: string | null;
   tags: string[];
   display_order: number;
   is_visible: boolean;
@@ -19,6 +20,7 @@ export interface TeamMemberInsert {
   name: string;
   position?: string;
   photo_url?: string;
+  original_photo_url?: string;
   tags?: string[];
   display_order?: number;
   is_visible?: boolean;

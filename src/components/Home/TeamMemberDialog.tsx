@@ -33,6 +33,7 @@ export function TeamMemberDialog({
   const [name, setName] = useState('');
   const [position, setPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+  const [originalPhotoUrl, setOriginalPhotoUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -40,6 +41,7 @@ export function TeamMemberDialog({
   // Cropper states
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [pendingOriginalBlob, setPendingOriginalBlob] = useState<Blob | null>(null);
 
   const isEditing = !!member;
 
@@ -48,20 +50,28 @@ export function TeamMemberDialog({
       setName(member.name);
       setPosition(member.position || '');
       setPhotoUrl(member.photo_url || '');
+      setOriginalPhotoUrl(member.original_photo_url || '');
       setTags(member.tags || []);
     } else {
       setName('');
       setPosition('');
       setPhotoUrl('');
+      setOriginalPhotoUrl('');
       setTags([]);
     }
     setNewTag('');
     setTempImageSrc(null);
+    setPendingOriginalBlob(null);
   }, [member, open]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Store the original file as blob for later upload
+    const arrayBuffer = await file.arrayBuffer();
+    const originalBlob = new Blob([arrayBuffer], { type: file.type });
+    setPendingOriginalBlob(originalBlob);
 
     // Create temporary URL and open cropper
     const tempUrl = URL.createObjectURL(file);
@@ -77,11 +87,33 @@ export function TeamMemberDialog({
     setShowCropper(false);
     
     try {
-      const fileName = `team-member-${Date.now()}.webp`;
+      const timestamp = Date.now();
+      
+      // Upload original image only if it's a new upload (not a re-crop)
+      if (pendingOriginalBlob) {
+        const originalFileName = `team-member-original-${timestamp}.webp`;
+        const { data: originalData, error: originalError } = await supabase.storage
+          .from('site-assets')
+          .upload(`team/originals/${originalFileName}`, pendingOriginalBlob, {
+            contentType: pendingOriginalBlob.type,
+            upsert: true,
+          });
 
+        if (originalError) throw originalError;
+
+        const { data: originalUrlData } = supabase.storage
+          .from('site-assets')
+          .getPublicUrl(originalData.path);
+
+        setOriginalPhotoUrl(originalUrlData.publicUrl);
+        setPendingOriginalBlob(null);
+      }
+
+      // Upload cropped image
+      const croppedFileName = `team-member-${timestamp}.webp`;
       const { data, error } = await supabase.storage
         .from('site-assets')
-        .upload(`team/${fileName}`, croppedBlob, {
+        .upload(`team/${croppedFileName}`, croppedBlob, {
           contentType: 'image/webp',
           upsert: true,
         });
@@ -114,9 +146,10 @@ export function TeamMemberDialog({
   };
 
   const handleRecrop = () => {
-    // For re-cropping existing photo, we need to use the current photoUrl
-    if (photoUrl) {
-      setTempImageSrc(photoUrl);
+    // For re-cropping, use original image if available, otherwise use current photo
+    const imageToRecrop = originalPhotoUrl || photoUrl;
+    if (imageToRecrop) {
+      setTempImageSrc(imageToRecrop);
       setShowCropper(true);
     }
   };
@@ -139,6 +172,7 @@ export function TeamMemberDialog({
       name: name.trim(),
       position: position.trim() || undefined,
       photo_url: photoUrl || undefined,
+      original_photo_url: originalPhotoUrl || undefined,
       tags,
     };
 
