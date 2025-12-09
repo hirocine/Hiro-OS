@@ -129,57 +129,68 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
     image.src = imageSrc;
     await new Promise((resolve) => (image.onload = resolve));
 
-    // Passo 1: Criar imagem rotacionada se necessário
-    let sourceImage: HTMLImageElement | HTMLCanvasElement = image;
+    // Helper functions (oficial react-easy-crop)
+    const getRadianAngle = (degreeValue: number) => (degreeValue * Math.PI) / 180;
     
-    if (rotation !== 0) {
-      const rotRad = (rotation * Math.PI) / 180;
-      const sin = Math.abs(Math.sin(rotRad));
-      const cos = Math.abs(Math.cos(rotRad));
-      
-      // Calcular tamanho do canvas para caber imagem rotacionada
-      const rotatedWidth = image.width * cos + image.height * sin;
-      const rotatedHeight = image.width * sin + image.height * cos;
-      
-      const rotCanvas = document.createElement("canvas");
-      rotCanvas.width = rotatedWidth;
-      rotCanvas.height = rotatedHeight;
-      const rotCtx = rotCanvas.getContext("2d");
-      if (!rotCtx) return null;
-      
-      // Rotacionar ao redor do centro
-      rotCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
-      rotCtx.rotate(rotRad);
-      rotCtx.drawImage(image, -image.width / 2, -image.height / 2);
-      
-      sourceImage = rotCanvas;
-    }
+    const rotateSize = (width: number, height: number, rot: number) => {
+      const rotRad = getRadianAngle(rot);
+      return {
+        width: Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+        height: Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+      };
+    };
 
-    // Passo 2: Extrair área recortada
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
+    // PASSO 1: Criar canvas com imagem rotacionada
+    const rotRad = getRadianAngle(rotation);
+    const { width: bBoxWidth, height: bBoxHeight } = rotateSize(image.width, image.height, rotation);
 
-    // Set output dimensions (banner aspect ratio 3:1)
-    const maxWidth = 1920;
-    canvas.width = maxWidth;
-    canvas.height = maxWidth / 3;
+    const rotatedCanvas = document.createElement("canvas");
+    rotatedCanvas.width = bBoxWidth;
+    rotatedCanvas.height = bBoxHeight;
+    const rotCtx = rotatedCanvas.getContext("2d");
+    if (!rotCtx) return null;
 
-    // Desenhar área recortada da imagem (já rotacionada se necessário)
-    ctx.drawImage(
-      sourceImage,
+    // Transladar para centro, rotacionar, transladar de volta, desenhar
+    rotCtx.translate(bBoxWidth / 2, bBoxHeight / 2);
+    rotCtx.rotate(rotRad);
+    rotCtx.translate(-image.width / 2, -image.height / 2);
+    rotCtx.drawImage(image, 0, 0);
+
+    // PASSO 2: Extrair área recortada (tamanho original do crop)
+    const croppedCanvas = document.createElement("canvas");
+    croppedCanvas.width = croppedAreaPixels.width;
+    croppedCanvas.height = croppedAreaPixels.height;
+    const croppedCtx = croppedCanvas.getContext("2d");
+    if (!croppedCtx) return null;
+
+    croppedCtx.drawImage(
+      rotatedCanvas,
       croppedAreaPixels.x,
       croppedAreaPixels.y,
       croppedAreaPixels.width,
       croppedAreaPixels.height,
       0,
       0,
-      canvas.width,
-      canvas.height
+      croppedAreaPixels.width,
+      croppedAreaPixels.height
+    );
+
+    // PASSO 3: Redimensionar para tamanho final (1920x640, aspect 3:1)
+    const finalCanvas = document.createElement("canvas");
+    const maxWidth = 1920;
+    finalCanvas.width = maxWidth;
+    finalCanvas.height = maxWidth / 3; // 640px
+    const finalCtx = finalCanvas.getContext("2d");
+    if (!finalCtx) return null;
+
+    finalCtx.drawImage(
+      croppedCanvas,
+      0, 0, croppedCanvas.width, croppedCanvas.height,
+      0, 0, finalCanvas.width, finalCanvas.height
     );
 
     return new Promise((resolve) => {
-      canvas.toBlob(resolve, "image/webp", 0.9);
+      finalCanvas.toBlob(resolve, "image/webp", 0.9);
     });
   };
 
