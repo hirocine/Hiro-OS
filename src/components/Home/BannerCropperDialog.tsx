@@ -129,24 +129,45 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
     image.src = imageSrc;
     await new Promise((resolve) => (image.onload = resolve));
 
+    // Passo 1: Criar imagem rotacionada se necessário
+    let sourceImage: HTMLImageElement | HTMLCanvasElement = image;
+    
+    if (rotation !== 0) {
+      const rotRad = (rotation * Math.PI) / 180;
+      const sin = Math.abs(Math.sin(rotRad));
+      const cos = Math.abs(Math.cos(rotRad));
+      
+      // Calcular tamanho do canvas para caber imagem rotacionada
+      const rotatedWidth = image.width * cos + image.height * sin;
+      const rotatedHeight = image.width * sin + image.height * cos;
+      
+      const rotCanvas = document.createElement("canvas");
+      rotCanvas.width = rotatedWidth;
+      rotCanvas.height = rotatedHeight;
+      const rotCtx = rotCanvas.getContext("2d");
+      if (!rotCtx) return null;
+      
+      // Rotacionar ao redor do centro
+      rotCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+      rotCtx.rotate(rotRad);
+      rotCtx.drawImage(image, -image.width / 2, -image.height / 2);
+      
+      sourceImage = rotCanvas;
+    }
+
+    // Passo 2: Extrair área recortada
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    // Set output dimensions (banner aspect ratio ~3:1)
+    // Set output dimensions (banner aspect ratio 3:1)
     const maxWidth = 1920;
-    const aspectRatio = 3;
     canvas.width = maxWidth;
-    canvas.height = maxWidth / aspectRatio;
+    canvas.height = maxWidth / 3;
 
-    // Apply rotation
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
+    // Desenhar área recortada da imagem (já rotacionada se necessário)
     ctx.drawImage(
-      image,
+      sourceImage,
       croppedAreaPixels.x,
       croppedAreaPixels.y,
       croppedAreaPixels.width,
@@ -156,8 +177,6 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
       canvas.width,
       canvas.height
     );
-    
-    ctx.restore();
 
     return new Promise((resolve) => {
       canvas.toBlob(resolve, "image/webp", 0.9);
