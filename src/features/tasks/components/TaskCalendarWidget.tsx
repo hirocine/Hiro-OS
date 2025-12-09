@@ -162,12 +162,6 @@ export function TaskCalendarWidget() {
               />
             </div>
             
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-4 mt-5">
-              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-[9px] font-bold text-white">2</span>
-              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-orange-500 text-[9px] font-bold text-white">3</span>
-              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-background border border-border text-[9px] font-bold text-foreground">1</span>
-            </div>
           </div>
 
           {/* Task list for selected date */}
