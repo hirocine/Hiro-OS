@@ -11,10 +11,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/utils';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function Dashboard() {
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, roleLoading } = useAuthContext();
   const { stats, allEquipment, loading } = useEquipment();
   const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);

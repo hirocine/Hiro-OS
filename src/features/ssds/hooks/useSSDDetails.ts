@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { SSDStatus } from './useSSDs';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 
 import { ProjectAllocation } from '@/components/SSD/ProjectAllocationList';
@@ -21,7 +21,7 @@ export function useSSDDetails(ssd: Equipment | null) {
   const [allocations, setAllocations] = useState<ProjectAllocation[]>([]);
   const [externalLoan, setExternalLoan] = useState<SSDExternalLoan | null>(null);
   const [loading, setLoading] = useState(false);
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
 
   useEffect(() => {
     if (ssd?.id) {

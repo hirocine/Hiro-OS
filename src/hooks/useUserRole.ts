@@ -1,3 +1,9 @@
+/**
+ * @deprecated Use useAuthContext from '@/contexts/AuthContext' instead.
+ * This hook is kept for backwards compatibility but will be removed in future versions.
+ * The AuthContext provides the same functionality with better performance through
+ * centralized caching and reduced database queries.
+ */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';

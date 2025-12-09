@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
 import { LoanContactInfo } from '@/types/loan';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from './useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 
 export function useContactInfo() {
   const [loading, setLoading] = useState(false);
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAuthContext();
 
   const getContactInfo = useCallback(async (loanId: string): Promise<LoanContactInfo | null> => {
     if (!isAdmin) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { wrapAsync } from '@/lib/errors';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ import type { CompanyPolicy, PolicyForm } from '../types';
 export function usePolicies() {
   const [policies, setPolicies] = useState<CompanyPolicy[]>([]);
   const [loading, setLoading] = useState(true);
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
 
   const fetchPolicies = async () => {
     const result = await wrapAsync(async () => {
