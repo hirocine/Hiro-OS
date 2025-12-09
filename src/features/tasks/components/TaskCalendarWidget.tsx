@@ -163,19 +163,10 @@ export function TaskCalendarWidget() {
             </div>
             
             {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mt-5 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-destructive text-[9px] font-bold text-white">2</span>
-                <span className="text-muted-foreground font-medium">Atrasada</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-orange-500 text-[9px] font-bold text-white">3</span>
-                <span className="text-muted-foreground font-medium">Urgente</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-background border border-border text-[9px] font-bold text-foreground">1</span>
-                <span className="text-muted-foreground font-medium">Normal</span>
-              </div>
+            <div className="flex items-center justify-center gap-4 mt-5">
+              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-[9px] font-bold text-white">2</span>
+              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-orange-500 text-[9px] font-bold text-white">3</span>
+              <span className="flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-background border border-border text-[9px] font-bold text-foreground">1</span>
             </div>
           </div>
 
