@@ -23,7 +23,7 @@ export function TeamMemberCard({ member, onEdit, onDelete }: TeamMemberCardProps
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Photo Section */}
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+      <div className="relative aspect-[3/2] bg-muted overflow-hidden">
         {member.photo_url ? (
           <img
             src={member.photo_url}
