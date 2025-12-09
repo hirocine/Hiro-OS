@@ -186,44 +186,69 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
 
         <div className="space-y-4">
           {!imageSrc ? (
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
+            <div className="p-4">
               {isLoadingImage ? (
-                <>
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
                   <Loader2 className="h-12 w-12 text-muted-foreground mb-4 animate-spin" />
                   <p className="text-muted-foreground">Carregando imagem...</p>
                   {fileName && (
                     <p className="text-sm text-muted-foreground mt-2">{fileName}</p>
                   )}
-                </>
+                </div>
               ) : (
-                <>
-                  <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-4">
-                    Selecione uma imagem para o banner
-                  </p>
-                  <Button onClick={() => fileInputRef.current?.click()}>
-                    Escolher Imagem
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  
+                <div className={`grid gap-4 ${bannerSettings?.url ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {/* Opção 1: Nova imagem */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary hover:bg-muted/50 transition-colors"
+                  >
+                    <Upload className="h-12 w-12 text-muted-foreground mb-3" />
+                    <span className="font-medium">Enviar Nova Imagem</span>
+                    <span className="text-sm text-muted-foreground mt-1 text-center">
+                      Fazer upload de uma nova foto
+                    </span>
+                  </button>
+
+                  {/* Opção 2: Editar atual (só se existir) */}
                   {bannerSettings?.url && (
-                    <div className="mt-6 text-center">
-                      <p className="text-sm text-muted-foreground mb-2">Banner atual:</p>
-                      <img 
-                        src={bannerSettings.url} 
-                        alt="Banner atual" 
-                        className="max-h-24 rounded-md"
-                      />
-                    </div>
+                    <button
+                      onClick={() => {
+                        setIsLoadingImage(true);
+                        setFileName("Banner atual");
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => {
+                          setImageDimensions({ width: img.width, height: img.height });
+                          setImageSrc(bannerSettings.url!);
+                          setCrop({ x: 0, y: 0 });
+                          setZoom(1);
+                          setRotation(0);
+                          setIsLoadingImage(false);
+                        };
+                        img.onerror = () => {
+                          logger.error("BannerCropperDialog: Failed to load current banner", { module: "banner" });
+                          setIsLoadingImage(false);
+                        };
+                        img.src = bannerSettings.url!;
+                      }}
+                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary hover:bg-muted/50 transition-colors"
+                    >
+                      <ImageIcon className="h-12 w-12 text-muted-foreground mb-3" />
+                      <span className="font-medium">Editar Banner Atual</span>
+                      <span className="text-sm text-muted-foreground mt-1 text-center">
+                        Ajustar crop, zoom ou rotação
+                      </span>
+                    </button>
                   )}
-                </>
+                </div>
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
             </div>
           ) : (
             <>
