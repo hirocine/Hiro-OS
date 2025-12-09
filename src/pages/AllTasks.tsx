@@ -577,6 +577,7 @@ export default function AllTasks() {
       <TaskDialog 
         open={dialogOpen} 
         onOpenChange={setDialogOpen}
+        defaultValues={{ is_private: false }}
       />
     </ResponsiveContainer>
   );

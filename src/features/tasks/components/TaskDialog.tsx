@@ -74,17 +74,17 @@ export function TaskDialog({ open, onOpenChange, task, defaultValues }: TaskDial
       await createTask.mutateAsync(formData);
     }
     
-    onOpenChange(false);
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'media',
-      status: 'pendente',
-      due_date: '',
-      department: '',
-      assigned_to: '',
-      is_private: false,
-    });
+      onOpenChange(false);
+      setFormData({
+        title: '',
+        description: '',
+        priority: 'media',
+        status: 'pendente',
+        due_date: '',
+        department: '',
+        assigned_to: '',
+        is_private: defaultValues?.is_private ?? false,
+      });
   };
 
   return (
