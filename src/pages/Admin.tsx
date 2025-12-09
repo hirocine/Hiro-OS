@@ -14,8 +14,9 @@ import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil } from 'lucide-react';
 import { AddUserDialog } from '@/components/Admin/AddUserDialog';
+import { EditUserDialog } from '@/components/Admin/EditUserDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -71,6 +72,8 @@ export default function Admin() {
   });
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Use equipment hook for CSV functionality
   const { 
@@ -493,23 +496,19 @@ export default function Admin() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Select
-                                value={tableUser.role}
-                                onValueChange={(newRole: 'admin' | 'user') => 
-                                  updateUserRole(tableUser.id, newRole)
-                                }
-                                disabled={tableUser.id === user?.id} // Prevent self-role changes
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  setSelectedUser(tableUser);
+                                  setIsEditUserDialogOpen(true);
+                                }}
                               >
-                                <SelectTrigger className="w-28 h-8">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="user">Usuário</SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                              </Select>
+                                <Pencil className="h-3 w-3" />
+                              </Button>
                               
-                              {tableUser.is_active && (
+                              {tableUser.is_active && tableUser.id !== user?.id && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button 
@@ -772,6 +771,13 @@ export default function Admin() {
         open={isAddUserDialogOpen}
         onOpenChange={setIsAddUserDialogOpen}
         onUserAdded={fetchUsers}
+      />
+
+      <EditUserDialog
+        open={isEditUserDialogOpen}
+        onOpenChange={setIsEditUserDialogOpen}
+        user={selectedUser}
+        onSuccess={fetchUsers}
       />
     </ResponsiveContainer>
   );
