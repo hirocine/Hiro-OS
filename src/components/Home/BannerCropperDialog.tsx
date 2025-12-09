@@ -96,10 +96,8 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
       setImageSrc(sourceUrl);
       
       // Restaurar configurações salvas
-      if (bannerSettings?.crop) {
-        // react-easy-crop usa crop como {x, y} para posição, não pixels
-        // Precisamos calcular a posição baseada no crop salvo
-        setCrop({ x: 0, y: 0 }); // Iniciar centralizado
+      if (bannerSettings?.crop_position) {
+        setCrop(bannerSettings.crop_position);
       } else {
         setCrop({ x: 0, y: 0 });
       }
@@ -196,6 +194,7 @@ export function BannerCropperDialog({ open, onOpenChange }: BannerCropperDialogP
           width: croppedAreaPixels.width,
           height: croppedAreaPixels.height,
         } : null,
+        crop_position: crop,  // Salvar posição de arraste
         zoom,
         rotation,
       });
