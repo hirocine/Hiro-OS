@@ -12,7 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { TeamMember, TeamMemberInsert, TeamMemberUpdate } from '@/hooks/useTeamMembers';
+import { TeamMember, TeamMemberInsert, TeamMemberUpdate, CropSettings } from '@/hooks/useTeamMembers';
 import { TeamPhotoCropperDialog } from './TeamPhotoCropperDialog';
 
 interface TeamMemberDialogProps {
@@ -37,11 +37,13 @@ export function TeamMemberDialog({
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [cropSettings, setCropSettings] = useState<CropSettings | null>(null);
   
   // Cropper states
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [pendingOriginalBlob, setPendingOriginalBlob] = useState<Blob | null>(null);
+  const [isRecropping, setIsRecropping] = useState(false);
 
   const isEditing = !!member;
 
@@ -52,16 +54,19 @@ export function TeamMemberDialog({
       setPhotoUrl(member.photo_url || '');
       setOriginalPhotoUrl(member.original_photo_url || '');
       setTags(member.tags || []);
+      setCropSettings(member.crop_settings || null);
     } else {
       setName('');
       setPosition('');
       setPhotoUrl('');
       setOriginalPhotoUrl('');
       setTags([]);
+      setCropSettings(null);
     }
     setNewTag('');
     setTempImageSrc(null);
     setPendingOriginalBlob(null);
+    setIsRecropping(false);
   }, [member, open]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,13 +81,14 @@ export function TeamMemberDialog({
     // Create temporary URL and open cropper
     const tempUrl = URL.createObjectURL(file);
     setTempImageSrc(tempUrl);
+    setIsRecropping(false); // New image, not a recrop
     setShowCropper(true);
     
     // Reset the input so the same file can be selected again
     e.target.value = '';
   };
 
-  const handleCropComplete = async (croppedBlob: Blob) => {
+  const handleCropComplete = async (croppedBlob: Blob, settings: CropSettings) => {
     setUploading(true);
     setShowCropper(false);
     
@@ -125,10 +131,12 @@ export function TeamMemberDialog({
         .getPublicUrl(data.path);
 
       setPhotoUrl(urlData.publicUrl);
+      setCropSettings(settings); // Save the crop settings
     } catch (error) {
       console.error('Upload error:', error);
     } finally {
       setUploading(false);
+      setIsRecropping(false);
       // Clean up temporary URL
       if (tempImageSrc) {
         URL.revokeObjectURL(tempImageSrc);
@@ -143,6 +151,7 @@ export function TeamMemberDialog({
       setTempImageSrc(null);
     }
     setShowCropper(open);
+    setIsRecropping(false);
   };
 
   const handleRecrop = () => {
@@ -150,6 +159,7 @@ export function TeamMemberDialog({
     const imageToRecrop = originalPhotoUrl || photoUrl;
     if (imageToRecrop) {
       setTempImageSrc(imageToRecrop);
+      setIsRecropping(true); // This is a recrop, use saved settings
       setShowCropper(true);
     }
   };
@@ -174,6 +184,7 @@ export function TeamMemberDialog({
       photo_url: photoUrl || undefined,
       original_photo_url: originalPhotoUrl || undefined,
       tags,
+      crop_settings: cropSettings || undefined,
     };
 
     if (isEditing && member) {
@@ -216,7 +227,10 @@ export function TeamMemberDialog({
                         <Crop className="h-3 w-3" />
                       </button>
                       <button
-                        onClick={() => setPhotoUrl('')}
+                        onClick={() => {
+                          setPhotoUrl('');
+                          setCropSettings(null);
+                        }}
                         className="p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm"
                         title="Remover foto"
                       >
@@ -325,6 +339,7 @@ export function TeamMemberDialog({
           imageSrc={tempImageSrc}
           onCropComplete={handleCropComplete}
           loading={uploading}
+          initialSettings={isRecropping ? cropSettings : null}
         />
       )}
     </>
