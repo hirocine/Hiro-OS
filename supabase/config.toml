@@ -76,7 +76,10 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.invite-user]
-verify_jwt = true
+verify_jwt = false
+
+[functions.manage-user]
+verify_jwt = false
 
 [edge_runtime]
 enabled = true
