@@ -29,19 +29,15 @@ const TASK_SECTIONS: TaskSection[] = [
 
 export function TaskSectionCards() {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="flex flex-wrap gap-4">
       {TASK_SECTIONS.map((section) => (
         <Link key={section.id} to={section.to}>
-          <Card className="h-full hover:shadow-lg transition-all cursor-pointer group border-2 hover:border-primary/20">
-            <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[140px]">
+          <Card className="w-[200px] hover:shadow-lg transition-all cursor-pointer group border-2 hover:border-primary/20">
+            <CardContent className="p-5 flex flex-col items-center justify-center text-center">
               <section.icon 
-                className={`w-10 h-10 ${section.iconColor} mb-4 group-hover:scale-110 transition-transform`} 
+                className={`w-8 h-8 ${section.iconColor} mb-3 group-hover:scale-110 transition-transform`} 
               />
-              
-              <div className="flex items-center gap-2">
-                <section.icon className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium">{section.label}</span>
-              </div>
+              <span className="font-medium text-sm">{section.label}</span>
             </CardContent>
           </Card>
         </Link>
