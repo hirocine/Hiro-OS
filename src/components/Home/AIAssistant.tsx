@@ -129,9 +129,11 @@ export function AIAssistant() {
             </div>
           </ScrollArea>
         )}
-        <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
-          hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
-        }`}>
+        {/* Wrapper para empurrar sugestões e input para baixo quando não há mensagens */}
+        <div className={!hasMessages ? 'mt-auto' : ''}>
+          <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
+            hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
+          }`}>
             {SUGGESTIONS.map((suggestion, index) => (
               <Button
                 key={index}
@@ -141,24 +143,25 @@ export function AIAssistant() {
                 className="text-xs"
               >
                 {suggestion}
-            </Button>
+              </Button>
             ))}
-        </div>
+          </div>
 
-        {/* Input form */}
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Digite sua pergunta..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={!input.trim() || isLoading}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
+          {/* Input form */}
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Digite sua pergunta..."
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={!input.trim() || isLoading}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );
