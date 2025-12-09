@@ -86,10 +86,11 @@ export function TaskSectionCards() {
               <Link to={section.to}>
                 <Button 
                   variant="ghost" 
-                  size="icon"
-                  className={`h-8 w-8 ${section.iconColor} hover:${section.iconBg}`}
+                  size="sm"
+                  className={`${section.iconColor} hover:${section.iconBg}`}
                 >
-                  <ArrowRight className="h-4 w-4" />
+                  Ver todas
+                  <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
             </div>
