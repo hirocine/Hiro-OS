@@ -50,6 +50,7 @@ export function TaskSectionCards() {
       to: '/tarefas/todas',
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
+      hoverTextColor: 'hover:text-primary',
       buttonVariant: 'default' as const,
       stats: team,
     },
@@ -60,6 +61,7 @@ export function TaskSectionCards() {
       to: '/tarefas/privadas',
       iconBg: 'bg-purple-500/10',
       iconColor: 'text-purple-500',
+      hoverTextColor: 'hover:text-purple-500',
       buttonVariant: 'outline' as const,
       buttonClass: 'border-purple-500/50 text-purple-600 hover:bg-purple-500/10',
       stats: privateStats,
@@ -87,7 +89,7 @@ export function TaskSectionCards() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={`${section.iconColor} hover:bg-muted`}
+                  className={`${section.iconColor} ${section.hoverTextColor} hover:bg-muted`}
                 >
                   Ver todas
                   <ArrowRight className="ml-1 h-4 w-4" />
