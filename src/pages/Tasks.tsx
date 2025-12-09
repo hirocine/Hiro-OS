@@ -3,10 +3,8 @@ import { Plus } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
-import { TaskStatsCards } from '@/features/tasks/components/TaskStatsCards';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { RecentActivityWidget } from '@/features/tasks/components/RecentActivityWidget';
-import { QuickActionsCard } from '@/features/tasks/components/QuickActionsCard';
 import { TaskCalendarWidget } from '@/features/tasks/components/TaskCalendarWidget';
 
 export default function Tasks() {
@@ -26,19 +24,11 @@ export default function Tasks() {
       />
 
       <div className="space-y-6">
-        {/* Stats Cards */}
-        <TaskStatsCards />
-
-        {/* Calendar Widget - Full Width */}
+        {/* Calendar Widget */}
         <TaskCalendarWidget />
 
-        {/* Widgets Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <QuickActionsCard />
-          <div className="lg:col-span-2">
-            <RecentActivityWidget />
-          </div>
-        </div>
+        {/* Recent Activity */}
+        <RecentActivityWidget />
       </div>
 
       <TaskDialog 
