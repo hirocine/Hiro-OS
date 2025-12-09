@@ -72,15 +72,7 @@ export function AIAssistant() {
         {/* Messages area */}
         <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
           <div className="space-y-4">
-            {messages.length === 0 ? (
-              <div className="text-center py-8">
-                <Sparkles className="h-12 w-12 text-primary/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Olá! Sou o assistente da Hiro. Posso ajudar você com informações sobre equipamentos, projetos, tarefas e mais.
-                </p>
-              </div>
-            ) : (
-              messages.map((message, index) => (
+            {messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex gap-3 ${
@@ -115,8 +107,7 @@ export function AIAssistant() {
                     </div>
                   )}
                 </div>
-              ))
-            )}
+              ))}
             
             {/* Loading indicator */}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
