@@ -54,6 +54,7 @@ export function HeroBanner() {
               ? `${bannerSettings.crop.x}% ${bannerSettings.crop.y}%` 
               : "center",
             transform: getScale(),
+            transformOrigin: "center center",
             transition: "transform 1.5s ease-out"
           }}
         />
