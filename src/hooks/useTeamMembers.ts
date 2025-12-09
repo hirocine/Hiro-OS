@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
+
+export interface CropSettings {
+  crop: { x: number; y: number };
+  zoom: number;
+  rotation: number;
+}
 
 export interface TeamMember {
   id: string;
@@ -14,6 +21,7 @@ export interface TeamMember {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  crop_settings: CropSettings | null;
 }
 
 export interface TeamMemberInsert {
@@ -24,6 +32,7 @@ export interface TeamMemberInsert {
   tags?: string[];
   display_order?: number;
   is_visible?: boolean;
+  crop_settings?: CropSettings;
 }
 
 export interface TeamMemberUpdate extends Partial<TeamMemberInsert> {
@@ -31,6 +40,14 @@ export interface TeamMemberUpdate extends Partial<TeamMemberInsert> {
 }
 
 export const teamMembersQueryKey = ['team-members'] as const;
+
+// Helper to convert database row to typed TeamMember
+function mapDbRowToTeamMember(row: Record<string, unknown>): TeamMember {
+  return {
+    ...row,
+    crop_settings: row.crop_settings as CropSettings | null,
+  } as TeamMember;
+}
 
 export function useTeamMembers() {
   return useQuery({
@@ -43,7 +60,7 @@ export function useTeamMembers() {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data as TeamMember[];
+      return (data || []).map(mapDbRowToTeamMember);
     },
   });
 }
@@ -58,7 +75,14 @@ export function useTeamMemberMutations() {
       const { data, error } = await supabase
         .from('team_members')
         .insert({
-          ...member,
+          name: member.name,
+          position: member.position,
+          photo_url: member.photo_url,
+          original_photo_url: member.original_photo_url,
+          tags: member.tags,
+          display_order: member.display_order,
+          is_visible: member.is_visible,
+          crop_settings: member.crop_settings as unknown as Json,
           created_by: user.user?.id,
         })
         .select()
@@ -80,7 +104,16 @@ export function useTeamMemberMutations() {
     mutationFn: async ({ id, ...updates }: TeamMemberUpdate) => {
       const { data, error } = await supabase
         .from('team_members')
-        .update(updates)
+        .update({
+          name: updates.name,
+          position: updates.position,
+          photo_url: updates.photo_url,
+          original_photo_url: updates.original_photo_url,
+          tags: updates.tags,
+          display_order: updates.display_order,
+          is_visible: updates.is_visible,
+          crop_settings: updates.crop_settings as unknown as Json,
+        })
         .eq('id', id)
         .select()
         .single();

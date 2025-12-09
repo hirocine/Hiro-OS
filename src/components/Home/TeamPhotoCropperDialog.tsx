@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { CropSettings } from '@/hooks/useTeamMembers';
 
 interface CropArea {
   x: number;
@@ -23,8 +24,9 @@ interface TeamPhotoCropperDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   imageSrc: string;
-  onCropComplete: (croppedBlob: Blob) => void;
+  onCropComplete: (croppedBlob: Blob, settings: CropSettings) => void;
   loading?: boolean;
+  initialSettings?: CropSettings | null;
 }
 
 export function TeamPhotoCropperDialog({
@@ -33,11 +35,26 @@ export function TeamPhotoCropperDialog({
   imageSrc,
   onCropComplete,
   loading,
+  initialSettings,
 }: TeamPhotoCropperDialogProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
+
+  // Load initial settings when dialog opens
+  useEffect(() => {
+    if (open && initialSettings) {
+      setCrop(initialSettings.crop);
+      setZoom(initialSettings.zoom);
+      setRotation(initialSettings.rotation);
+    } else if (open && !initialSettings) {
+      // Reset to defaults for new crops
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setRotation(0);
+    }
+  }, [open, initialSettings]);
 
   const onCropAreaChange = useCallback((_: CropArea, croppedAreaPixels: CropArea) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -123,7 +140,12 @@ export function TeamPhotoCropperDialog({
   const handleSave = async () => {
     try {
       const croppedBlob = await getCroppedImg();
-      onCropComplete(croppedBlob);
+      const settings: CropSettings = {
+        crop,
+        zoom,
+        rotation,
+      };
+      onCropComplete(croppedBlob, settings);
     } catch (error) {
       console.error('Error cropping image:', error);
     }
