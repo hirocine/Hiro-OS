@@ -87,7 +87,7 @@ export function TaskSectionCards() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={`${section.iconColor} hover:${section.iconBg}`}
+                  className={`${section.iconColor} hover:bg-muted`}
                 >
                   Ver todas
                   <ArrowRight className="ml-1 h-4 w-4" />
