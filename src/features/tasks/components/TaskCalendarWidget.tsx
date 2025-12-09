@@ -19,11 +19,16 @@ export function TaskCalendarWidget() {
   
   const { tasks } = useTasks({});
 
-  // Group tasks by date
+  // Group active tasks by date (exclude completed and archived)
   const tasksByDate = useMemo(() => {
     const map = new Map<string, typeof tasks>();
     
-    tasks?.forEach(task => {
+    // Filter out completed and archived tasks
+    const activeTasks = tasks?.filter(t => 
+      t.status !== 'concluida' && t.status !== 'arquivada'
+    ) || [];
+    
+    activeTasks.forEach(task => {
       if (task.due_date) {
         const dateKey = format(new Date(task.due_date), 'yyyy-MM-dd');
         const existing = map.get(dateKey) || [];
@@ -124,13 +129,12 @@ export function TaskCalendarWidget() {
                   DayContent: ({ date }) => {
                     const dateKey = format(date, 'yyyy-MM-dd');
                     const dayTasks = tasksByDate.get(dateKey) || [];
-                    const pendingTasks = dayTasks.filter(t => t.status !== 'concluida' && t.status !== 'arquivada');
-                    const pendingCount = pendingTasks.length;
-                    const hasOverdue = pendingTasks.some(t => {
+                    const pendingCount = dayTasks.length;
+                    const hasOverdue = dayTasks.some(t => {
                       const dueDate = new Date(t.due_date!);
-                      return dueDate < new Date() && t.status !== 'concluida';
+                      return dueDate < new Date();
                     });
-                    const hasUrgent = pendingTasks.some(t => t.priority === 'urgente');
+                    const hasUrgent = dayTasks.some(t => t.priority === 'urgente');
                     const isToday = isSameDay(date, new Date());
                     
                     return (
