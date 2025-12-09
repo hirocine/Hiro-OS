@@ -10,8 +10,8 @@ export default function Home() {
         {/* Hero Banner */}
         <HeroBanner />
 
-        {/* Main content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Main content sections */}
+        <div className="space-y-6">
           {/* AI Assistant */}
           <AIAssistant />
 
