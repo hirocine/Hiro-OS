@@ -193,7 +193,7 @@ export function TaskCalendarWidget() {
               </Badge>
             </div>
             
-            <ScrollArea className="flex-1 h-[320px] pr-4">
+            <ScrollArea className="flex-1 h-[320px]">
               {selectedDateTasks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
                   <div className="p-4 rounded-2xl bg-muted/30 mb-4">
