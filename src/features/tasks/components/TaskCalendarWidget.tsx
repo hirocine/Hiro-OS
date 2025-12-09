@@ -247,7 +247,7 @@ export function TaskCalendarWidget() {
                                     {task.assignee_name.slice(0, 2).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="truncate max-w-[80px]">{task.assignee_name}</span>
+                                <span className="truncate max-w-[80px]">{task.assignee_name.split(' ')[0]}</span>
                               </div>
                             )}
                           </div>
