@@ -45,7 +45,7 @@ export function AIAssistant() {
   const hasMessages = messages.length > 0;
 
   return (
-    <Card className={`flex flex-col transition-all duration-300 ${
+    <Card className={`flex flex-col transition-all duration-500 ease-out ${
       hasMessages ? "h-[500px]" : "h-auto"
     }`}>
       <CardHeader className="pb-3 flex-shrink-0">
@@ -75,7 +75,7 @@ export function AIAssistant() {
       <CardContent className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
         {/* Messages area - only show when there are messages */}
         {hasMessages && (
-          <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 pr-4 animate-fade-in" ref={scrollRef}>
             <div className="space-y-4">
               {messages.map((message, index) => (
                 <div
@@ -129,8 +129,9 @@ export function AIAssistant() {
             </div>
           </ScrollArea>
         )}
-        {messages.length === 0 && (
-          <div className="flex flex-wrap gap-2 justify-start mb-3">
+        <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
+          hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
+        }`}>
             {SUGGESTIONS.map((suggestion, index) => (
               <Button
                 key={index}
@@ -140,10 +141,9 @@ export function AIAssistant() {
                 className="text-xs"
               >
                 {suggestion}
-              </Button>
+            </Button>
             ))}
-          </div>
-        )}
+        </div>
 
         {/* Input form */}
         <form onSubmit={handleSubmit} className="flex gap-2">
