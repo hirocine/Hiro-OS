@@ -46,7 +46,7 @@ export function AIAssistant() {
 
   return (
     <Card className={`flex flex-col transition-all duration-500 ease-out ${
-      hasMessages ? "h-[500px]" : "h-[180px]"
+      hasMessages ? "h-[500px]" : "h-[220px]"
     }`}>
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
