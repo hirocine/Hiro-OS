@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { handleLegacyError, DatabaseError, ValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { ProjectDbRow, ProjectDbInsert, ProjectDbUpdate } from '@/types/database';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { queryKeys } from '@/lib/queryClient';
 
 // Fetch function
@@ -65,7 +65,7 @@ import { queryKeys } from '@/lib/queryClient';
 
 export function useProjects() {
   const queryClient = useQueryClient();
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
   const [filters, setFilters] = useState<ProjectFilters>({});
 
   // Query for fetching projects

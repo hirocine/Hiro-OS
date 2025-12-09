@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { createDatabaseError, createValidationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import { queryKeys } from '@/lib/queryClient';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface UseEquipmentReturn {
   equipment: Equipment[];
@@ -39,7 +39,7 @@ export function useEquipment(): UseEquipmentReturn {
   });
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
-  const { logAuditEntry } = useUserRole();
+  const { logAuditEntry } = useAuthContext();
 
   // Fetch equipment usando React Query
   const { data: equipment = [], isLoading, error: queryError } = useQuery({
