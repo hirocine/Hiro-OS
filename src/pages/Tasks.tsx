@@ -1,6 +1,5 @@
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
-import { RecentActivityWidget } from '@/features/tasks/components/RecentActivityWidget';
 import { TaskCalendarWidget } from '@/features/tasks/components/TaskCalendarWidget';
 import { TaskSectionCards } from '@/features/tasks/components/TaskSectionCards';
 
@@ -18,9 +17,6 @@ export default function Tasks() {
 
         {/* Section Navigation Cards */}
         <TaskSectionCards />
-
-        {/* Recent Activity */}
-        <RecentActivityWidget />
       </div>
     </ResponsiveContainer>
   );
