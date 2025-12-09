@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
   },
 });
 // Lazy load pages for better performance
-const ComingSoonHome = lazy(() => import("./pages/ComingSoonHome"));
+const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Equipment = lazy(() => import("./pages/Equipment"));
 const AddEquipment = lazy(() => import("./pages/AddEquipment"));
@@ -58,7 +58,7 @@ const App = () => (
                   <Layout />
                 </ProtectedRoute>
               }>
-                <Route index element={<ComingSoonHome />} />
+                <Route index element={<Home />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="inventario" element={<Equipment />} />
                 <Route path="inventario/novo" element={<AddEquipment />} />

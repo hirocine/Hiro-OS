@@ -72,6 +72,9 @@ verify_jwt = true
 [functions.optimize-existing-images]
 verify_jwt = false
 
+[functions.ai-assistant]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 policy = "per_worker"
