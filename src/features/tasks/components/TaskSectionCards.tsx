@@ -91,7 +91,7 @@ export function TaskSectionCards() {
                   size="sm"
                   className={`${section.iconColor} ${section.hoverTextColor} hover:bg-muted`}
                 >
-                  Ver todas
+                  Ver Tarefas
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
