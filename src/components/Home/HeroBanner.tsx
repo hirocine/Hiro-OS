@@ -26,7 +26,7 @@ export function HeroBanner() {
       <div className="relative w-full h-48 md:h-64 lg:h-80 overflow-hidden rounded-xl">
         {/* Background image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ 
             backgroundImage: `url(${bannerUrl})`,
             backgroundPosition: bannerSettings?.crop 
