@@ -4,3 +4,4 @@ export * from './hooks/useTaskMutations';
 export * from './hooks/useTaskDetails';
 export * from './hooks/useTaskStats';
 export * from './hooks/useTaskHistory';
+export * from './hooks/useTaskSectionStats';
