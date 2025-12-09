@@ -140,7 +140,7 @@ export function AIAssistant() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSuggestion(suggestion)}
-                className="text-xs italic"
+                className="text-xs italic text-muted-foreground"
               >
                 {suggestion}
               </Button>
