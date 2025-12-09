@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Lock, CheckCircle, Archive } from 'lucide-react';
+import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
 export default function PrivateTasks() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { departments } = useDepartments();
   const { tasks: allPrivateTasks, isLoading } = useTasks({ is_private: true });
   const { createTask, updateTask } = useTaskMutations();
@@ -286,14 +288,20 @@ export default function PrivateTasks() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10">
-              <Lock className="w-5 h-5 text-purple-500" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Lock className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <CardTitle>Tarefas Privadas</CardTitle>
+                <CardDescription>Suas tarefas pessoais - visíveis apenas para você</CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle>Tarefas Privadas</CardTitle>
-              <CardDescription>Suas tarefas pessoais - visíveis apenas para você</CardDescription>
-            </div>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Tarefa
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -340,6 +348,12 @@ export default function PrivateTasks() {
           )}
         </CardContent>
       </Card>
+
+      <TaskDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        defaultValues={{ is_private: true }}
+      />
     </ResponsiveContainer>
   );
 }

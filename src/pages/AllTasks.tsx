@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, User, CheckCircle, Archive, Plus, ChevronDown } from 'lucide-react';
+import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +51,7 @@ const defaultTaskState = {
 export default function AllTasks() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [dialogOpen, setDialogOpen] = useState(false);
   
   // Fetch all non-private tasks
   const { tasks: allTasks, isLoading } = useTasks({ is_private: false });
@@ -473,11 +475,17 @@ export default function AllTasks() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Users className="w-5 h-5 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle className="text-lg">Tarefas de Time</CardTitle>
             </div>
-            <CardTitle className="text-lg">Tarefas de Time</CardTitle>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Tarefa
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -565,6 +573,11 @@ export default function AllTasks() {
           )}
         </CardContent>
       </Card>
+
+      <TaskDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+      />
     </ResponsiveContainer>
   );
 }
