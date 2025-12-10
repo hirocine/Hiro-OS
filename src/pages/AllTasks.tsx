@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, User, CheckCircle, Archive, Plus, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, User, CheckCircle, Archive, Plus, ChevronDown } from 'lucide-react';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
 import { PriorityBadge } from '@/features/tasks/components/PriorityBadge';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge';
@@ -464,14 +465,12 @@ export default function AllTasks() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/tarefas">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Link>
-        </Button>
-      </div>
+      <BreadcrumbNav 
+        items={[
+          { label: 'Tarefas', href: '/tarefas' },
+          { label: 'Todas as Tarefas' }
+        ]} 
+      />
 
       <Card>
         <CardHeader>

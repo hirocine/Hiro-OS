@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 // Componentes SVG para logos oficiais
@@ -142,23 +143,21 @@ export default function SupplierDetails() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
+      <BreadcrumbNav 
+        items={[
+          { label: 'Fornecedores', href: '/fornecedores' },
+          { label: supplier.full_name }
+        ]} 
+      />
+
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/fornecedores')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{supplier.full_name}</h1>
-            {!supplier.is_active && (
-              <Badge variant="outline" className="mt-2">
-                Inativo
-              </Badge>
-            )}
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">{supplier.full_name}</h1>
+          {!supplier.is_active && (
+            <Badge variant="outline" className="mt-2">
+              Inativo
+            </Badge>
+          )}
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setDialogOpen(true)}>

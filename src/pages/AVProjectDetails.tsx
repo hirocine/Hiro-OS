@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Calendar, User, Building2, Edit, Archive, Trash2 } from 'lucide-react';
+import { Calendar, User, Building2, Edit, Archive, Trash2 } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -121,18 +122,17 @@ export default function AVProjectDetails() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
+      <BreadcrumbNav 
+        items={[
+          { label: 'Projetos', href: '/projetos-av' },
+          { label: project.name }
+        ]} 
+      />
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="flex items-start gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/projetos-av')}
-              className="shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
 
             <Avatar className="h-16 w-16 rounded-lg shrink-0">
               {project.logo_url ? (

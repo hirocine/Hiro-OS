@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
+import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/features/projects';
@@ -415,17 +416,16 @@ export default function ProjectDetails() {
 
   return (
     <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
+      <BreadcrumbNav 
+        items={[
+          { label: 'Retiradas', href: '/retiradas' },
+          { label: project.name }
+        ]} 
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/retiradas')}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
           <div>
             <div className="flex items-center space-x-3">
               <h1 className="text-2xl md:text-3xl font-bold">{project.name}</h1>
