@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronDown, ChevronRight, Plus, MoreHorizontal, Clock, Loader, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Loader, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { AVProjectStep, AVStepStatus, AV_STEP_STATUS_CONFIG } from '../types';
 import { useUpdateAVStep, useCreateAVSubstep, useUpdateAVSubstep, useDeleteAVSubstep } from '../hooks/useAVProjectDetails';
 import { useUsers } from '@/hooks/useUsers';
@@ -91,19 +91,29 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
       <div className="grid grid-cols-12 gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors">
         {/* Step Title */}
         <div className="col-span-5 flex items-center gap-2">
-          {hasSubsteps ? (
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          ) : (
-            <div className="w-6" />
-          )}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6 shrink-0"
+            onClick={() => {
+              if (!isExpanded) {
+                setIsExpanded(true);
+                // Se não tem substeps, abre formulário automaticamente
+                if (!hasSubsteps) {
+                  setIsAddingSubtask(true);
+                }
+              } else {
+                setIsExpanded(false);
+                setIsAddingSubtask(false);
+              }
+            }}
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
           <span className="text-sm font-medium truncate">{step.title}</span>
           {hasSubsteps && (
             <span className="text-xs text-muted-foreground">
@@ -196,22 +206,8 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
           </Select>
         </div>
 
-        {/* Actions */}
-        <div className="col-span-1 flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsAddingSubtask(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Subtarefa
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {/* Spacer - coluna vazia para manter alinhamento */}
+        <div className="col-span-1" />
       </div>
 
       {/* Substeps */}
