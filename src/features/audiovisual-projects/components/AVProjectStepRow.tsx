@@ -118,7 +118,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             value={step.responsible_user_id || ''}
             onValueChange={handleResponsibleChange}
           >
-            <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0">
+            <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 justify-start gap-1">
               <SelectValue>
                 {step.responsible_user_name ? (
                   <div className="flex items-center gap-1.5">
@@ -176,7 +176,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
         {/* Status */}
         <div className="col-span-2">
           <Select value={step.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="h-7 border-0 bg-transparent p-0">
+            <SelectTrigger className="h-7 border-0 bg-transparent p-0 justify-start gap-1">
               <SelectValue>
                 <Badge className={cn('text-xs', statusConfig.bgColor, statusConfig.color, 'border-0')}>
                   <StatusIcon className="h-3 w-3 mr-1" />
