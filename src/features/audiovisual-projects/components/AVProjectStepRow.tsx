@@ -274,8 +274,20 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                   {substep.title}
                 </span>
               </div>
-              <div className="col-span-2 text-xs text-muted-foreground">
-                {substep.responsible_user_name?.split(' ')[0] || '-'}
+              <div className="col-span-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                {substep.responsible_user_name ? (
+                  <>
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={getUserAvatarUrl(substep.responsible_user_id) || undefined} />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                        {getInitials(substep.responsible_user_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{substep.responsible_user_name.split(' ')[0]}</span>
+                  </>
+                ) : (
+                  <span className="italic">-</span>
+                )}
               </div>
               <div className="col-span-2 text-xs text-muted-foreground">
                 {substep.deadline ? format(new Date(substep.deadline), 'dd/MM') : '-'}
