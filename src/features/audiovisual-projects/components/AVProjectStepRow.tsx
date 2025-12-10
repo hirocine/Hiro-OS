@@ -160,10 +160,10 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             value={step.responsible_user_id || ''}
             onValueChange={handleResponsibleChange}
           >
-            <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 justify-start gap-1">
-              <SelectValue>
-                {step.responsible_user_name ? (
-                  <div className="flex items-center gap-1.5">
+            <SelectTrigger className="h-7 text-xs border-0 bg-transparent px-2 justify-start gap-1 [&>span]:text-muted-foreground [&>span]:italic">
+              <SelectValue placeholder="Selecionar">
+                {step.responsible_user_name && (
+                  <div className="flex items-center gap-1.5 not-italic text-foreground">
                     <Avatar className="h-5 w-5">
                       <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                         {getInitials(step.responsible_user_name)}
@@ -171,8 +171,6 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                     </Avatar>
                     <span className="truncate">{step.responsible_user_name.split(' ')[0]}</span>
                   </div>
-                ) : (
-                  <span className="text-muted-foreground italic">Selecionar</span>
                 )}
               </SelectValue>
             </SelectTrigger>
