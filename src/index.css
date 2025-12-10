@@ -9,6 +9,18 @@ All colors MUST be HSL.
 /* Prevent layout shift when dropdowns/modals open */
 html {
   scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+/* Override Radix UI scroll lock that adds padding-right */
+body[data-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Prevent Vaul drawer from adding padding */
+[vaul-drawer-wrapper] {
+  padding-right: 0 !important;
 }
 
 @layer base {
