@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronDown, ChevronRight, Clock, Loader, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Loader, CheckCircle, XCircle, Calendar, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -23,6 +23,20 @@ const STATUS_ICONS = {
   bloqueado: XCircle,
 };
 
+interface NewSubstepData {
+  title: string;
+  responsible_user_id: string | null;
+  responsible_user_name: string | null;
+  deadline: Date | null;
+}
+
+const INITIAL_SUBSTEP: NewSubstepData = {
+  title: '',
+  responsible_user_id: null,
+  responsible_user_name: null,
+  deadline: null,
+};
+
 interface AVProjectStepRowProps {
   step: AVProjectStep;
   projectId: string;
@@ -30,8 +44,9 @@ interface AVProjectStepRowProps {
 
 export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const [newSubstep, setNewSubstep] = useState<NewSubstepData>(INITIAL_SUBSTEP);
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const [deadlineOpen, setDeadlineOpen] = useState(false);
   
   const { users } = useUsers();
   const updateStep = useUpdateAVStep();
@@ -66,14 +81,31 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
   };
 
   const handleAddSubtask = () => {
-    if (!newSubtaskTitle.trim()) return;
+    if (!newSubstep.title.trim()) return;
     createSubstep.mutate({
       step_id: step.id,
-      title: newSubtaskTitle,
+      title: newSubstep.title,
       projectId,
       display_order: (step.substeps?.length || 0) + 1,
+      responsible_user_id: newSubstep.responsible_user_id,
+      responsible_user_name: newSubstep.responsible_user_name,
+      deadline: newSubstep.deadline ? format(newSubstep.deadline, 'yyyy-MM-dd') : null,
     });
-    setNewSubtaskTitle('');
+    setNewSubstep(INITIAL_SUBSTEP);
+    setIsAddingSubtask(false);
+  };
+
+  const handleNewSubstepResponsibleChange = (userId: string) => {
+    const user = users?.find((u) => u.id === userId);
+    setNewSubstep((prev) => ({
+      ...prev,
+      responsible_user_id: userId,
+      responsible_user_name: user?.display_name || null,
+    }));
+  };
+
+  const handleCancelAddSubtask = () => {
+    setNewSubstep(INITIAL_SUBSTEP);
     setIsAddingSubtask(false);
   };
 
@@ -255,31 +287,123 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             </div>
           ))}
 
-          {/* Add Subtask Input */}
+          {/* Add Subtask Input - Grid completo estilo tarefas */}
           {isAddingSubtask && (
-            <div className="flex items-center gap-2 pl-3">
-              <Input
-                value={newSubtaskTitle}
-                onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                placeholder="Nome da subtarefa..."
-                className="h-7 text-xs flex-1"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddSubtask();
-                  if (e.key === 'Escape') setIsAddingSubtask(false);
-                }}
-              />
-              <Button size="sm" className="h-7 text-xs" onClick={handleAddSubtask}>
-                Adicionar
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 text-xs"
-                onClick={() => setIsAddingSubtask(false)}
-              >
-                Cancelar
-              </Button>
+            <div 
+              className={cn(
+                "grid grid-cols-12 gap-2 py-1.5 items-center text-sm border-l-2 pl-3 rounded-r transition-all",
+                "border-dashed border-muted-foreground/30",
+                !newSubstep.title && "opacity-70 hover:opacity-100"
+              )}
+            >
+              {/* Título */}
+              <div className="col-span-5 flex items-center gap-2">
+                <div className="h-4 w-4" /> {/* Spacer para alinhar com checkbox */}
+                <Input
+                  value={newSubstep.title}
+                  onChange={(e) => setNewSubstep((prev) => ({ ...prev, title: e.target.value }))}
+                  placeholder="Nome da subtarefa..."
+                  className="h-7 text-xs flex-1 bg-transparent border-0 p-0 placeholder:italic placeholder:text-muted-foreground/60 focus-visible:ring-0"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newSubstep.title.trim()) handleAddSubtask();
+                    if (e.key === 'Escape') handleCancelAddSubtask();
+                  }}
+                />
+              </div>
+
+              {/* Responsável */}
+              <div className="col-span-2">
+                <Select
+                  value={newSubstep.responsible_user_id || ''}
+                  onValueChange={handleNewSubstepResponsibleChange}
+                >
+                  <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 justify-start gap-1">
+                    <SelectValue>
+                      {newSubstep.responsible_user_name ? (
+                        <div className="flex items-center gap-1.5">
+                          <Avatar className="h-5 w-5">
+                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                              {getInitials(newSubstep.responsible_user_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{newSubstep.responsible_user_name.split(' ')[0]}</span>
+                        </div>
+                      ) : (
+                        <span className="italic text-muted-foreground/60">Selecionar</span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users?.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.display_name || u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Prazo */}
+              <div className="col-span-2">
+                <Popover open={deadlineOpen} onOpenChange={setDeadlineOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs justify-start font-normal"
+                    >
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {newSubstep.deadline ? (
+                        format(newSubstep.deadline, 'dd/MM', { locale: ptBR })
+                      ) : (
+                        <span className="italic text-muted-foreground/60">Selecionar</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={newSubstep.deadline || undefined}
+                      onSelect={(date) => {
+                        setNewSubstep((prev) => ({ ...prev, deadline: date || null }));
+                        setDeadlineOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Status */}
+              <div className="col-span-2">
+                <Badge className="text-[10px] bg-muted text-muted-foreground border-0">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Pendente
+                </Badge>
+              </div>
+
+              {/* Ações */}
+              <div className="col-span-1 flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-primary"
+                  onClick={handleAddSubtask}
+                  disabled={!newSubstep.title.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                  onClick={handleCancelAddSubtask}
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
