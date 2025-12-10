@@ -122,94 +122,91 @@ export default function AVProjectDetails() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
-      <BreadcrumbNav 
-        items={[
-          { label: 'Projetos', href: '/projetos-av' },
-          { label: project.name }
-        ]} 
-      />
+      {/* Header com breadcrumb e ações */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <BreadcrumbNav 
+          items={[
+            { label: 'Projetos', href: '/projetos-av' },
+            { label: project.name }
+          ]}
+          className="mb-0"
+        />
+        
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleArchive}>
+            <Archive className="h-4 w-4 mr-2" />
+            {project.status === 'archived' ? 'Desarquivar' : 'Arquivar'}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação não pode ser desfeita. Todos os steps e dados do projeto serão removidos permanentemente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
 
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
+        {/* Project Info */}
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16 rounded-lg shrink-0">
+            {project.logo_url ? (
+              <AvatarImage src={project.logo_url} className="object-cover" />
+            ) : null}
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xl font-semibold">
+              {getInitials(project.name)}
+            </AvatarFallback>
+          </Avatar>
 
-            <Avatar className="h-16 w-16 rounded-lg shrink-0">
-              {project.logo_url ? (
-                <AvatarImage src={project.logo_url} className="object-cover" />
-              ) : null}
-              <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xl font-semibold">
-                {getInitials(project.name)}
-              </AvatarFallback>
-            </Avatar>
-
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold">{project.name}</h1>
-                <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
-                  {statusConfig.label}
-                </Badge>
-                {isOverdue && (
-                  <Badge variant="destructive">Atrasado</Badge>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
-                {project.company && (
-                  <div className="flex items-center gap-1">
-                    <Building2 className="h-4 w-4" />
-                    <span>{project.company}</span>
-                  </div>
-                )}
-                {project.deadline && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
-                  </div>
-                )}
-                {project.responsible_user_name && (
-                  <div className="flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    <span>{project.responsible_user_name}</span>
-                  </div>
-                )}
-              </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold">{project.name}</h1>
+              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
+                {statusConfig.label}
+              </Badge>
+              {isOverdue && (
+                <Badge variant="destructive">Atrasado</Badge>
+              )}
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 ml-auto md:ml-0">
-            <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleArchive}
-            >
-              <Archive className="h-4 w-4 mr-2" />
-              {project.status === 'archived' ? 'Desarquivar' : 'Arquivar'}
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. Todos os steps e dados do projeto serão removidos permanentemente.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            
+            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
+              {project.company && (
+                <div className="flex items-center gap-1">
+                  <Building2 className="h-4 w-4" />
+                  <span>{project.company}</span>
+                </div>
+              )}
+              {project.deadline && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
+                </div>
+              )}
+              {project.responsible_user_name && (
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{project.responsible_user_name}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
