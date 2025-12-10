@@ -42,7 +42,7 @@ interface AVProjectDialogProps {
 }
 
 export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialogProps) {
-  const { user, profile } = useAuthContext();
+  const { user } = useAuthContext();
   const { users } = useUsers();
   const createProject = useCreateAVProject();
   const updateProject = useUpdateAVProject();
@@ -132,7 +132,7 @@ export function AVProjectDialog({ open, onOpenChange, project }: AVProjectDialog
       await createProject.mutateAsync({
         ...payload,
         created_by: user?.id,
-        created_by_name: profile?.display_name || user?.email,
+        created_by_name: user?.user_metadata?.full_name || user?.email,
       });
     }
 

@@ -42,6 +42,8 @@ const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AllTasks = lazy(() => import("./pages/AllTasks"));
 const MyTasks = lazy(() => import("./pages/MyTasks"));
 const PrivateTasks = lazy(() => import("./pages/PrivateTasks"));
+const AVProjects = lazy(() => import("./pages/AVProjects"));
+const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -80,6 +82,8 @@ const App = () => (
                 <Route path="tarefas/:id" element={<TaskDetails />} />
                 <Route path="fornecedores" element={<Suppliers />} />
                 <Route path="fornecedores/:id" element={<SupplierDetails />} />
+                <Route path="projetos-av" element={<AVProjects />} />
+                <Route path="projetos-av/:id" element={<AVProjectDetails />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Admin />} />
               </Route>

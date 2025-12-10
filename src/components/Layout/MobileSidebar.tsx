@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -32,6 +32,7 @@ const navigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
+  { name: 'Projetos AV', href: '/projetos-av', icon: Film, adminOnly: true },
   { name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true },
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
