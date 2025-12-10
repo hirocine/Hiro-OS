@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      audiovisual_projects: {
+        Row: {
+          actual_end_date: string | null
+          company: string | null
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          deadline: string | null
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          responsible_user_id: string | null
+          responsible_user_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -55,6 +106,137 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      av_project_sections: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      av_project_steps: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          display_order: number
+          id: string
+          notes: string | null
+          project_id: string
+          responsible_user_id: string | null
+          responsible_user_name: string | null
+          section_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          display_order?: number
+          id?: string
+          notes?: string | null
+          project_id: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          section_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          display_order?: number
+          id?: string
+          notes?: string | null
+          project_id?: string
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          section_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "av_project_steps_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "audiovisual_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "av_project_steps_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "av_project_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      av_project_substeps: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          display_order: number
+          id: string
+          is_completed: boolean
+          responsible_user_id: string | null
+          responsible_user_name: string | null
+          step_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          display_order?: number
+          id?: string
+          is_completed?: boolean
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          step_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          display_order?: number
+          id?: string
+          is_completed?: boolean
+          responsible_user_id?: string | null
+          responsible_user_name?: string | null
+          step_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "av_project_substeps_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "av_project_steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       borrower_contacts: {
         Row: {
