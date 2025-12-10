@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { ResponsiveText } from './responsive-text';
 
 interface PageHeaderProps {
   title: string | ReactNode;
@@ -24,7 +23,7 @@ export function PageHeader({
       className
     )}>
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div className="space-y-1 md:space-y-2 min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
           <h1 className={cn(
             "font-bold tracking-tight text-foreground text-left",
             isMobile ? "text-xl" : "text-2xl md:text-3xl"
@@ -32,18 +31,9 @@ export function PageHeader({
             {title}
           </h1>
           {subtitle && (
-            typeof subtitle === 'string' ? (
-              <ResponsiveText 
-                size="sm" 
-                className="text-muted-foreground leading-relaxed"
-              >
-                {subtitle}
-              </ResponsiveText>
-            ) : (
-              <div className="text-sm text-muted-foreground leading-relaxed">
-                {subtitle}
-              </div>
-            )
+            <div className="mt-1 text-sm text-muted-foreground leading-relaxed">
+              {typeof subtitle === 'string' ? subtitle : subtitle}
+            </div>
           )}
         </div>
         
