@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { ChevronDown, ChevronRight, Clock, Loader, CheckCircle, XCircle, Calendar, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -118,6 +118,12 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
     return name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   };
 
+  const getUserAvatarUrl = (userId: string | null) => {
+    if (!userId) return null;
+    const user = users?.find(u => u.id === userId);
+    return user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  };
+
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
       <div className="grid grid-cols-12 gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors">
@@ -165,6 +171,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                 {step.responsible_user_name && (
                   <div className="flex items-center gap-1.5 not-italic text-foreground">
                     <Avatar className="h-5 w-5">
+                      <AvatarImage src={getUserAvatarUrl(step.responsible_user_id) || undefined} />
                       <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                         {getInitials(step.responsible_user_name)}
                       </AvatarFallback>
@@ -177,7 +184,15 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
             <SelectContent>
               {users?.map((u) => (
                 <SelectItem key={u.id} value={u.id}>
-                  {u.display_name || u.email}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={u.avatar_url || u.user_metadata?.avatar_url || u.user_metadata?.picture || undefined} />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                        {getInitials(u.display_name || u.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{u.display_name || u.email}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -321,6 +336,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                       {newSubstep.responsible_user_name ? (
                         <div className="flex items-center gap-1.5">
                           <Avatar className="h-5 w-5">
+                            <AvatarImage src={getUserAvatarUrl(newSubstep.responsible_user_id) || undefined} />
                             <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                               {getInitials(newSubstep.responsible_user_name)}
                             </AvatarFallback>
@@ -335,7 +351,15 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                   <SelectContent>
                     {users?.map((u) => (
                       <SelectItem key={u.id} value={u.id}>
-                        {u.display_name || u.email}
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={u.avatar_url || u.user_metadata?.avatar_url || u.user_metadata?.picture || undefined} />
+                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                              {getInitials(u.display_name || u.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{u.display_name || u.email}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
