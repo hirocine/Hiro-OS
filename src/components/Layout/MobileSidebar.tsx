@@ -29,7 +29,6 @@ const navigation: NavigationItem[] = [
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
-  { name: 'Projetos AV', href: '/projetos-av', icon: Film },
 ];
 
 const adminNavigation: NavigationItem[] = [
