@@ -172,7 +172,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                     <span className="truncate">{step.responsible_user_name.split(' ')[0]}</span>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground">-</span>
+                  <span className="text-muted-foreground italic">Selecionar</span>
                 )}
               </SelectValue>
             </SelectTrigger>
@@ -201,7 +201,7 @@ export function AVProjectStepRow({ step, projectId }: AVProjectStepRowProps) {
                 <Calendar className="h-3 w-3 mr-1" />
                 {step.deadline
                   ? format(new Date(step.deadline), 'dd/MM', { locale: ptBR })
-                  : '-'}
+                  : <span className="italic">Selecionar</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
