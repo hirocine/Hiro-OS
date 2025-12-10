@@ -9,7 +9,7 @@ All colors MUST be HSL.
 /* === CRITICAL: Prevent ALL scrollbar shifts === */
 html {
   scrollbar-gutter: stable;
-  overflow-y: scroll;
+  overflow-y: scroll !important;
   overflow-x: hidden;
 }
 
@@ -18,8 +18,13 @@ body {
   overflow-x: hidden;
 }
 
-/* Override ALL Radix UI scroll lock mechanisms */
-body[data-scroll-locked],
+/* Override ALL Radix UI scroll lock mechanisms - HIGH SPECIFICITY */
+html body[data-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  overflow: visible !important;
+}
+
 [data-radix-scroll-area-viewport],
 [data-radix-popper-content-wrapper] {
   padding-right: 0 !important;
