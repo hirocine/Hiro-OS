@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, User, Building2, Edit, Archive, Trash2 } from 'lucide-react';
+import { Calendar, User, Building2, Edit, Archive, Trash2, LayoutList } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -164,89 +165,98 @@ export default function AVProjectDetails() {
         </div>
       </div>
 
-      <div className="space-y-6">
-        {/* Project Info */}
-        <div className="flex items-start gap-4">
-          <Avatar className="h-16 w-16 rounded-lg shrink-0">
-            {project.logo_url ? (
-              <AvatarImage src={project.logo_url} className="object-cover" />
-            ) : null}
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xl font-semibold">
-              {getInitials(project.name)}
-            </AvatarFallback>
-          </Avatar>
+      {/* Project Header Card */}
+      <Card className="mb-8">
+        <CardContent className="p-6">
+          {/* Avatar + Title + Badges */}
+          <div className="flex items-start gap-4">
+            <Avatar className="h-16 w-16 rounded-lg shrink-0">
+              {project.logo_url ? (
+                <AvatarImage src={project.logo_url} className="object-cover" />
+              ) : null}
+              <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xl font-semibold">
+                {getInitials(project.name)}
+              </AvatarFallback>
+            </Avatar>
 
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
-                {statusConfig.label}
-              </Badge>
-              {isOverdue && (
-                <Badge variant="destructive">Atrasado</Badge>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
-              {project.company && (
-                <div className="flex items-center gap-1">
-                  <Building2 className="h-4 w-4" />
-                  <span>{project.company}</span>
-                </div>
-              )}
-              {project.deadline && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
-                </div>
-              )}
-              {project.responsible_user_name && (
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  <span>{project.responsible_user_name}</span>
-                </div>
-              )}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold">{project.name}</h1>
+                <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
+                  {statusConfig.label}
+                </Badge>
+                {isOverdue && (
+                  <Badge variant="destructive">Atrasado</Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
+                {project.company && (
+                  <div className="flex items-center gap-1">
+                    <Building2 className="h-4 w-4" />
+                    <span>{project.company}</span>
+                  </div>
+                )}
+                {project.deadline && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>Prazo: {format(new Date(project.deadline), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
+                  </div>
+                )}
+                {project.responsible_user_name && (
+                  <div className="flex items-center gap-1">
+                    <User className="h-4 w-4" />
+                    <span>{project.responsible_user_name}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Progress Overview */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Progresso Geral</p>
-                <p className="text-2xl font-bold text-primary">{overallProgress}%</p>
-              </div>
-              <div className="flex-1 max-w-md ml-8">
-                <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-success transition-all duration-500"
-                    style={{ width: `${overallProgress}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 text-right">
-                  {steps?.filter((s) => s.status === 'concluido').length || 0} de {steps?.length || 0} steps concluídos
-                </p>
-              </div>
+          {/* Separator */}
+          <Separator className="my-5" />
+
+          {/* Progress */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Progresso Geral</p>
+              <p className="text-2xl font-bold text-primary">{overallProgress}%</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1 max-w-md ml-8">
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-success transition-all duration-500"
+                  style={{ width: `${overallProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 text-right">
+                {steps?.filter((s) => s.status === 'concluido').length || 0} de {steps?.length || 0} steps concluídos
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Sections */}
-        <div className="space-y-4">
-          {sections?.map((section) => {
-            const sectionSteps = stepsBySection.get(section.id) || [];
-            return (
-              <AVProjectSectionRow
-                key={section.id}
-                section={section}
-                steps={sectionSteps}
-                projectId={project.id}
-              />
-            );
-          })}
+      {/* Workflow Section */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-2 rounded-lg bg-muted">
+          <LayoutList className="h-5 w-5 text-muted-foreground" />
         </div>
+        <h2 className="text-lg font-semibold">Workflow</h2>
+      </div>
+
+      <div className="space-y-4">
+        {sections?.map((section) => {
+          const sectionSteps = stepsBySection.get(section.id) || [];
+          return (
+            <AVProjectSectionRow
+              key={section.id}
+              section={section}
+              steps={sectionSteps}
+              projectId={project.id}
+            />
+          );
+        })}
       </div>
 
       <AVProjectDialog
