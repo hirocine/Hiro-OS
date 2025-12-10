@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import hiroLogo from '@/assets/hiro-logo.png';
 
