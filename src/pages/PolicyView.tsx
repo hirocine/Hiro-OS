@@ -56,21 +56,16 @@ export default function PolicyView() {
   return (
     <>
       <div className="container mx-auto p-6 md:p-8 space-y-6">
-        <BreadcrumbNav 
-          items={[
-            { label: 'Políticas', href: '/politicas' },
-            { label: policy.title }
-          ]} 
-        />
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">{policy.icon_url || '📋'}</span>
-            <h1 className="text-2xl md:text-3xl font-bold">{policy.title}</h1>
-          </div>
+        {/* Header com breadcrumb e ações */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <BreadcrumbNav 
+            items={[
+              { label: 'Políticas', href: '/politicas' },
+              { label: policy.title }
+            ]} 
+            className="mb-0"
+          />
           
-          {/* Botões de ação */}
           {isAdmin && (
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditorOpen(true)}>
@@ -83,6 +78,12 @@ export default function PolicyView() {
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Título */}
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">{policy.icon_url || '📋'}</span>
+          <h1 className="text-2xl md:text-3xl font-bold">{policy.title}</h1>
         </div>
 
         {/* Conteúdo da política */}
