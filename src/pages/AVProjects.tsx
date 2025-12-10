@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useAuthContext } from '@/contexts/AuthContext';
 import {
   useAVProjects,
   useAVProjectStats,
@@ -17,7 +15,6 @@ import {
 } from '@/features/audiovisual-projects';
 
 export default function AVProjects() {
-  const { isAdmin, roleLoading } = useAuthContext();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
   const [archivedOpen, setArchivedOpen] = useState(false);
@@ -26,25 +23,6 @@ export default function AVProjects() {
   const { data: activeProjects, isLoading: activeLoading } = useAVProjects('active');
   const { data: completedProjects, isLoading: completedLoading } = useAVProjects('completed');
   const { data: archivedProjects, isLoading: archivedLoading } = useAVProjects('archived');
-
-  if (roleLoading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl">
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-48" />
-          <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-          </div>
-        </div>
-      </ResponsiveContainer>
-    );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
 
   const renderProjectsGrid = (projects: typeof activeProjects, isLoading: boolean) => {
     if (isLoading) {

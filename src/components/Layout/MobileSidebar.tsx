@@ -23,16 +23,17 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
+  { name: 'Projetos AV', href: '/projetos-av', icon: Film },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'Projetos AV', href: '/projetos-av', icon: Film },
 ];
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
-  { name: 'Projetos AV', href: '/projetos-av', icon: Film, adminOnly: true },
   { name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true },
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
