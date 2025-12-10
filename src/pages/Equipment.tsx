@@ -507,18 +507,18 @@ export default function EquipmentPage() {
       <PageHeader 
         title="Equipamentos" 
         subtitle={
-          <span className="flex items-center gap-2">
+          <>
             Gerencie o inventário de equipamentos audiovisuais
             {lastUpdate && (
-              <>
-                <span className="text-muted-foreground/50">•</span>
-                <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Atualizado {formatRelativeTime(lastUpdate)}
-                </span>
-              </>
+              <span className="text-muted-foreground/50"> • </span>
             )}
-          </span>
+            {lastUpdate && (
+              <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Atualizado {formatRelativeTime(lastUpdate)}
+              </span>
+            )}
+          </>
         }
         actions={
           <div className="flex flex-col sm:flex-row gap-2">

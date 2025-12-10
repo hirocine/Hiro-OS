@@ -63,18 +63,18 @@ const SSDs = () => {
       <PageHeader
         title="Controle de SSDs e HDs"
         subtitle={
-          <span className="flex items-center gap-2">
+          <>
             Gerencie seus SSDs e HDs de forma visual
             {lastUpdate && (
-              <>
-                <span className="text-muted-foreground/50">•</span>
-                <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Atualizado {formatRelativeTime(lastUpdate)}
-                </span>
-              </>
+              <span className="text-muted-foreground/50"> • </span>
             )}
-          </span>
+            {lastUpdate && (
+              <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Atualizado {formatRelativeTime(lastUpdate)}
+              </span>
+            )}
+          </>
         }
         actions={
           <Button onClick={() => setShowAddDialog(true)}>
