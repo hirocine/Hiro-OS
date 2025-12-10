@@ -69,10 +69,10 @@ export function useCreateAVProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (project: Partial<AVProject>) => {
+    mutationFn: async (project: { name: string } & Partial<AVProject>) => {
       const { data, error } = await supabase
         .from('audiovisual_projects')
-        .insert(project)
+        .insert([project as any])
         .select()
         .single();
 

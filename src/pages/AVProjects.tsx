@@ -17,7 +17,7 @@ import {
 } from '@/features/audiovisual-projects';
 
 export default function AVProjects() {
-  const { isAdmin, isRoleLoading } = useAuthContext();
+  const { isAdmin, roleLoading } = useAuthContext();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
   const [archivedOpen, setArchivedOpen] = useState(false);
@@ -27,7 +27,7 @@ export default function AVProjects() {
   const { data: completedProjects, isLoading: completedLoading } = useAVProjects('completed');
   const { data: archivedProjects, isLoading: archivedLoading } = useAVProjects('archived');
 
-  if (isRoleLoading) {
+  if (roleLoading) {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <div className="space-y-6">
@@ -91,10 +91,9 @@ export default function AVProjects() {
     <ResponsiveContainer maxWidth="7xl">
       <div className="space-y-6">
         <PageHeader
-          icon={Film}
           title="Projetos"
           subtitle="Gerencie projetos audiovisuais do início ao fim"
-          action={
+          actions={
             <Button onClick={() => setDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Novo Projeto

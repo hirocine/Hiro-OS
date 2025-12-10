@@ -116,10 +116,10 @@ export function useCreateAVSubstep() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ projectId, ...substep }: Partial<AVProjectSubstep> & { projectId: string }) => {
+    mutationFn: async ({ projectId, ...substep }: Partial<AVProjectSubstep> & { projectId: string; step_id: string; title: string }) => {
       const { data, error } = await supabase
         .from('av_project_substeps')
-        .insert(substep)
+        .insert([substep])
         .select()
         .single();
 
