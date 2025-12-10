@@ -46,7 +46,6 @@ export function DesktopSidebar() {
   };
 
   return (
-    <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
           "hidden lg:flex flex-col border-r border-border bg-card shadow-lg",
@@ -169,6 +168,5 @@ export function DesktopSidebar() {
       {/* User Profile - Sticky Bottom */}
       <SidebarUserProfile />
     </aside>
-    </TooltipProvider>
   );
 }
