@@ -49,7 +49,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={300} skipDelayDuration={100}>
         <Sonner position="top-center" />
         <BrowserRouter>
           <Suspense fallback={<LoadingScreenSkeleton />}>

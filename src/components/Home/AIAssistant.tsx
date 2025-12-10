@@ -45,7 +45,7 @@ export function AIAssistant() {
   const hasMessages = messages.length > 0;
 
   return (
-    <Card className={`flex flex-col transition-all duration-500 ease-out ${
+    <Card className={`flex flex-col transition-[height] duration-500 ease-out will-change-[height] ${
       hasMessages ? "h-[500px]" : "h-[220px]"
     }`}>
       <CardHeader className="pb-3 flex-shrink-0">
