@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Lock, CheckCircle, Archive } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Lock, CheckCircle, Archive } from 'lucide-react';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
@@ -277,14 +278,12 @@ export default function PrivateTasks() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/tarefas">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Link>
-        </Button>
-      </div>
+      <BreadcrumbNav 
+        items={[
+          { label: 'Tarefas', href: '/tarefas' },
+          { label: 'Tarefas Privadas' }
+        ]} 
+      />
 
       <Card>
         <CardHeader>

@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,6 +13,7 @@ import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineDepartmentCell } from '@/features/tasks/components/InlineDepartmentCell';
 import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
@@ -21,8 +21,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
 import type { TaskPriority, TaskStatus, TaskSortableField, TaskSortOrder } from '@/features/tasks/types';
 import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
 
@@ -143,14 +142,12 @@ export default function MyTasks() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/tarefas">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Link>
-        </Button>
-      </div>
+      <BreadcrumbNav 
+        items={[
+          { label: 'Tarefas', href: '/tarefas' },
+          { label: 'Minhas Tarefas' }
+        ]} 
+      />
 
       <Card>
         <CardHeader>

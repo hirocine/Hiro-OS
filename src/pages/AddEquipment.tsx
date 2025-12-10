@@ -1,9 +1,8 @@
 import { useParams } from 'react-router-dom';
-import { ArrowLeft, Package } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Package } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useEquipmentForm } from '@/hooks/useEquipmentForm';
 import { EquipmentForm } from '@/components/Equipment/EquipmentForm';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -47,20 +46,21 @@ export default function AddEquipment() {
 
   return (
     <ResponsiveContainer maxWidth="4xl" className="min-h-screen pb-8">
-      <PageHeader
-        title={isEditMode ? 'Editar Equipamento' : 'Adicionar Equipamento'}
-        subtitle={isEditMode ? 'Atualize as informações do equipamento' : 'Preencha os dados para adicionar um novo equipamento ao inventário'}
-        actions={
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-        }
+      <BreadcrumbNav 
+        items={[
+          { label: 'Inventário', href: '/inventario' },
+          { label: isEditMode ? 'Editar Equipamento' : 'Adicionar Equipamento' }
+        ]} 
       />
+
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">
+          {isEditMode ? 'Editar Equipamento' : 'Adicionar Equipamento'}
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {isEditMode ? 'Atualize as informações do equipamento' : 'Preencha os dados para adicionar um novo equipamento ao inventário'}
+        </p>
+      </div>
 
       <Card className="shadow-card">
         <CardContent className="p-6 md:p-8">

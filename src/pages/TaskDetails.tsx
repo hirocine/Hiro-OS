@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText } from 'lucide-react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useTaskDetails } from '@/features/tasks/hooks/useTaskDetails';
@@ -172,22 +173,24 @@ export default function TaskDetails() {
 
   return (
     <div className="container mx-auto p-6 md:p-8">
+      <BreadcrumbNav 
+        items={[
+          { label: 'Tarefas', href: '/tarefas' },
+          { label: task.title }
+        ]} 
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/tarefas')}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <InlineEditCell
-              value={task.title}
-              onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
-              className="text-3xl font-bold"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Criada em {format(new Date(task.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </p>
-          </div>
+        <div>
+          <InlineEditCell
+            value={task.title}
+            onSave={(newTitle) => handleUpdateTask({ title: newTitle })}
+            className="text-3xl font-bold"
+          />
+          <p className="text-sm text-muted-foreground mt-1">
+            Criada em {format(new Date(task.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="destructive" onClick={() => setDeleteOpen(true)}>

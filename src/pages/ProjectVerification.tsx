@@ -24,11 +24,10 @@ import {
   Lightbulb, 
   Settings, 
   HardDrive,
-  ArrowLeft,
-  Home,
   ClipboardCheck
 } from 'lucide-react';
 import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 
 const categoryIcons: Record<string, any> = {
   camera: Camera,
@@ -147,32 +146,20 @@ export default function ProjectVerification() {
 
   return (
     <div className="container mx-auto p-6 md:p-8 max-w-5xl space-y-4 md:space-y-6">
+      <BreadcrumbNav 
+        items={[
+          { label: 'Retiradas', href: '/retiradas' },
+          { label: project.name, href: `/retiradas/${id}` },
+          { label: 'Verificação' }
+        ]} 
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <ClipboardCheck className="w-6 h-6" />
-              Check Desmontagem dos Equipamentos
-            </h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-              <Home className="w-4 h-4" />
-              <span>Retiradas</span>
-              <span>•</span>
-              <span className="font-medium">{project.name}</span>
-              <span>•</span>
-              <span>Verificação</span>
-            </div>
-          </div>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <ClipboardCheck className="w-6 h-6" />
+          Check Desmontagem dos Equipamentos
+        </h1>
       </div>
 
       {/* Progress Section */}
