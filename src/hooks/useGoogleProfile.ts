@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from './useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
@@ -11,7 +11,7 @@ interface GoogleProfileData {
 }
 
 export function useGoogleProfile() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [googleProfile, setGoogleProfile] = useState<GoogleProfileData>({
     hasGoogleAvatar: false,
     googleAvatarUrl: null,

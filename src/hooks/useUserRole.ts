@@ -6,7 +6,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { wrapAsync } from '@/lib/errors';
 import type { Json } from '@/integrations/supabase/types';
@@ -22,7 +22,7 @@ interface UserRoleState {
 }
 
 export function useUserRole() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const [roleState, setRoleState] = useState<UserRoleState>({
     role: null,
     loading: true,

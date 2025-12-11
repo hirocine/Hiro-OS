@@ -14,7 +14,7 @@ import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
 import { useProjectDetails } from '@/features/projects';
 import { useToast } from '@/hooks/use-toast';
 import { VerificationDialog } from '@/components/Projects/VerificationDialog';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { 
   CheckCircle2, 
   CheckCircle, 
@@ -45,7 +45,7 @@ export default function ProjectVerification() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   
   const { project } = useProjectDetails(id!);
   const { equipment, loading, error } = useProjectEquipment(id || '');

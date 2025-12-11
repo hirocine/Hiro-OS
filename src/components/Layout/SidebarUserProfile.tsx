@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { getAvatarData } from '@/lib/avatarUtils';
@@ -18,7 +18,7 @@ interface SidebarUserProfileProps {
 }
 
 export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
   const avatarData = getAvatarData(user);

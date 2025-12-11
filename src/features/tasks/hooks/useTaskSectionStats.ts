@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface SectionStats {
   active: number;
@@ -15,7 +15,7 @@ interface TaskSectionStats {
 }
 
 export function useTaskSectionStats(): TaskSectionStats {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   const { data, isLoading } = useQuery({
     queryKey: ['task-section-stats', user?.id],
