@@ -25,7 +25,7 @@ import {
   Settings, 
   HardDrive
 } from 'lucide-react';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 
 const categoryIcons: Record<string, any> = {
@@ -37,7 +37,7 @@ const categoryIcons: Record<string, any> = {
 };
 
 export default function ProjectSeparation() {
-  const { categories: dbCategories } = useCategoriesContext();
+  const { categories: dbCategories } = useCategories();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

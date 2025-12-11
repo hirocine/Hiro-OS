@@ -1,7 +1,7 @@
 /**
- * ⚠️ DEPRECATED: Este arquivo foi substituído pelo CategoriesContext
+ * ⚠️ DEPRECATED: Este arquivo foi substituído pelo hook useCategories
  * 
- * Use o hook useCategoriesContext() para acessar:
+ * Use o hook useCategories() para acessar:
  * - getCategoryTitle(key)
  * - getSubcategoryTitle(categoryKey, subcategoryKey)
  * - getCategoryIcon(key)

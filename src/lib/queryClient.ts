@@ -39,6 +39,9 @@ export const queryKeys = {
   categories: {
     all: ['categories'] as const,
   },
+  notifications: {
+    all: ['notifications'] as const,
+  },
   tasks: {
     all: ['tasks'] as const,
     list: ['tasks', 'list'] as const,

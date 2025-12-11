@@ -23,7 +23,6 @@ import { MobileStepperForm } from '@/components/ui/mobile-stepper-form';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { statusLabels } from '@/data/mockData';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
 import { useCategories } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2, Check, ChevronsUpDown, Search, Plus } from 'lucide-react';
@@ -40,8 +39,7 @@ interface AddEquipmentDialogProps {
 }
 
 export function AddEquipmentDialog({ open, onOpenChange, onSubmit, equipment, mainItems = [] }: AddEquipmentDialogProps) {
-  const { categories: dbCategories } = useCategoriesContext();
-  const { categories: categoryManagement } = useCategories();
+  const { categories: dbCategories } = useCategories();
   const [formData, setFormData] = useState<Omit<Equipment, 'id'>>({
     name: '',
     brand: '',

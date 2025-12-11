@@ -7,7 +7,7 @@ import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, MoreVertical,
 import { Checkbox } from '@/components/ui/checkbox';
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 
 interface EquipmentHierarchyRowProps {
   equipment: Equipment;
@@ -35,7 +35,7 @@ export const EquipmentHierarchyRow = memo(function EquipmentHierarchyRow({
   onSelectionChange
 }: EquipmentHierarchyRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { getCategoryTitle } = useCategoriesContext();
+  const { getCategoryTitle } = useCategories();
   const {
     getStatusVariant,
     getStatusLabel,

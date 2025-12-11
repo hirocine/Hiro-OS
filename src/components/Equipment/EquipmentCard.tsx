@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Calendar, UserCheck, Package, Link } from 'lucide-react';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -23,7 +23,7 @@ export function EquipmentCard({
   onReturn,
   accessoryCount = 0 
 }: EquipmentCardProps) {
-  const { getCategoryTitle } = useCategoriesContext();
+  const { getCategoryTitle } = useCategories();
   const {
     getStatusVariant,
     getStatusLabel,

@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Separator } from '@/components/ui/separator';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 
 interface EquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -36,7 +36,7 @@ interface EquipmentFiltersProps {
 }
 
 export function EquipmentFiltersComponent({ filters, onFiltersChange, allEquipment = [], stats }: EquipmentFiltersProps) {
-  const { categories: dbCategories } = useCategoriesContext();
+  const { categories: dbCategories } = useCategories();
   const [isBasicExpanded, setIsBasicExpanded] = useState(true);
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [isQuickFiltersExpanded, setIsQuickFiltersExpanded] = useState(true);
