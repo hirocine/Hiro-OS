@@ -52,14 +52,17 @@ const App = () => (
       <TooltipProvider delayDuration={300} skipDelayDuration={100}>
         <Sonner position="top-center" />
         <BrowserRouter>
-          <Suspense fallback={<LoadingScreenSkeleton />}>
-            <Routes>
-              <Route path="/entrar" element={<Auth />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }>
+          <Routes>
+            <Route path="/entrar" element={
+              <Suspense fallback={<LoadingScreenSkeleton />}>
+                <Auth />
+              </Suspense>
+            } />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
                 <Route index element={<Home />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="inventario" element={<Equipment />} />
@@ -85,11 +88,14 @@ const App = () => (
                 <Route path="projetos-av" element={<AVProjects />} />
                 <Route path="projetos-av/:id" element={<AVProjectDetails />} />
                 <Route path="perfil" element={<Profile />} />
-                <Route path="administracao" element={<Admin />} />
+              <Route path="administracao" element={<Admin />} />
               </Route>
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={
+                <Suspense fallback={<LoadingScreenSkeleton />}>
+                  <NotFound />
+                </Suspense>
+              } />
             </Routes>
-          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
