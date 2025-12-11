@@ -137,29 +137,29 @@ export default function Suppliers() {
       />
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Função</TableHead>
-              <TableHead>Expertise</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Diária Média</TableHead>
-              <TableHead>Contatos</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="w-[20%]">Nome</TableHead>
+              <TableHead className="w-[18%]">Função</TableHead>
+              <TableHead className="w-[12%]">Expertise</TableHead>
+              <TableHead className="w-[12%]">Rating</TableHead>
+              <TableHead className="w-[14%]">Diária Média</TableHead>
+              <TableHead className="w-[12%]">Contatos</TableHead>
+              <TableHead className="w-[12%] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                 </TableRow>
               ))
             ) : suppliers.length === 0 ? (
