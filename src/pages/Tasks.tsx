@@ -196,11 +196,11 @@ export default function Tasks() {
                   <div className="p-2 rounded-lg bg-purple-500/10">
                     <Lock className="w-5 h-5 text-purple-500" />
                   </div>
-                  <div>
+                  <div className="flex items-center gap-2">
                     <CardTitle>Tarefas Privadas</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Visíveis apenas para você
-                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      (Visíveis apenas para você)
+                    </span>
                   </div>
                 </div>
               </CardHeader>
