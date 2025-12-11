@@ -27,6 +27,7 @@ export function useTasks(filters?: TaskFilters) {
         : filters?.status 
           ? [...queryKeys.tasks.list, filters.status]
           : queryKeys.tasks.list,
+    staleTime: 2 * 60 * 1000, // 2 minutes - prevents unnecessary refetch
     queryFn: async () => {
       logger.debug('Fetching tasks', { module: 'tasks', data: { filters } });
 

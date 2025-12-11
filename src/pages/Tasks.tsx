@@ -99,9 +99,9 @@ export default function Tasks() {
             </Button>
           </div>
 
-          {/* Calendar Widget */}
+          {/* Calendar Widget - receives tasks as prop to avoid duplicate query */}
           <div className="mt-4">
-            <TaskCalendarWidget isPrivate={isPrivate} />
+            <TaskCalendarWidget tasks={tasks} isPrivate={isPrivate} />
           </div>
 
           {/* Summary Bar */}
