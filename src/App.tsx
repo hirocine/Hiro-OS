@@ -39,9 +39,6 @@ const Suppliers = lazy(() => import("./pages/Suppliers"));
 const SupplierDetails = lazy(() => import("./pages/SupplierDetails"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
-const AllTasks = lazy(() => import("./pages/AllTasks"));
-const MyTasks = lazy(() => import("./pages/MyTasks"));
-const PrivateTasks = lazy(() => import("./pages/PrivateTasks"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -79,9 +76,6 @@ const App = () => (
                 <Route path="politicas" element={<Policies />} />
                 <Route path="politicas/:id" element={<PolicyView />} />
                 <Route path="tarefas" element={<Tasks />} />
-                <Route path="tarefas/todas" element={<AllTasks />} />
-                <Route path="tarefas/minhas" element={<MyTasks />} />
-                <Route path="tarefas/privadas" element={<PrivateTasks />} />
                 <Route path="tarefas/:id" element={<TaskDetails />} />
                 <Route path="fornecedores" element={<Suppliers />} />
                 <Route path="fornecedores/:id" element={<SupplierDetails />} />

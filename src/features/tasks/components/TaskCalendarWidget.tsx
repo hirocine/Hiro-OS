@@ -19,12 +19,16 @@ const parseLocalDate = (dateString: string): Date => {
   return new Date(year, month - 1, day);
 };
 
-export function TaskCalendarWidget() {
+interface TaskCalendarWidgetProps {
+  isPrivate?: boolean;
+}
+
+export function TaskCalendarWidget({ isPrivate }: TaskCalendarWidgetProps) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
   
-  const { tasks } = useTasks({});
+  const { tasks } = useTasks({ is_private: isPrivate });
 
   // Group active tasks by date (exclude completed and archived)
   const tasksByDate = useMemo(() => {
