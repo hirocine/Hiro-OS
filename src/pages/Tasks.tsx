@@ -115,7 +115,7 @@ export default function Tasks() {
 
           {/* Tasks Content */}
           <TabsContent value="general" className="mt-6">
-            <Card>
+            <Card className="border-l-4 border-l-primary">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10">
