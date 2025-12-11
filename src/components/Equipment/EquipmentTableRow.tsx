@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ChevronRight, ChevronDown, Edit, Trash2, Camera, Package, ArrowUpRight, Upload } from 'lucide-react';
 import { AdminOnly } from '@/components/RoleGuard';
 import { useEquipmentCard } from '@/hooks/useEquipmentCard';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 
 interface EquipmentTableRowProps {
   equipment: Equipment;
@@ -37,7 +37,7 @@ export const EquipmentTableRow = memo(function EquipmentTableRow({
   onToggleSelection,
 }: EquipmentTableRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { getCategoryTitle } = useCategoriesContext();
+  const { getCategoryTitle } = useCategories();
   const {
     getStatusVariant,
     getStatusLabel,

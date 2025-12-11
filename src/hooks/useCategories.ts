@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EquipmentCategoryData, CategoryHierarchy } from '@/types/equipment';
 import { logger } from '@/lib/logger';
@@ -6,52 +6,53 @@ import { handleLegacyError, DatabaseError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { EquipmentCategoryDbRow } from '@/types/database';
 import { normalizeString } from '@/lib/stringUtils';
+import { queryKeys } from '@/lib/queryClient';
+
+// Fetch function separada para reutilização
+async function fetchCategoriesData(): Promise<EquipmentCategoryData[]> {
+  logger.apiCall('GET', '/equipment_categories');
+  
+  const { data, error } = await supabase
+    .from('equipment_categories')
+    .select('*')
+    .order('category_order', { ascending: true })
+    .order('subcategory_order', { ascending: true });
+
+  if (error) {
+    logger.database('select', 'equipment_categories', false, error);
+    throw new DatabaseError(`Failed to fetch categories: ${error.message}`, 'select', 'equipment_categories');
+  }
+
+  const categoriesData: EquipmentCategoryData[] = (data as EquipmentCategoryDbRow[]).map(item => ({
+    id: item.id,
+    category: item.category,
+    subcategory: item.subcategory,
+    isCustom: item.is_custom,
+    createdAt: item.created_at,
+    createdBy: item.created_by,
+    categoryOrder: item.category_order,
+    subcategoryOrder: item.subcategory_order,
+    icon: item.icon
+  }));
+
+  logger.database('select', 'equipment_categories', true);
+  logger.apiResponse('GET', '/equipment_categories', true, { count: categoriesData.length });
+  
+  return categoriesData;
+}
 
 export function useCategories() {
-  const [categories, setCategories] = useState<EquipmentCategoryData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchCategories = async () => {
-    logger.apiCall('GET', '/equipment_categories');
-    
-    const result = await wrapAsync(async () => {
-      const { data, error } = await supabase
-        .from('equipment_categories')
-        .select('*')
-        .order('category_order', { ascending: true })
-        .order('subcategory_order', { ascending: true });
+  // React Query para cache automático
+  const { data: categories = [], isLoading: loading, refetch } = useQuery({
+    queryKey: queryKeys.categories.all,
+    queryFn: fetchCategoriesData,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
 
-      if (error) {
-        logger.database('select', 'equipment_categories', false, error);
-        throw new DatabaseError(`Failed to fetch categories: ${error.message}`, 'select', 'equipment_categories');
-      }
-
-      const categoriesData: EquipmentCategoryData[] = (data as EquipmentCategoryDbRow[]).map(item => ({
-        id: item.id,
-        category: item.category,
-        subcategory: item.subcategory,
-        isCustom: item.is_custom,
-        createdAt: item.created_at,
-        createdBy: item.created_by,
-        categoryOrder: item.category_order,
-        subcategoryOrder: item.subcategory_order
-      }));
-
-      logger.database('select', 'equipment_categories', true);
-      logger.apiResponse('GET', '/equipment_categories', true, { count: categoriesData.length });
-      
-      setCategories(categoriesData);
-      return categoriesData;
-    });
-
-    if (result.error) {
-      logger.error('Failed to fetch categories', { 
-        module: 'categories', 
-        error: result.error.message 
-      });
-    }
-    
-    setLoading(false);
+  const invalidateCategories = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
   };
 
   const addCustomCategory = async (category: string, subcategory: string | null, icon?: string | null): Promise<Result<EquipmentCategoryData>> => {
@@ -90,7 +91,7 @@ export function useCategories() {
         icon: data.icon
       };
 
-      setCategories(prev => [...prev, newCategory]);
+      invalidateCategories();
       logger.database('insert', 'equipment_categories', true);
       
       return newCategory;
@@ -180,7 +181,7 @@ export function useCategories() {
         .update({ category: newCategoryName })
         .eq('category', oldCategoryName);
 
-      await fetchCategories();
+      invalidateCategories();
       logger.database('update', 'equipment_categories', true);
     });
 
@@ -222,7 +223,7 @@ export function useCategories() {
         throw new DatabaseError(`Failed to delete category: ${error.message}`, 'delete', 'equipment_categories');
       }
 
-      setCategories(prev => prev.filter(cat => cat.category !== categoryName));
+      invalidateCategories();
       logger.database('delete', 'equipment_categories', true);
     });
 
@@ -236,10 +237,6 @@ export function useCategories() {
       .filter(cat => cat.category === categoryKey)
       .map(cat => cat.subcategory);
   };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
 
   const updateCategory = async (
     categoryId: string,
@@ -275,7 +272,7 @@ export function useCategories() {
         subcategoryOrder: data.subcategory_order
       };
 
-      setCategories(prev => prev.map(cat => cat.id === categoryId ? updatedCategory : cat));
+      invalidateCategories();
       logger.database('update', 'equipment_categories', true);
       
       return updatedCategory;
@@ -300,7 +297,7 @@ export function useCategories() {
         throw new DatabaseError(`Failed to delete category: ${error.message}`, 'delete', 'equipment_categories');
       }
 
-      setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+      invalidateCategories();
       logger.database('delete', 'equipment_categories', true);
     });
 
@@ -368,7 +365,7 @@ export function useCategories() {
         .update({ subcategory_order: currentOrder })
         .eq('id', targetSub.id);
 
-      await fetchCategories();
+      invalidateCategories();
       logger.database('update', 'equipment_categories', true);
     });
 
@@ -454,8 +451,8 @@ export function useCategories() {
 
       logger.info('Sync orders - done', { module: 'categories', data: { updates: updates.length, batches: batchCount, inserted: insertedCount } });
       
-      // Refetch após sincronização
-      await fetchCategories();
+      // Invalidar cache após sincronização
+      invalidateCategories();
       
       return { success: true, data: undefined };
     } catch (error) {
@@ -673,8 +670,8 @@ export function useCategories() {
 
       logger.info('Phase B - Done', { module: 'categories', data: { removed, updatedEquipments } });
 
-      // Refetch após limpeza
-      await fetchCategories();
+      // Invalidar cache após limpeza
+      invalidateCategories();
       
       logger.info('Clean & Normalize - complete', { 
         module: 'categories', 
@@ -691,9 +688,30 @@ export function useCategories() {
     }
   };
 
+  // Funções compatíveis com CategoriesContext para migração gradual
+  const getCategoryTitle = (key: string): string => {
+    if (!key) return '';
+    const found = categories.find(c => c.category === key && !c.subcategory);
+    return found?.category || key;
+  };
+
+  const getSubcategoryTitle = (categoryKey: string, subcategoryKey: string): string => {
+    if (!subcategoryKey) return '';
+    const found = categories.find(
+      c => c.category === categoryKey && c.subcategory === subcategoryKey
+    );
+    return found?.subcategory || subcategoryKey;
+  };
+
+  const getCategoryIcon = (key: string): string | null => {
+    const found = categories.find(c => c.category === key && !c.subcategory);
+    return found?.icon || null;
+  };
+
   return {
     categories,
     loading,
+    isLoading: loading,
     getSubcategoriesForCategory,
     getCategoriesHierarchy,
     addCustomCategory,
@@ -707,7 +725,12 @@ export function useCategories() {
     getCategoryUsageCount,
     reorderSubcategory,
     syncOrdersWithMapping,
-    refetch: fetchCategories,
-    cleanDuplicateCategories
+    refetch,
+    refresh: refetch,
+    cleanDuplicateCategories,
+    // Funções compatíveis com CategoriesContext
+    getCategoryTitle,
+    getSubcategoryTitle,
+    getCategoryIcon,
   };
 }

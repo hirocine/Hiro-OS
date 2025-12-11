@@ -236,6 +236,7 @@ export interface EquipmentCategoryDbRow {
   created_at: Timestamp;
   category_order: number;
   subcategory_order: number;
+  icon?: string;
 }
 
 // Saved filter database types

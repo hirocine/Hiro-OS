@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Autocomplete } from '@/components/ui/autocomplete';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useCategories } from '@/hooks/useCategories';
 
 interface UnifiedEquipmentFiltersProps {
   filters: EquipmentFilters;
@@ -33,7 +33,7 @@ interface UnifiedEquipmentFiltersProps {
 }
 
 export function UnifiedEquipmentFilters({ filters, onFiltersChange, allEquipment = [], stats }: UnifiedEquipmentFiltersProps) {
-  const { categories: dbCategories } = useCategoriesContext();
+  const { categories: dbCategories } = useCategories();
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search || '');
   const [isSearching, setIsSearching] = useState(false);
