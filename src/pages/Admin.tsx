@@ -520,7 +520,15 @@ export default function Admin() {
         subtitle="Gerencie usuários, permissões e monitore atividades do sistema"
       />
 
-      <Tabs defaultValue="users" className="space-y-4">
+      <Tabs 
+        defaultValue="users" 
+        className="space-y-4"
+        onValueChange={(value) => {
+          // Refresh automático ao trocar de aba
+          if (value === 'users') fetchUsers();
+          if (value === 'logs') fetchAuditLogs();
+        }}
+      >
         <TabsList>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -902,34 +910,23 @@ export default function Admin() {
                   <Database className="h-4 w-4 text-muted-foreground" />
                   <Label className="text-sm font-medium">Informações do Sistema</Label>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-sm font-medium">Versão do Sistema</p>
                     <p className="text-sm text-muted-foreground">v1.0.0 - Build 2024.01</p>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={fetchUsers}
-                      disabled={loadingUsers}
-                      variant="outline"
-                      size="sm"
-                      className="justify-start"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Atualizar Usuários
-                    </Button>
-                    <Button 
-                      onClick={fetchAuditLogs}
-                      disabled={loadingLogs}
-                      variant="outline"
-                      size="sm"
-                      className="justify-start"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Atualizar Logs
-                    </Button>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium">Usuários Cadastrados</p>
+                    <p className="text-sm text-muted-foreground">{users.length} usuários</p>
+                  </div>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium">Equipamentos</p>
+                    <p className="text-sm text-muted-foreground">{allEquipment.length} itens</p>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Os dados são atualizados automaticamente ao alternar entre as abas.
+                </p>
               </div>
 
               <Separator />
