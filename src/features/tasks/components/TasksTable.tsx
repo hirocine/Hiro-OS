@@ -16,7 +16,7 @@ import { StatusBadge } from './StatusBadge';
 import { useTaskMutations } from '../hooks/useTaskMutations';
 import { useDepartments } from '../hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { 
   Task,
@@ -55,7 +55,7 @@ export function TasksTable({
   isPrivate = false,
 }: TasksTableProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { updateTask, createTask } = useTaskMutations();
   const { departments } = useDepartments();
   const { users } = useUsers();

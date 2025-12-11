@@ -14,7 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Plus, Check, X, Lock } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 import { StatusBadge } from './StatusBadge';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface TaskDialogProps {
   open: boolean;
@@ -29,7 +29,7 @@ export function TaskDialog({ open, onOpenChange, task, defaultValues }: TaskDial
   const { createTask, updateTask } = useTaskMutations();
   const { users } = useUsers();
   const { departments, createDepartment } = useDepartments();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   
   const [isCreatingNewDept, setIsCreatingNewDept] = useState(false);
   const [newDeptName, setNewDeptName] = useState('');

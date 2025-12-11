@@ -18,7 +18,7 @@ import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useTaskMutations } from '@/features/tasks/hooks/useTaskMutations';
 import { useDepartments } from '@/features/tasks/hooks/useDepartments';
 import { useUsers } from '@/hooks/useUsers';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays } from 'date-fns';
@@ -27,7 +27,7 @@ import { PRIORITY_ORDER, STATUS_ORDER } from '@/features/tasks/types';
 
 export default function MyTasks() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { users } = useUsers();
   const { departments } = useDepartments();
   const { tasks: allTasks, isLoading } = useTasks({ assigned_to_me: true, is_private: false });

@@ -12,14 +12,14 @@ import { TasksTable } from '@/features/tasks/components/TasksTable';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useFilteredTaskStats } from '@/features/tasks/hooks/useFilteredTaskStats';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 type MainSection = 'general' | 'private';
 type TaskSubTab = 'active' | 'mine' | 'completed' | 'archived';
 
 export default function Tasks() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [activeSection, setActiveSection] = useState<MainSection>('general');
   const [dialogOpen, setDialogOpen] = useState(false);
 

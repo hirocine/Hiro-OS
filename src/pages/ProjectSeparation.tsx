@@ -14,7 +14,7 @@ import { useSeparationChecklist } from '@/hooks/useSeparationChecklist';
 import { useProjectDetails } from '@/features/projects';
 import { useToast } from '@/hooks/use-toast';
 import { SeparationDialog } from '@/components/Projects/SeparationDialog';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { 
   Package, 
   CheckCircle, 
@@ -44,7 +44,7 @@ export default function ProjectSeparation() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSeparationDialog, setShowSeparationDialog] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   
   const { project } = useProjectDetails(id!);
   const { equipment, loading, error } = useProjectEquipment(id || '');
