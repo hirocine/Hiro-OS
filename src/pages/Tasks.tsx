@@ -99,18 +99,18 @@ export default function Tasks() {
             </Button>
           </div>
 
-          {/* Summary Bar */}
+          {/* Calendar Widget */}
           <div className="mt-4">
+            <TaskCalendarWidget isPrivate={isPrivate} />
+          </div>
+
+          {/* Summary Bar */}
+          <div className="mt-6">
             <TaskSummaryBar 
               stats={stats} 
               isLoading={isLoading}
               variant={activeSection}
             />
-          </div>
-
-          {/* Calendar Widget */}
-          <div className="mt-6">
-            <TaskCalendarWidget isPrivate={isPrivate} />
           </div>
 
           {/* Tasks Content */}
