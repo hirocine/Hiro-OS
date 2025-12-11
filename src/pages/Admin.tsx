@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil, Eye, Filter, RefreshCw } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil, Eye, Filter, RefreshCw, Plus, Archive, LogIn, LogOut, Key, UserX, UserCog, FileText, Package, Briefcase, ClipboardList, ShieldAlert, CheckCircle } from 'lucide-react';
 import { AddUserDialog } from '@/components/Admin/AddUserDialog';
 import { EditUserDialog } from '@/components/Admin/EditUserDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -33,23 +33,66 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { logger } from '@/lib/logger';
 
-// Action labels in Portuguese
+// Action labels in Portuguese - Complete and user-friendly
 const ACTION_LABELS: Record<string, string> = {
-  'create_task': 'Tarefa criada',
-  'update_task': 'Tarefa atualizada',
+  // Tarefas
+  'create_task': 'Nova tarefa criada',
+  'update_task': 'Tarefa editada',
   'delete_task': 'Tarefa excluída',
   'archive_task': 'Tarefa arquivada',
-  'create_av_project': 'Projeto AV criado',
-  'update_av_project': 'Projeto AV atualizado',
-  'delete_av_project': 'Projeto AV excluído',
-  'create_supplier': 'Fornecedor criado',
-  'update_supplier': 'Fornecedor atualizado',
+  
+  // Projetos Audiovisuais
+  'create_av_project': 'Novo projeto audiovisual criado',
+  'update_av_project': 'Projeto audiovisual editado',
+  'delete_av_project': 'Projeto audiovisual excluído',
+  
+  // Fornecedores
+  'create_supplier': 'Novo fornecedor cadastrado',
+  'update_supplier': 'Fornecedor editado',
   'delete_supplier': 'Fornecedor excluído',
-  'create_loan': 'Empréstimo criado',
+  
+  // Empréstimos e Retiradas
+  'create_loan': 'Equipamento retirado',
   'return_equipment': 'Equipamento devolvido',
-  'UPDATE_USER_ROLE': 'Role de usuário atualizada',
+  'create_project': 'Nova retirada criada',
+  'update_project': 'Retirada atualizada',
+  'delete_project': 'Retirada excluída',
+  
+  // Usuários
+  'UPDATE_USER_ROLE': 'Permissão de acesso alterada',
+  'update_user': 'Perfil de usuário editado',
   'deactivate_user': 'Usuário desativado',
-  'role_change': 'Alteração de role',
+  'reactivate_user': 'Usuário reativado',
+  'role_change': 'Nível de acesso alterado',
+  'invite_user': 'Convite enviado',
+  'create_user': 'Novo usuário criado',
+  'password_changed': 'Senha alterada',
+  
+  // Equipamentos
+  'create_equipment': 'Novo equipamento cadastrado',
+  'update_equipment': 'Equipamento editado',
+  'delete_equipment': 'Equipamento excluído',
+  'INSERT': 'Registro criado',
+  'UPDATE': 'Registro atualizado',
+  'DELETE': 'Registro excluído',
+  
+  // Políticas
+  'create_policy': 'Nova política criada',
+  'update_policy': 'Política editada',
+  'delete_policy': 'Política excluída',
+  
+  // Plataformas
+  'create_platform_access': 'Novo acesso cadastrado',
+  'update_platform_access': 'Acesso editado',
+  'delete_platform_access': 'Acesso excluído',
+  
+  // Segurança e Sistema
+  'security_scan_completed': 'Verificação de segurança concluída',
+  'contact_data_access': 'Dados de contato acessados',
+  'unauthorized_access_attempt': 'Tentativa de acesso não autorizado',
+  'login_success': 'Login realizado',
+  'login_failed': 'Tentativa de login falhou',
+  'logout': 'Logout realizado',
 };
 
 // Table labels in Portuguese
@@ -59,11 +102,83 @@ const TABLE_LABELS: Record<string, string> = {
   'suppliers': 'Fornecedores',
   'loans': 'Empréstimos',
   'equipments': 'Equipamentos',
-  'user_roles': 'Roles de Usuário',
+  'user_roles': 'Permissões',
   'profiles': 'Perfis',
   'projects': 'Retiradas',
   'platform_accesses': 'Plataformas',
   'company_policies': 'Políticas',
+  'team_members': 'Equipe',
+  'departments': 'Departamentos',
+  'equipment_categories': 'Categorias',
+  'site_settings': 'Configurações',
+};
+
+// Action type configuration for icons and colors
+type ActionType = 'create' | 'update' | 'delete' | 'security' | 'access' | 'archive';
+
+const getActionType = (action: string): ActionType => {
+  if (action.includes('create') || action === 'INSERT' || action.includes('invite')) return 'create';
+  if (action.includes('delete') || action === 'DELETE' || action.includes('deactivate')) return 'delete';
+  if (action.includes('archive')) return 'archive';
+  if (action.includes('security') || action.includes('unauthorized') || action.includes('role') || action === 'UPDATE_USER_ROLE') return 'security';
+  if (action.includes('login') || action.includes('logout') || action.includes('access')) return 'access';
+  return 'update';
+};
+
+const ACTION_TYPE_CONFIG: Record<ActionType, { icon: typeof Plus; colorClass: string; bgClass: string }> = {
+  create: { icon: Plus, colorClass: 'text-success', bgClass: 'bg-success/10' },
+  update: { icon: Pencil, colorClass: 'text-primary', bgClass: 'bg-primary/10' },
+  delete: { icon: Trash2, colorClass: 'text-destructive', bgClass: 'bg-destructive/10' },
+  security: { icon: Shield, colorClass: 'text-yellow-500', bgClass: 'bg-yellow-500/10' },
+  access: { icon: Key, colorClass: 'text-purple-500', bgClass: 'bg-purple-500/10' },
+  archive: { icon: Archive, colorClass: 'text-muted-foreground', bgClass: 'bg-muted/50' },
+};
+
+// Helper function for rich descriptions
+const getActionDescription = (log: { action: string; new_values: any; old_values: any; table_name: string }): string => {
+  const baseLabel = ACTION_LABELS[log.action] || log.action;
+  
+  // Enrich with context when available
+  if (log.new_values && typeof log.new_values === 'object') {
+    const values = log.new_values as Record<string, unknown>;
+    
+    // Task specific
+    if (log.action.includes('task') && values.title) {
+      return `${baseLabel}: "${String(values.title).slice(0, 30)}${String(values.title).length > 30 ? '...' : ''}"`;
+    }
+    
+    // AV Project specific
+    if (log.action.includes('av_project') && values.name) {
+      return `${baseLabel}: "${String(values.name).slice(0, 30)}${String(values.name).length > 30 ? '...' : ''}"`;
+    }
+    
+    // Supplier specific
+    if (log.action.includes('supplier') && values.full_name) {
+      return `${baseLabel}: "${String(values.full_name).slice(0, 30)}${String(values.full_name).length > 30 ? '...' : ''}"`;
+    }
+    
+    // User role change
+    if (log.action === 'UPDATE_USER_ROLE' && values.role) {
+      return `Permissão alterada para: ${values.role === 'admin' ? 'Administrador' : 'Usuário'}`;
+    }
+    
+    // Equipment specific
+    if (log.table_name === 'equipments' && values.name) {
+      return `${baseLabel}: "${String(values.name).slice(0, 30)}${String(values.name).length > 30 ? '...' : ''}"`;
+    }
+    
+    // Policy specific
+    if (log.table_name === 'company_policies' && values.title) {
+      return `${baseLabel}: "${String(values.title).slice(0, 30)}${String(values.title).length > 30 ? '...' : ''}"`;
+    }
+    
+    // Project/Retirada specific
+    if (log.table_name === 'projects' && values.name) {
+      return `${baseLabel}: "${String(values.name).slice(0, 30)}${String(values.name).length > 30 ? '...' : ''}"`;
+    }
+  }
+  
+  return baseLabel;
 };
 
 interface User {
@@ -670,29 +785,34 @@ export default function Admin() {
                           <span className="text-sm">{log.user_email || 'Sistema'}</span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-normal">
-                            {ACTION_LABELS[log.action] || log.action}
+                          {(() => {
+                            const actionType = getActionType(log.action);
+                            const config = ACTION_TYPE_CONFIG[actionType];
+                            const IconComponent = config.icon;
+                            return (
+                              <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded ${config.bgClass}`}>
+                                  <IconComponent className={`h-3.5 w-3.5 ${config.colorClass}`} />
+                                </div>
+                                <span className="text-sm font-medium">
+                                  {ACTION_LABELS[log.action] || log.action}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="font-normal">
+                            {TABLE_LABELS[log.table_name] || log.table_name}
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <span className="text-sm text-muted-foreground truncate block max-w-[200px]">
+                            {getActionDescription(log)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {TABLE_LABELS[log.table_name] || log.table_name}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground truncate block">
-                            {log.new_values ? (
-                              typeof log.new_values === 'object' ? (
-                                Object.entries(log.new_values as Record<string, unknown>)
-                                  .slice(0, 2)
-                                  .map(([k, v]) => `${k}: ${String(v).slice(0, 20)}`)
-                                  .join(', ')
-                              ) : String(log.new_values).slice(0, 50)
-                            ) : '-'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">
                             {formatDistanceToNow(new Date(log.created_at), { 
                               addSuffix: true, 
                               locale: ptBR 
