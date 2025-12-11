@@ -28,9 +28,9 @@ export function TaskSummaryBar({ stats, isLoading, variant = 'general' }: TaskSu
 
   return (
     <Card>
-      <div className="flex items-center justify-center gap-6 md:gap-12 py-3 px-4">
+      <div className="grid grid-cols-3 py-3 px-4">
         {/* Ativas */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <div className="p-1.5 rounded-lg bg-primary/10">
             <ListChecks className="h-4 w-4 text-primary" />
           </div>
@@ -40,10 +40,8 @@ export function TaskSummaryBar({ stats, isLoading, variant = 'general' }: TaskSu
           </div>
         </div>
 
-        <div className="h-8 w-px bg-border" />
-
         {/* Atrasadas */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <div className={cn(
             "p-1.5 rounded-lg",
             stats.overdue > 0 ? "bg-destructive/10" : "bg-muted"
@@ -64,10 +62,8 @@ export function TaskSummaryBar({ stats, isLoading, variant = 'general' }: TaskSu
           </div>
         </div>
 
-        <div className="h-8 w-px bg-border" />
-
         {/* Urgentes */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <div className={cn(
             "p-1.5 rounded-lg",
             stats.urgent > 0 ? "bg-orange-500/10" : "bg-muted"
