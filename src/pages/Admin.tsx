@@ -16,7 +16,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil, Eye, Filter, RefreshCw, Plus, Archive, LogIn, LogOut, Key, UserX, UserCog, FileText, Package, Briefcase, ClipboardList, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil, Eye, Filter, RefreshCw, Plus, Archive, LogIn, LogOut, Key, UserX, UserCog, FileText, Package, Briefcase, ClipboardList, ShieldAlert, CheckCircle, Save } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { AddUserDialog } from '@/components/Admin/AddUserDialog';
 import { EditUserDialog } from '@/components/Admin/EditUserDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -884,67 +885,73 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="system" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Sistema e Backup
-                </CardTitle>
-                <CardDescription>
-                  Gerenciamento de dados e informações do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SettingsActions />
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Sistema e Manutenção
+              </CardTitle>
+              <CardDescription>
+                Gerenciamento de dados, backup e informações do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Seção: Informações do Sistema */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Informações do Sistema</Label>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium">Versão do Sistema</p>
+                    <p className="text-sm text-muted-foreground">v1.0.0 - Build 2024.01</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={fetchUsers}
+                      disabled={loadingUsers}
+                      variant="outline"
+                      size="sm"
+                      className="justify-start"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Atualizar Usuários
+                    </Button>
+                    <Button 
+                      onClick={fetchAuditLogs}
+                      disabled={loadingLogs}
+                      variant="outline"
+                      size="sm"
+                      className="justify-start"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Atualizar Logs
+                    </Button>
+                  </div>
+                </div>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações do Sistema</CardTitle>
-                <CardDescription>
-                  Versão e estatísticas do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm font-medium">Versão do Sistema</p>
-                  <p className="text-sm text-muted-foreground">v1.0.0 - Build 2024.01</p>
+              <Separator />
+
+              {/* Seção: Backup e Restauração */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Save className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Backup e Restauração</Label>
+                </div>
+                <SettingsActions />
+              </div>
+
+              <Separator />
+
+              {/* Seção: Importar/Exportar Equipamentos */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Importar/Exportar Equipamentos</Label>
                 </div>
                 
-                <div className="space-y-2">
-                  <Button 
-                    onClick={fetchUsers}
-                    disabled={loadingUsers}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Atualizar Lista de Usuários
-                  </Button>
-                  <Button 
-                    onClick={fetchAuditLogs}
-                    disabled={loadingLogs}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Atualizar Logs de Auditoria
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileSpreadsheet className="h-5 w-5" />
-                  Importar/Exportar Equipamentos
-                </CardTitle>
-                <CardDescription>
-                  Gerenciar dados de equipamentos via CSV/Excel
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -972,9 +979,9 @@ export default function Admin() {
                     Importar CSV/Excel
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
       </Tabs>
