@@ -60,29 +60,29 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-                <Route index element={<Home />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="inventario" element={<Equipment />} />
-                <Route path="inventario/novo" element={<AddEquipment />} />
-                <Route path="inventario/editar/:id" element={<AddEquipment />} />
-                <Route path="ssds" element={<SSDs />} />
-                <Route path="retiradas" element={<Projects />} />
-                <Route path="retiradas/nova" element={<ProjectWithdrawal />} />
-                <Route path="retiradas/:id" element={<ProjectDetails />} />
-                <Route path="retiradas/:id/separacao" element={<ProjectSeparation />} />
-                <Route path="retiradas/:id/verificacao" element={<ProjectVerification />} />
-                <Route path="retiradas/:id/retirada" element={<ProjectWithdrawal />} />
-                <Route path="plataformas" element={<PlatformAccesses />} />
-                <Route path="politicas" element={<Policies />} />
-                <Route path="politicas/:id" element={<PolicyView />} />
-                <Route path="tarefas" element={<Tasks />} />
-                <Route path="tarefas/:id" element={<TaskDetails />} />
-                <Route path="fornecedores" element={<Suppliers />} />
-                <Route path="fornecedores/:id" element={<SupplierDetails />} />
-                <Route path="projetos-av" element={<AVProjects />} />
-                <Route path="projetos-av/:id" element={<AVProjectDetails />} />
-                <Route path="perfil" element={<Profile />} />
-              <Route path="administracao" element={<Admin />} />
+                <Route index element={<Suspense fallback={<LoadingScreenSkeleton />}><Home /></Suspense>} />
+                <Route path="dashboard" element={<Suspense fallback={<LoadingScreenSkeleton />}><Dashboard /></Suspense>} />
+                <Route path="inventario" element={<Suspense fallback={<LoadingScreenSkeleton />}><Equipment /></Suspense>} />
+                <Route path="inventario/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
+                <Route path="inventario/editar/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
+                <Route path="ssds" element={<Suspense fallback={<LoadingScreenSkeleton />}><SSDs /></Suspense>} />
+                <Route path="retiradas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Projects /></Suspense>} />
+                <Route path="retiradas/nova" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
+                <Route path="retiradas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectDetails /></Suspense>} />
+                <Route path="retiradas/:id/separacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectSeparation /></Suspense>} />
+                <Route path="retiradas/:id/verificacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectVerification /></Suspense>} />
+                <Route path="retiradas/:id/retirada" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
+                <Route path="plataformas" element={<Suspense fallback={<LoadingScreenSkeleton />}><PlatformAccesses /></Suspense>} />
+                <Route path="politicas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Policies /></Suspense>} />
+                <Route path="politicas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><PolicyView /></Suspense>} />
+                <Route path="tarefas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
+                <Route path="tarefas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><TaskDetails /></Suspense>} />
+                <Route path="fornecedores" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
+                <Route path="fornecedores/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />
+                <Route path="projetos-av" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjects /></Suspense>} />
+                <Route path="projetos-av/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjectDetails /></Suspense>} />
+                <Route path="perfil" element={<Suspense fallback={<LoadingScreenSkeleton />}><Profile /></Suspense>} />
+                <Route path="administracao" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
               </Route>
               <Route path="*" element={
                 <Suspense fallback={<LoadingScreenSkeleton />}>

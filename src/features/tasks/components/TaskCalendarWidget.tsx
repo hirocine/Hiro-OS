@@ -10,8 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useTasks } from '../hooks/useTasks';
 import { PriorityBadge, StatusBadge } from './index';
+import type { Task } from '../types';
 
 // Parse date string to local timezone (prevents UTC rollback issue)
 const parseLocalDate = (dateString: string): Date => {
@@ -20,15 +20,14 @@ const parseLocalDate = (dateString: string): Date => {
 };
 
 interface TaskCalendarWidgetProps {
+  tasks: Task[];
   isPrivate?: boolean;
 }
 
-export function TaskCalendarWidget({ isPrivate }: TaskCalendarWidgetProps) {
+export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
-  
-  const { tasks } = useTasks({ is_private: isPrivate });
 
   // Group active tasks by date (exclude completed and archived)
   const tasksByDate = useMemo(() => {
