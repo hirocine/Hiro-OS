@@ -76,7 +76,7 @@ export default function AVProjectDetails() {
 
   const handleDelete = () => {
     if (!project) return;
-    deleteProject.mutate(project.id, {
+    deleteProject.mutate({ id: project.id, projectData: project }, {
       onSuccess: () => navigate('/projetos-av'),
     });
   };
