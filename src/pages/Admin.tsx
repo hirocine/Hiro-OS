@@ -21,7 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import { AddUserDialog } from '@/components/Admin/AddUserDialog';
 import { EditUserDialog } from '@/components/Admin/EditUserDialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SettingsActions } from '@/components/Settings/SettingsActions';
