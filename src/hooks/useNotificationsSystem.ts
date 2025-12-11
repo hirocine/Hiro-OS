@@ -177,6 +177,8 @@ export function useNotificationsSystem() {
       equipment: notifications.filter(n => n.type === 'equipment').length,
       loan: notifications.filter(n => n.type === 'loan').length,
       system: notifications.filter(n => n.type === 'system').length,
+      task: notifications.filter(n => n.type === 'task').length,
+      av_project: notifications.filter(n => n.type === 'av_project').length,
     }
   }), [notifications]);
 

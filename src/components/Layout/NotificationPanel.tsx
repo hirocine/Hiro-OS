@@ -1,4 +1,4 @@
-import { Bell, Clock, AlertTriangle, Info, Check, CheckCheck, Filter, Search, Calendar, User, Trash2 } from 'lucide-react';
+import { Bell, Clock, AlertTriangle, Info, Check, CheckCheck, Filter, Search, Calendar, User, Trash2, CheckSquare, Film, Package, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,17 +16,21 @@ import { ptBR } from 'date-fns/locale';
 import { Z_INDEX } from '@/lib/z-index';
 
 const TYPE_LABELS: Record<NotificationType, string> = {
-  project: 'Projeto',
+  project: 'Retirada',
   equipment: 'Equipamento', 
   loan: 'Empréstimo',
-  system: 'Sistema'
+  system: 'Sistema',
+  task: 'Tarefa',
+  av_project: 'Projeto AV'
 };
 
 const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
-  project: Calendar,
+  project: Package,
   equipment: Info,
-  loan: Clock,
-  system: Bell
+  loan: ArrowRightLeft,
+  system: Bell,
+  task: CheckSquare,
+  av_project: Film
 };
 
 export function NotificationPanel() {
@@ -67,6 +71,10 @@ export function NotificationPanel() {
         return `text-success ${baseOpacity}`;
       case 'system':
         return `text-purple-600 dark:text-purple-400 ${baseOpacity}`;
+      case 'task':
+        return `text-orange-500 ${baseOpacity}`;
+      case 'av_project':
+        return `text-pink-500 ${baseOpacity}`;
       default:
         return `text-muted-foreground ${baseOpacity}`;
     }
@@ -196,9 +204,11 @@ export function NotificationPanel() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os tipos</SelectItem>
-                    <SelectItem value="project">Projetos</SelectItem>
+                    <SelectItem value="project">Retiradas</SelectItem>
                     <SelectItem value="equipment">Equipamentos</SelectItem>
                     <SelectItem value="loan">Empréstimos</SelectItem>
+                    <SelectItem value="task">Tarefas</SelectItem>
+                    <SelectItem value="av_project">Projetos AV</SelectItem>
                     <SelectItem value="system">Sistema</SelectItem>
                   </SelectContent>
                 </Select>
