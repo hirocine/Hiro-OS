@@ -12,9 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Users, Activity, Shield, Settings, Search, Trash2, Clock, UserCheck, Bell, Database, Tags, Download, Upload, FileSpreadsheet, AlertCircle, UserPlus, Pencil, Eye, Filter, RefreshCw } from 'lucide-react';
 import { AddUserDialog } from '@/components/Admin/AddUserDialog';
 import { EditUserDialog } from '@/components/Admin/EditUserDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +32,39 @@ import { exportEquipmentToCSV } from '@/lib/csvExporter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { logger } from '@/lib/logger';
+
+// Action labels in Portuguese
+const ACTION_LABELS: Record<string, string> = {
+  'create_task': 'Tarefa criada',
+  'update_task': 'Tarefa atualizada',
+  'delete_task': 'Tarefa excluída',
+  'archive_task': 'Tarefa arquivada',
+  'create_av_project': 'Projeto AV criado',
+  'update_av_project': 'Projeto AV atualizado',
+  'delete_av_project': 'Projeto AV excluído',
+  'create_supplier': 'Fornecedor criado',
+  'update_supplier': 'Fornecedor atualizado',
+  'delete_supplier': 'Fornecedor excluído',
+  'create_loan': 'Empréstimo criado',
+  'return_equipment': 'Equipamento devolvido',
+  'UPDATE_USER_ROLE': 'Role de usuário atualizada',
+  'deactivate_user': 'Usuário desativado',
+  'role_change': 'Alteração de role',
+};
+
+// Table labels in Portuguese
+const TABLE_LABELS: Record<string, string> = {
+  'tasks': 'Tarefas',
+  'audiovisual_projects': 'Projetos AV',
+  'suppliers': 'Fornecedores',
+  'loans': 'Empréstimos',
+  'equipments': 'Equipamentos',
+  'user_roles': 'Roles de Usuário',
+  'profiles': 'Perfis',
+  'projects': 'Retiradas',
+  'platform_accesses': 'Plataformas',
+  'company_policies': 'Políticas',
+};
 
 interface User {
   id: string;
@@ -74,6 +109,9 @@ export default function Admin() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [logFilter, setLogFilter] = useState<string>('all');
+  const [tableFilter, setTableFilter] = useState<string>('all');
 
   // Use equipment hook for CSV functionality
   const { 
@@ -553,47 +591,123 @@ export default function Admin() {
         <TabsContent value="logs" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Logs de Auditoria</CardTitle>
-              <CardDescription>
-                Histórico de todas as ações realizadas no sistema
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Logs de Auditoria</CardTitle>
+                  <CardDescription>
+                    Histórico de todas as ações realizadas no sistema
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchAuditLogs}
+                  disabled={loadingLogs}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${loadingLogs ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <Table>
+              {/* Filters */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={tableFilter} onValueChange={setTableFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filtrar por tabela" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as tabelas</SelectItem>
+                      <SelectItem value="tasks">Tarefas</SelectItem>
+                      <SelectItem value="audiovisual_projects">Projetos AV</SelectItem>
+                      <SelectItem value="suppliers">Fornecedores</SelectItem>
+                      <SelectItem value="loans">Empréstimos</SelectItem>
+                      <SelectItem value="equipments">Equipamentos</SelectItem>
+                      <SelectItem value="user_roles">Usuários</SelectItem>
+                      <SelectItem value="projects">Retiradas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Usuário</TableHead>
-                    <TableHead>Ação</TableHead>
-                    <TableHead>Tabela</TableHead>
-                    <TableHead>Data</TableHead>
+                    <TableHead className="w-[18%]">Usuário</TableHead>
+                    <TableHead className="w-[22%]">Ação</TableHead>
+                    <TableHead className="w-[15%]">Tabela</TableHead>
+                    <TableHead className="w-[25%]">Detalhes</TableHead>
+                    <TableHead className="w-[12%]">Data</TableHead>
+                    <TableHead className="w-[8%] text-right">Ver</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loadingLogs ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
-                        Carregando logs...
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <div className="flex items-center justify-center gap-2">
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Carregando logs...
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ) : auditLogs.length === 0 ? (
+                  ) : auditLogs.filter(log => 
+                      (tableFilter === 'all' || log.table_name === tableFilter)
+                    ).length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Nenhum log encontrado
                       </TableCell>
                     </TableRow>
                   ) : (
-                    auditLogs.map((log) => (
+                    auditLogs
+                      .filter(log => tableFilter === 'all' || log.table_name === tableFilter)
+                      .map((log) => (
                       <TableRow key={log.id}>
-                        <TableCell>{log.user_email || 'Sistema'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{log.action}</Badge>
+                        <TableCell className="truncate">
+                          <span className="text-sm">{log.user_email || 'Sistema'}</span>
                         </TableCell>
-                        <TableCell>{log.table_name}</TableCell>
                         <TableCell>
-                          {formatDistanceToNow(new Date(log.created_at), { 
-                            addSuffix: true, 
-                            locale: ptBR 
-                          })}
+                          <Badge variant="outline" className="font-normal">
+                            {ACTION_LABELS[log.action] || log.action}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {TABLE_LABELS[log.table_name] || log.table_name}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground truncate block">
+                            {log.new_values ? (
+                              typeof log.new_values === 'object' ? (
+                                Object.entries(log.new_values as Record<string, unknown>)
+                                  .slice(0, 2)
+                                  .map(([k, v]) => `${k}: ${String(v).slice(0, 20)}`)
+                                  .join(', ')
+                              ) : String(log.new_values).slice(0, 50)
+                            ) : '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm">
+                            {formatDistanceToNow(new Date(log.created_at), { 
+                              addSuffix: true, 
+                              locale: ptBR 
+                            })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => setSelectedLog(log)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -779,6 +893,80 @@ export default function Admin() {
         user={selectedUser}
         onSuccess={fetchUsers}
       />
+
+      {/* Log Details Dialog */}
+      <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Detalhes do Log
+            </DialogTitle>
+            <DialogDescription>
+              Informações completas sobre esta ação
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedLog && (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Usuário</Label>
+                    <p className="font-medium">{selectedLog.user_email || 'Sistema'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Data</Label>
+                    <p className="font-medium">
+                      {format(new Date(selectedLog.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Ação</Label>
+                    <Badge variant="outline">
+                      {ACTION_LABELS[selectedLog.action] || selectedLog.action}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Tabela</Label>
+                    <p className="font-medium">
+                      {TABLE_LABELS[selectedLog.table_name] || selectedLog.table_name}
+                    </p>
+                  </div>
+                  {selectedLog.record_id && (
+                    <div className="col-span-2">
+                      <Label className="text-muted-foreground text-xs">ID do Registro</Label>
+                      <p className="font-mono text-sm">{selectedLog.record_id}</p>
+                    </div>
+                  )}
+                </div>
+
+                {selectedLog.old_values && Object.keys(selectedLog.old_values).length > 0 && (
+                  <div>
+                    <Label className="text-muted-foreground text-xs mb-2 block">Valores Anteriores</Label>
+                    <div className="bg-destructive/10 rounded-lg p-3 border border-destructive/20">
+                      <pre className="text-sm whitespace-pre-wrap overflow-auto">
+                        {JSON.stringify(selectedLog.old_values, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLog.new_values && Object.keys(selectedLog.new_values).length > 0 && (
+                  <div>
+                    <Label className="text-muted-foreground text-xs mb-2 block">Novos Valores</Label>
+                    <div className="bg-success/10 rounded-lg p-3 border border-success/20">
+                      <pre className="text-sm whitespace-pre-wrap overflow-auto">
+                        {JSON.stringify(selectedLog.new_values, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </ResponsiveContainer>
   );
 }

@@ -4,6 +4,28 @@ import { queryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { Task, PRIORITY_CONFIG, STATUS_CONFIG } from '../types';
+import type { Json } from '@/integrations/supabase/types';
+
+// Helper to log audit entry
+async function logAuditEntry(
+  action: string,
+  tableName: string,
+  recordId?: string,
+  oldValues?: Record<string, unknown>,
+  newValues?: Record<string, unknown>
+) {
+  try {
+    await supabase.rpc('log_audit_entry', {
+      _action: action,
+      _table_name: tableName,
+      _record_id: recordId,
+      _old_values: oldValues as Json,
+      _new_values: newValues as Json,
+    });
+  } catch (error) {
+    logger.error('Failed to log audit entry', { module: 'tasks', data: { error } });
+  }
+}
 
 // Helper to add history entry
 async function addTaskHistoryEntry(
@@ -114,6 +136,15 @@ export function useTaskMutations() {
       
       // Add history entry for task creation
       addTaskHistoryEntry(data.id, 'Tarefa criada');
+      
+      // Log audit entry
+      logAuditEntry('create_task', 'tasks', data.id, undefined, {
+        title: data.title,
+        status: data.status,
+        priority: data.priority,
+        assigned_to: data.assigned_to,
+        department: data.department,
+      });
     },
     onError: (error: Error) => {
       logger.error('Error creating task', { module: 'tasks', error });
@@ -210,11 +241,14 @@ export function useTaskMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, taskId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa excluída com sucesso!' });
+      
+      // Log audit entry
+      logAuditEntry('delete_task', 'tasks', taskId);
     },
     onError: (error: Error) => {
       logger.error('Error deleting task', { module: 'tasks', error });

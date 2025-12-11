@@ -2,6 +2,28 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import type { Supplier, SupplierInsert, SupplierUpdate, SupplierFilters } from '../types';
+import type { Json } from '@/integrations/supabase/types';
+
+// Helper to log audit entry
+async function logAuditEntry(
+  action: string,
+  tableName: string,
+  recordId?: string,
+  oldValues?: Record<string, unknown>,
+  newValues?: Record<string, unknown>
+) {
+  try {
+    await supabase.rpc('log_audit_entry', {
+      _action: action,
+      _table_name: tableName,
+      _record_id: recordId,
+      _old_values: oldValues as Json,
+      _new_values: newValues as Json,
+    });
+  } catch (error) {
+    logger.error('Failed to log audit entry', { module: 'suppliers', data: { error } });
+  }
+}
 
 export function useSuppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -67,6 +89,16 @@ export function useSuppliers() {
       if (insertError) throw insertError;
 
       setSuppliers((prev) => [...prev, data as Supplier]);
+      
+      // Log audit entry
+      logAuditEntry('create_supplier', 'suppliers', data.id, undefined, {
+        full_name: data.full_name,
+        primary_role: data.primary_role,
+        expertise: data.expertise,
+        rating: data.rating,
+        daily_rate: data.daily_rate,
+      });
+      
       return { data, error: null };
     } catch (err) {
       logger.error('Failed to create supplier', {
@@ -78,7 +110,7 @@ export function useSuppliers() {
     }
   };
 
-  const updateSupplier = async (id: string, updates: SupplierUpdate) => {
+  const updateSupplier = async (id: string, updates: SupplierUpdate, oldData?: Supplier) => {
     try {
       const { data, error: updateError } = await supabase
         .from('suppliers')
@@ -92,6 +124,27 @@ export function useSuppliers() {
       setSuppliers((prev) =>
         prev.map((s) => (s.id === id ? (data as Supplier) : s))
       );
+      
+      // Log audit entry
+      logAuditEntry('update_supplier', 'suppliers', id, 
+        oldData ? {
+          full_name: oldData.full_name,
+          primary_role: oldData.primary_role,
+          expertise: oldData.expertise,
+          rating: oldData.rating,
+          daily_rate: oldData.daily_rate,
+          is_active: oldData.is_active,
+        } : undefined,
+        {
+          full_name: data.full_name,
+          primary_role: data.primary_role,
+          expertise: data.expertise,
+          rating: data.rating,
+          daily_rate: data.daily_rate,
+          is_active: data.is_active,
+        }
+      );
+      
       return { data, error: null };
     } catch (err) {
       logger.error('Failed to update supplier', {
@@ -103,7 +156,7 @@ export function useSuppliers() {
     }
   };
 
-  const deleteSupplier = async (id: string) => {
+  const deleteSupplier = async (id: string, supplierData?: Supplier) => {
     try {
       const { error: deleteError } = await supabase
         .from('suppliers')
@@ -113,6 +166,15 @@ export function useSuppliers() {
       if (deleteError) throw deleteError;
 
       setSuppliers((prev) => prev.filter((s) => s.id !== id));
+      
+      // Log audit entry
+      logAuditEntry('delete_supplier', 'suppliers', id, 
+        supplierData ? {
+          full_name: supplierData.full_name,
+          primary_role: supplierData.primary_role,
+        } : undefined
+      );
+      
       return { error: null };
     } catch (err) {
       logger.error('Failed to delete supplier', {
