@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DesktopSidebar } from './DesktopSidebar';
@@ -39,7 +40,9 @@ function LayoutContent() {
             : "pl-16" // Desktop: padding-left para sidebar 64px
         )}
       >
-        <Outlet />
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </main>
     </>
   );
