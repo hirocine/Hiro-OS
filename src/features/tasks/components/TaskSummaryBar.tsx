@@ -26,10 +26,8 @@ export function TaskSummaryBar({ stats, isLoading, variant = 'general' }: TaskSu
     );
   }
 
-  const borderColor = variant === 'private' ? 'border-l-purple-500' : 'border-l-primary';
-
   return (
-    <Card className={cn("border-l-4", borderColor)}>
+    <Card>
       <div className="flex items-center justify-center gap-6 md:gap-12 py-3 px-4">
         {/* Ativas */}
         <div className="flex items-center gap-2">
