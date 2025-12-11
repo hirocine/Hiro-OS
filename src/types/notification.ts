@@ -1,5 +1,5 @@
-export type NotificationType = 'project' | 'equipment' | 'loan' | 'system';
-export type NotificationEntity = 'projects' | 'equipments' | 'loans';
+export type NotificationType = 'project' | 'equipment' | 'loan' | 'system' | 'task' | 'av_project';
+export type NotificationEntity = 'projects' | 'equipments' | 'loans' | 'tasks' | 'audiovisual_projects';
 
 export interface NotificationUser {
   id: string;
