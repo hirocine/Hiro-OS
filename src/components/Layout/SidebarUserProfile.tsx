@@ -11,7 +11,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { getAvatarData } from '@/lib/avatarUtils';
-import { cn } from '@/lib/utils';
+import { useCurrentUserProfile } from '@/hooks/useCurrentUserProfile';
 
 interface SidebarUserProfileProps {
   isMobile?: boolean;
@@ -21,7 +21,8 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
   const { user, signOut } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const avatarData = getAvatarData(user);
+  const { data: profile } = useCurrentUserProfile();
+  const avatarData = getAvatarData(user, profile?.avatar_url, profile?.display_name);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
