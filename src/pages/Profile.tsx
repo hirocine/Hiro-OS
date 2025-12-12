@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { PageHeader } from '@/components/ui/page-header';
+
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Loader2, KeyRound } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -95,8 +95,7 @@ export default function Profile() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!user) return;
 
     // Validate form data
@@ -291,10 +290,16 @@ export default function Profile() {
 
   return (
     <ResponsiveContainer maxWidth="4xl">
-      <PageHeader 
-        title="Perfil" 
-        subtitle="Gerencie suas informações pessoais."
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Perfil</h1>
+          <p className="text-muted-foreground">Gerencie suas informações pessoais.</p>
+        </div>
+        <Button onClick={handleSubmit} disabled={saving}>
+          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Salvar Alterações
+        </Button>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Avatar Section */}
@@ -337,7 +342,7 @@ export default function Profile() {
             <CardTitle>Informações Pessoais</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="display_name">Nome Completo</Label>
                 <Input
@@ -380,14 +385,7 @@ export default function Profile() {
                   )}
                 </div>
               </div>
-
-              <div className="flex justify-end">
-                <Button type="submit" disabled={saving}>
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Salvar Alterações
-                </Button>
-              </div>
-            </form>
+            </div>
 
             <Separator className="my-6" />
 
