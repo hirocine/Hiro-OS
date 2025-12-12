@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { Loader2, Shield } from 'lucide-react';
+import { Loader2, KeyRound } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,7 @@ import { AvatarCropperDialog } from '@/components/ui/avatar-cropper-dialog';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 import { useGoogleProfile } from '@/hooks/useGoogleProfile';
 import { getAvatarData } from '@/lib/avatarUtils';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface UserProfile {
   id: string;
@@ -36,6 +37,7 @@ const profileSchema = z.object({
 export default function Profile() {
   const { user } = useAuthContext();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -50,8 +52,8 @@ export default function Profile() {
   const [selectedImageSrc, setSelectedImageSrc] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [loadingPasswordReset, setLoadingPasswordReset] = useState(false);
-  const { uploading, validateFile, uploadAvatar, removeAvatar, setImageUrl } = useAvatarUpload();
-  const { hasGoogleAvatar, googleAvatarUrl, isGoogleUser, syncGoogleAvatarToProfile } = useGoogleProfile();
+  const { uploading, validateFile, uploadAvatar, removeAvatar } = useAvatarUpload();
+  const { hasGoogleAvatar, isGoogleUser, syncGoogleAvatarToProfile } = useGoogleProfile();
 
   useEffect(() => {
     if (user) {
@@ -160,6 +162,8 @@ export default function Profile() {
       });
 
       await fetchProfile();
+      // Invalidate sidebar profile cache
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile', user.id] });
     } catch (error: any) {
       logger.error('Error updating profile', { 
         module: 'profile',
@@ -203,6 +207,7 @@ export default function Profile() {
       setCropperOpen(false);
       setSelectedImageSrc('');
       await fetchProfile();
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile', user.id] });
     } catch (error) {
       // Error is handled by the hook
     }
@@ -214,6 +219,7 @@ export default function Profile() {
     try {
       await removeAvatar(user.id);
       await fetchProfile();
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile', user.id] });
     } catch (error) {
       // Error is handled by the hook
     }
@@ -258,6 +264,7 @@ export default function Profile() {
           description: "Sua foto do Google foi definida como avatar do perfil.",
         });
         await fetchProfile();
+        queryClient.invalidateQueries({ queryKey: ['currentUserProfile', user?.id] });
       } else {
         throw new Error(result.error);
       }
@@ -283,21 +290,16 @@ export default function Profile() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="6xl">
+    <ResponsiveContainer maxWidth="4xl">
       <PageHeader 
         title="Perfil" 
-        subtitle="Gerencie suas informações pessoais e configurações da conta."
+        subtitle="Gerencie suas informações pessoais."
       />
 
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Avatar Section */}
         <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Foto do Perfil</CardTitle>
-            <CardDescription>
-              Selecione uma imagem para seu perfil. Você poderá ajustar o crop antes de salvar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-4">
+          <CardContent className="pt-6 flex flex-col items-center space-y-4">
             <AvatarUploadArea
               currentAvatarUrl={avatarData.url}
               userInitials={avatarData.initials}
@@ -307,50 +309,47 @@ export default function Profile() {
               size="lg"
             />
             
-            {/* Botão para usar avatar do Google */}
             {isGoogleUser && hasGoogleAvatar && !profile?.avatar_url && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleUseGoogleAvatar}
                 disabled={saving}
-                className="mt-2"
               >
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Usar Foto do Google
               </Button>
             )}
-            <div className="text-center">
-              <p className="font-medium">{avatarData.displayName || 'Nome não definido'}</p>
+            
+            <div className="text-center space-y-1">
+              <p className="font-medium text-lg">{avatarData.displayName || 'Nome não definido'}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
               {avatarData.isGoogleUser && (
-                <p className="text-xs text-muted-foreground mt-1">Conta Google</p>
+                <p className="text-xs text-muted-foreground">Conta Google</p>
               )}
             </div>
           </CardContent>
         </Card>
 
+        {/* Personal Info + Password Section */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Informações Pessoais</CardTitle>
-            <CardDescription>
-              Atualize suas informações pessoais e profissionais.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                  <Label htmlFor="display_name">Nome Completo</Label>
-                  <Input
-                    id="display_name"
-                    value={formData.display_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                    placeholder="Seu nome completo"
-                    className={validationErrors.display_name ? 'border-destructive' : ''}
-                  />
-                  {validationErrors.display_name && (
-                    <p className="text-sm text-destructive">{validationErrors.display_name}</p>
-                  )}
+                <Label htmlFor="display_name">Nome Completo</Label>
+                <Input
+                  id="display_name"
+                  value={formData.display_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                  placeholder="Seu nome completo"
+                  className={validationErrors.display_name ? 'border-destructive' : ''}
+                />
+                {validationErrors.display_name && (
+                  <p className="text-sm text-destructive">{validationErrors.display_name}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -389,62 +388,28 @@ export default function Profile() {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
 
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Segurança
-            </CardTitle>
-            <CardDescription>
-              Gerencie suas configurações de segurança e acesso à conta.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Alterar Senha</Label>
+            <Separator className="my-6" />
+
+            {/* Password Section - Simplified */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-muted">
+                  <KeyRound className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Senha</p>
+                  <p className="text-xs text-muted-foreground">Receba um email para redefinir</p>
+                </div>
+              </div>
               <Button 
                 variant="outline" 
-                className="w-full" 
+                size="sm"
                 onClick={handlePasswordReset}
                 disabled={loadingPasswordReset}
               >
                 {loadingPasswordReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Redefinir Senha
-              </Button>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Autenticação de Dois Fatores</Label>
-                <p className="text-sm text-muted-foreground">
-                  Adicione uma camada extra de segurança à sua conta
-                </p>
-              </div>
-              <Switch 
-                onCheckedChange={(checked) => {
-                  toast({
-                    title: checked ? "2FA Ativado" : "2FA Desativado",
-                    description: checked ? "Autenticação de dois fatores ativada com sucesso." : "Autenticação de dois fatores desativada.",
-                  });
-                }}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Sessões Ativas</Label>
-              <p className="text-sm text-muted-foreground mb-2">
-                Encerre todas as sessões ativas em outros dispositivos
-              </p>
-              <Button variant="destructive" size="sm" onClick={() => {
-                toast({
-                  title: "Sessões encerradas",
-                  description: "Todas as sessões ativas foram encerradas com sucesso.",
-                });
-              }}>
-                Encerrar Todas as Sessões
               </Button>
             </div>
           </CardContent>
