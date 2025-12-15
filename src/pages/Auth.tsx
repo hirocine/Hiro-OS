@@ -241,7 +241,8 @@ export default function Auth() {
               id="password"
               label="Senha"
               showStrength={mode === 'signup'}
-              requirements={mode === 'signup' ? {} : { minLength: 1 }} // Relaxed for login
+              showValidation={mode === 'signup'}
+              requirements={mode === 'signup' ? {} : { minLength: 1 }}
               onChange={(password, isValid) => {
                 setFormData(prev => ({ ...prev, password }));
                 setPasswordValid(isValid);

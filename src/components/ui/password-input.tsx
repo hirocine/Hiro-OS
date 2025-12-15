@@ -10,12 +10,13 @@ export interface PasswordInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
   label?: string;
   showStrength?: boolean;
+  showValidation?: boolean;
   requirements?: Partial<PasswordRequirements>;
   onChange?: (value: string, isValid: boolean) => void;
 }
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, label, showStrength = true, requirements, onChange, ...props }, ref) => {
+  ({ className, label, showStrength = true, showValidation = true, requirements, onChange, ...props }, ref) => {
     const [password, setPassword] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
     const [validation, setValidation] = React.useState(validatePassword(''));
@@ -48,8 +49,8 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
             onChange={handlePasswordChange}
             className={cn(
               'pr-20',
-              !validation.isValid && password.length > 0 && 'border-destructive focus-visible:ring-destructive',
-              validation.isValid && password.length > 0 && 'border-success focus-visible:ring-success',
+              showValidation && !validation.isValid && password.length > 0 && 'border-destructive focus-visible:ring-destructive',
+              showValidation && validation.isValid && password.length > 0 && 'border-success focus-visible:ring-success',
               className
             )}
             autoComplete="new-password"
@@ -58,7 +59,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           
           <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3">
             {/* Security indicator */}
-            {password.length > 0 && (
+            {showValidation && password.length > 0 && (
               <div className="flex items-center">
                 {validation.isValid ? (
                   <Shield className="h-4 w-4 text-success" />
@@ -112,7 +113,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
         )}
 
         {/* Validation errors */}
-        {password.length > 0 && validation.errors.length > 0 && (
+        {showValidation && password.length > 0 && validation.errors.length > 0 && (
           <div className="space-y-1">
             {validation.errors.map((error, index) => (
               <p key={index} className="text-sm text-destructive flex items-center gap-1">
