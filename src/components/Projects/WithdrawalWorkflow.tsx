@@ -1,11 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectStep, ProjectStatus, StepChange } from '@/types/project';
-import { stepLabels, stepOrder, getStepProgress } from '@/lib/projectSteps';
-import { Check, Play } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { stepLabels, stepOrder } from '@/lib/projectSteps';
+import { Check, Play, Circle } from 'lucide-react';
 
 interface WithdrawalWorkflowProps {
   currentStep: ProjectStep;
@@ -34,7 +31,6 @@ export function WithdrawalWorkflow({
   createdByUser
 }: WithdrawalWorkflowProps) {
   const currentStepIndex = stepOrder.indexOf(currentStep);
-  const progress = getStepProgress(currentStep);
 
   const getStepStatus = (stepIndex: number): 'completed' | 'current' | 'pending' => {
     if (stepIndex < currentStepIndex) return 'completed';
@@ -94,102 +90,56 @@ export function WithdrawalWorkflow({
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <div className={cn("space-y-3", className)}>
-      {/* Compact Progress Bar */}
-      <div className="flex items-center gap-3">
-        <Progress value={progress} className="h-1.5 flex-1" />
-        <span className="text-xs font-medium text-muted-foreground">
-          {Math.round(progress)}%
-        </span>
-      </div>
+    <div className={cn("space-y-1", className)}>
+      {stepOrder.map((step, index) => {
+        const status = getStepStatus(index);
+        const stepData = getStepData(step);
+        const hasData = stepData.userName || stepData.date;
 
-      {/* Workflow List */}
-      <div className="border rounded-lg overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-b">
-          <div className="col-span-6 sm:col-span-5">Etapa</div>
-          <div className="col-span-3 sm:col-span-4 hidden sm:block">Executado por</div>
-          <div className="col-span-6 sm:col-span-3 text-right sm:text-left">Data</div>
-        </div>
+        return (
+          <div
+            key={step}
+            className={cn(
+              "flex items-center gap-3 py-2 px-3 rounded-md transition-colors",
+              status === 'current' && "bg-primary/5"
+            )}
+          >
+            {/* Icon */}
+            {status === 'completed' && (
+              <Check className="w-4 h-4 text-success flex-shrink-0" />
+            )}
+            {status === 'current' && (
+              <Play className="w-4 h-4 text-primary flex-shrink-0" />
+            )}
+            {status === 'pending' && (
+              <Circle className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
+            )}
 
-        {/* Steps */}
-        {stepOrder.map((step, index) => {
-          const status = getStepStatus(index);
-          const stepData = getStepData(step);
+            {/* Step name */}
+            <span className={cn(
+              "text-sm flex-1",
+              status === 'completed' && "text-foreground",
+              status === 'current' && "font-medium text-foreground",
+              status === 'pending' && "text-muted-foreground"
+            )}>
+              {stepLabels[step]}
+            </span>
 
-          return (
-            <div
-              key={step}
-              className={cn(
-                "grid grid-cols-12 gap-2 px-3 py-2 border-b last:border-b-0 transition-colors",
-                status === 'current' && "bg-primary/5"
-              )}
-            >
-              {/* Etapa com status inline */}
-              <div className="col-span-6 sm:col-span-5 flex items-center gap-2">
-                {status === 'completed' && (
-                  <Check className="w-4 h-4 text-success flex-shrink-0" />
+            {/* User and date info - only show if data exists */}
+            {hasData && (
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                {stepData.userName && (
+                  <span className="hidden sm:inline">{stepData.userName}</span>
                 )}
-                {status === 'current' && (
-                  <Play className="w-4 h-4 text-primary flex-shrink-0" />
-                )}
-                {status === 'pending' && (
-                  <div className="w-4 h-4 flex-shrink-0" /> 
-                )}
-                <span className={cn(
-                  "text-sm truncate",
-                  status === 'completed' && "text-foreground",
-                  status === 'current' && "font-medium text-foreground",
-                  status === 'pending' && "text-muted-foreground"
-                )}>
-                  {stepLabels[step]}
-                </span>
-                {status === 'current' && (
-                  <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 ml-1">
-                    Atual
-                  </Badge>
+                {stepData.date && (
+                  <span className="tabular-nums">{stepData.date}</span>
                 )}
               </div>
-
-              {/* Executado por */}
-              <div className="col-span-3 sm:col-span-4 hidden sm:flex items-center gap-1.5">
-                {stepData.userName ? (
-                  <>
-                    <Avatar className="h-5 w-5">
-                      <AvatarFallback className="text-[10px] bg-muted">
-                        {getInitials(stepData.userName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm truncate">{stepData.userName}</span>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
-                )}
-              </div>
-
-              {/* Data */}
-              <div className="col-span-6 sm:col-span-3 flex items-center justify-end sm:justify-start">
-                <span className={cn(
-                  "text-sm",
-                  !stepData.date && "text-muted-foreground"
-                )}>
-                  {stepData.date || '—'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
