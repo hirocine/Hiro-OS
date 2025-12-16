@@ -1,8 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectStep, ProjectStatus, StepChange } from '@/types/project';
-import { stepLabels, stepIcons, stepOrder, getStepProgress } from '@/lib/projectSteps';
-import { Check, Circle, Play } from 'lucide-react';
+import { stepLabels, stepOrder, getStepProgress } from '@/lib/projectSteps';
+import { Check, Play } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -103,25 +103,12 @@ export function WithdrawalWorkflow({
       .slice(0, 2);
   };
 
-  const getStatusBadge = (status: 'completed' | 'current' | 'pending') => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="success" className="text-xs">Concluído</Badge>;
-      case 'current':
-        return <Badge variant="default" className="text-xs">Atual</Badge>;
-      case 'pending':
-        return <Badge variant="outline" className="text-xs text-muted-foreground">Pendente</Badge>;
-    }
-  };
-
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Progress Bar */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <Progress value={progress} className="h-2" />
-        </div>
-        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+    <div className={cn("space-y-3", className)}>
+      {/* Compact Progress Bar */}
+      <div className="flex items-center gap-3">
+        <Progress value={progress} className="h-1.5 flex-1" />
+        <span className="text-xs font-medium text-muted-foreground">
           {Math.round(progress)}%
         </span>
       </div>
@@ -129,68 +116,57 @@ export function WithdrawalWorkflow({
       {/* Workflow List */}
       <div className="border rounded-lg overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-muted/50 text-sm font-medium text-muted-foreground border-b">
-          <div className="col-span-5 md:col-span-4">Etapa</div>
-          <div className="col-span-4 md:col-span-3 hidden sm:block">Executado por</div>
-          <div className="col-span-3 md:col-span-3 hidden md:block">Data</div>
-          <div className="col-span-7 sm:col-span-3 md:col-span-2 text-right sm:text-left">Status</div>
+        <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-b">
+          <div className="col-span-6 sm:col-span-5">Etapa</div>
+          <div className="col-span-3 sm:col-span-4 hidden sm:block">Executado por</div>
+          <div className="col-span-6 sm:col-span-3 text-right sm:text-left">Data</div>
         </div>
 
         {/* Steps */}
         {stepOrder.map((step, index) => {
           const status = getStepStatus(index);
-          const Icon = stepIcons[step];
           const stepData = getStepData(step);
 
           return (
             <div
               key={step}
               className={cn(
-                "grid grid-cols-12 gap-4 px-4 py-3 border-b last:border-b-0 transition-colors",
-                status === 'current' && "bg-primary/5",
-                status === 'completed' && "bg-success/5"
+                "grid grid-cols-12 gap-2 px-3 py-2 border-b last:border-b-0 transition-colors",
+                status === 'current' && "bg-primary/5"
               )}
             >
-              {/* Etapa */}
-              <div className="col-span-5 md:col-span-4 flex items-center gap-3">
-                <div
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                    status === 'completed' && "bg-success text-success-foreground",
-                    status === 'current' && "bg-primary text-primary-foreground",
-                    status === 'pending' && "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {status === 'completed' ? (
-                    <Check className="w-4 h-4" />
-                  ) : status === 'current' ? (
-                    <Play className="w-4 h-4" />
-                  ) : (
-                    <Circle className="w-4 h-4" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Icon className={cn(
-                    "w-4 h-4 flex-shrink-0",
-                    status === 'completed' && "text-success",
-                    status === 'current' && "text-primary",
-                    status === 'pending' && "text-muted-foreground"
-                  )} />
-                  <span className={cn(
-                    "font-medium truncate",
-                    status === 'pending' && "text-muted-foreground"
-                  )}>
-                    {stepLabels[step]}
-                  </span>
-                </div>
+              {/* Etapa com status inline */}
+              <div className="col-span-6 sm:col-span-5 flex items-center gap-2">
+                {status === 'completed' && (
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
+                )}
+                {status === 'current' && (
+                  <Play className="w-4 h-4 text-primary flex-shrink-0" />
+                )}
+                {status === 'pending' && (
+                  <div className="w-4 h-4 flex-shrink-0" /> 
+                )}
+                <span className={cn(
+                  "text-sm truncate",
+                  status === 'completed' && "text-foreground",
+                  status === 'current' && "font-medium text-foreground",
+                  status === 'pending' && "text-muted-foreground"
+                )}>
+                  {stepLabels[step]}
+                </span>
+                {status === 'current' && (
+                  <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                    Atual
+                  </Badge>
+                )}
               </div>
 
               {/* Executado por */}
-              <div className="col-span-4 md:col-span-3 hidden sm:flex items-center gap-2">
+              <div className="col-span-3 sm:col-span-4 hidden sm:flex items-center gap-1.5">
                 {stepData.userName ? (
                   <>
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">
+                    <Avatar className="h-5 w-5">
+                      <AvatarFallback className="text-[10px] bg-muted">
                         {getInitials(stepData.userName)}
                       </AvatarFallback>
                     </Avatar>
@@ -202,18 +178,13 @@ export function WithdrawalWorkflow({
               </div>
 
               {/* Data */}
-              <div className="col-span-3 md:col-span-3 hidden md:flex items-center">
+              <div className="col-span-6 sm:col-span-3 flex items-center justify-end sm:justify-start">
                 <span className={cn(
                   "text-sm",
                   !stepData.date && "text-muted-foreground"
                 )}>
                   {stepData.date || '—'}
                 </span>
-              </div>
-
-              {/* Status */}
-              <div className="col-span-7 sm:col-span-3 md:col-span-2 flex items-center justify-end sm:justify-start">
-                {getStatusBadge(status)}
               </div>
             </div>
           );
