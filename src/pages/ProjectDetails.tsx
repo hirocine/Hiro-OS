@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { ProjectTimeline } from '@/components/Projects/ProjectTimeline';
+import { WithdrawalWorkflow } from '@/components/Projects/WithdrawalWorkflow';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/features/projects';
 import { useProjectEquipment, getEquipmentBreakdown } from '@/features/projects';
@@ -525,14 +525,14 @@ export default function ProjectDetails() {
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Workflow */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Status da Retirada</CardTitle>
               <CardDescription>
-                Progresso atual: {stepLabels[project.step]}
+                Etapa atual: {stepLabels[project.step]}
               </CardDescription>
             </div>
             {project.status === 'active' && (
@@ -545,10 +545,34 @@ export default function ProjectDetails() {
           </div>
         </CardHeader>
         <CardContent>
-          <ProjectTimeline 
+          <WithdrawalWorkflow 
             currentStep={project.step}
             stepHistory={project.stepHistory}
             projectStatus={project.status}
+            separationUser={{ 
+              name: project.separationUserName, 
+              time: project.separationTime 
+            }}
+            withdrawalUser={{ 
+              name: project.withdrawalUserName, 
+              time: project.withdrawalTime 
+            }}
+            verificationUser={{ 
+              name: project.verificationUserName, 
+              time: project.verificationTime 
+            }}
+            officeReceiptUser={{ 
+              name: project.officeReceiptUserName, 
+              time: project.officeReceiptTime 
+            }}
+            completedByUser={{ 
+              name: project.completedByUserName, 
+              time: project.completedTime 
+            }}
+            createdByUser={{ 
+              name: project.createdByUserName, 
+              time: project.createdAt 
+            }}
           />
         </CardContent>
       </Card>
