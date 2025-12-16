@@ -1,13 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download } from 'lucide-react';
+import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download, LayoutList } from 'lucide-react';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { WithdrawalWorkflow } from '@/components/Projects/WithdrawalWorkflow';
 import { ProjectNextStepButton } from '@/components/Projects/ProjectNextStepButton';
 import { useProjectDetails } from '@/features/projects';
@@ -20,6 +23,7 @@ import { CompletionDialog } from '@/components/Projects/CompletionDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { stepLabels, getStatusLabel } from '@/lib/projectLabels';
+import { getStepProgress } from '@/lib/projectSteps';
 import { DeleteProjectDialog } from '@/components/Projects/DeleteProjectDialog';
 import { ProjectEquipmentList } from '@/components/Projects/ProjectEquipmentList';
 import { AddEquipmentToProjectDialog } from '@/components/Projects/AddEquipmentToProjectDialog';
@@ -29,10 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { generateProjectPDF, PDFProjectData } from '@/lib/pdfGenerator';
 import { Equipment } from '@/types/equipment';
-
 import { AdminOnly } from '@/components/RoleGuard';
-
-// Force rebuild to clear SeparationConfirmationDialog cache
 
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
@@ -69,13 +70,10 @@ export default function ProjectDetails() {
     ? getEquipmentBreakdown(projectEquipment) 
     : null;
 
-  // Calculate responsible avatar data (must be before early returns)
+  // Calculate responsible avatar data
   const responsibleAvatarData = useMemo(() => {
     if (!project) {
-      return {
-        url: null,
-        initials: 'U'
-      };
+      return { url: null, initials: 'U' };
     }
 
     if (!responsibleProfile) {
@@ -100,10 +98,7 @@ export default function ProjectDetails() {
       project.responsibleName
     );
     
-    return {
-      url: avatarData.url,
-      initials: avatarData.initials
-    };
+    return { url: avatarData.url, initials: avatarData.initials };
   }, [responsibleProfile, project]);
 
   // Listen for add equipment dialog events
@@ -163,31 +158,28 @@ export default function ProjectDetails() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
+      <ResponsiveContainer maxWidth="7xl">
         <div className="animate-pulse space-y-6">
           <div className="flex items-center space-x-4">
             <div className="w-8 h-8 bg-muted rounded" />
             <div className="h-8 w-64 bg-muted rounded" />
           </div>
-          <div className="h-32 bg-muted rounded" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-48 bg-muted rounded" />
-            <div className="h-48 bg-muted rounded" />
-          </div>
+          <div className="h-48 bg-muted rounded" />
+          <div className="h-64 bg-muted rounded" />
         </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   if (error || !project) {
     return (
-      <div className="container mx-auto p-6 md:p-8">
+      <ResponsiveContainer maxWidth="7xl">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Retirada não encontrada</h1>
           <p className="text-muted-foreground">{error || 'A retirada solicitada não existe.'}</p>
           <Button onClick={() => navigate('/retiradas')}>Voltar às Retiradas</Button>
         </div>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
@@ -274,7 +266,6 @@ export default function ProjectDetails() {
     });
   };
 
-
   const handleDeleteProject = async () => {
     try {
       setIsDeleting(true);
@@ -336,7 +327,6 @@ export default function ProjectDetails() {
       computers: []
     };
 
-    // Separar equipamentos principais e acessórios
     const mainEquipment = projectEquipment.filter(eq => {
       const equipment = eq as unknown as Equipment;
       return !equipment.parentId;
@@ -353,7 +343,6 @@ export default function ProjectDetails() {
       }
     });
 
-    // Agrupar equipamentos por categoria mantendo hierarquia
     mainEquipment.forEach(eq => {
       const equipment = eq as unknown as Equipment;
       const accessories = accessoriesMap.get(equipment.id) || [];
@@ -414,54 +403,20 @@ export default function ProjectDetails() {
     new Date(project.expectedEndDate) < new Date() && 
     !project.actualEndDate;
 
+  const progress = getStepProgress(project.step);
+
   return (
-    <div className="container mx-auto p-6 md:p-8 space-y-4 md:space-y-6">
-      <BreadcrumbNav 
-        items={[
-          { label: 'Retiradas', href: '/retiradas' },
-          { label: project.name }
-        ]} 
-      />
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl md:text-3xl font-bold">{project.name}</h1>
-              <Badge variant={getStatusVariant(project.status)}>
-                {getStatusLabel(project.status)}
-              </Badge>
-              {isOverdue && (
-                <Badge variant="destructive">Atrasado</Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground mt-1">
-              {project.projectName && (
-                <span className="font-medium">{project.projectName}</span>
-              )}
-              {project.company && (
-                <>
-                  {project.projectName && <span>•</span>}
-                  <span>{project.company}</span>
-                </>
-              )}
-              {project.projectNumber && (
-                <>
-                  <span>•</span>
-                  <span>Nº {project.projectNumber}</span>
-                </>
-              )}
-              {project.recordingType && (
-                <>
-                  <span>•</span>
-                  <span>{project.recordingType}</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
+    <ResponsiveContainer maxWidth="7xl">
+      {/* Header com breadcrumb e ações */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <BreadcrumbNav 
+          items={[
+            { label: 'Retiradas', href: '/retiradas' },
+            { label: project.name }
+          ]}
+          className="mb-0"
+        />
+        
         <div className="flex items-center gap-2">
           <TooltipProvider>
             <Tooltip>
@@ -473,7 +428,7 @@ export default function ProjectDetails() {
                   disabled={!projectEquipment || projectEquipment.length === 0}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Baixar PDF
+                  PDF
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -482,59 +437,146 @@ export default function ProjectDetails() {
             </Tooltip>
           </TooltipProvider>
 
+          <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+
           <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar Projeto
-            </DropdownMenuItem>
-            {project.status === 'active' && (
-              <>
-                <DropdownMenuItem onClick={() => setShowStepDialog(true)}>
-                  <Clock className="mr-2 h-4 w-4" />
-                  Atualizar Status
-                </DropdownMenuItem>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {project.status === 'active' && (
+                <>
+                  <DropdownMenuItem onClick={() => setShowStepDialog(true)}>
+                    <Clock className="mr-2 h-4 w-4" />
+                    Atualizar Status
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCompleteProject}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Finalizar Projeto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleArchiveProject}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Arquivar Projeto
+                  </DropdownMenuItem>
+                </>
+              )}
+              <AdminOnly>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleCompleteProject}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Finalizar Projeto
+                <DropdownMenuItem 
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir Projeto
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleArchiveProject}>
-                  <Archive className="mr-2 h-4 w-4" />
-                  Arquivar Projeto
-                </DropdownMenuItem>
-              </>
-            )}
-            <AdminOnly>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setShowDeleteDialog(true)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir Projeto
-              </DropdownMenuItem>
-            </AdminOnly>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </AdminOnly>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* Workflow */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Status da Retirada</CardTitle>
-              <CardDescription>
-                Etapa atual: {stepLabels[project.step]}
-              </CardDescription>
+      {/* Header Card Consolidado */}
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          {/* Avatar + Title + Badges */}
+          <div className="flex items-start gap-4">
+            <Avatar className="h-14 w-14 rounded-lg shrink-0">
+              <AvatarImage 
+                src={responsibleAvatarData.url || undefined} 
+                className="object-cover"
+              />
+              <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-lg font-semibold">
+                {responsibleAvatarData.initials}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold truncate">{project.name}</h1>
+                <Badge variant={getStatusVariant(project.status)}>
+                  {getStatusLabel(project.status)}
+                </Badge>
+                {isOverdue && (
+                  <Badge variant="destructive">Atrasado</Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground flex-wrap">
+                {project.company && (
+                  <div className="flex items-center gap-1">
+                    <Building2 className="h-4 w-4" />
+                    <span>{project.company}</span>
+                  </div>
+                )}
+                {project.projectNumber && (
+                  <span>Nº {project.projectNumber}</span>
+                )}
+                {project.recordingType && (
+                  <span>{project.recordingType}</span>
+                )}
+                {project.responsibleName && (
+                  <div className="flex items-center gap-1">
+                    <User className="h-4 w-4" />
+                    <span>{project.responsibleName}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Datas importantes */}
+              <div className="flex items-center gap-4 mt-3 text-sm flex-wrap">
+                {project.separationDate && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-orange-500" />
+                    <span className="text-muted-foreground">Separação:</span>
+                    <span>{format(new Date(project.separationDate), "dd/MM", { locale: ptBR })}</span>
+                  </div>
+                )}
+                {project.withdrawalDate && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <span className="text-muted-foreground">Retirada:</span>
+                    <span>{format(new Date(project.withdrawalDate), "dd/MM", { locale: ptBR })}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-green-500" />
+                  <span className="text-muted-foreground">Devolução:</span>
+                  <span>{format(new Date(project.expectedEndDate), "dd/MM", { locale: ptBR })}</span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <Separator className="my-5" />
+
+          {/* Progress + Next Step Button */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">Progresso</p>
+                <p className="text-sm text-muted-foreground">
+                  Etapa: <span className="font-medium text-foreground">{stepLabels[project.step]}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-success transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground w-10 text-right">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+            </div>
+
             {project.status === 'active' && (
               <ProjectNextStepButton 
                 project={project}
@@ -543,120 +585,34 @@ export default function ProjectDetails() {
               />
             )}
           </div>
-        </CardHeader>
-        <CardContent>
-          <WithdrawalWorkflow 
-            currentStep={project.step}
-            stepHistory={project.stepHistory}
-            projectStatus={project.status}
-            separationUser={{ 
-              name: project.separationUserName, 
-              time: project.separationTime 
-            }}
-            withdrawalUser={{ 
-              name: project.withdrawalUserName, 
-              time: project.withdrawalTime 
-            }}
-            verificationUser={{ 
-              name: project.verificationUserName, 
-              time: project.verificationTime 
-            }}
-            officeReceiptUser={{ 
-              name: project.officeReceiptUserName, 
-              time: project.officeReceiptTime 
-            }}
-            completedByUser={{ 
-              name: project.completedByUserName, 
-              time: project.completedTime 
-            }}
-            createdByUser={{ 
-              name: project.createdByUserName, 
-              time: project.createdAt 
-            }}
-          />
         </CardContent>
       </Card>
 
-      {/* Project Info - Consolidated */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Package className="h-5 w-5" />
-            <span>Informações do Projeto</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {project.description && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Descrição</label>
-              <p className="mt-1">{project.description}</p>
-            </div>
-          )}
-          
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      {project.separationDate && (
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">Data de Separação</label>
-          <p className="mt-1 flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-orange-500" />
-            <span>{new Date(project.separationDate).toLocaleDateString('pt-BR')}</span>
-          </p>
+      {/* Workflow Section - Minimal */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="p-1.5 rounded-md bg-muted">
+            <LayoutList className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <h2 className="text-sm font-medium text-muted-foreground">Etapas do Processo</h2>
         </div>
-      )}
-            
-      {project.withdrawalDate && (
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">Data de Retirada</label>
-          <p className="mt-1 flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-red-500" />
-            <span>{new Date(project.withdrawalDate).toLocaleDateString('pt-BR')}</span>
-          </p>
-        </div>
-      )}
 
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
-              <p className="mt-1 flex items-center space-x-2">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(project.startDate).toLocaleDateString('pt-BR')}</span>
-              </p>
-            </div>
-
-      <div>
-        <label className="text-sm font-medium text-muted-foreground">
-          {project.actualEndDate ? 'Data de Finalização' : 'Previsão de Fim'}
-        </label>
-        <p className="mt-1 flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-green-500" />
-          <span>
-            {project.actualEndDate 
-              ? new Date(project.actualEndDate).toLocaleDateString('pt-BR')
-              : new Date(project.expectedEndDate).toLocaleDateString('pt-BR')
-            }
-          </span>
-        </p>
+        <Card>
+          <CardContent className="p-3">
+            <WithdrawalWorkflow 
+              currentStep={project.step}
+              stepHistory={project.stepHistory}
+              projectStatus={project.status}
+              separationUser={{ name: project.separationUserName, time: project.separationTime }}
+              withdrawalUser={{ name: project.withdrawalUserName, time: project.withdrawalTime }}
+              verificationUser={{ name: project.verificationUserName, time: project.verificationTime }}
+              officeReceiptUser={{ name: project.officeReceiptUserName, time: project.officeReceiptTime }}
+              completedByUser={{ name: project.completedByUserName, time: project.completedTime }}
+              createdByUser={{ name: project.createdByUserName, time: project.createdAt }}
+            />
+          </CardContent>
+        </Card>
       </div>
-          </div>
-
-          <Separator className="my-4" />
-
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-            <div className="mt-2 flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage 
-                  src={responsibleAvatarData.url || undefined} 
-                  alt={project.responsibleName} 
-                />
-                <AvatarFallback className="text-sm font-medium">
-                  {responsibleAvatarData.initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-medium">{project.responsibleName}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Tabs Section */}
       <Tabs defaultValue="equipment" className="space-y-4">
@@ -704,7 +660,6 @@ export default function ProjectDetails() {
               {(() => {
                 const historyEvents: any[] = [];
                 
-                // 1. Criação do projeto
                 historyEvents.push({
                   type: 'creation',
                   title: 'Projeto Criado',
@@ -713,7 +668,6 @@ export default function ProjectDetails() {
                   icon: Package
                 });
                 
-                // 2. Separação
                 if (project.separationTime) {
                   historyEvents.push({
                     type: 'separation',
@@ -724,7 +678,6 @@ export default function ProjectDetails() {
                   });
                 }
                 
-                // 3. Equipamentos adicionados (do stepHistory)
                 project.stepHistory
                   .filter(h => h.notes?.toLowerCase().includes('equipamento'))
                   .forEach(h => {
@@ -738,7 +691,6 @@ export default function ProjectDetails() {
                     });
                   });
                 
-                // 4. Retirada
                 if (project.withdrawalTime) {
                   historyEvents.push({
                     type: 'withdrawal',
@@ -749,7 +701,6 @@ export default function ProjectDetails() {
                   });
                 }
                 
-                // 5. Check Desmontagem
                 if (project.verificationTime) {
                   historyEvents.push({
                     type: 'verification',
@@ -760,7 +711,6 @@ export default function ProjectDetails() {
                   });
                 }
                 
-                // 6. Devolução
                 if (project.officeReceiptTime) {
                   historyEvents.push({
                     type: 'office_receipt',
@@ -771,7 +721,6 @@ export default function ProjectDetails() {
                   });
                 }
                 
-                // 7. Finalização
                 if (project.completedTime) {
                   historyEvents.push({
                     type: 'completion',
@@ -782,7 +731,6 @@ export default function ProjectDetails() {
                   });
                 }
                 
-                // Ordenar por timestamp (mais recente primeiro)
                 historyEvents.sort((a, b) => 
                   new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
                 );
@@ -885,10 +833,7 @@ export default function ProjectDetails() {
         open={showAddEquipmentDialog}
         onOpenChange={setShowAddEquipmentDialog}
         project={project}
-        onSuccess={() => {
-          // Trigger a refresh of project data
-          refetch();
-        }}
+        onSuccess={() => refetch()}
       />
 
       <SeparationDialog
@@ -908,6 +853,6 @@ export default function ProjectDetails() {
         onOpenChange={setShowCompletionDialog}
         onConfirm={handleCompletionConfirm}
       />
-    </div>
+    </ResponsiveContainer>
   );
 }
