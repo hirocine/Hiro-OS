@@ -46,14 +46,14 @@ export function AIAssistant() {
 
   return (
     <Card className={`ai-assistant-card flex flex-col transition-[height] duration-500 ease-out will-change-[height] ${
-      hasMessages ? "h-[500px]" : "h-[220px]"
+      hasMessages ? "h-[500px]" : "min-h-[180px] sm:h-[220px]"
     }`}>
-      <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Sparkles className="h-5 w-5 text-primary" />
+      <CardHeader className="pb-2 sm:pb-3 flex-shrink-0">
+        <div className="flex items-start sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               Assistente Hiro
             </CardTitle>
@@ -64,7 +64,7 @@ export function AIAssistant() {
               variant="ghost"
               size="sm"
               onClick={clearMessages}
-              className="text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive flex-shrink-0"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -72,7 +72,7 @@ export function AIAssistant() {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
+      <CardContent className="flex-1 flex flex-col p-3 sm:p-4 pt-0 overflow-hidden">
         {/* Messages area - only show when there are messages */}
         {hasMessages && (
           <ScrollArea className="flex-1 pr-4 animate-fade-in" ref={scrollRef}>
@@ -131,8 +131,8 @@ export function AIAssistant() {
         )}
         {/* Wrapper para empurrar sugestões e input para baixo quando não há mensagens */}
         <div className={!hasMessages ? 'mt-auto' : ''}>
-          <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
-            hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
+          <div className={`grid grid-cols-1 sm:flex sm:flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
+            hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-none sm:max-h-20 mb-3"
           }`}>
             {SUGGESTIONS.map((suggestion, index) => (
               <Button
@@ -140,7 +140,7 @@ export function AIAssistant() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSuggestion(suggestion)}
-                className="text-xs italic text-muted-foreground"
+                className="text-xs italic text-muted-foreground justify-start h-auto py-1.5 sm:py-2 whitespace-normal text-left"
               >
                 {suggestion}
               </Button>
