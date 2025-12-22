@@ -48,27 +48,27 @@ export function AIAssistant() {
 
   return (
     <Card className={`ai-assistant-card flex flex-col transition-[height] duration-500 ease-out will-change-[height] ${
-      hasMessages ? "h-[500px]" : "min-h-[180px] sm:h-[220px]"
+      hasMessages ? "h-[500px]" : "min-h-[120px] sm:min-h-[180px] sm:h-[220px]"
     }`}>
-      <CardHeader className="pb-2 sm:pb-3 flex-shrink-0">
-        <div className="flex items-start sm:items-center justify-between gap-2">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6 flex-shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-lg">
+              <div className="p-1 sm:p-2 rounded-lg bg-primary/10">
+                <Sparkles className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary" />
               </div>
               Assistente Hiro
             </CardTitle>
-            <span className="text-xs text-muted-foreground">· Powered by Gemini</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">· Gemini</span>
           </div>
           {messages.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={clearMessages}
-              className="text-muted-foreground hover:text-destructive flex-shrink-0"
+              className="text-muted-foreground hover:text-destructive flex-shrink-0 h-7 w-7 p-0 sm:h-8 sm:w-8"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           )}
         </div>
@@ -152,16 +152,22 @@ export function AIAssistant() {
           )}
 
           {/* Input form */}
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="relative">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite sua pergunta..."
               disabled={isLoading}
-              className="flex-1"
+              className="pr-10"
             />
-            <Button type="submit" disabled={!input.trim() || isLoading}>
+            <Button 
+              type="submit" 
+              variant="ghost"
+              size="icon"
+              disabled={!input.trim() || isLoading}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary disabled:opacity-30"
+            >
               <Send className="h-4 w-4" />
             </Button>
           </form>
