@@ -3,12 +3,14 @@ import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { BannerCropperDialog } from "./BannerCropperDialog";
 import defaultBanner from "/images/default-banner.jpg";
 
 export function HeroBanner() {
   const { user, isAdmin } = useAuthContext();
   const { bannerSettings, isLoading } = useSiteSettings();
+  const isMobile = useIsMobile();
   const [showCropper, setShowCropper] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -105,8 +107,8 @@ export function HeroBanner() {
           </h1>
         </div>
 
-        {/* Edit button for admins */}
-        {isAdmin && (
+        {/* Edit button for admins - hidden on mobile */}
+        {isAdmin && !isMobile && (
           <Button
             variant="secondary"
             size="sm"
