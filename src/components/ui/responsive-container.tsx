@@ -35,7 +35,7 @@ export function ResponsiveContainer({
     if (padding === 'auto') {
       switch (breakpoint) {
         case 'mobile':
-          return 'px-6 py-4';
+          return 'px-8 py-4';
         case 'tablet':
           return 'px-8 py-6';
         default:
