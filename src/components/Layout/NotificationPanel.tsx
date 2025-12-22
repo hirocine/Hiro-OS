@@ -84,7 +84,7 @@ export function NotificationPanel() {
   };
 
   const NotificationItem = ({ notification, isRead = false }: { notification: any, isRead?: boolean }) => (
-    <div className={`p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'bg-muted/5' : ''}`}>
+    <div className={`px-5 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'bg-muted/5' : ''}`}>
       {/* Linha 1: Ícone + Título + Botão marcar como lido */}
       <div className="flex items-center gap-2">
         <div className={`p-1.5 rounded-full shrink-0 ${getNotificationColor(notification.type, isRead)} bg-muted`}>
