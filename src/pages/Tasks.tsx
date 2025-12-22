@@ -61,6 +61,12 @@ export default function Tasks() {
       <PageHeader
         title="Tarefas"
         subtitle="Gerencie suas tarefas e acompanhe o progresso do time"
+        actions={
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Tarefa
+          </Button>
+        }
       />
 
       <div className="space-y-6">
@@ -69,35 +75,28 @@ export default function Tasks() {
           value={activeSection} 
           onValueChange={(v) => setActiveSection(v as MainSection)}
         >
-          <div className="flex items-center justify-between">
-            <TabsList className="h-12">
-              <TabsTrigger 
-                value="general" 
-                className={cn(
-                  "h-10 px-6 gap-2 data-[state=active]:shadow-md transition-all",
-                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                )}
-              >
-                <Users className="h-4 w-4" />
-                <span className="font-medium">Tarefas Gerais</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="private" 
-                className={cn(
-                  "h-10 px-6 gap-2 data-[state=active]:shadow-md transition-all",
-                  "data-[state=active]:bg-purple-500 data-[state=active]:text-white"
-                )}
-              >
-                <Lock className="h-4 w-4" />
-                <span className="font-medium">Tarefas Privadas</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Tarefa
-            </Button>
-          </div>
+          <TabsList className="h-12">
+            <TabsTrigger 
+              value="general" 
+              className={cn(
+                "h-10 px-6 gap-2 data-[state=active]:shadow-md transition-all",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              )}
+            >
+              <Users className="h-4 w-4" />
+              <span className="font-medium">Tarefas Gerais</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="private" 
+              className={cn(
+                "h-10 px-6 gap-2 data-[state=active]:shadow-md transition-all",
+                "data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              )}
+            >
+              <Lock className="h-4 w-4" />
+              <span className="font-medium">Tarefas Privadas</span>
+            </TabsTrigger>
+          </TabsList>
 
           {/* Calendar Widget - receives tasks as prop to avoid duplicate query */}
           <div className="mt-4">
