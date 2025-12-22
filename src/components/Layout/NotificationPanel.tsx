@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { useNotificationsSystem } from '@/hooks/useNotificationsSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationType } from '@/types/notification';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Z_INDEX } from '@/lib/z-index';
@@ -38,6 +38,7 @@ const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
 export function NotificationPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllRead, setShowAllRead] = useState(false);
   const isMobile = useIsMobile();
   
   const {
@@ -249,7 +250,7 @@ export function NotificationPanel() {
                       Lidas ({readNotifications.length})
                     </h4>
                   </div>
-                  {readNotifications.slice(0, 10).map((notification) => (
+                  {(showAllRead ? readNotifications : readNotifications.slice(0, 10)).map((notification) => (
                     <NotificationItem 
                       key={notification.id} 
                       notification={notification} 
@@ -258,8 +259,16 @@ export function NotificationPanel() {
                   ))}
                   {readNotifications.length > 10 && (
                     <div className="p-3 text-center">
-                      <Button variant="ghost" size="sm" className="text-xs">
-                        Ver mais {readNotifications.length - 10} notificações
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs"
+                        onClick={() => setShowAllRead(!showAllRead)}
+                      >
+                        {showAllRead 
+                          ? 'Mostrar menos' 
+                          : `Ver mais ${readNotifications.length - 10} notificações`
+                        }
                       </Button>
                     </div>
                   )}
@@ -320,12 +329,10 @@ export function NotificationPanel() {
           side="bottom" 
           className="max-h-[85vh] rounded-t-[10px] px-0"
         >
-          <SheetHeader className="px-4 pb-2">
-            <SheetTitle>
-              <NotificationHeader />
-            </SheetTitle>
+          <SheetHeader className="sr-only">
+            <SheetTitle>Notificações</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden pt-2">
             <NotificationContent />
           </div>
         </SheetContent>
