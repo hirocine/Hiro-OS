@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAIAssistant } from "@/hooks/useAIAssistant";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -17,6 +18,7 @@ const SUGGESTIONS = [
 
 export function AIAssistant() {
   const { messages, isLoading, sendMessage, clearMessages } = useAIAssistant();
+  const isMobile = useIsMobile();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -131,21 +133,23 @@ export function AIAssistant() {
         )}
         {/* Wrapper para empurrar sugestões e input para baixo quando não há mensagens */}
         <div className={!hasMessages ? 'mt-auto' : ''}>
-          <div className={`grid grid-cols-1 sm:flex sm:flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
-            hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-none sm:max-h-20 mb-3"
-          }`}>
-            {SUGGESTIONS.map((suggestion, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                onClick={() => handleSuggestion(suggestion)}
-                className="text-xs italic text-muted-foreground justify-start h-auto py-1.5 sm:py-2 whitespace-normal text-left"
-              >
-                {suggestion}
-              </Button>
-            ))}
-          </div>
+          {!isMobile && (
+            <div className={`flex flex-wrap gap-2 justify-start transition-all duration-300 overflow-hidden ${
+              hasMessages ? "opacity-0 max-h-0 mb-0" : "opacity-100 max-h-20 mb-3"
+            }`}>
+              {SUGGESTIONS.map((suggestion, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSuggestion(suggestion)}
+                  className="text-xs italic text-muted-foreground justify-start h-auto py-2 whitespace-normal text-left"
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          )}
 
           {/* Input form */}
           <form onSubmit={handleSubmit} className="flex gap-2">
