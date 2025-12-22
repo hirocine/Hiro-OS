@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotificationsSystem } from '@/hooks/useNotificationsSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationType } from '@/types/notification';
@@ -306,24 +306,27 @@ export function NotificationPanel() {
     </Button>
   );
 
-  // Mobile: Drawer (bottom sheet)
+  // Mobile: Sheet (bottom) - substituindo Drawer por bug em PWA iOS
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerTrigger asChild>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
           {TriggerButton}
-        </DrawerTrigger>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="pb-2">
-            <DrawerTitle>
+        </SheetTrigger>
+        <SheetContent 
+          side="bottom" 
+          className="max-h-[85vh] rounded-t-[10px] px-0"
+        >
+          <SheetHeader className="px-4 pb-2">
+            <SheetTitle>
               <NotificationHeader />
-            </DrawerTitle>
-          </DrawerHeader>
+            </SheetTitle>
+          </SheetHeader>
           <div className="flex-1 overflow-hidden">
             <NotificationContent />
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     );
   }
 
