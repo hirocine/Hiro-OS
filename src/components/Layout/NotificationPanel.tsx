@@ -63,7 +63,7 @@ export function NotificationPanel() {
   };
 
   const getNotificationColor = (type: NotificationType, isRead: boolean) => {
-    const baseOpacity = isRead ? 'opacity-60' : '';
+    const baseOpacity = isRead ? 'opacity-80' : '';
     
     switch (type) {
       case 'project':
@@ -84,7 +84,7 @@ export function NotificationPanel() {
   };
 
   const NotificationItem = ({ notification, isRead = false }: { notification: any, isRead?: boolean }) => (
-    <div className={`flex items-start gap-3 p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'opacity-70' : ''}`}>
+    <div className={`flex items-start gap-3 p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'bg-muted/5' : ''}`}>
       <div className={`p-1.5 rounded-full ${getNotificationColor(notification.type, isRead)} bg-muted`}>
         {getNotificationIcon(notification.type)}
       </div>
@@ -240,8 +240,8 @@ export function NotificationPanel() {
               {/* Notificações lidas */}
               {readNotifications.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 bg-muted/10">
-                    <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                  <div className="px-4 py-2 bg-muted/20">
+                    <h4 className="text-xs font-medium text-foreground/70 flex items-center gap-2">
                       <Check className="h-3 w-3" />
                       Lidas ({readNotifications.length})
                     </h4>
