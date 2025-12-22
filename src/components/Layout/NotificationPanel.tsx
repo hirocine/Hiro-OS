@@ -84,51 +84,54 @@ export function NotificationPanel() {
   };
 
   const NotificationItem = ({ notification, isRead = false }: { notification: any, isRead?: boolean }) => (
-    <div className={`flex items-start gap-3 p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'bg-muted/5' : ''}`}>
-      <div className={`p-1.5 rounded-full ${getNotificationColor(notification.type, isRead)} bg-muted`}>
-        {getNotificationIcon(notification.type)}
-      </div>
-      <div className="flex-1 space-y-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className={`text-sm font-medium leading-none truncate ${isRead ? 'text-muted-foreground' : ''}`}>
-            {notification.title}
-          </p>
-          {!isRead && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-muted flex-shrink-0"
-              onClick={() => markAsRead(notification.id)}
-            >
-              <Check className="h-3 w-3" />
-            </Button>
-          )}
+    <div className={`p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${isRead ? 'bg-muted/5' : ''}`}>
+      {/* Linha 1: Ícone + Título + Botão marcar como lido */}
+      <div className="flex items-center gap-2">
+        <div className={`p-1.5 rounded-full shrink-0 ${getNotificationColor(notification.type, isRead)} bg-muted`}>
+          {getNotificationIcon(notification.type)}
         </div>
-        {notification.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {notification.description}
-          </p>
+        <p className={`flex-1 text-sm font-medium leading-tight truncate ${isRead ? 'text-muted-foreground' : ''}`}>
+          {notification.title}
+        </p>
+        {!isRead && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-muted shrink-0"
+            onClick={() => markAsRead(notification.id)}
+          >
+            <Check className="h-3 w-3" />
+          </Button>
         )}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {formatDistanceToNow(new Date(notification.createdAt), { 
-              addSuffix: true, 
-              locale: ptBR 
-            })}
-          </span>
-          {notification.responsibleUser && (
-            <div className="flex items-center gap-1">
-              <Avatar className="h-4 w-4">
-                <AvatarFallback className="text-xs">
-                  {notification.responsibleUser.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate max-w-20">
-                {notification.responsibleUser.name}
-              </span>
-            </div>
-          )}
-        </div>
+      </div>
+      
+      {/* Linha 2: Descrição com espaçamento */}
+      {notification.description && (
+        <p className="mt-2 pl-8 text-xs text-muted-foreground line-clamp-2">
+          {notification.description}
+        </p>
+      )}
+      
+      {/* Linha 3: Data (esquerda) + Primeiro nome (direita) */}
+      <div className="flex items-center justify-between mt-3 pl-8 text-xs text-muted-foreground">
+        <span>
+          {formatDistanceToNow(new Date(notification.createdAt), { 
+            addSuffix: true, 
+            locale: ptBR 
+          })}
+        </span>
+        {notification.responsibleUser && (
+          <div className="flex items-center gap-1.5">
+            <Avatar className="h-5 w-5">
+              <AvatarFallback className="text-[10px]">
+                {notification.responsibleUser.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate max-w-24">
+              {notification.responsibleUser.name.split(' ')[0]}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
