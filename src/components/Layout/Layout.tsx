@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarStateProvider, useSidebarState } from '@/contexts/SidebarContext';
 import { DesktopSidebar } from './DesktopSidebar';
 import { MobileSidebar } from './MobileSidebar';
-import { TopBar } from './TopBar';
+import { GlobalHeader } from './GlobalHeader';
 import { UpdateNotification } from '@/components/PWA/UpdateNotification';
 import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
 import { InstallPrompt } from '@/components/PWA/InstallPrompt';
@@ -14,6 +15,15 @@ import { cn } from '@/lib/utils';
 function LayoutContent() {
   const isPWA = useIsPWA();
   const isMobile = useIsMobile();
+  
+  // Try to use sidebar state, fallback to expanded
+  let isExpanded = true;
+  try {
+    const sidebarState = useSidebarState();
+    isExpanded = sidebarState.isExpanded;
+  } catch {
+    // Context not available yet, use default
+  }
 
   return (
     <>
@@ -21,8 +31,8 @@ function LayoutContent() {
       {!isMobile && <DesktopSidebar />}
       {isMobile && <MobileSidebar />}
       
-      {/* Top Bar - Apenas Mobile */}
-      {isMobile && <TopBar />}
+      {/* Global Header - Desktop e Mobile */}
+      <GlobalHeader />
       
       {/* PWA Global Components */}
       <OfflineIndicator />
@@ -32,12 +42,15 @@ function LayoutContent() {
       {/* Main Content Area */}
       <main 
         className={cn(
-          "flex-1 w-full min-h-screen bg-background [contain:layout]",
+          "flex-1 w-full min-h-screen bg-background [contain:layout] transition-all duration-300",
           isMobile 
             ? isPWA 
-              ? "pt-[calc(7rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
-              : "pt-28 pb-4"
-            : "pl-16" // Desktop: padding-left para sidebar 64px
+              ? "pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
+              : "pt-16 pb-4"
+            : cn(
+                "pt-16", // espaço para o header
+                isExpanded ? "pl-64" : "pl-16" // ajusta conforme sidebar
+              )
         )}
       >
         <Suspense fallback={null}>
@@ -50,10 +63,12 @@ function LayoutContent() {
 
 export function Layout() {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <LayoutContent />
-      </div>
-    </SidebarProvider>
+    <SidebarStateProvider>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <LayoutContent />
+        </div>
+      </SidebarProvider>
+    </SidebarStateProvider>
   );
 }
