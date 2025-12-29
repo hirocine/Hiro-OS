@@ -125,6 +125,11 @@ html body[data-scroll-locked="true"] {
   --shimmer-duration: 2s;
 
     --radius: 0.5rem;
+    
+    /* Sidebar dimensions */
+    --sidebar-width-collapsed: 64px;
+    --sidebar-width-expanded: 256px;
+    --header-height: 64px;
 
     --sidebar-background: 0 0% 98%;
 
