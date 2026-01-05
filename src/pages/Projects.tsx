@@ -2,21 +2,21 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
-import { Plus, FolderOpen, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronUp, ClipboardList, Play } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 import { useProjects } from '@/features/projects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
 import { getStepLabel } from '@/lib/projectLabels';
 import { ProjectSummaryCard } from '@/components/Projects/ProjectSummaryCard';
-
+import { ProjectStatsCards } from '@/components/Projects/ProjectStatsCards';
 import { EditProjectDialog } from '@/components/Projects/EditProjectDialog';
 import { StepUpdateDialog } from '@/components/Projects/StepUpdateDialog';
-import { StatsCardSkeleton, ProjectCardSkeleton, FiltersSkeleton } from '@/components/ui/skeleton-loaders';
+import { ProjectCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -186,19 +186,13 @@ export default function Projects() {
   // Loading state with skeletons
   if (loading) {
     return (
-    <ResponsiveContainer maxWidth="7xl">
+      <ResponsiveContainer maxWidth="7xl">
         <PageHeader 
           title="Retiradas" 
           subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-        </div>
-
-        <FiltersSkeleton />
+        <ProjectStatsCards stats={undefined} isLoading={true} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {Array.from({ length: 10 }).map((_, i) => (
@@ -251,184 +245,162 @@ export default function Projects() {
       />
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium">Retiradas Ativas</span>
-              <FolderOpen className="h-4 w-4 text-muted-foreground" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">
-              retiradas em andamento
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium">Pendente Separação</span>
-              <Clock className="h-4 w-4 text-warning" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">{stats.byStep.pending_separation}</div>
-            <p className="text-xs text-muted-foreground">
-              aguardando separação
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium">Gravação</span>
-              <Play className="h-4 w-4 text-success" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{stats.byStep.in_use}</div>
-            <p className="text-xs text-muted-foreground">
-              equipamentos em campo
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
+      <ProjectStatsCards stats={stats} isLoading={false} />
 
       {/* Projects Grid */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Upcoming Projects */}
         {upcomingProjects.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Próximas Retiradas</h2>
-              <span className="text-sm text-muted-foreground">({upcomingProjects.length})</span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {upcomingProjects.map((project) => (
-                <ProjectSummaryCard
-                  key={project.id}
-                  project={project}
-                  onEdit={(proj) => {
-                    setEditingProject(proj);
-                    setShowEditDialog(true);
-                  }}
-                  onComplete={handleCompleteProject}
-                  onArchive={handleArchiveProject}
-                />
-              ))}
-            </div>
-          </div>
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
+                <CardTitle className="text-lg">
+                  Próximas Retiradas ({upcomingProjects.length})
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {upcomingProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Overdue Projects */}
         {overdueProjects.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-destructive" />
-              <h2 className="text-xl font-semibold">Pendente Devolução</h2>
-              <span className="text-sm text-muted-foreground">({overdueProjects.length})</span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {overdueProjects.map((project) => (
-                <ProjectSummaryCard
-                  key={project.id}
-                  project={project}
-                  onEdit={(proj) => {
-                    setEditingProject(proj);
-                    setShowEditDialog(true);
-                  }}
-                  onComplete={handleCompleteProject}
-                  onArchive={handleArchiveProject}
-                />
-              ))}
-            </div>
-          </div>
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <Package className="h-4 w-4 text-destructive" />
+                </div>
+                <CardTitle className="text-lg">
+                  Pendente Devolução ({overdueProjects.length})
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {overdueProjects.map((project) => (
+                  <ProjectSummaryCard
+                    key={project.id}
+                    project={project}
+                    onEdit={(proj) => {
+                      setEditingProject(proj);
+                      setShowEditDialog(true);
+                    }}
+                    onComplete={handleCompleteProject}
+                    onArchive={handleArchiveProject}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Show/Hide Completed Projects */}
+        {/* Completed Projects - Collapsible */}
         {completedProjects.length > 0 && (
-          <div className="space-y-4">
-            <Button
-              variant="ghost"
-              onClick={() => setShowCompleted(!showCompleted)}
-              className="p-0 h-auto font-semibold hover:bg-transparent"
-            >
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-success" />
-                <h2 className="text-xl font-semibold">Retiradas Finalizadas</h2>
-                <span className="text-sm text-muted-foreground">({completedProjects.length})</span>
-                {showCompleted ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </div>
-            </Button>
-            
-            {showCompleted && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {completedProjects.map((project) => (
-                  <ProjectSummaryCard
-                    key={project.id}
-                    project={project}
-                    onEdit={(proj) => {
-                      setEditingProject(proj);
-                      setShowEditDialog(true);
-                    }}
-                    onComplete={handleCompleteProject}
-                    onArchive={handleArchiveProject}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <Collapsible open={showCompleted} onOpenChange={setShowCompleted}>
+            <Card>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-success/10">
+                        <CheckCircle className="h-4 w-4 text-success" />
+                      </div>
+                      <CardTitle className="text-lg">
+                        Retiradas Finalizadas ({completedProjects.length})
+                      </CardTitle>
+                    </div>
+                    {showCompleted ? (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    {completedProjects.map((project) => (
+                      <ProjectSummaryCard
+                        key={project.id}
+                        project={project}
+                        onEdit={(proj) => {
+                          setEditingProject(proj);
+                          setShowEditDialog(true);
+                        }}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         )}
 
-        {/* Show/Hide Archived Projects */}
+        {/* Archived Projects - Collapsible */}
         {archivedProjects.length > 0 && (
-          <div className="space-y-4">
-            <Button
-              variant="ghost"
-              onClick={() => setShowArchived(!showArchived)}
-              className="p-0 h-auto font-semibold hover:bg-transparent"
-            >
-              <div className="flex items-center gap-2">
-                <Archive className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-xl font-semibold">Retiradas Arquivadas</h2>
-                <span className="text-sm text-muted-foreground">({archivedProjects.length})</span>
-                {showArchived ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </div>
-            </Button>
-            
-            {showArchived && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {archivedProjects.map((project) => (
-                  <ProjectSummaryCard
-                    key={project.id}
-                    project={project}
-                    onEdit={(proj) => {
-                      setEditingProject(proj);
-                      setShowEditDialog(true);
-                    }}
-                    onComplete={handleCompleteProject}
-                    onArchive={handleArchiveProject}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <Collapsible open={showArchived} onOpenChange={setShowArchived}>
+            <Card>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-muted">
+                        <Archive className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">
+                        Retiradas Arquivadas ({archivedProjects.length})
+                      </CardTitle>
+                    </div>
+                    {showArchived ? (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    {archivedProjects.map((project) => (
+                      <ProjectSummaryCard
+                        key={project.id}
+                        project={project}
+                        onEdit={(proj) => {
+                          setEditingProject(proj);
+                          setShowEditDialog(true);
+                        }}
+                        onComplete={handleCompleteProject}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         )}
         
         {/* No projects found */}
