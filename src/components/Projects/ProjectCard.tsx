@@ -93,9 +93,6 @@ export function ProjectCard({ project, onEdit, onComplete, onArchive, onStepUpda
                 {stepLabels[project.step]}
               </Badge>
             </div>
-            {project.description && (
-              <p className="text-sm text-muted-foreground">{project.description}</p>
-            )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
