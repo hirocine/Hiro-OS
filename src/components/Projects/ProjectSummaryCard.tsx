@@ -66,16 +66,9 @@ export function ProjectSummaryCard({ project, onEdit, onComplete, onArchive }: P
             )}
             
             {/* Project Name */}
-            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">
+            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
               {project.name}
             </h3>
-            
-            {/* Company */}
-            {project.company && (
-              <p className="text-xs text-muted-foreground/80 truncate">
-                {project.company}
-              </p>
-            )}
           </div>
 
           {/* Action Menu */}
