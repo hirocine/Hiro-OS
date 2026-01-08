@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams, useBlocker } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +33,7 @@ import { useWithdrawalDraft, WithdrawalDraftData } from '@/hooks/useWithdrawalDr
 import { DraftRecoveryDialog } from '@/components/Projects/DraftRecoveryDialog';
 import { LeaveWithdrawalDialog } from '@/components/Projects/LeaveWithdrawalDialog';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 
 interface WithdrawalData {
   projectNumber: string;
@@ -116,6 +117,9 @@ export default function ProjectWithdrawal() {
     draftStateRef.current = draftState;
   }, [draftState]);
   
+  // Navigation blocker context
+  const { setBlocker, clearBlocker, pendingPath } = useNavigationBlocker();
+  
   // Leave dialog state
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isSavingBeforeLeave, setIsSavingBeforeLeave] = useState(false);
@@ -129,27 +133,32 @@ export default function ProjectWithdrawal() {
            data.selectedEquipment.length > 0;
   }, [data.projectNumber, data.company, data.projectName, data.selectedEquipment]);
   
-  // Block navigation when there's unsaved data
-  const blocker = useBlocker(
-    useCallback(
-      ({ currentLocation, nextLocation }) =>
-        hasData && 
-        !isSubmitting && 
-        draftState === 'ready' &&
-        currentLocation.pathname !== nextLocation.pathname,
-      [hasData, isSubmitting, draftState]
-    )
-  );
-  
-  // Show dialog when navigation is blocked
+  // Set up navigation blocker when there's unsaved data
   useEffect(() => {
-    if (blocker.state === 'blocked') {
-      pendingNavigationRef.current = blocker.location?.pathname || '/retiradas';
-      setShowLeaveDialog(true);
+    const shouldBlock = hasData && !isSubmitting && draftState === 'ready';
+    
+    if (shouldBlock) {
+      setBlocker(true, () => {
+        // This callback is called when navigation is attempted
+        setShowLeaveDialog(true);
+      });
+    } else {
+      clearBlocker();
     }
-  }, [blocker.state, blocker.location]);
+    
+    return () => {
+      clearBlocker();
+    };
+  }, [hasData, isSubmitting, draftState, setBlocker, clearBlocker]);
   
-  // Function to safely navigate with confirmation (for internal back button)
+  // Update pending navigation ref when context path changes
+  useEffect(() => {
+    if (pendingPath) {
+      pendingNavigationRef.current = pendingPath;
+    }
+  }, [pendingPath]);
+  
+  // Function to safely navigate with confirmation
   const safeNavigate = useCallback((path: string) => {
     if (hasData && !isSubmitting && draftState === 'ready') {
       pendingNavigationRef.current = path;
@@ -176,16 +185,10 @@ export default function ProjectWithdrawal() {
       };
       await saveDraft(currentStep, draftData);
       setShowLeaveDialog(false);
-      
-      // If navigation was blocked by useBlocker, proceed with it
-      if (blocker.state === 'blocked') {
-        blocker.proceed();
-      } else {
-        // Manual navigation (internal back button)
-        const path = pendingNavigationRef.current;
-        pendingNavigationRef.current = null;
-        if (path) navigate(path);
-      }
+      clearBlocker(); // Clear blocker before navigating
+      const path = pendingNavigationRef.current;
+      pendingNavigationRef.current = null;
+      if (path) navigate(path);
     } catch (error) {
       logger.error('Error saving draft before leave', { error });
       enhancedToast.error({
@@ -200,25 +203,16 @@ export default function ProjectWithdrawal() {
   // Handle leave without saving
   const handleLeaveWithoutSaving = () => {
     setShowLeaveDialog(false);
-    
-    if (blocker.state === 'blocked') {
-      blocker.proceed();
-    } else {
-      const path = pendingNavigationRef.current;
-      pendingNavigationRef.current = null;
-      if (path) navigate(path);
-    }
+    clearBlocker(); // Clear blocker before navigating
+    const path = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    if (path) navigate(path);
   };
   
   // Handle cancel leave
   const handleCancelLeave = () => {
     setShowLeaveDialog(false);
     pendingNavigationRef.current = null;
-    
-    // Cancel blocked navigation
-    if (blocker.state === 'blocked') {
-      blocker.reset();
-    }
   };
   
   // Browser beforeunload warning

@@ -1,6 +1,7 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
@@ -39,10 +40,23 @@ const adminNavigation: NavigationItem[] = [
 export function DesktopSidebar() {
   const { isAdmin } = useAuthContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const isPWA = useIsPWA();
+  const { requestNavigation } = useNavigationBlocker();
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    // If we're already on this path, allow normal navigation
+    if (location.pathname === href) return;
+    
+    // Check if navigation should be blocked
+    const shouldProceed = requestNavigation(href);
+    if (!shouldProceed) {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -82,6 +96,7 @@ export function DesktopSidebar() {
                     <TooltipTrigger asChild>
                       <NavLink
                         to={item.href}
+                        onClick={(e) => handleNavClick(e, item.href)}
                         className={cn(
                           "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
                           active 
@@ -123,6 +138,7 @@ export function DesktopSidebar() {
                       <TooltipTrigger asChild>
                         <NavLink
                           to={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
                           className={cn(
                             "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
                             active 
