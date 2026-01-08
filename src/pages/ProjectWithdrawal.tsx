@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams, useBlocker } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -145,7 +145,7 @@ export default function ProjectWithdrawal() {
   // Leave dialog state
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isSavingBeforeLeave, setIsSavingBeforeLeave] = useState(false);
-  const blockerRef = useRef<{ proceed: () => void; reset: () => void } | null>(null);
+  const pendingNavigationRef = useRef<string | null>(null);
   
   // Check if there's meaningful data to save
   const hasData = useMemo(() => {
@@ -155,22 +155,15 @@ export default function ProjectWithdrawal() {
            data.selectedEquipment.length > 0;
   }, [data.projectNumber, data.company, data.projectName, data.selectedEquipment]);
   
-  // Block navigation when there's unsaved data
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) => 
-      hasData && 
-      !isSubmitting && 
-      draftChecked &&
-      currentLocation.pathname !== nextLocation.pathname
-  );
-  
-  // Handle blocker state changes
-  useEffect(() => {
-    if (blocker.state === 'blocked') {
-      blockerRef.current = { proceed: blocker.proceed, reset: blocker.reset };
+  // Function to safely navigate with confirmation
+  const safeNavigate = useCallback((path: string) => {
+    if (hasData && !isSubmitting && draftChecked) {
+      pendingNavigationRef.current = path;
       setShowLeaveDialog(true);
+    } else {
+      navigate(path);
     }
-  }, [blocker.state]);
+  }, [hasData, isSubmitting, draftChecked, navigate]);
   
   // Handle save and leave
   const handleSaveAndLeave = async () => {
@@ -189,7 +182,9 @@ export default function ProjectWithdrawal() {
       };
       await saveDraft(currentStep, draftData);
       setShowLeaveDialog(false);
-      blockerRef.current?.proceed();
+      const path = pendingNavigationRef.current;
+      pendingNavigationRef.current = null;
+      if (path) navigate(path);
     } catch (error) {
       logger.error('Error saving draft before leave', { error });
       enhancedToast.error({
@@ -204,14 +199,15 @@ export default function ProjectWithdrawal() {
   // Handle leave without saving
   const handleLeaveWithoutSaving = () => {
     setShowLeaveDialog(false);
-    blockerRef.current?.proceed();
+    const path = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    if (path) navigate(path);
   };
   
   // Handle cancel leave
   const handleCancelLeave = () => {
     setShowLeaveDialog(false);
-    blockerRef.current?.reset();
-    blockerRef.current = null;
+    pendingNavigationRef.current = null;
   };
   
   // Browser beforeunload warning
@@ -1283,7 +1279,7 @@ export default function ProjectWithdrawal() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <span 
               className="hover:text-foreground cursor-pointer transition-colors flex items-center gap-1.5"
-              onClick={() => navigate('/retiradas')}
+              onClick={() => safeNavigate('/retiradas')}
             >
               <Package className="h-3.5 w-3.5" />
               Retiradas
@@ -1297,7 +1293,7 @@ export default function ProjectWithdrawal() {
               variant="ghost" 
               size="icon"
               className="mt-1"
-              onClick={() => navigate('/retiradas')}
+              onClick={() => safeNavigate('/retiradas')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -1386,7 +1382,7 @@ export default function ProjectWithdrawal() {
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/retiradas')}
+                onClick={() => safeNavigate('/retiradas')}
                 className="w-full sm:w-auto h-11 sm:h-10"
               >
                 Cancelar
