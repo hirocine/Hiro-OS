@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useBlocker } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -129,7 +129,27 @@ export default function ProjectWithdrawal() {
            data.selectedEquipment.length > 0;
   }, [data.projectNumber, data.company, data.projectName, data.selectedEquipment]);
   
-  // Function to safely navigate with confirmation
+  // Block navigation when there's unsaved data
+  const blocker = useBlocker(
+    useCallback(
+      ({ currentLocation, nextLocation }) =>
+        hasData && 
+        !isSubmitting && 
+        draftState === 'ready' &&
+        currentLocation.pathname !== nextLocation.pathname,
+      [hasData, isSubmitting, draftState]
+    )
+  );
+  
+  // Show dialog when navigation is blocked
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      pendingNavigationRef.current = blocker.location?.pathname || '/retiradas';
+      setShowLeaveDialog(true);
+    }
+  }, [blocker.state, blocker.location]);
+  
+  // Function to safely navigate with confirmation (for internal back button)
   const safeNavigate = useCallback((path: string) => {
     if (hasData && !isSubmitting && draftState === 'ready') {
       pendingNavigationRef.current = path;
@@ -156,9 +176,16 @@ export default function ProjectWithdrawal() {
       };
       await saveDraft(currentStep, draftData);
       setShowLeaveDialog(false);
-      const path = pendingNavigationRef.current;
-      pendingNavigationRef.current = null;
-      if (path) navigate(path);
+      
+      // If navigation was blocked by useBlocker, proceed with it
+      if (blocker.state === 'blocked') {
+        blocker.proceed();
+      } else {
+        // Manual navigation (internal back button)
+        const path = pendingNavigationRef.current;
+        pendingNavigationRef.current = null;
+        if (path) navigate(path);
+      }
     } catch (error) {
       logger.error('Error saving draft before leave', { error });
       enhancedToast.error({
@@ -173,15 +200,25 @@ export default function ProjectWithdrawal() {
   // Handle leave without saving
   const handleLeaveWithoutSaving = () => {
     setShowLeaveDialog(false);
-    const path = pendingNavigationRef.current;
-    pendingNavigationRef.current = null;
-    if (path) navigate(path);
+    
+    if (blocker.state === 'blocked') {
+      blocker.proceed();
+    } else {
+      const path = pendingNavigationRef.current;
+      pendingNavigationRef.current = null;
+      if (path) navigate(path);
+    }
   };
   
   // Handle cancel leave
   const handleCancelLeave = () => {
     setShowLeaveDialog(false);
     pendingNavigationRef.current = null;
+    
+    // Cancel blocked navigation
+    if (blocker.state === 'blocked') {
+      blocker.reset();
+    }
   };
   
   // Browser beforeunload warning
