@@ -30,7 +30,7 @@ export function LeaveWithdrawalDialog({
           </DialogDescription>
         </DialogHeader>
         
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
+        <DialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0">
           <Button 
             onClick={onSaveAndLeave} 
             className="w-full flex items-center justify-center gap-2"
