@@ -51,7 +51,7 @@ export function LeaveWithdrawalDialog({
           </Button>
           
           <Button 
-            variant="ghost" 
+            variant="outline" 
             onClick={onCancel}
             className="w-full flex items-center justify-center gap-2"
             disabled={isSaving}
