@@ -242,10 +242,9 @@ export default function Projects() {
           <div className="flex items-center gap-3">
             {hasDraft && !draftLoading && (
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <span className="text-muted-foreground/60">•</span>
                 <FileEdit className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">1 rascunho salvo</span>
-                <span className="sm:hidden">1 rascunho</span>
+                <span className="hidden sm:inline">1 Rascunho salvo</span>
+                <span className="sm:hidden">1 Rascunho</span>
               </span>
             )}
             <ResponsiveButton 
