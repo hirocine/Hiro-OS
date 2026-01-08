@@ -88,8 +88,33 @@ export default function ProjectWithdrawal() {
   const [returnDateOpen, setReturnDateOpen] = useState(false);
 
   // Draft system
-  const { draft, isLoading: isDraftLoading, hasDraft, saveDraft, deleteDraft, isSaving, lastSavedAt } = useWithdrawalDraft();
-
+  const { draft, isLoading: isDraftLoading, hasDraft, saveDraft, deleteDraft, isSaving, lastSavedAt, saveDraftImmediate } = useWithdrawalDraft();
+  
+  // Refs for cleanup function (to access latest data)
+  const dataRef = useRef(data);
+  const currentStepRef = useRef(currentStep);
+  const showDraftDialogRef = useRef(showDraftDialog);
+  const draftCheckedRef = useRef(draftChecked);
+  
+  // Session storage key for tracking user decision
+  const SESSION_KEY = 'withdrawal_draft_confirmed';
+  
+  // Keep refs in sync
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+  
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+  
+  useEffect(() => {
+    showDraftDialogRef.current = showDraftDialog;
+  }, [showDraftDialog]);
+  
+  useEffect(() => {
+    draftCheckedRef.current = draftChecked;
+  }, [draftChecked]);
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
   const { categories: categoriesFromDB } = useCategories();
@@ -152,10 +177,59 @@ export default function ProjectWithdrawal() {
     if (!isDraftLoading && !draftChecked) {
       setDraftChecked(true);
       if (hasDraft && draft) {
-        setShowDraftDialog(true);
+        const sessionDecision = sessionStorage.getItem(SESSION_KEY);
+        
+        if (sessionDecision === 'continue') {
+          // User already confirmed continuation in this session - restore automatically
+          const draftData = draft.data;
+          setData({
+            projectNumber: draftData.projectNumber || '',
+            company: draftData.company || '',
+            projectName: draftData.projectName || '',
+            responsibleUserId: draftData.responsibleUserId || '',
+            withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
+            returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
+            separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
+            recordingType: draftData.recordingType || '',
+            selectedEquipment: draftData.selectedEquipment || []
+          });
+          setCurrentStep(draft.currentStep);
+        } else if (sessionDecision === 'discard') {
+          // User already discarded in this session - don't show dialog
+        } else {
+          // First time - show dialog
+          setShowDraftDialog(true);
+        }
       }
     }
   }, [isDraftLoading, draftChecked, hasDraft, draft]);
+  
+  // Save draft immediately when leaving the page
+  useEffect(() => {
+    return () => {
+      // Only save if not showing dialog and has meaningful data
+      if (showDraftDialogRef.current || !draftCheckedRef.current) return;
+      
+      const currentData = dataRef.current;
+      const hasData = currentData.projectNumber || currentData.company || 
+                      currentData.projectName || currentData.selectedEquipment.length > 0;
+      
+      if (hasData) {
+        const draftData: WithdrawalDraftData = {
+          projectNumber: currentData.projectNumber,
+          company: currentData.company,
+          projectName: currentData.projectName,
+          responsibleUserId: currentData.responsibleUserId,
+          withdrawalDate: currentData.withdrawalDate?.toISOString() || null,
+          returnDate: currentData.returnDate?.toISOString() || null,
+          separationDate: currentData.separationDate?.toISOString() || null,
+          recordingType: currentData.recordingType,
+          selectedEquipment: currentData.selectedEquipment
+        };
+        saveDraftImmediate(currentStepRef.current, draftData);
+      }
+    };
+  }, [saveDraftImmediate]);
 
   // Auto-save draft when data changes (debounced)
   useEffect(() => {
@@ -184,6 +258,7 @@ export default function ProjectWithdrawal() {
 
   // Handle draft recovery
   const handleContinueDraft = () => {
+    sessionStorage.setItem(SESSION_KEY, 'continue');
     if (draft?.data) {
       const draftData = draft.data;
       setData({
@@ -203,6 +278,7 @@ export default function ProjectWithdrawal() {
   };
 
   const handleDiscardDraft = async () => {
+    sessionStorage.setItem(SESSION_KEY, 'discard');
     await deleteDraft();
     setShowDraftDialog(false);
   };
@@ -388,7 +464,8 @@ export default function ProjectWithdrawal() {
         });
       }
 
-      // Delete draft after successful creation
+      // Delete draft and clear session after successful creation
+      sessionStorage.removeItem(SESSION_KEY);
       await deleteDraft();
 
       enhancedToast.success({
