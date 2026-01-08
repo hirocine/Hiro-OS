@@ -243,7 +243,7 @@ export default function Projects() {
             {hasDraft && !draftLoading && (
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <FileEdit className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">1 Rascunho salvo</span>
+                <span className="hidden sm:inline">1 Rascunho Salvo</span>
                 <span className="sm:hidden">1 Rascunho</span>
               </span>
             )}
