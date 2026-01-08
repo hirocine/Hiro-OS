@@ -28,6 +28,7 @@ interface UseWithdrawalDraftReturn {
   isLoading: boolean;
   hasDraft: boolean;
   saveDraft: (step: number, data: WithdrawalDraftData) => Promise<void>;
+  saveDraftImmediate: (step: number, data: WithdrawalDraftData) => void;
   deleteDraft: () => Promise<void>;
   loadDraft: () => Promise<void>;
   isSaving: boolean;
@@ -177,6 +178,45 @@ export function useWithdrawalDraft(): UseWithdrawalDraftReturn {
     }
   }, [user?.id]);
 
+  // Synchronous version for cleanup functions (fire-and-forget)
+  const saveDraftImmediate = useCallback((step: number, draftData: WithdrawalDraftData) => {
+    if (!user?.id) return;
+
+    const payload = {
+      user_id: user.id,
+      current_step: step,
+      data: draftData as unknown as Json,
+      updated_at: new Date().toISOString()
+    };
+
+    if (draftIdRef.current) {
+      // Update existing draft (fire-and-forget)
+      supabase
+        .from('withdrawal_drafts')
+        .update(payload)
+        .eq('id', draftIdRef.current)
+        .then(({ error }) => {
+          if (error) {
+            logger.error('Error saving draft on unmount', { error });
+          }
+        });
+    } else {
+      // Insert new draft (fire-and-forget)
+      supabase
+        .from('withdrawal_drafts')
+        .insert([payload])
+        .select()
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            logger.error('Error creating draft on unmount', { error });
+          } else if (data) {
+            draftIdRef.current = data.id;
+          }
+        });
+    }
+  }, [user?.id]);
+
   // Load draft on mount
   useEffect(() => {
     loadDraft();
@@ -187,6 +227,7 @@ export function useWithdrawalDraft(): UseWithdrawalDraftReturn {
     isLoading,
     hasDraft: !!draft,
     saveDraft,
+    saveDraftImmediate,
     deleteDraft,
     loadDraft,
     isSaving,
