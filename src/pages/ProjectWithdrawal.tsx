@@ -96,8 +96,33 @@ export default function ProjectWithdrawal() {
   const showDraftDialogRef = useRef(showDraftDialog);
   const draftCheckedRef = useRef(draftChecked);
   
-  // Session storage key for tracking user decision
-  const SESSION_KEY = 'withdrawal_draft_confirmed';
+  // Track the initial draft ID to detect new drafts created in this session
+  const initialDraftIdRef = useRef<string | null | undefined>(undefined);
+  
+  // Session storage key for tracking user decision (stores JSON with draftId)
+  const SESSION_KEY = 'withdrawal_draft_decision';
+  
+  // Helper functions for decision management
+  type DraftDecision = { draftId: string; decision: 'continue' | 'discard'; decidedAt: string };
+  
+  const readDecision = useCallback((): DraftDecision | null => {
+    try {
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      if (!stored) return null;
+      return JSON.parse(stored) as DraftDecision;
+    } catch {
+      return null;
+    }
+  }, []);
+  
+  const writeDecision = useCallback((draftId: string, decision: 'continue' | 'discard') => {
+    const obj: DraftDecision = { draftId, decision, decidedAt: new Date().toISOString() };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(obj));
+  }, []);
+  
+  const clearDecision = useCallback(() => {
+    sessionStorage.removeItem(SESSION_KEY);
+  }, []);
   
   // Keep refs in sync
   useEffect(() => {
@@ -172,43 +197,72 @@ export default function ProjectWithdrawal() {
   // Debounced data for auto-save
   const debouncedData = useDebounce(data, 2000);
 
-  // Check for existing draft on mount
+  // Check for existing draft on mount - robust logic with decision per draftId
   useEffect(() => {
     // Wait for draft loading to complete
     if (isDraftLoading || draftChecked) return;
     
+    // Track initial draft ID (run only once when loading finishes)
+    if (initialDraftIdRef.current === undefined) {
+      initialDraftIdRef.current = draft?.id ?? null;
+    }
+    
     if (hasDraft && draft) {
-      const sessionDecision = sessionStorage.getItem(SESSION_KEY);
+      const decision = readDecision();
       
-      if (sessionDecision === 'continue') {
-        // User already confirmed continuation in this session - restore automatically
-        const draftData = draft.data;
-        setData({
-          projectNumber: draftData.projectNumber || '',
-          company: draftData.company || '',
-          projectName: draftData.projectName || '',
-          responsibleUserId: draftData.responsibleUserId || '',
-          withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
-          returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
-          separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
-          recordingType: draftData.recordingType || '',
-          selectedEquipment: draftData.selectedEquipment || []
-        });
-        setCurrentStep(draft.currentStep);
-        setDraftChecked(true);
-      } else if (sessionDecision === 'discard') {
-        // User already discarded in this session - don't show dialog
-        setDraftChecked(true);
+      // Check if decision matches current draft
+      if (decision && decision.draftId === draft.id) {
+        if (decision.decision === 'continue') {
+          // User already confirmed continuation for THIS draft - restore automatically
+          const draftData = draft.data;
+          setData({
+            projectNumber: draftData.projectNumber || '',
+            company: draftData.company || '',
+            projectName: draftData.projectName || '',
+            responsibleUserId: draftData.responsibleUserId || '',
+            withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
+            returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
+            separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
+            recordingType: draftData.recordingType || '',
+            selectedEquipment: draftData.selectedEquipment || []
+          });
+          setCurrentStep(draft.currentStep);
+          setDraftChecked(true);
+        } else if (decision.decision === 'discard') {
+          // User already discarded THIS draft - delete it now and start fresh
+          deleteDraft().then(() => {
+            clearDecision();
+            setDraftChecked(true);
+          });
+        }
       } else {
-        // First time - show dialog (don't set draftChecked yet)
+        // No decision or decision for different draft - clear old decision and show dialog
+        if (decision && decision.draftId !== draft.id) {
+          clearDecision();
+        }
+        // First time seeing this draft - show dialog (don't set draftChecked yet)
         setShowDraftDialog(true);
       }
     } else {
       // No draft exists - clear any old session decision and mark as checked
-      sessionStorage.removeItem(SESSION_KEY);
+      clearDecision();
       setDraftChecked(true);
     }
-  }, [isDraftLoading, draftChecked, hasDraft, draft]);
+  }, [isDraftLoading, draftChecked, hasDraft, draft, readDecision, clearDecision, deleteDraft]);
+  
+  // Auto-mark "continue" when a draft is created in this session (user never saw the dialog)
+  useEffect(() => {
+    // Only run after initial check is complete
+    if (!draftChecked || isDraftLoading) return;
+    
+    // If there was no draft initially but now there is one, it was created in this session
+    if (initialDraftIdRef.current === null && draft?.id) {
+      // Mark this draft for auto-continue so returning from Home restores it
+      writeDecision(draft.id, 'continue');
+      // Update the ref so we don't keep writing
+      initialDraftIdRef.current = draft.id;
+    }
+  }, [draftChecked, isDraftLoading, draft, writeDecision]);
   
   // Save draft immediately when leaving the page
   useEffect(() => {
@@ -264,7 +318,9 @@ export default function ProjectWithdrawal() {
 
   // Handle draft recovery
   const handleContinueDraft = () => {
-    sessionStorage.setItem(SESSION_KEY, 'continue');
+    if (draft?.id) {
+      writeDecision(draft.id, 'continue');
+    }
     if (draft?.data) {
       const draftData = draft.data;
       setData({
@@ -285,8 +341,11 @@ export default function ProjectWithdrawal() {
   };
 
   const handleDiscardDraft = async () => {
-    sessionStorage.setItem(SESSION_KEY, 'discard');
+    if (draft?.id) {
+      writeDecision(draft.id, 'discard');
+    }
     await deleteDraft();
+    clearDecision(); // Clear immediately since draft is gone
     setShowDraftDialog(false);
     setDraftChecked(true);
   };
@@ -473,7 +532,7 @@ export default function ProjectWithdrawal() {
       }
 
       // Delete draft and clear session after successful creation
-      sessionStorage.removeItem(SESSION_KEY);
+      clearDecision();
       await deleteDraft();
 
       enhancedToast.success({
