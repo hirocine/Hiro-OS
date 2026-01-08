@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
-import { Badge } from '@/components/ui/badge';
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList, FileEdit } from 'lucide-react';
 import { useProjects } from '@/features/projects';
@@ -239,16 +239,14 @@ export default function Projects() {
         title="Retiradas" 
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {hasDraft && !draftLoading && (
-              <Badge 
-                variant="secondary" 
-                className="gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-              >
-                <FileEdit className="h-3 w-3" />
-                <span className="hidden sm:inline">1 Rascunho</span>
-                <span className="sm:hidden">1</span>
-              </Badge>
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <span className="text-muted-foreground/60">•</span>
+                <FileEdit className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">1 rascunho salvo</span>
+                <span className="sm:hidden">1 rascunho</span>
+              </span>
             )}
             <ResponsiveButton 
               onClick={() => navigate('/retiradas/nova')}
