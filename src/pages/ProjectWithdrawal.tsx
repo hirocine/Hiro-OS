@@ -174,33 +174,39 @@ export default function ProjectWithdrawal() {
 
   // Check for existing draft on mount
   useEffect(() => {
-    if (!isDraftLoading && !draftChecked) {
-      setDraftChecked(true);
-      if (hasDraft && draft) {
-        const sessionDecision = sessionStorage.getItem(SESSION_KEY);
-        
-        if (sessionDecision === 'continue') {
-          // User already confirmed continuation in this session - restore automatically
-          const draftData = draft.data;
-          setData({
-            projectNumber: draftData.projectNumber || '',
-            company: draftData.company || '',
-            projectName: draftData.projectName || '',
-            responsibleUserId: draftData.responsibleUserId || '',
-            withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
-            returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
-            separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
-            recordingType: draftData.recordingType || '',
-            selectedEquipment: draftData.selectedEquipment || []
-          });
-          setCurrentStep(draft.currentStep);
-        } else if (sessionDecision === 'discard') {
-          // User already discarded in this session - don't show dialog
-        } else {
-          // First time - show dialog
-          setShowDraftDialog(true);
-        }
+    // Wait for draft loading to complete
+    if (isDraftLoading || draftChecked) return;
+    
+    if (hasDraft && draft) {
+      const sessionDecision = sessionStorage.getItem(SESSION_KEY);
+      
+      if (sessionDecision === 'continue') {
+        // User already confirmed continuation in this session - restore automatically
+        const draftData = draft.data;
+        setData({
+          projectNumber: draftData.projectNumber || '',
+          company: draftData.company || '',
+          projectName: draftData.projectName || '',
+          responsibleUserId: draftData.responsibleUserId || '',
+          withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
+          returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
+          separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
+          recordingType: draftData.recordingType || '',
+          selectedEquipment: draftData.selectedEquipment || []
+        });
+        setCurrentStep(draft.currentStep);
+        setDraftChecked(true);
+      } else if (sessionDecision === 'discard') {
+        // User already discarded in this session - don't show dialog
+        setDraftChecked(true);
+      } else {
+        // First time - show dialog (don't set draftChecked yet)
+        setShowDraftDialog(true);
       }
+    } else {
+      // No draft exists - clear any old session decision and mark as checked
+      sessionStorage.removeItem(SESSION_KEY);
+      setDraftChecked(true);
     }
   }, [isDraftLoading, draftChecked, hasDraft, draft]);
   
@@ -275,12 +281,14 @@ export default function ProjectWithdrawal() {
       setCurrentStep(draft.currentStep);
     }
     setShowDraftDialog(false);
+    setDraftChecked(true);
   };
 
   const handleDiscardDraft = async () => {
     sessionStorage.setItem(SESSION_KEY, 'discard');
     await deleteDraft();
     setShowDraftDialog(false);
+    setDraftChecked(true);
   };
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
