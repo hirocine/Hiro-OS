@@ -41,7 +41,7 @@ export function LeaveWithdrawalDialog({
           </Button>
           
           <Button 
-            variant="outline" 
+            variant="destructive" 
             onClick={onLeaveWithoutSaving}
             className="w-full flex items-center justify-center gap-2"
             disabled={isSaving}
