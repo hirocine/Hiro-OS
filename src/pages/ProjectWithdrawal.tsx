@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarData } from "@/lib/avatarUtils";
-import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Download, Video, ArrowLeft, X, Building2, User, Clock, FileText, Loader2, Edit, AlertCircle, Calendar as CalendarIconLucide, Layers } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, Check, Camera, Package, Download, Video, ArrowLeft, X, Building2, User, Clock, FileText, Loader2, Edit, AlertCircle, Calendar as CalendarIconLucide, Layers, Cloud, CloudOff } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { differenceInDays } from 'date-fns';
@@ -29,6 +29,9 @@ import { generateProjectPDF } from '@/lib/pdfGenerator';
 import { useGroupedCategories } from '@/hooks/useGroupedCategories';
 import { useCategories } from '@/hooks/useCategories';
 import { SubcategoryAccordion } from '@/components/Projects/SubcategoryAccordion';
+import { useWithdrawalDraft, WithdrawalDraftData } from '@/hooks/useWithdrawalDraft';
+import { DraftRecoveryDialog } from '@/components/Projects/DraftRecoveryDialog';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface WithdrawalData {
   projectNumber: string;
@@ -66,6 +69,8 @@ export default function ProjectWithdrawal() {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [draftChecked, setDraftChecked] = useState(false);
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
     company: '',
@@ -81,6 +86,9 @@ export default function ProjectWithdrawal() {
   const [separationDateOpen, setSeparationDateOpen] = useState(false);
   const [withdrawalDateOpen, setWithdrawalDateOpen] = useState(false);
   const [returnDateOpen, setReturnDateOpen] = useState(false);
+
+  // Draft system
+  const { draft, isLoading: isDraftLoading, hasDraft, saveDraft, deleteDraft, isSaving, lastSavedAt } = useWithdrawalDraft();
 
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
@@ -122,6 +130,82 @@ export default function ProjectWithdrawal() {
 
   // Calculate total steps: 5 initial fixed steps + category steps + 1 summary
   const TOTAL_STEPS = 2 + CATEGORY_STEPS.length + 1;
+
+  // Convert form data to draft format
+  const convertToDraftData = useCallback((): WithdrawalDraftData => ({
+    projectNumber: data.projectNumber,
+    company: data.company,
+    projectName: data.projectName,
+    responsibleUserId: data.responsibleUserId,
+    withdrawalDate: data.withdrawalDate?.toISOString() || null,
+    returnDate: data.returnDate?.toISOString() || null,
+    separationDate: data.separationDate?.toISOString() || null,
+    recordingType: data.recordingType,
+    selectedEquipment: data.selectedEquipment
+  }), [data]);
+
+  // Debounced data for auto-save
+  const debouncedData = useDebounce(data, 2000);
+
+  // Check for existing draft on mount
+  useEffect(() => {
+    if (!isDraftLoading && !draftChecked) {
+      setDraftChecked(true);
+      if (hasDraft && draft) {
+        setShowDraftDialog(true);
+      }
+    }
+  }, [isDraftLoading, draftChecked, hasDraft, draft]);
+
+  // Auto-save draft when data changes (debounced)
+  useEffect(() => {
+    // Don't save if still loading draft or if dialog is open
+    if (isDraftLoading || showDraftDialog || !draftChecked) return;
+    
+    // Only save if there's meaningful data
+    const hasData = debouncedData.projectNumber || debouncedData.company || 
+                    debouncedData.projectName || debouncedData.selectedEquipment.length > 0;
+    
+    if (hasData) {
+      const draftData: WithdrawalDraftData = {
+        projectNumber: debouncedData.projectNumber,
+        company: debouncedData.company,
+        projectName: debouncedData.projectName,
+        responsibleUserId: debouncedData.responsibleUserId,
+        withdrawalDate: debouncedData.withdrawalDate?.toISOString() || null,
+        returnDate: debouncedData.returnDate?.toISOString() || null,
+        separationDate: debouncedData.separationDate?.toISOString() || null,
+        recordingType: debouncedData.recordingType,
+        selectedEquipment: debouncedData.selectedEquipment
+      };
+      saveDraft(currentStep, draftData);
+    }
+  }, [debouncedData, currentStep, isDraftLoading, showDraftDialog, draftChecked, saveDraft]);
+
+  // Handle draft recovery
+  const handleContinueDraft = () => {
+    if (draft?.data) {
+      const draftData = draft.data;
+      setData({
+        projectNumber: draftData.projectNumber || '',
+        company: draftData.company || '',
+        projectName: draftData.projectName || '',
+        responsibleUserId: draftData.responsibleUserId || '',
+        withdrawalDate: draftData.withdrawalDate ? new Date(draftData.withdrawalDate) : undefined,
+        returnDate: draftData.returnDate ? new Date(draftData.returnDate) : undefined,
+        separationDate: draftData.separationDate ? new Date(draftData.separationDate) : undefined,
+        recordingType: draftData.recordingType || '',
+        selectedEquipment: draftData.selectedEquipment || []
+      });
+      setCurrentStep(draft.currentStep);
+    }
+    setShowDraftDialog(false);
+  };
+
+  const handleDiscardDraft = async () => {
+    await deleteDraft();
+    setShowDraftDialog(false);
+  };
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
     setData(prev => ({ ...prev, [field]: value }));
@@ -303,6 +387,9 @@ export default function ProjectWithdrawal() {
           action: 'session_refresh'
         });
       }
+
+      // Delete draft after successful creation
+      await deleteDraft();
 
       enhancedToast.success({
         title: "Sucesso!",
@@ -922,18 +1009,33 @@ export default function ProjectWithdrawal() {
   };
 
   // Loading state
-  if (equipmentLoading) {
+  if (equipmentLoading || isDraftLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Carregando equipamentos...</p>
+          <p className="text-sm text-muted-foreground">
+            {isDraftLoading ? 'Verificando rascunhos...' : 'Carregando equipamentos...'}
+          </p>
         </div>
       </div>
     );
   }
 
   return (
+    <>
+      {/* Draft Recovery Dialog */}
+      {draft && (
+        <DraftRecoveryDialog
+          open={showDraftDialog}
+          onOpenChange={setShowDraftDialog}
+          draftData={draft.data}
+          draftUpdatedAt={draft.updatedAt}
+          currentStep={draft.currentStep}
+          onContinue={handleContinueDraft}
+          onDiscard={handleDiscardDraft}
+        />
+      )}
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <div className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 shadow-sm">
@@ -974,6 +1076,24 @@ export default function ProjectWithdrawal() {
               <span className="text-muted-foreground flex items-center gap-2">
                 <span className="hidden sm:inline">Progresso:</span>
                 <span className="font-semibold text-foreground">Etapa {currentStep}/{TOTAL_STEPS}</span>
+                {/* Draft save indicator */}
+                {lastSavedAt && (
+                  <span className="flex items-center gap-1 text-success ml-2">
+                    {isSaving ? (
+                      <>
+                        <Cloud className="h-3.5 w-3.5 animate-pulse" />
+                        <span className="hidden sm:inline text-xs">Salvando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Cloud className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline text-xs">
+                          Salvo às {format(lastSavedAt, 'HH:mm')}
+                        </span>
+                      </>
+                    )}
+                  </span>
+                )}
               </span>
               <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
             </div>
@@ -1081,5 +1201,6 @@ export default function ProjectWithdrawal() {
         </div>
       </div>
     </div>
+    </>
   );
 }
