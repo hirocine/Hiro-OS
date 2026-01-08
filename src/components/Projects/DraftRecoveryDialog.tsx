@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FileText, Clock, Trash2 } from 'lucide-react';
+import { FileText, Clock, Trash2, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { WithdrawalDraftData } from '@/hooks/useWithdrawalDraft';
@@ -75,15 +75,16 @@ export function DraftRecoveryDialog({
           <Button
             variant="outline"
             onClick={onDiscard}
-            className="w-full sm:w-auto flex items-center justify-center gap-2"
+            className="w-full sm:flex-1 flex items-center justify-center gap-2"
           >
             <Trash2 className="h-4 w-4" />
             Descartar e Começar Novo
           </Button>
           <Button
             onClick={onContinue}
-            className="w-full sm:w-auto bg-foreground hover:bg-foreground/90 text-background"
+            className="w-full sm:flex-1 flex items-center justify-center gap-2"
           >
+            <ArrowRight className="h-4 w-4" />
             Continuar Rascunho
           </Button>
         </DialogFooter>
