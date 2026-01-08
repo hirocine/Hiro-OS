@@ -41,9 +41,9 @@ export function LeaveWithdrawalDialog({
           </Button>
           
           <Button 
-            variant="destructive" 
+            variant="outline" 
             onClick={onLeaveWithoutSaving}
-            className="w-full flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20 hover:border-destructive/50"
             disabled={isSaving}
           >
             <LogOut className="h-4 w-4" />
