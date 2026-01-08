@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
+import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
+import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList, FileEdit } from 'lucide-react';
 import { useProjects } from '@/features/projects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
+import { useWithdrawalDraft } from '@/hooks/useWithdrawalDraft';
 import { useToast } from '@/hooks/use-toast';
 import { Project, ProjectStep } from '@/types/project';
 import { getStepLabel } from '@/lib/projectLabels';
@@ -39,6 +41,9 @@ export default function Projects() {
   
   // Sincronização automática entre equipamentos e projetos
   useEquipmentProjectSync();
+  
+  // Verificar se há rascunho salvo
+  const { hasDraft, isLoading: draftLoading } = useWithdrawalDraft();
   
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStepDialog, setShowStepDialog] = useState(false);
@@ -234,13 +239,25 @@ export default function Projects() {
         title="Retiradas" 
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"
         actions={
-          <ResponsiveButton 
-            onClick={() => navigate('/retiradas/nova')}
-            icon={Plus}
-            className="shadow-elegant"
-            mobileText="Nova"
-            desktopText="Nova Retirada"
-          />
+          <div className="flex items-center gap-2">
+            {hasDraft && !draftLoading && (
+              <Badge 
+                variant="secondary" 
+                className="gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+              >
+                <FileEdit className="h-3 w-3" />
+                <span className="hidden sm:inline">1 Rascunho</span>
+                <span className="sm:hidden">1</span>
+              </Badge>
+            )}
+            <ResponsiveButton 
+              onClick={() => navigate('/retiradas/nova')}
+              icon={Plus}
+              className="shadow-elegant"
+              mobileText="Nova"
+              desktopText="Nova Retirada"
+            />
+          </div>
         }
       />
 
