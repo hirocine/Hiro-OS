@@ -71,18 +71,18 @@ export function DraftRecoveryDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+        <DialogFooter className="gap-2 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-x-0">
           <Button
             variant="outline"
             onClick={onDiscard}
-            className="w-full sm:flex-1 flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2"
           >
             <Trash2 className="h-4 w-4" />
-            Descartar e Começar Novo
+            Descartar
           </Button>
           <Button
             onClick={onContinue}
-            className="w-full sm:flex-1 flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2"
           >
             <ArrowRight className="h-4 w-4" />
             Continuar Rascunho
