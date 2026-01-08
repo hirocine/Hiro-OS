@@ -1,8 +1,9 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarTools } from './SidebarTools';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import { cn } from '@/lib/utils';
@@ -41,7 +42,9 @@ export function MobileSidebar() {
   const { isAdmin } = useAuthContext();
   const { openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const isPWA = useIsPWA();
+  const { requestNavigation } = useNavigationBlocker();
 
   useEffect(() => {
     if (openMobile) {
@@ -51,6 +54,17 @@ export function MobileSidebar() {
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    // If we're already on this path, allow normal navigation
+    if (location.pathname === href) return;
+    
+    // Check if navigation should be blocked
+    const shouldProceed = requestNavigation(href);
+    if (!shouldProceed) {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -104,6 +118,7 @@ export function MobileSidebar() {
                     <NavLink
                       key={item.name}
                       to={item.href}
+                      onClick={(e) => handleNavClick(e, item.href)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 relative group",
                         active 
@@ -143,6 +158,7 @@ export function MobileSidebar() {
                       <NavLink
                         key={item.name}
                         to={item.href}
+                        onClick={(e) => handleNavClick(e, item.href)}
                         className={cn(
                           "flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 relative group",
                           active 

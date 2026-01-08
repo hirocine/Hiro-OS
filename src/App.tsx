@@ -7,7 +7,7 @@ import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
 import { AuthProvider } from "./contexts/AuthContext";
-
+import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
 // Create a stable query client with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,47 +49,49 @@ const App = () => (
       <TooltipProvider delayDuration={300} skipDelayDuration={100}>
         <Sonner position="top-center" />
         <BrowserRouter>
-          <Routes>
-            <Route path="/entrar" element={
-              <Suspense fallback={<LoadingScreenSkeleton />}>
-                <Auth />
-              </Suspense>
-            } />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-                <Route index element={<Suspense fallback={<LoadingScreenSkeleton />}><Home /></Suspense>} />
-                <Route path="dashboard" element={<Suspense fallback={<LoadingScreenSkeleton />}><Dashboard /></Suspense>} />
-                <Route path="inventario" element={<Suspense fallback={<LoadingScreenSkeleton />}><Equipment /></Suspense>} />
-                <Route path="inventario/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
-                <Route path="inventario/editar/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
-                <Route path="ssds" element={<Suspense fallback={<LoadingScreenSkeleton />}><SSDs /></Suspense>} />
-                <Route path="retiradas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Projects /></Suspense>} />
-                <Route path="retiradas/nova" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
-                <Route path="retiradas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectDetails /></Suspense>} />
-                <Route path="retiradas/:id/separacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectSeparation /></Suspense>} />
-                <Route path="retiradas/:id/verificacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectVerification /></Suspense>} />
-                <Route path="retiradas/:id/retirada" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
-                <Route path="plataformas" element={<Suspense fallback={<LoadingScreenSkeleton />}><PlatformAccesses /></Suspense>} />
-                <Route path="politicas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Policies /></Suspense>} />
-                <Route path="politicas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><PolicyView /></Suspense>} />
-                <Route path="tarefas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
-                <Route path="tarefas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><TaskDetails /></Suspense>} />
-                <Route path="fornecedores" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
-                <Route path="fornecedores/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />
-                <Route path="projetos-av" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjects /></Suspense>} />
-                <Route path="projetos-av/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjectDetails /></Suspense>} />
-                <Route path="perfil" element={<Suspense fallback={<LoadingScreenSkeleton />}><Profile /></Suspense>} />
-                <Route path="administracao" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
-              </Route>
-              <Route path="*" element={
+          <NavigationBlockerProvider>
+            <Routes>
+              <Route path="/entrar" element={
                 <Suspense fallback={<LoadingScreenSkeleton />}>
-                  <NotFound />
+                  <Auth />
                 </Suspense>
               } />
-            </Routes>
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }>
+                  <Route index element={<Suspense fallback={<LoadingScreenSkeleton />}><Home /></Suspense>} />
+                  <Route path="dashboard" element={<Suspense fallback={<LoadingScreenSkeleton />}><Dashboard /></Suspense>} />
+                  <Route path="inventario" element={<Suspense fallback={<LoadingScreenSkeleton />}><Equipment /></Suspense>} />
+                  <Route path="inventario/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
+                  <Route path="inventario/editar/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AddEquipment /></Suspense>} />
+                  <Route path="ssds" element={<Suspense fallback={<LoadingScreenSkeleton />}><SSDs /></Suspense>} />
+                  <Route path="retiradas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Projects /></Suspense>} />
+                  <Route path="retiradas/nova" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
+                  <Route path="retiradas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectDetails /></Suspense>} />
+                  <Route path="retiradas/:id/separacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectSeparation /></Suspense>} />
+                  <Route path="retiradas/:id/verificacao" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectVerification /></Suspense>} />
+                  <Route path="retiradas/:id/retirada" element={<Suspense fallback={<LoadingScreenSkeleton />}><ProjectWithdrawal /></Suspense>} />
+                  <Route path="plataformas" element={<Suspense fallback={<LoadingScreenSkeleton />}><PlatformAccesses /></Suspense>} />
+                  <Route path="politicas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Policies /></Suspense>} />
+                  <Route path="politicas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><PolicyView /></Suspense>} />
+                  <Route path="tarefas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
+                  <Route path="tarefas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><TaskDetails /></Suspense>} />
+                  <Route path="fornecedores" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
+                  <Route path="fornecedores/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />
+                  <Route path="projetos-av" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjects /></Suspense>} />
+                  <Route path="projetos-av/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjectDetails /></Suspense>} />
+                  <Route path="perfil" element={<Suspense fallback={<LoadingScreenSkeleton />}><Profile /></Suspense>} />
+                  <Route path="administracao" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                </Route>
+                <Route path="*" element={
+                  <Suspense fallback={<LoadingScreenSkeleton />}>
+                    <NotFound />
+                  </Suspense>
+                } />
+              </Routes>
+          </NavigationBlockerProvider>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
