@@ -61,29 +61,28 @@ export function DraftRecoveryDialog({
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t border-border/50">
-              <Clock className="h-4 w-4" />
-              <span>Salvo em {formattedDate}</span>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              <span>Passo {currentStep} • {draftData.selectedEquipment.length} equipamento(s) selecionado(s)</span>
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground pt-2 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>Salvo em {formattedDate}</span>
+              </div>
+              <span className="ml-6">Passo {currentStep} • {draftData.selectedEquipment.length} equipamento(s)</span>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-3">
           <Button
             variant="outline"
             onClick={onDiscard}
-            className="flex items-center gap-2"
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
           >
             <Trash2 className="h-4 w-4" />
             Descartar e Começar Novo
           </Button>
           <Button
             onClick={onContinue}
-            className="bg-foreground hover:bg-foreground/90 text-background"
+            className="w-full sm:w-auto bg-foreground hover:bg-foreground/90 text-background"
           >
             Continuar Rascunho
           </Button>
