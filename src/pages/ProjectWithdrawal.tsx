@@ -71,7 +71,8 @@ export default function ProjectWithdrawal() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
-  const [draftChecked, setDraftChecked] = useState(false);
+  // 'loading' = waiting for draft query, 'asking' = showing dialog, 'ready' = user decided or no draft
+  const [draftState, setDraftState] = useState<'loading' | 'asking' | 'ready'>('loading');
   const [data, setData] = useState<WithdrawalData>({
     projectNumber: '',
     company: '',
@@ -95,7 +96,7 @@ export default function ProjectWithdrawal() {
   const dataRef = useRef(data);
   const currentStepRef = useRef(currentStep);
   const showDraftDialogRef = useRef(showDraftDialog);
-  const draftCheckedRef = useRef(draftChecked);
+  const draftStateRef = useRef(draftState);
   
   
   // Keep refs in sync
@@ -112,8 +113,8 @@ export default function ProjectWithdrawal() {
   }, [showDraftDialog]);
   
   useEffect(() => {
-    draftCheckedRef.current = draftChecked;
-  }, [draftChecked]);
+    draftStateRef.current = draftState;
+  }, [draftState]);
   
   // Leave dialog state
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -130,13 +131,13 @@ export default function ProjectWithdrawal() {
   
   // Function to safely navigate with confirmation
   const safeNavigate = useCallback((path: string) => {
-    if (hasData && !isSubmitting && draftChecked) {
+    if (hasData && !isSubmitting && draftState === 'ready') {
       pendingNavigationRef.current = path;
       setShowLeaveDialog(true);
     } else {
       navigate(path);
     }
-  }, [hasData, isSubmitting, draftChecked, navigate]);
+  }, [hasData, isSubmitting, draftState, navigate]);
   
   // Handle save and leave
   const handleSaveAndLeave = async () => {
@@ -255,21 +256,24 @@ export default function ProjectWithdrawal() {
 
   // Check for existing draft on mount - always show dialog when draft exists
   useEffect(() => {
-    if (isDraftLoading || draftChecked) return;
+    // Only run once when draft loading completes
+    if (isDraftLoading || draftState !== 'loading') return;
     
     if (hasDraft && draft) {
       // Always show dialog when there's a draft
       setShowDraftDialog(true);
+      setDraftState('asking');
     } else {
-      setDraftChecked(true);
+      // No draft, ready to start fresh
+      setDraftState('ready');
     }
-  }, [isDraftLoading, draftChecked, hasDraft, draft]);
+  }, [isDraftLoading, hasDraft, draft, draftState]);
   
   // Save draft immediately when leaving the page
   useEffect(() => {
     return () => {
-      // Only save if not showing dialog and has meaningful data
-      if (showDraftDialogRef.current || !draftCheckedRef.current) return;
+      // Only save if user already made a decision (ready state) and has meaningful data
+      if (draftStateRef.current !== 'ready') return;
       
       const currentData = dataRef.current;
       const hasData = currentData.projectNumber || currentData.company || 
@@ -294,8 +298,8 @@ export default function ProjectWithdrawal() {
 
   // Auto-save draft when data changes (debounced)
   useEffect(() => {
-    // Don't save if still loading draft or if dialog is open
-    if (isDraftLoading || showDraftDialog || !draftChecked) return;
+    // Only save when user is in 'ready' state (already decided about draft)
+    if (draftState !== 'ready') return;
     
     // Only save if there's meaningful data
     const hasData = debouncedData.projectNumber || debouncedData.company || 
@@ -315,7 +319,7 @@ export default function ProjectWithdrawal() {
       };
       saveDraft(currentStep, draftData);
     }
-  }, [debouncedData, currentStep, isDraftLoading, showDraftDialog, draftChecked, saveDraft]);
+  }, [debouncedData, currentStep, draftState, saveDraft]);
 
   // Handle draft recovery
   const handleContinueDraft = () => {
@@ -335,13 +339,13 @@ export default function ProjectWithdrawal() {
       setCurrentStep(draft.currentStep);
     }
     setShowDraftDialog(false);
-    setDraftChecked(true);
+    setDraftState('ready');
   };
 
   const handleDiscardDraft = async () => {
     await deleteDraft();
     setShowDraftDialog(false);
-    setDraftChecked(true);
+    setDraftState('ready');
   };
 
   const updateField = <K extends keyof WithdrawalData>(field: K, value: WithdrawalData[K]) => {
