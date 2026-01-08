@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useBlocker } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { SubcategoryAccordion } from '@/components/Projects/SubcategoryAccordion';
 import { useWithdrawalDraft, WithdrawalDraftData } from '@/hooks/useWithdrawalDraft';
 import { DraftRecoveryDialog } from '@/components/Projects/DraftRecoveryDialog';
+import { LeaveWithdrawalDialog } from '@/components/Projects/LeaveWithdrawalDialog';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface WithdrawalData {
@@ -140,6 +141,92 @@ export default function ProjectWithdrawal() {
   useEffect(() => {
     draftCheckedRef.current = draftChecked;
   }, [draftChecked]);
+  
+  // Leave dialog state
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [isSavingBeforeLeave, setIsSavingBeforeLeave] = useState(false);
+  const blockerRef = useRef<{ proceed: () => void; reset: () => void } | null>(null);
+  
+  // Check if there's meaningful data to save
+  const hasData = useMemo(() => {
+    return data.projectNumber.trim() !== '' || 
+           data.company.trim() !== '' || 
+           data.projectName.trim() !== '' || 
+           data.selectedEquipment.length > 0;
+  }, [data.projectNumber, data.company, data.projectName, data.selectedEquipment]);
+  
+  // Block navigation when there's unsaved data
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => 
+      hasData && 
+      !isSubmitting && 
+      draftChecked &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
+  
+  // Handle blocker state changes
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      blockerRef.current = { proceed: blocker.proceed, reset: blocker.reset };
+      setShowLeaveDialog(true);
+    }
+  }, [blocker.state]);
+  
+  // Handle save and leave
+  const handleSaveAndLeave = async () => {
+    setIsSavingBeforeLeave(true);
+    try {
+      const draftData: WithdrawalDraftData = {
+        projectNumber: data.projectNumber,
+        company: data.company,
+        projectName: data.projectName,
+        responsibleUserId: data.responsibleUserId,
+        withdrawalDate: data.withdrawalDate?.toISOString() || null,
+        returnDate: data.returnDate?.toISOString() || null,
+        separationDate: data.separationDate?.toISOString() || null,
+        recordingType: data.recordingType,
+        selectedEquipment: data.selectedEquipment
+      };
+      await saveDraft(currentStep, draftData);
+      setShowLeaveDialog(false);
+      blockerRef.current?.proceed();
+    } catch (error) {
+      logger.error('Error saving draft before leave', { error });
+      enhancedToast.error({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar o rascunho."
+      });
+    } finally {
+      setIsSavingBeforeLeave(false);
+    }
+  };
+  
+  // Handle leave without saving
+  const handleLeaveWithoutSaving = () => {
+    setShowLeaveDialog(false);
+    blockerRef.current?.proceed();
+  };
+  
+  // Handle cancel leave
+  const handleCancelLeave = () => {
+    setShowLeaveDialog(false);
+    blockerRef.current?.reset();
+    blockerRef.current = null;
+  };
+  
+  // Browser beforeunload warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasData && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasData, isSubmitting]);
+  
   const { users, loading: usersLoading } = useUsers();
   const { equipmentHierarchy, loading: equipmentLoading, allEquipment } = useEquipment();
   const { categories: categoriesFromDB } = useCategories();
@@ -1180,6 +1267,15 @@ export default function ProjectWithdrawal() {
           onDiscard={handleDiscardDraft}
         />
       )}
+      
+      {/* Leave Confirmation Dialog */}
+      <LeaveWithdrawalDialog
+        open={showLeaveDialog}
+        onSaveAndLeave={handleSaveAndLeave}
+        onLeaveWithoutSaving={handleLeaveWithoutSaving}
+        onCancel={handleCancelLeave}
+        isSaving={isSavingBeforeLeave}
+      />
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <div className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 shadow-sm">
