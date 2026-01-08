@@ -33,30 +33,30 @@ export function LeaveWithdrawalDialog({
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button 
             onClick={onSaveAndLeave} 
-            className="w-full"
+            className="w-full flex items-center justify-center gap-2"
             disabled={isSaving}
           >
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4" />
             {isSaving ? 'Salvando...' : 'Salvar e Sair'}
           </Button>
           
           <Button 
             variant="outline" 
             onClick={onLeaveWithoutSaving}
-            className="w-full"
+            className="w-full flex items-center justify-center gap-2"
             disabled={isSaving}
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-4 w-4" />
             Sair sem Salvar
           </Button>
           
           <Button 
             variant="ghost" 
             onClick={onCancel}
-            className="w-full"
+            className="w-full flex items-center justify-center gap-2"
             disabled={isSaving}
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-4 w-4" />
             Cancelar
           </Button>
         </DialogFooter>
