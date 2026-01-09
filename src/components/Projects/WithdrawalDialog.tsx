@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUsers } from '@/hooks/useUsers';
-import { Calendar, Clock, User } from 'lucide-react';
+import { getAvatarData } from '@/lib/avatarUtils';
+import { Clock, User } from 'lucide-react';
 
 interface WithdrawalDialogProps {
   open: boolean;
@@ -89,18 +91,38 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
                 <SelectValue placeholder="Selecione o usuário responsável" />
               </SelectTrigger>
               <SelectContent>
-                {users.filter(user => user.is_active).map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    <div className="flex flex-col items-start text-left">
-                      <span>{user.display_name || user.email}</span>
-                      {user.position && user.department && (
-                        <span className="text-xs text-muted-foreground text-left">
-                          {user.position} • {user.department}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
+                {users.filter(user => user.is_active).map((user) => {
+                  const avatarData = getAvatarData(
+                    { 
+                      app_metadata: { provider: user.user_metadata?.provider || 'email' },
+                      user_metadata: user.user_metadata || {},
+                      email: user.email
+                    } as any,
+                    user.avatar_url,
+                    user.display_name
+                  );
+                  
+                  return (
+                    <SelectItem key={user.id} value={user.id}>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-7 w-7">
+                          <AvatarImage src={avatarData.url || undefined} alt={user.display_name || user.email} />
+                          <AvatarFallback className="text-xs">{avatarData.initials}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{user.display_name || user.email}</span>
+                          {(user.position || user.department) && (
+                            <span className="text-xs text-muted-foreground">
+                              {user.position && user.department 
+                                ? `${user.position} • ${user.department}`
+                                : user.position || user.department}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -122,22 +144,21 @@ export function WithdrawalDialog({ open, onOpenChange, onConfirm, loading }: Wit
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="terms"
-                checked={formData.termsAccepted}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, termsAccepted: checked === true }))
-                }
-              />
-              <Label 
-                htmlFor="terms" 
-                className="text-sm leading-relaxed cursor-pointer"
-              >
-                Declaro que conferi todos os equipamentos e acessórios
-              </Label>
-            </div>
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="terms"
+              checked={formData.termsAccepted}
+              onCheckedChange={(checked) => 
+                setFormData(prev => ({ ...prev, termsAccepted: checked === true }))
+              }
+              className="mt-0.5"
+            />
+            <Label 
+              htmlFor="terms" 
+              className="text-sm leading-normal cursor-pointer font-normal"
+            >
+              Declaro que conferi todos os equipamentos e acessórios
+            </Label>
           </div>
         </div>
 
