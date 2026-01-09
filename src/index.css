@@ -333,6 +333,47 @@ html, body {
   display: none;
 }
 
+/* Sidebar scroll fade indicators */
+.scroll-fade-container {
+  position: relative;
+}
+
+.scroll-fade-top,
+.scroll-fade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.scroll-fade-top {
+  top: 0;
+  background: linear-gradient(to bottom, hsl(var(--card)), transparent);
+}
+
+.scroll-fade-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, hsl(var(--card)), transparent);
+}
+
+.scroll-fade-top.visible,
+.scroll-fade-bottom.visible {
+  opacity: 1;
+}
+
+/* Mobile sidebar uses background color */
+.scroll-fade-mobile .scroll-fade-top {
+  background: linear-gradient(to bottom, hsl(var(--background)), transparent);
+}
+
+.scroll-fade-mobile .scroll-fade-bottom {
+  background: linear-gradient(to top, hsl(var(--background)), transparent);
+}
+
 /* 3D Card Flip Animation */
 .perspective-1000 {
   perspective: 1000px;

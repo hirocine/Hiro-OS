@@ -1,5 +1,6 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -43,6 +44,26 @@ export function DesktopSidebar() {
   const navigate = useNavigate();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
+  
+  const [scrollState, setScrollState] = useState({ canScrollUp: false, canScrollDown: false });
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const checkScrollState = useCallback(() => {
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      setScrollState({
+        canScrollUp: scrollTop > 5,
+        canScrollDown: scrollTop + clientHeight < scrollHeight - 5
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScrollState();
+    window.addEventListener('resize', checkScrollState);
+    return () => window.removeEventListener('resize', checkScrollState);
+  }, [checkScrollState]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
@@ -83,8 +104,14 @@ export function DesktopSidebar() {
       </div>
 
       {/* Navegação com ScrollArea */}
-      <ScrollArea className="flex-1">
-        <div className="py-4">
+      <div className="flex-1 relative scroll-fade-container">
+        <div className={cn("scroll-fade-top", scrollState.canScrollUp && "visible")} />
+        <ScrollArea 
+          ref={scrollAreaRef} 
+          className="h-full hide-scrollbar"
+          onScrollCapture={checkScrollState}
+        >
+          <div className="py-4">
           {/* Navegação Principal */}
           <div className="px-2 mb-4">
             <nav className="space-y-1">
@@ -165,8 +192,10 @@ export function DesktopSidebar() {
             </div>
             </>
           )}
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+        <div className={cn("scroll-fade-bottom", scrollState.canScrollDown && "visible")} />
+      </div>
 
       {/* Ferramentas - Fixas no fundo */}
       <div className="border-t border-border/50 px-2 py-2">
