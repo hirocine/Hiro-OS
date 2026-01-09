@@ -33,6 +33,12 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
     action: 'initialize_checklist'
   });
 
+  // Memoize equipment IDs to prevent unnecessary resets
+  const equipmentIds = useMemo(
+    () => equipment.map(item => item.id).join(','),
+    [equipment]
+  );
+
   // Reset checklist when equipment changes
   useEffect(() => {
     logger.debug('Equipment changed, resetting checklist', {
@@ -46,7 +52,7 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       initialState[item.id] = false;
     });
     setCheckedItems(initialState);
-  }, [equipment.length, equipment.map(item => item.id).join(',')]);
+  }, [equipmentIds]);
 
   // Group equipment by category with hierarchy
   const categorizedEquipment = useMemo(() => {
