@@ -200,6 +200,14 @@ export default function ProjectSeparation() {
           categorizedEquipment.map((category) => {
             const CategoryIcon = categoryIcons[category.category] || Settings;
             const mainItems = category.items.filter(item => item.itemType === 'main');
+            // Standalone accessories: accessories without a parent in our list
+            const standaloneAccessories = category.items.filter(item => {
+              if (item.itemType !== 'accessory') return false;
+              if (!item.parentId) return true; // No parent defined
+              // Check if parent exists in our equipment list
+              const parentExists = equipmentData.some(eq => eq.id === item.parentId);
+              return !parentExists;
+            });
             
             return (
               <Card key={category.category}>
@@ -279,6 +287,42 @@ export default function ProjectSeparation() {
                         </div>
                       );
                     })}
+
+                    {/* Standalone Accessories (orphaned or without parent) */}
+                    {standaloneAccessories.length > 0 && (
+                      <>
+                        {mainItems.length > 0 && <Separator className="my-3" />}
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                            Acessórios avulsos
+                          </p>
+                          {standaloneAccessories.map((accessory) => (
+                            <div
+                              key={accessory.id}
+                              className="flex items-center space-x-3 p-3 border border-dashed rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                            >
+                              <Checkbox
+                                id={accessory.id}
+                                checked={checkedItems[accessory.id] || false}
+                                onCheckedChange={() => toggleItem(accessory.id)}
+                                className="flex-shrink-0"
+                              />
+                              <div 
+                                className="flex-1 min-w-0 text-sm cursor-pointer" 
+                                onClick={() => toggleItem(accessory.id)}
+                              >
+                                <span className="block truncate">
+                                  {accessory.name}
+                                </span>
+                              </div>
+                              {checkedItems[accessory.id] && (
+                                <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

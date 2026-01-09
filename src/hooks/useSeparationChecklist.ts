@@ -78,22 +78,46 @@ export function useSeparationChecklist(equipment: EquipmentItem[]) {
       }
     });
 
-    // Second pass: add accessories under their parent items
+    // Second pass: add accessories under their parent items OR as standalone
     equipment.forEach(item => {
-      if (item.itemType === 'accessory' && item.parentId) {
-        // Find the parent item's category
-        const parent = equipment.find(eq => eq.id === item.parentId);
-        if (parent && categories[parent.category]) {
-          categories[parent.category].items.push(item);
-        } else {
-          orphanedAccessories++;
-          logger.warn('Orphaned accessory found', {
-            module: 'separation-checklist',
-            data: {
-              accessoryName: item.name,
-              parentId: item.parentId
+      if (item.itemType === 'accessory') {
+        if (item.parentId) {
+          // Try to find the parent item
+          const parent = equipment.find(eq => eq.id === item.parentId);
+          if (parent && categories[parent.category]) {
+            // Parent exists - add accessory to parent's category
+            categories[parent.category].items.push(item);
+          } else {
+            // Orphaned accessory - parent not in list, add to item's own category
+            orphanedAccessories++;
+            logger.warn('Orphaned accessory found, adding as standalone', {
+              module: 'separation-checklist',
+              data: {
+                accessoryName: item.name,
+                parentId: item.parentId,
+                category: item.category
+              }
+            });
+            
+            // Add to accessory's own category
+            if (!categories[item.category]) {
+              categories[item.category] = {
+                category: item.category,
+                items: []
+              };
             }
-          });
+            categories[item.category].items.push(item);
+          }
+        } else {
+          // Accessory without parent - treat as standalone
+          orphanedAccessories++;
+          if (!categories[item.category]) {
+            categories[item.category] = {
+              category: item.category,
+              items: []
+            };
+          }
+          categories[item.category].items.push(item);
         }
       }
     });
