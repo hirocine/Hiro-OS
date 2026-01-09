@@ -8,7 +8,7 @@ import { SidebarTools } from './SidebarTools';
 import { SidebarUserProfile } from './SidebarUserProfile';
 import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -45,12 +45,34 @@ export function MobileSidebar() {
   const navigate = useNavigate();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
+  
+  const [scrollState, setScrollState] = useState({ canScrollUp: false, canScrollDown: false });
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const checkScrollState = useCallback(() => {
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      setScrollState({
+        canScrollUp: scrollTop > 5,
+        canScrollDown: scrollTop + clientHeight < scrollHeight - 5
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (openMobile) {
       setOpenMobile(false);
     }
   }, [location.pathname, setOpenMobile]);
+
+  useEffect(() => {
+    if (openMobile) {
+      // Check after sheet animation completes
+      const timer = setTimeout(checkScrollState, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [openMobile, checkScrollState]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
@@ -103,8 +125,14 @@ export function MobileSidebar() {
         </SheetHeader>
 
         {/* Conteúdo com ScrollArea */}
-        <ScrollArea className="flex-1">
-          <div className="py-4">
+        <div className="flex-1 relative scroll-fade-container scroll-fade-mobile">
+          <div className={cn("scroll-fade-top", scrollState.canScrollUp && "visible")} />
+          <ScrollArea 
+            ref={scrollAreaRef}
+            className="h-full hide-scrollbar"
+            onScrollCapture={checkScrollState}
+          >
+            <div className="py-4">
             {/* Navegação Principal */}
             <div className="px-4 mb-4">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">
@@ -186,8 +214,10 @@ export function MobileSidebar() {
             <div className="px-4">
               <SidebarTools isMobile />
             </div>
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+          <div className={cn("scroll-fade-bottom", scrollState.canScrollDown && "visible")} />
+        </div>
 
         {/* User Profile - Sticky Bottom */}
         <div className="px-4 py-6 flex items-center">
