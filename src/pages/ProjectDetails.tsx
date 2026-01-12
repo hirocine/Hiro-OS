@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download, LayoutList } from 'lucide-react';
+import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download, LayoutList, Eye, ChevronUp } from 'lucide-react';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { WithdrawalWorkflow } from '@/components/Projects/WithdrawalWorkflow';
@@ -52,6 +52,7 @@ export default function ProjectDetails() {
   } | null>(null);
   
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAllEquipment, setShowAllEquipment] = useState(false);
   
   const {
     project,
@@ -624,26 +625,58 @@ export default function ProjectDetails() {
 
         <TabsContent value="equipment">
           <Card>
-            <CardHeader>
-              <CardTitle>Equipamentos Vinculados</CardTitle>
-              <CardDescription>
-                Lista de equipamentos associados a este projeto
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground">
-                  {equipmentBreakdown || `${project.equipmentCount} equipamentos vinculados a este projeto`}
-                </span>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg">Equipamentos Vinculados</CardTitle>
+                  <CardDescription className="mt-1">
+                    {projectEquipment.length} equipamentos associados a este projeto
+                  </CardDescription>
+                </div>
                 <Button 
                   onClick={() => setShowAddEquipmentDialog(true)}
                   size="sm"
                   variant="outline"
+                  className="w-fit"
                 >
+                  <Plus className="h-4 w-4 mr-2" />
                   Adicionar Equipamentos
                 </Button>
               </div>
-              <ProjectEquipmentList projectId={project.id} />
+            </CardHeader>
+            <CardContent className="pt-0">
+              {/* Resumo por categorias - sempre visível */}
+              {equipmentBreakdown && (
+                <div className="p-4 bg-muted/50 rounded-lg mb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {equipmentBreakdown}
+                  </p>
+                </div>
+              )}
+              
+              {/* Lista completa - expansível */}
+              {showAllEquipment ? (
+                <>
+                  <ProjectEquipmentList projectId={project.id} />
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-4"
+                    onClick={() => setShowAllEquipment(false)}
+                  >
+                    <ChevronUp className="h-4 w-4 mr-2" />
+                    Ocultar detalhes
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowAllEquipment(true)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver todos os equipamentos
+                </Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
