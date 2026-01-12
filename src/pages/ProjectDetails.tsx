@@ -627,13 +627,8 @@ export default function ProjectDetails() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <CardTitle className="text-lg">Equipamentos Vinculados</CardTitle>
-                  <CardDescription className="mt-1">
-                    {projectEquipment.length} equipamentos associados a este projeto
-                  </CardDescription>
-                </div>
-                <Button 
+                <CardTitle className="text-lg">Equipamentos Vinculados</CardTitle>
+                <Button
                   onClick={() => setShowAddEquipmentDialog(true)}
                   size="sm"
                   variant="outline"
