@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/clipboard';
 import type { 
   PlatformAccess, 
   PlatformAccessForm, 
@@ -354,7 +355,10 @@ export function usePlatformAccesses() {
         throw error;
       }
 
-      await navigator.clipboard.writeText(data.password);
+      const success = await copyToClipboard(data.password);
+      if (!success) {
+        throw new Error('Falha ao copiar para clipboard');
+      }
       toast.success('Senha copiada!');
 
       logger.info('Password copied successfully', {
@@ -405,7 +409,10 @@ export function usePlatformAccesses() {
   // Copy username to clipboard
   const copyUsername = useCallback(async (username: string) => {
     try {
-      await navigator.clipboard.writeText(username);
+      const success = await copyToClipboard(username);
+      if (!success) {
+        throw new Error('Falha ao copiar para clipboard');
+      }
       toast.success('Usuário copiado!');
       
       logger.info('Username copied successfully', {
