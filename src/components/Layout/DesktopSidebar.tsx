@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -9,6 +9,7 @@ import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -16,11 +17,18 @@ interface NavigationItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
+  children?: NavigationItem[];
 }
 
 const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
+  {
+    name: 'Tarefas', href: '/tarefas', icon: CheckSquare,
+    children: [
+      { name: 'Gerais', href: '/tarefas/gerais', icon: Users },
+      { name: 'Privadas', href: '/tarefas/privadas', icon: Lock },
+    ],
+  },
   { name: 'Projetos AV', href: '/projetos-av', icon: Film },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
@@ -73,6 +81,103 @@ function NavItem({ item, active, isAdmin: isAdminItem, onNavClick }: {
   );
 }
 
+function NavItemWithChildren({ item, isActive, onNavClick }: {
+  item: NavigationItem;
+  isActive: (path: string) => boolean;
+  onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+}) {
+  const location = useLocation();
+  const Icon = item.icon;
+  const [hovered, setHovered] = useState(false);
+
+  // Auto-expand if current route matches a child
+  const childActive = item.children?.some(c => isActive(c.href)) ?? false;
+  const parentActive = location.pathname === item.href;
+  const anyActive = childActive || parentActive;
+
+  const [expanded, setExpanded] = useState(childActive);
+
+  // Auto-expand when navigating to a child route
+  useEffect(() => {
+    if (childActive) setExpanded(true);
+  }, [childActive]);
+
+  return (
+    <div>
+      <div
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group cursor-pointer",
+          anyActive
+            ? "bg-primary/10 text-primary font-medium"
+            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+        )}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {anyActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
+        )}
+
+        {/* Icon area - clickable to toggle expand */}
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center"
+        >
+          <Icon className={cn(
+            "h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
+            hovered ? "opacity-0" : "opacity-100",
+            anyActive && "text-primary"
+          )} />
+          <ChevronRight className={cn(
+            "h-[18px] w-[18px] absolute inset-0 transition-all duration-200",
+            hovered ? "opacity-100" : "opacity-0",
+            expanded && "rotate-90",
+            anyActive ? "text-primary" : "text-muted-foreground"
+          )} />
+        </button>
+
+        {/* Name - clickable to navigate */}
+        <NavLink
+          to={item.href}
+          onClick={(e) => onNavClick(e, item.href)}
+          className="text-sm truncate flex-1"
+        >
+          {item.name}
+        </NavLink>
+      </div>
+
+      {/* Children */}
+      <Collapsible open={expanded}>
+        <CollapsibleContent>
+          <div className="ml-3 mt-0.5 space-y-0.5 border-l border-border pl-3">
+            {item.children!.map((child) => {
+              const ChildIcon = child.icon;
+              const active = isActive(child.href);
+              return (
+                <NavLink
+                  key={child.href}
+                  to={child.href}
+                  onClick={(e) => onNavClick(e, child.href)}
+                  className={cn(
+                    "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all duration-200 text-sm",
+                    active
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <ChildIcon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                  <span className="truncate">{child.name}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
 export function DesktopSidebar() {
   const { isAdmin } = useAuthContext();
   const location = useLocation();
@@ -95,7 +200,10 @@ export function DesktopSidebar() {
   }, []);
 
   const filteredNav = useMemo(() =>
-    navigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    navigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
@@ -154,12 +262,21 @@ export function DesktopSidebar() {
           </p>
           <nav className="space-y-0.5 px-3">
             {filteredNav.map((item) => (
-              <NavItem
-                key={item.name}
-                item={item}
-                active={isActive(item.href)}
-                onNavClick={handleNavClick}
-              />
+              item.children ? (
+                <NavItemWithChildren
+                  key={item.name}
+                  item={item}
+                  isActive={isActive}
+                  onNavClick={handleNavClick}
+                />
+              ) : (
+                <NavItem
+                  key={item.name}
+                  item={item}
+                  active={isActive(item.href)}
+                  onNavClick={handleNavClick}
+                />
+              )
             ))}
           </nav>
 

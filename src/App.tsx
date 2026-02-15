@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -76,7 +76,9 @@ const App = () => (
                   <Route path="plataformas" element={<Suspense fallback={<LoadingScreenSkeleton />}><PlatformAccesses /></Suspense>} />
                   <Route path="politicas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Policies /></Suspense>} />
                   <Route path="politicas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><PolicyView /></Suspense>} />
-                  <Route path="tarefas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
+                  <Route path="tarefas" element={<Navigate to="/tarefas/gerais" replace />} />
+                  <Route path="tarefas/gerais" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
+                  <Route path="tarefas/privadas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
                   <Route path="tarefas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><TaskDetails /></Suspense>} />
                   <Route path="fornecedores" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
                   <Route path="fornecedores/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />

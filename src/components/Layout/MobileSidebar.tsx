@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -12,6 +12,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -19,11 +20,18 @@ interface NavigationItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
+  children?: NavigationItem[];
 }
 
 const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
+  {
+    name: 'Tarefas', href: '/tarefas', icon: CheckSquare,
+    children: [
+      { name: 'Gerais', href: '/tarefas/gerais', icon: Users },
+      { name: 'Privadas', href: '/tarefas/privadas', icon: Lock },
+    ],
+  },
   { name: 'Projetos AV', href: '/projetos-av', icon: Film },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
@@ -43,6 +51,88 @@ let openMobileSidebar: (() => void) | null = null;
 
 export function useMobileSidebarTrigger() {
   return useCallback(() => openMobileSidebar?.(), []);
+}
+
+function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
+  item: NavigationItem;
+  isActive: (path: string) => boolean;
+  onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+}) {
+  const location = useLocation();
+  const Icon = item.icon;
+  const childActive = item.children?.some(c => isActive(c.href)) ?? false;
+  const parentActive = location.pathname === item.href;
+  const anyActive = childActive || parentActive;
+  const [expanded, setExpanded] = useState(childActive);
+
+  useEffect(() => {
+    if (childActive) setExpanded(true);
+  }, [childActive]);
+
+  return (
+    <div>
+      <div
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+          anyActive
+            ? "bg-primary/10 text-primary font-medium"
+            : "hover:bg-accent text-muted-foreground hover:text-foreground"
+        )}
+      >
+        {anyActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+        )}
+
+        {/* Chevron toggle - always visible on mobile */}
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center"
+        >
+          <ChevronRight className={cn(
+            "h-[18px] w-[18px] transition-transform duration-200",
+            expanded && "rotate-90",
+            anyActive ? "text-primary" : "text-muted-foreground"
+          )} />
+        </button>
+
+        <NavLink
+          to={item.href}
+          onClick={(e) => onNavClick(e, item.href)}
+          className="text-sm flex-1"
+        >
+          {item.name}
+        </NavLink>
+      </div>
+
+      <Collapsible open={expanded}>
+        <CollapsibleContent>
+          <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-3">
+            {item.children!.map((child) => {
+              const ChildIcon = child.icon;
+              const active = isActive(child.href);
+              return (
+                <NavLink
+                  key={child.href}
+                  to={child.href}
+                  onClick={(e) => onNavClick(e, child.href)}
+                  className={cn(
+                    "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all duration-200 text-sm",
+                    active
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  )}
+                >
+                  <ChildIcon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                  <span>{child.name}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
 }
 
 export function MobileSidebar() {
@@ -71,7 +161,10 @@ export function MobileSidebar() {
   }, [open]);
 
   const filteredNav = useMemo(() =>
-    navigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    navigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
@@ -131,29 +224,38 @@ export function MobileSidebar() {
               Menu
             </p>
             <nav className="space-y-0.5 px-4">
-              {filteredNav.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-                return (
-                  <NavLink
+              {filteredNav.map((item) => (
+                item.children ? (
+                  <MobileNavItemWithChildren
                     key={item.name}
-                    to={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
-                      active
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-accent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
-                    )}
-                    <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
-                    <span className="text-sm">{item.name}</span>
-                  </NavLink>
-                );
-              })}
+                    item={item}
+                    isActive={isActive}
+                    onNavClick={handleNavClick}
+                  />
+                ) : (() => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <NavLink
+                      key={item.name}
+                      to={item.href}
+                      onClick={(e) => handleNavClick(e, item.href)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                        active
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {active && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                      )}
+                      <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                      <span className="text-sm">{item.name}</span>
+                    </NavLink>
+                  );
+                })()
+              ))}
             </nav>
 
             {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (
