@@ -1,108 +1,61 @@
 
 
-## Corrigir ausencia de skeleton durante carregamento
+## Corrigir sub-menus que nao fecham ao clicar em outro item
 
-### Problema raiz
+### Problema
 
-O `Layout.tsx` usa `<Suspense fallback={null}>`, o que significa que enquanto o chunk JS de qualquer pagina carrega via lazy loading, o usuario ve uma area completamente em branco. Isso afeta **todas** as paginas, nao so Home e Dashboard.
+No componente `NavItemWithChildren`, o estado `expanded` e local e o auto-collapse depende de `anyActive` mudar para `false`. Quando o usuario expande um menu (ex: "Fornecedores") sem navegar para nenhum filho, `anyActive` ja era `false` antes do clique. Ao clicar em outro item da sidebar, `anyActive` continua `false` — nao muda — entao o `useEffect` de collapse nao dispara.
 
-Alem disso:
-- **Home**: nao tem skeleton de pagina — cada componente carrega separadamente
-- **Dashboard**: o estado `roleLoading` mostra um spinner generico de tela cheia ao inves do skeleton proprio do dashboard
+### Solucao
 
-### Solucao (3 mudancas)
+Levantar o controle de qual menu esta expandido para o `DesktopSidebar`. Um estado `expandedItem` (string | null) no componente pai garante que apenas um menu pode estar expandido por vez:
 
-#### 1. Layout.tsx — trocar fallback do Suspense
+- Clicar em um item com filhos: define `expandedItem` para aquele item (ou fecha se ja era ele)
+- Clicar em qualquer outro item da sidebar (com ou sem filhos): limpa `expandedItem`
+- Navegacao para um filho: mantem `expandedItem` aberto automaticamente
 
-Trocar `fallback={null}` por um skeleton generico leve que aparece apenas enquanto o chunk JS carrega (geralmente < 500ms).
+### Mudancas no arquivo `src/components/Layout/DesktopSidebar.tsx`
+
+**1. No `DesktopSidebar`**: adicionar estado `expandedItem`
 
 ```tsx
-// De:
-<Suspense fallback={null}>
-  <Outlet />
-</Suspense>
-
-// Para:
-<Suspense fallback={
-  <div className="p-6 lg:p-8 space-y-6 animate-pulse">
-    <div className="h-8 bg-muted rounded-lg w-1/3" />
-    <div className="h-4 bg-muted rounded w-1/2" />
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div className="h-40 bg-muted rounded-lg" />
-      <div className="h-40 bg-muted rounded-lg" />
-      <div className="h-40 bg-muted rounded-lg" />
-    </div>
-  </div>
-}>
-  <Outlet />
-</Suspense>
+const [expandedItem, setExpandedItem] = useState<string | null>(null);
 ```
 
-#### 2. Home.tsx — adicionar skeleton de pagina
-
-A Home nao tem dados globais que determinem um estado `loading`. Mas os sub-componentes (HeroBanner e TeamDirectory) tem seus proprios loadings. Vou extrair os estados de loading dos hooks ja usados e mostrar um skeleton unificado.
-
-Alternativa mais simples: como a Home ja importa os componentes que fazem seus proprios skeletons, e o problema real era o `fallback={null}` do Layout (corrigido acima), a Home ja vai funcionar melhor. Porem, para consistencia visual, vou adicionar um skeleton no nivel da pagina para quando `useSiteSettings` e `useTeamMembers` estao carregando:
+Auto-abrir quando a rota atual corresponde a um filho:
 
 ```tsx
-export default function Home() {
-  const { isLoading: bannerLoading } = useSiteSettings();
-  const { isLoading: teamLoading } = useTeamMembers();
-
-  if (bannerLoading && teamLoading) {
-    return (
-      <ResponsiveContainer maxWidth="7xl">
-        {/* Banner skeleton */}
-        <div className="w-full h-48 md:h-64 lg:h-80 rounded-xl bg-muted animate-pulse" />
-        <div className="space-y-6 mt-6">
-          {/* AI Assistant skeleton */}
-          <div className="h-[220px] bg-muted rounded-lg animate-pulse" />
-          {/* Team skeleton */}
-          <div className="h-64 bg-muted rounded-lg animate-pulse" />
-        </div>
-      </ResponsiveContainer>
-    );
+useEffect(() => {
+  const allItems = [...navigation, ...adminNavigation];
+  for (const item of allItems) {
+    if (item.children?.some(c => isActive(c.href))) {
+      setExpandedItem(item.name);
+      return;
+    }
   }
-  // ... resto normal
-}
+}, [location.pathname]);
 ```
 
-Obs: Importar `useSiteSettings` e `useTeamMembers` no Home nao cria queries duplicadas — React Query reutiliza a mesma query se a key for igual (ja chamada dentro dos componentes filhos).
-
-#### 3. Dashboard.tsx — unificar roleLoading com skeleton
-
-Trocar o spinner generico de `roleLoading` pelo mesmo skeleton ja existente do estado `loading`:
+**2. Em `NavItemWithChildren`**: receber `expanded` e `onToggle` como props em vez de estado local
 
 ```tsx
-// De:
-if (roleLoading) {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
-}
-
-// Para:
-if (roleLoading || loading) {
-  return (
-    <ResponsiveContainer maxWidth="7xl">
-      <PageHeader title="Dashboard" subtitle="..." />
-      <div className="space-y-6 lg:space-y-8">
-        {/* skeleton existente do dashboard */}
-      </div>
-    </ResponsiveContainer>
-  );
+function NavItemWithChildren({ item, isActive, onNavClick, isAdmin, expanded, onToggle }) {
+  // remover useState(expanded) e useEffects de auto-collapse
+  // usar a prop expanded diretamente
+  // onClick do header chama onToggle()
 }
 ```
 
-### Arquivos editados
+**3. Em `NavItem`**: ao clicar, fechar qualquer menu expandido
 
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/components/Layout/Layout.tsx` | Trocar `fallback={null}` por skeleton generico |
-| `src/pages/Home.tsx` | Adicionar skeleton de pagina com hooks de loading |
-| `src/pages/Dashboard.tsx` | Unificar `roleLoading` e `loading` no mesmo skeleton |
+Passar `onNavClick` modificado ou adicionar um callback `onClearExpanded` que limpa `expandedItem` ao clicar em itens sem filhos.
 
-3 arquivos, nenhuma dependencia nova.
+**4. Tambem aplicar a mesma logica no `MobileSidebar.tsx`** se ele tiver a mesma estrutura.
+
+### Arquivo editado
+
+- `src/components/Layout/DesktopSidebar.tsx`
+- Possivelmente `src/components/Layout/MobileSidebar.tsx` (se aplicavel)
+
+Nenhuma dependencia nova. Apenas refatoracao de estado local para estado compartilhado.
 
