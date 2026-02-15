@@ -1,4 +1,4 @@
-import { User, LogOut, ChevronsUpDown } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -42,23 +42,14 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
       <div className="flex items-center gap-1 w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2.5 flex-1 min-w-0 p-2 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors">
-              <div className="relative shrink-0 w-8 h-8">
+            <button className="p-1.5 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors shrink-0">
+              <div className="relative w-8 h-8">
                 <Avatar className="w-full h-full ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                   <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-success rounded-full border-2 border-card" />
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium leading-none truncate">
-                  {avatarData.displayName || 'Usuário'}
-                </p>
-                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                  {user?.email}
-                </p>
-              </div>
-              <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-56">
