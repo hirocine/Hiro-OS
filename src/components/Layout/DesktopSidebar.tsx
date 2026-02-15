@@ -191,15 +191,10 @@ export function DesktopSidebar() {
       </ScrollArea>
 
       {/* Tools - Bottom */}
-      <div className="border-t border-border/50 px-3 py-2 shrink-0">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer">
-            <NotificationPanel />
-            <span className="text-sm text-muted-foreground">Notificações</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg">
-            <ThemeSwitcher className="w-full justify-start gap-3 px-3 py-2 h-auto rounded-lg" showLabel />
-          </div>
+      <div className="border-t border-border px-3 py-3 shrink-0">
+        <div className="flex items-center justify-center gap-1">
+          <NotificationPanel />
+          <ThemeSwitcher />
         </div>
       </div>
 
