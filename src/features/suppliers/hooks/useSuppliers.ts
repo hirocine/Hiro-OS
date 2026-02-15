@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import type { Supplier, SupplierInsert, SupplierUpdate, SupplierFilters } from '../types';
@@ -186,9 +186,7 @@ export function useSuppliers() {
     }
   };
 
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
+  // No automatic fetch on mount — pages control when to fetch via fetchSuppliers(filters)
 
   return {
     suppliers,

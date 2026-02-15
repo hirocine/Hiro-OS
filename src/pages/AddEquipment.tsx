@@ -45,7 +45,7 @@ export default function AddEquipment() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="4xl" className="min-h-screen pb-8">
+    <ResponsiveContainer maxWidth="4xl" className="min-h-screen pb-8 animate-fade-in">
       <BreadcrumbNav 
         items={[
           { label: 'Inventário', href: '/inventario' },

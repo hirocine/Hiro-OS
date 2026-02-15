@@ -8,6 +8,7 @@ import { AddSSDDialog } from '@/components/SSD/AddSSDDialog';
 import { useSSDs } from '@/features/ssds';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { formatRelativeTime } from '@/lib/utils';
 
 const SSDs = () => {
   const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
@@ -20,15 +21,7 @@ const SSDs = () => {
     }
   }, [loading, ssds.length]);
 
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'agora mesmo';
-    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
-    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
-    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
-  };
+  // formatRelativeTime imported from @/lib/utils
 
   const stats = useMemo(() => {
     const total = ssds.length;
@@ -42,7 +35,7 @@ const SSDs = () => {
 
   if (loading) {
     return (
-      <ResponsiveContainer maxWidth="7xl">
+      <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
         <PageHeader
           title="Controle de SSDs e HDs"
           subtitle="Gerencie seus SSDs e HDs de forma visual"
@@ -90,7 +83,7 @@ const SSDs = () => {
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
         title="Controle de SSDs e HDs"
         subtitle={

@@ -5,7 +5,7 @@ import { TeamDirectory } from "@/components/Home/TeamDirectory";
 
 export default function Home() {
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <div className="space-y-6">
         {/* Hero Banner */}
         <HeroBanner />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils';
 import { 
   ResponsiveDialog, 
   ResponsiveDialogContent, 
@@ -170,12 +171,7 @@ export function EquipmentDetailsDialog({ open, onOpenChange, equipmentId }: Equi
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  // formatCurrency imported from @/lib/utils
 
   if (!equipment && !loading) {
     return null;

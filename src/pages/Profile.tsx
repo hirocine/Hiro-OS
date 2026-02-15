@@ -289,7 +289,7 @@ export default function Profile() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="4xl">
+    <ResponsiveContainer maxWidth="4xl" className="animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Perfil</h1>

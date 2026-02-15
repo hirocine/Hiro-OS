@@ -10,7 +10,7 @@ import { StatsCardSkeleton } from '@/components/ui/skeleton-loaders';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function Dashboard() {
@@ -75,16 +75,7 @@ export default function Dashboard() {
     }
   ], [stats]);
 
-  // Helper function to format relative time
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'agora mesmo';
-    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
-    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
-    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
-  };
+  // formatRelativeTime imported from @/lib/utils
 
   // Proteção de rota: apenas admins podem acessar
   if (roleLoading) {
@@ -168,7 +159,7 @@ export default function Dashboard() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader 
         title="Dashboard" 
         subtitle={

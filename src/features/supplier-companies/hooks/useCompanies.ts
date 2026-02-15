@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import type { Company, CompanyInsert, CompanyUpdate, CompanyFilters } from '../types';
@@ -116,9 +116,7 @@ export function useCompanies() {
     }
   };
 
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
+  // No automatic fetch on mount — pages control when to fetch via fetchCompanies(filters)
 
   return {
     companies,

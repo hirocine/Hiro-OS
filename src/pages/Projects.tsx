@@ -234,7 +234,7 @@ export default function Projects() {
   }
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader 
         title="Retiradas" 
         subtitle="Gerencie retiradas e devoluções de equipamentos por projeto"

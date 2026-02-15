@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { formatRelativeTime } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Grid3X3, List, Monitor, Tablet, Smartphone, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UndoDeleteDialog } from '@/components/Equipment/UndoDeleteDialog';
 import { logger } from '@/lib/logger';
 import { generateEquipmentImageName } from '@/lib/imageNaming';
+import { compressImage } from '@/lib/imageUtils';
 
 import { useEquipmentProjects } from '@/hooks/useEquipmentProjects';
 import { useBulkSelection } from '@/hooks/useBulkSelection';
@@ -104,16 +106,7 @@ export default function EquipmentPage() {
     }
   }, [loading, allEquipment.length]);
 
-  // Helper function to format relative time
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'agora mesmo';
-    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} minutos`;
-    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} horas`;
-    return `há ${Math.floor(diffInSeconds / 86400)} dias`;
-  };
+  // formatRelativeTime imported from @/lib/utils
 
   // Auto-switch view mode based on screen size - FORÇA cards no mobile
   const effectiveViewMode = useMemo(() => {
@@ -222,60 +215,7 @@ export default function EquipmentPage() {
     await handleDelete(equipment);
   };
 
-  // Função para comprimir e otimizar imagens antes do upload
-  const compressImage = async (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx) {
-            reject(new Error('Falha ao obter contexto do canvas'));
-            return;
-          }
-          
-          // Calcular dimensões mantendo proporção (max 1920x1920)
-          const maxSize = 1920;
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > maxSize || height > maxSize) {
-            if (width > height) {
-              height = (height * maxSize) / width;
-              width = maxSize;
-            } else {
-              width = (width * maxSize) / height;
-              height = maxSize;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Comprimir para WebP com qualidade 85%
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                resolve(blob);
-              } else {
-                reject(new Error('Falha na compressão'));
-              }
-            },
-            'image/webp',
-            0.85
-          );
-        };
-        img.onerror = reject;
-      };
-      reader.onerror = reject;
-    });
-  };
+
 
   const handleImageUpload = async (equipment: Equipment, file: File) => {
     try {
@@ -557,7 +497,7 @@ export default function EquipmentPage() {
   };
 
   return (
-    <ResponsiveContainer maxWidth="7xl" className="min-h-screen">
+    <ResponsiveContainer maxWidth="7xl" className="min-h-screen animate-fade-in">
       <PageHeader 
         title="Equipamentos" 
         subtitle={

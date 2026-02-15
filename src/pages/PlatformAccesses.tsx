@@ -9,7 +9,7 @@ export default function PlatformAccesses() {
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
         title="Plataformas"
         subtitle="Gerencie senhas e credenciais de forma segura com criptografia"
