@@ -1,57 +1,47 @@
 
 
-## Mover filtros para fora do Card na aba Usuarios
+## Mover botão "Adicionar Usuário" para o PageHeader
 
 ### Problema
-Na aba "Gerenciamento de Usuarios", a barra de busca, filtro de role e botao "Adicionar Usuario" estao dentro do Card, criando espaco desnecessario e layout inconsistente com outras paginas como Plataformas.
+O botão "Adicionar Usuário" está isolado na linha de filtros, abaixo do título. Nas demais páginas (ex: Plataformas), o botão de ação principal fica alinhado com o título no `PageHeader`.
 
 ### O que muda
 
 **Arquivo**: `src/pages/Admin.tsx`
 
-1. **Mover o bloco de filtros** (search input + select + botao) para **fora e acima** do `<Card>`, dentro do `<TabsContent>` mas antes do Card
-2. O Card fica apenas com a tabela de usuarios
-3. Remover o `pt-6` do CardContent (a tabela comeca direto)
+1. Adicionar prop `actions` ao `PageHeader`, renderizando o botão "Adicionar Usuário" condicionalmente quando `activeTab === 'users'`
+2. Remover o botão da barra de filtros (linha 587-590)
+3. A barra de filtros fica apenas com busca + select de role
 
-### Layout resultante
+### Resultado
 
 ```text
-+------------------------------------------+
-| PageHeader (titulo + subtitulo)           |
-+------------------------------------------+
-| [Q Buscar usuarios...]  [Todos v]  [+ Adicionar Usuario] |
-+------------------------------------------+
-| Card                                      |
-| +--------------------------------------+ |
-| | Tabela de usuarios                   | |
-| +--------------------------------------+ |
-+------------------------------------------+
++----------------------------------------------------------+
+| Gerenciamento de Usuários          [+ Adicionar Usuário]  |
+| Gerencie usuários e permissões                            |
++----------------------------------------------------------+
+| [Buscar usuários...]  [Todos v]                           |
++----------------------------------------------------------+
+| Card com tabela                                           |
++----------------------------------------------------------+
 ```
 
-### Detalhes tecnicos
+### Detalhes técnicos
 
-No `TabsContent value="users"`:
+No `PageHeader`, adicionar actions condicional:
 
 ```tsx
-<TabsContent value="users" className="space-y-4">
-  {/* Filtros FORA do card */}
-  <div className="flex items-center justify-between gap-4">
-    <div className="relative flex-1">
-      <Search ... />
-      <Input ... />
-    </div>
-    <Select ...> ... </Select>
-    <Button ...>Adicionar Usuario</Button>
-  </div>
-
-  {/* Card so com a tabela */}
-  <Card>
-    <CardContent className="pt-0">
-      <Table> ... </Table>
-    </CardContent>
-  </Card>
-</TabsContent>
+<PageHeader 
+  title={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).title}
+  subtitle={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).subtitle}
+  actions={activeTab === 'users' ? (
+    <Button onClick={() => setIsAddUserDialogOpen(true)}>
+      <UserPlus className="h-4 w-4 mr-2" />
+      Adicionar Usuário
+    </Button>
+  ) : undefined}
+/>
 ```
 
-Apenas o arquivo `src/pages/Admin.tsx` sera editado.
+Na barra de filtros, remover o botão e simplificar o layout (remover `justify-between`, manter apenas os filtros).
 
