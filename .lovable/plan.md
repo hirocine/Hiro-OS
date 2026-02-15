@@ -1,61 +1,62 @@
 
 
-## Corrigir sub-menus que nao fecham ao clicar em outro item
+## Adicionar padding e borda nos subitens da sidebar ao hover
 
 ### Problema
 
-No componente `NavItemWithChildren`, o estado `expanded` e local e o auto-collapse depende de `anyActive` mudar para `false`. Quando o usuario expande um menu (ex: "Fornecedores") sem navegar para nenhum filho, `anyActive` ja era `false` antes do clique. Ao clicar em outro item da sidebar, `anyActive` continua `false` — nao muda — entao o `useEffect` de collapse nao dispara.
+Quando o mouse passa sobre um subitem (ex: "Gerais", "Privadas"), o hover (`bg-background/80`) ocupa toda a largura do container `bg-muted/50`, criando a impressao visual de que o hover se funde com o fundo do grupo expandido. Falta separacao visual.
 
 ### Solucao
 
-Levantar o controle de qual menu esta expandido para o `DesktopSidebar`. Um estado `expandedItem` (string | null) no componente pai garante que apenas um menu pode estar expandido por vez:
+Adicionar um pequeno recuo lateral no container dos subitens e uma borda sutil no hover de cada subitem, criando uma separacao clara entre o fundo do grupo e o hover do item.
 
-- Clicar em um item com filhos: define `expandedItem` para aquele item (ou fecha se ja era ele)
-- Clicar em qualquer outro item da sidebar (com ou sem filhos): limpa `expandedItem`
-- Navegacao para um filho: mantem `expandedItem` aberto automaticamente
+### Mudancas tecnicas
 
-### Mudancas no arquivo `src/components/Layout/DesktopSidebar.tsx`
+**Arquivo: `src/components/Layout/DesktopSidebar.tsx`**
 
-**1. No `DesktopSidebar`**: adicionar estado `expandedItem`
+1. No container dos subitens (linha 160), adicionar padding lateral `px-1.5` para que os subitens fiquem ligeiramente recuados em relacao ao fundo do grupo:
 
 ```tsx
-const [expandedItem, setExpandedItem] = useState<string | null>(null);
+// De:
+<div className="mt-0.5 space-y-0.5">
+
+// Para:
+<div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
 ```
 
-Auto-abrir quando a rota atual corresponde a um filho:
+2. No hover dos subitens (linha 172), adicionar uma borda sutil:
 
 ```tsx
-useEffect(() => {
-  const allItems = [...navigation, ...adminNavigation];
-  for (const item of allItems) {
-    if (item.children?.some(c => isActive(c.href))) {
-      setExpandedItem(item.name);
-      return;
-    }
-  }
-}, [location.pathname]);
+// De:
+"text-muted-foreground hover:bg-background/80 hover:text-foreground"
+
+// Para:
+"text-muted-foreground hover:bg-background/80 hover:text-foreground hover:border hover:border-border/50"
 ```
 
-**2. Em `NavItemWithChildren`**: receber `expanded` e `onToggle` como props em vez de estado local
+Nota: como `border` adiciona 1px que pode causar layout shift, usar `border border-transparent` como estado padrao para reservar o espaco:
 
 ```tsx
-function NavItemWithChildren({ item, isActive, onNavClick, isAdmin, expanded, onToggle }) {
-  // remover useState(expanded) e useEffects de auto-collapse
-  // usar a prop expanded diretamente
-  // onClick do header chama onToggle()
-}
+// Classe base do subitem:
+"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent"
+
+// Hover inativo:
+"hover:bg-background/80 hover:text-foreground hover:border-border/50"
 ```
 
-**3. Em `NavItem`**: ao clicar, fechar qualquer menu expandido
+**Arquivo: `src/components/Layout/MobileSidebar.tsx`**
 
-Passar `onNavClick` modificado ou adicionar um callback `onClearExpanded` que limpa `expandedItem` ao clicar em itens sem filhos.
+Aplicar a mesma mudanca nos subitens do mobile para consistencia.
 
-**4. Tambem aplicar a mesma logica no `MobileSidebar.tsx`** se ele tiver a mesma estrutura.
+### Resultado
 
-### Arquivo editado
+- Subitens ficam com um recuo lateral dentro do grupo expandido
+- No hover, aparece uma borda sutil que separa visualmente o item do fundo do grupo
+- Sem layout shift gracas ao `border-transparent` como estado padrao
+
+### Arquivos editados
 
 - `src/components/Layout/DesktopSidebar.tsx`
-- Possivelmente `src/components/Layout/MobileSidebar.tsx` (se aplicavel)
+- `src/components/Layout/MobileSidebar.tsx`
 
-Nenhuma dependencia nova. Apenas refatoracao de estado local para estado compartilhado.
-
+Nenhuma dependencia nova.
