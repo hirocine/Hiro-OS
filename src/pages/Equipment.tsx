@@ -4,6 +4,7 @@ import { Plus, Grid3X3, List, Monitor, Tablet, Smartphone, Clock } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
@@ -373,27 +374,80 @@ export default function EquipmentPage() {
 
 
   const loadingSkeletons = useMemo(() => {
-    return [...Array(6)].map((_, i) => (
-      <Card key={i} className="animate-pulse">
-        <CardContent className="p-4">
-          <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-          <div className="h-8 bg-muted rounded w-1/2 mb-3"></div>
-          <div className="space-y-2">
-            <div className="h-3 bg-muted rounded"></div>
-            <div className="h-3 bg-muted rounded w-2/3"></div>
+    if (isMobile) {
+      // Cards skeleton for mobile
+      return [...Array(4)].map((_, i) => (
+        <Card key={i} className="animate-pulse">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-24" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-14" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-18" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ));
+    }
+    // Table skeleton for desktop
+    return (
+      <div className="bg-card rounded-lg border overflow-hidden shadow-card">
+        <div className="overflow-x-auto">
+          <div className="min-w-[1200px]">
+            {/* Header skeleton */}
+            <div className="flex items-center gap-4 px-4 py-3 bg-muted/30 border-b">
+              <Skeleton className="h-4 w-4" />
+              {[120, 80, 100, 60, 90, 70, 80].map((w, i) => (
+                <Skeleton key={i} className={`h-4`} style={{ width: w }} />
+              ))}
+            </div>
+            {/* Row skeletons */}
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b animate-pulse">
+                <Skeleton className="h-4 w-4" />
+                <div className="flex items-center gap-3 flex-1">
+                  <Skeleton className="h-4 w-4" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+                <div className="flex gap-1">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
-    ));
-  }, []);
+        </div>
+      </div>
+    );
+  }, [isMobile]);
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loadingSkeletons}
-        </div>
-      );
+      if (isMobile) {
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {loadingSkeletons}
+          </div>
+        );
+      }
+      return <>{loadingSkeletons}</>;
     }
 
     // Verificação mais robusta - mesmo se filteredEquipment está vazio, 
