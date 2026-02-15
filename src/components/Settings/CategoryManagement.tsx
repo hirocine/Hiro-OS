@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -572,13 +572,7 @@ export function CategoryManagement() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Gerenciamento de Categorias</CardTitle>
-          <CardDescription>
-            Organize categorias e subcategorias de forma hierárquica
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-4 space-y-4">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
