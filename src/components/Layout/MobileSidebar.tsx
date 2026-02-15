@@ -68,27 +68,18 @@ export function useMobileSidebarTrigger() {
   return useCallback(() => openMobileSidebar?.(), []);
 }
 
-function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem }: {
+function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem, expanded, onToggle }: {
   item: NavigationItem;
   isActive: (path: string) => boolean;
   onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
   isAdmin?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
   const location = useLocation();
   const Icon = item.icon;
   const childActive = item.children?.some(c => isActive(c.href)) ?? false;
   const parentActive = location.pathname === item.href;
-  const anyActive = childActive || parentActive;
-  const [expanded, setExpanded] = useState(childActive);
-
-  useEffect(() => {
-    if (childActive) setExpanded(true);
-  }, [childActive]);
-
-  // Auto-collapse when leaving the section entirely
-  useEffect(() => {
-    if (!anyActive) setExpanded(false);
-  }, [anyActive]);
 
   return (
     <div className={cn(
@@ -107,7 +98,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
               ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
               : ""
         )}
-        onClick={() => setExpanded(!expanded)}
+        onClick={onToggle}
       >
         {(parentActive && !expanded || childActive && expanded) && (
           <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
@@ -159,6 +150,18 @@ export function MobileSidebar() {
   const { requestNavigation } = useNavigationBlocker();
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+
+  // Auto-expand when route matches a child
+  useEffect(() => {
+    const allItems = [...navigation, ...adminNavigation];
+    for (const item of allItems) {
+      if (item.children?.some(c => isActive(c.href))) {
+        setExpandedItem(item.name);
+        return;
+      }
+    }
+  }, [location.pathname]);
 
   // Expose open function for TopBar
   useEffect(() => {
@@ -247,6 +250,8 @@ export function MobileSidebar() {
                     item={item}
                     isActive={isActive}
                     onNavClick={handleNavClick}
+                    expanded={expandedItem === item.name}
+                    onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
                   />
                 ) : (() => {
                   const Icon = item.icon;
@@ -255,7 +260,7 @@ export function MobileSidebar() {
                     <NavLink
                       key={item.name}
                       to={item.href}
-                      onClick={(e) => handleNavClick(e, item.href)}
+                      onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                         active
@@ -291,6 +296,8 @@ export function MobileSidebar() {
                         isActive={isActive}
                         onNavClick={handleNavClick}
                         isAdmin
+                        expanded={expandedItem === item.name}
+                        onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
                       />
                     ) : (() => {
                       const Icon = item.icon;
@@ -299,7 +306,7 @@ export function MobileSidebar() {
                         <NavLink
                           key={item.name}
                           to={item.href}
-                          onClick={(e) => handleNavClick(e, item.href)}
+                          onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
                           className={cn(
                             "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
                             active
