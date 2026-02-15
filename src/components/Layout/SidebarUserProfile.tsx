@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -43,24 +43,19 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
     )}>
       <div className="flex items-center justify-between w-full">
         <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={avatarData.url || undefined} className="object-cover" />
-                    <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
-                  </Avatar>
-                  {firstName && (
-                    <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
-                      {firstName}
-                    </span>
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="top">{avatarData.displayName || user?.email || 'Usuário'}</TooltipContent>
-          </Tooltip>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={avatarData.url || undefined} className="object-cover" />
+                <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
+              </Avatar>
+              {firstName && (
+                <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
+                  {firstName}
+                </span>
+              )}
+            </button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="top" className="w-56">
             <DropdownMenuItem onClick={() => navigate('/perfil')}>
               <User className="mr-2 h-4 w-4" />
