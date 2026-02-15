@@ -27,6 +27,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
   const navigate = useNavigate();
   const { data: profile } = useCurrentUserProfile();
   const avatarData = getAvatarData(user, profile?.avatar_url, profile?.display_name);
+  const firstName = avatarData.displayName?.split(' ')[0] || null;
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -45,11 +46,16 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
+                <button className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={avatarData.url || undefined} className="object-cover" />
                     <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
                   </Avatar>
+                  {firstName && (
+                    <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
+                      {firstName}
+                    </span>
+                  )}
                 </button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
