@@ -247,6 +247,7 @@ export default function Admin() {
   });
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
@@ -553,6 +554,11 @@ export default function Admin() {
             <UserPlus className="h-4 w-4 mr-2" />
             Adicionar Usuário
           </Button>
+        ) : activeTab === 'categories' ? (
+          <Button onClick={() => setIsAddCategoryDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova
+          </Button>
         ) : undefined}
       />
 
@@ -826,7 +832,10 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
-          <CategoryManagement />
+          <CategoryManagement 
+            externalAddDialogOpen={isAddCategoryDialogOpen}
+            onExternalAddDialogChange={setIsAddCategoryDialogOpen}
+          />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
