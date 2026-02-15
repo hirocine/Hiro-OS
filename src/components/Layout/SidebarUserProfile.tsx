@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { getAvatarData } from '@/lib/avatarUtils';
 import { useCurrentUserProfile } from '@/hooks/useCurrentUserProfile';
 import { cn } from '@/lib/utils';
+import { NotificationPanel } from './NotificationPanel';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 interface SidebarUserProfileProps {
   isMobile?: boolean;
@@ -37,39 +39,48 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
       "border-t border-border bg-card/50 backdrop-blur-sm shrink-0",
       isMobile ? "" : "p-2"
     )}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-3 w-full p-3 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors">
-            <div className="relative shrink-0 w-9 h-9">
-              <Avatar className="w-full h-full ring-2 ring-border">
-                <AvatarImage src={avatarData.url || undefined} className="object-cover" />
-                <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-success rounded-full border-2 border-card" />
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium leading-none truncate">
-                {avatarData.displayName || 'Usuário'}
-              </p>
-              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                {user?.email}
-              </p>
-            </div>
-            <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" side="top" className="w-56">
-          <DropdownMenuItem onClick={() => navigate('/perfil')}>
-            <User className="mr-2 h-4 w-4" />
-            Ver Perfil
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-1 w-full">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2.5 flex-1 min-w-0 p-2 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors">
+              <div className="relative shrink-0 w-8 h-8">
+                <Avatar className="w-full h-full ring-2 ring-border">
+                  <AvatarImage src={avatarData.url || undefined} className="object-cover" />
+                  <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-success rounded-full border-2 border-card" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium leading-none truncate">
+                  {avatarData.displayName || 'Usuário'}
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                  {user?.email}
+                </p>
+              </div>
+              <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-56">
+            <DropdownMenuItem onClick={() => navigate('/perfil')}>
+              <User className="mr-2 h-4 w-4" />
+              Ver Perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {!isMobile && (
+          <div className="flex items-center shrink-0">
+            <NotificationPanel />
+            <ThemeSwitcher />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
