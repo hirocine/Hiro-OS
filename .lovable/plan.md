@@ -1,37 +1,46 @@
 
 
-## Redesign do estilo ativo dos subitens da sidebar
+## Permitir fechar submenus clicando no nome
 
-### Problema atual
+### Problema
 
-Quando um subitem esta ativo (ex: "Gerais"), ele recebe a barra lateral azul (indicador primary) e texto azul. O item mae ("Tarefas") fica neutro. O usuario quer inverter essa logica visual.
+Atualmente, clicar no nome do item pai (ex: "Tarefas") navega para a rota pai, mas nao fecha/abre o submenu. So o icone (area do chevron) faz toggle do submenu.
 
-### Nova logica visual
+### Solucao
 
-- **Item mae** ("Tarefas"): Quando qualquer filho esta ativo e o menu esta expandido, o item mae recebe a barra lateral indicadora (a mesma barra branca/primary de 3px na lateral esquerda)
-- **Subitem ativo** ("Gerais"): Em vez da barra lateral, usa texto verde (`text-success`) + negrito (`font-semibold`), sem barra indicadora
-- **Subitem inativo** ("Privadas"): Continua com `text-muted-foreground` e hover normal
+Transformar o `NavLink` do nome em um elemento clicavel que:
+- **Se o menu esta colapsado**: expande o submenu (e navega para a rota pai)
+- **Se o menu esta expandido**: apenas fecha o submenu (sem navegar)
+
+Na pratica, trocar o `NavLink` por um `<span>` com `onClick` que faz toggle do `expanded`, e so navega quando esta colapsado.
 
 ### Detalhes tecnicos
 
-**Arquivos**: `DesktopSidebar.tsx` e `MobileSidebar.tsx`
+**Arquivos**: `DesktopSidebar.tsx` (linhas 160-167) e `MobileSidebar.tsx` (linhas 118-124)
 
-**No item mae (div pai dentro de `NavItemWithChildren`)**:
-- Quando `childActive && expanded`: mostrar a barra lateral (`w-[3px] h-6 bg-primary`) e aplicar `text-foreground font-medium`
-- Quando `parentActive && !expanded`: manter comportamento atual
+Substituir o `NavLink` do nome por:
 
-**Nos subitens (NavLink dentro do CollapsibleContent)**:
-- Remover a barra lateral (`div` com `bg-primary`)
-- Ativo: `text-success font-semibold` (verde + negrito)
-- Icone ativo: `text-success`
-- Inativo: sem mudanca
-
-**Cor verde**: Ja existe no projeto como `success` (`--success: 142 76% 36%`), disponivel via `text-success`.
-
-### Resultado visual esperado
-
-```text
-| Tarefas          <-- barra lateral branca/primary, texto normal
-    Gerais         <-- texto verde + negrito, SEM barra
-    Privadas       <-- texto cinza (muted)
+```tsx
+<span
+  onClick={() => {
+    if (expanded) {
+      setExpanded(false);
+    } else {
+      setExpanded(true);
+    }
+  }}
+  className="text-sm truncate flex-1 cursor-pointer"
+>
+  {item.name}
+</span>
 ```
+
+Isso remove a navegacao ao clicar no nome e transforma em puro toggle de expansao/colapso. A navegacao para subitens ja e feita pelos proprios subitens dentro do submenu.
+
+### Comportamento esperado
+
+- Clicar no nome "Tarefas" quando fechado -> abre o submenu
+- Clicar no nome "Tarefas" quando aberto -> fecha o submenu
+- Clicar no icone/chevron -> mesma coisa (toggle)
+- Clicar nos subitens "Gerais"/"Privadas" -> navega normalmente
+
