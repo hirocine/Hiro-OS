@@ -111,7 +111,7 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer",
           expanded
-            ? "text-foreground"
+            ? "text-foreground font-semibold"
             : "rounded-lg",
           parentActive && !expanded
             ? "bg-primary/10 text-primary font-medium"
@@ -168,12 +168,15 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
                   to={child.href}
                   onClick={(e) => onNavClick(e, child.href)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm relative",
                     active
                       ? "text-primary font-medium"
-                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   )}
                 >
+                  {active && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+                  )}
                   <ChildIcon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
                   <span className="truncate">{child.name}</span>
                 </NavLink>
