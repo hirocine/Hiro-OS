@@ -132,7 +132,7 @@ export function DesktopSidebar() {
       </div>
 
       {/* Search */}
-      <div className="shrink-0 px-3 pb-2">
+      <div className="shrink-0 px-3 py-3 border-b border-border">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -147,8 +147,6 @@ export function DesktopSidebar() {
           </kbd>
         </div>
       </div>
-
-      <Separator className="mx-3" />
 
       {/* Navigation */}
       <ScrollArea className="flex-1">
