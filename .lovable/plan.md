@@ -1,12 +1,27 @@
 
 
-## Remover tooltip do avatar no rodapé da sidebar
+## Mover a linha separadora para entre o logo e a busca
 
-Agora que o primeiro nome já aparece ao lado do avatar, o tooltip com o nome completo é redundante e atrapalha visualmente.
+### Alteracao em `src/components/Layout/DesktopSidebar.tsx`
 
-### Alteração em `src/components/Layout/SidebarUserProfile.tsx`
+1. **Remover** o `border-b border-border` do container externo do header (linha 125)
+2. **Adicionar** `border-b border-border` no bloco do logo (linha 128), para que a linha fique entre o logo e o campo de busca
+3. **Ajustar espaçamentos**:
+   - Logo: manter `px-4 py-4`
+   - Search: trocar `px-3 pb-3` por `px-3 py-3` para ter espaçamento equilibrado acima e abaixo do campo de busca (já que não tem mais border-b no container, o search precisa de padding top e bottom iguais)
 
-Remover o wrapper `Tooltip` / `TooltipTrigger` / `TooltipContent` ao redor do botão do avatar, mantendo apenas o `DropdownMenu` funcionando normalmente.
+### Resultado visual esperado
 
-O botão trigger do dropdown continua igual, apenas sem o tooltip envolvendo.
+```text
+┌─────────────────────┐
+│ [logo] Hiro Hub     │
+├─────────────────────┤
+│ 🔍 Buscar      ⌘K  │
+│                     │
+│  Home               │
+│  Tarefas            │
+│  ...                │
+```
+
+A linha separadora fica entre o logo e a busca, criando uma hierarquia visual mais clara: identidade da marca separada das ferramentas de navegação.
 
