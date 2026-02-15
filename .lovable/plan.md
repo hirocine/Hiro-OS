@@ -1,29 +1,21 @@
 
-
-## Padronizar caixas de busca na Administração
+## Padronizar containers de busca (Usuários vs Logs)
 
 ### Problema
-As 3 caixas de busca (Usuários, Categorias, Logs) usam posicionamentos de ícone e padding diferentes, resultando em aparência inconsistente.
+Os containers de filtros das abas Usuários e Logs possuem layouts diferentes:
 
-### Diferenças atuais
-
-| Aba | Ícone (posição) | Input (padding) |
+| Propriedade | Usuarios | Logs |
 |---|---|---|
-| Usuários | `left-2 top-2.5` | `pl-8` |
-| Categorias | `left-3 top-3` | `pl-9` |
-| Logs | `left-3 top-1/2 -translate-y-1/2` | `pl-10` |
+| Container | `flex items-center gap-2` | `flex flex-col md:flex-row gap-3` |
+| SelectTrigger | `w-40` | `w-full md:w-[200px]` |
+| Search icon | sem `transform` | com `transform` redundante |
 
-### Padrão escolhido
+### Correção
 
-Usar `left-3 top-1/2 -translate-y-1/2` para o ícone e `pl-10` para o input. Esse padrão centraliza o ícone verticalmente de forma confiável independente da altura do input.
+**Arquivo**: `src/pages/Admin.tsx`
 
-### O que muda
+1. **Aba Logs (linha 726)**: Trocar o container de `flex flex-col md:flex-row gap-3` para `flex items-center gap-2` (igual Usuarios)
+2. **Aba Logs (linha 737)**: Trocar o SelectTrigger de `w-full md:w-[200px]` para `w-40`
+3. **Aba Logs (linha 728)**: Remover `transform` redundante da classe do icone Search
 
-**Arquivo 1**: `src/pages/Admin.tsx`
-- Aba Usuários (linha ~580): ajustar ícone para `left-3 top-1/2 -translate-y-1/2` e input para `pl-10`
-
-**Arquivo 2**: `src/components/Settings/CategoryManagement.tsx`
-- Busca de categorias (linha ~583): ajustar ícone para `left-3 top-1/2 -translate-y-1/2` e input para `pl-10`
-
-A aba de Logs já está no padrão correto, não precisa de alteração.
-
+Resultado: ambas as barras de filtro terao exatamente a mesma estrutura e aparencia.
