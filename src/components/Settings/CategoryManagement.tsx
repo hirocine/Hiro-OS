@@ -571,24 +571,25 @@ export function CategoryManagement() {
 
   return (
     <>
-      <Card>
-        <CardContent className="pt-4 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar categorias..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button onClick={() => setShowAddCategoryDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova
-            </Button>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar categorias..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
           </div>
+          <Button onClick={() => setShowAddCategoryDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova
+          </Button>
+        </div>
 
+        <Card>
+        <CardContent className="pt-4">
           <div className="space-y-2">
             {/* Drag-and-drop para categorias principais */}
             <DndContext
@@ -729,6 +730,7 @@ export function CategoryManagement() {
           </div>
         </CardContent>
       </Card>
+      </div>
 
       {/* Dialog: Nova Categoria Principal */}
       <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
