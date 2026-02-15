@@ -1,6 +1,6 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film } from 'lucide-react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -12,6 +12,8 @@ import { Z_INDEX } from '@/lib/z-index';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
@@ -38,179 +40,270 @@ const adminNavigation: NavigationItem[] = [
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
 
+function NavItem({ item, active, expanded, isAdmin: isAdminItem, onNavClick }: {
+  item: NavigationItem;
+  active: boolean;
+  expanded: boolean;
+  isAdmin?: boolean;
+  onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+}) {
+  const Icon = item.icon;
+  const activeColor = isAdminItem ? 'destructive' : 'primary';
+
+  const link = (
+    <NavLink
+      to={item.href}
+      onClick={(e) => onNavClick(e, item.href)}
+      className={cn(
+        "flex items-center gap-3 rounded-lg transition-all duration-200 relative group",
+        expanded ? "px-3 py-2.5" : "justify-center h-10 w-10 mx-auto",
+        active
+          ? isAdminItem
+            ? "bg-destructive/10 text-destructive font-medium"
+            : "bg-primary/10 text-primary font-medium"
+          : isAdminItem
+            ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
+            : "hover:bg-accent text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {active && (
+        <div className={cn(
+          "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full",
+          expanded ? "h-6" : "h-5",
+          isAdminItem ? "bg-destructive" : "bg-primary"
+        )} />
+      )}
+      <Icon className={cn(
+        "h-[18px] w-[18px] shrink-0",
+        active && (isAdminItem ? "text-destructive" : "text-primary")
+      )} />
+      {expanded && (
+        <span className="text-sm truncate">{item.name}</span>
+      )}
+    </NavLink>
+  );
+
+  if (!expanded) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right"><p>{item.name}</p></TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return link;
+}
+
 export function DesktopSidebar() {
   const { isAdmin } = useAuthContext();
   const location = useLocation();
-  const navigate = useNavigate();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
-  
-  const [scrollState, setScrollState] = useState({ canScrollUp: false, canScrollDown: false });
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { state, toggleSidebar } = useSidebar();
+  const expanded = state === 'expanded';
 
-  const checkScrollState = useCallback(() => {
-    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (viewport) {
-      const { scrollTop, scrollHeight, clientHeight } = viewport;
-      setScrollState({
-        canScrollUp: scrollTop > 5,
-        canScrollDown: scrollTop + clientHeight < scrollHeight - 5
-      });
-    }
-  }, []);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Ctrl+K to focus search
   useEffect(() => {
-    checkScrollState();
-    window.addEventListener('resize', checkScrollState);
-    return () => window.removeEventListener('resize', checkScrollState);
-  }, [checkScrollState]);
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (!expanded) toggleSidebar();
+        setTimeout(() => searchInputRef.current?.focus(), 350);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [expanded, toggleSidebar]);
 
-  const isActive = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  // Clear search when collapsing
+  useEffect(() => {
+    if (!expanded) setSearchQuery('');
+  }, [expanded]);
+
+  const filteredNav = useMemo(() =>
+    navigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [searchQuery]
+  );
+  const filteredAdminNav = useMemo(() =>
+    adminNavigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [searchQuery]
+  );
+
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // If we're already on this path, allow normal navigation
     if (location.pathname === href) return;
-    
-    // Check if navigation should be blocked
     const shouldProceed = requestNavigation(href);
-    if (!shouldProceed) {
-      e.preventDefault();
-    }
+    if (!shouldProceed) e.preventDefault();
   };
 
   return (
-      <aside
-        className={cn(
-          "hidden lg:flex flex-col border-r border-border bg-card shadow-lg",
-          "w-16 fixed left-0 bottom-0",
-          isPWA 
-            ? "top-[env(safe-area-inset-top,0px)]"
-            : "top-0"
-        )}
-        style={{ zIndex: Z_INDEX.sidebar }}
-      >
-      {/* Logo */}
+    <aside
+      className={cn(
+        "hidden lg:flex flex-col border-r border-border bg-card",
+        "fixed left-0 bottom-0 transition-[width] duration-300 ease-in-out",
+        expanded ? "w-64" : "w-16",
+        isPWA ? "top-[env(safe-area-inset-top,0px)]" : "top-0"
+      )}
+      style={{ zIndex: Z_INDEX.sidebar }}
+    >
+      {/* Header */}
       <div className={cn(
-        "flex items-center justify-center border-b border-border sticky top-0 z-10",
-        isPWA ? "py-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]" : "py-5"
+        "flex items-center border-b border-border shrink-0",
+        expanded ? "justify-between px-4 py-4" : "justify-center py-4",
+        isPWA && "pt-[calc(1rem+env(safe-area-inset-top,0px))]"
       )}>
-        <img 
-          src={hiroLogo} 
-          alt="HIRO Logo" 
-          className="h-10 w-10 rounded-lg object-cover"
-        />
+        <div className={cn("flex items-center gap-3 min-w-0", !expanded && "justify-center")}>
+          <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
+          {expanded && (
+            <span className="text-base font-bold text-foreground truncate">Hiro Hub</span>
+          )}
+        </div>
+        {expanded && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
-      {/* Navegação com ScrollArea */}
-      <div className="flex-1 relative scroll-fade-container">
-        <div className={cn("scroll-fade-top", scrollState.canScrollUp && "visible")} />
-        <ScrollArea 
-          ref={scrollAreaRef} 
-          className="h-full hide-scrollbar"
-          onScrollCapture={checkScrollState}
-        >
-          <div className="py-4">
-          {/* Navegação Principal */}
-          <div className="px-2 mb-4">
-            <nav className="space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-                return (
-                  <Tooltip key={item.name}>
-                    <TooltipTrigger asChild>
-                      <NavLink
-                        to={item.href}
-                        onClick={(e) => handleNavClick(e, item.href)}
-                        className={cn(
-                          "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
-                          active 
-                            ? "bg-primary/10 text-primary font-medium shadow-sm" 
-                            : "hover:bg-muted text-foreground"
-                        )}
-                      >
-                        {active && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />
-                        )}
-                        <Icon className={cn(
-                          "h-5 w-5 transition-transform duration-200 group-hover:scale-110",
-                          active && "text-primary"
-                        )} />
-                      </NavLink>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>{item.name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </nav>
-          </div>
+      {/* Toggle button when collapsed */}
+      {!expanded && (
+        <div className="flex justify-center py-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
-          {/* Seção Admin */}
-          {isAdmin && (
+      {/* Search */}
+      <div className={cn("shrink-0 px-3 pb-2", !expanded && "px-2")}>
+        {expanded ? (
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar..."
+              className="w-full h-8 pl-8 pr-12 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
+            />
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+              ⌘K
+            </kbd>
+          </div>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  toggleSidebar();
+                  setTimeout(() => searchInputRef.current?.focus(), 350);
+                }}
+                className="h-10 w-10 mx-auto text-muted-foreground hover:text-foreground"
+              >
+                <Search className="h-[18px] w-[18px]" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right"><p>Buscar (⌘K)</p></TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      <Separator className="mx-3" />
+
+      {/* Navigation */}
+      <ScrollArea className="flex-1">
+        <div className="py-3">
+          {/* Main Nav Label */}
+          {expanded && (
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+              Menu
+            </p>
+          )}
+          <nav className={cn("space-y-0.5", expanded ? "px-3" : "px-2")}>
+            {filteredNav.map((item) => (
+              <NavItem
+                key={item.name}
+                item={item}
+                active={isActive(item.href)}
+                expanded={expanded}
+                onNavClick={handleNavClick}
+              />
+            ))}
+          </nav>
+
+          {/* Admin Section */}
+          {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (
             <>
-              <div className="px-2 mb-4">
-                <Separator className="mb-4" />
+              <div className="px-3 my-3">
+                <Separator />
               </div>
-            <div className="px-2 mb-4">
-              <nav className="space-y-1">
-                {adminNavigation.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
-                  return (
-                    <Tooltip key={item.name}>
-                      <TooltipTrigger asChild>
-                        <NavLink
-                          to={item.href}
-                          onClick={(e) => handleNavClick(e, item.href)}
-                          className={cn(
-                            "flex items-center justify-center h-12 rounded-md transition-all duration-200 relative group",
-                            active 
-                              ? "bg-destructive/10 text-destructive font-medium shadow-sm" 
-                              : "hover:bg-destructive/5 text-foreground"
-                          )}
-                        >
-                          {active && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-destructive rounded-r-full" />
-                          )}
-                          <Icon className={cn(
-                            "h-5 w-5 transition-transform duration-200 group-hover:scale-110",
-                            active && "text-destructive"
-                          )} />
-                        </NavLink>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p>{item.name}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
+              {expanded && (
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+                  Administração
+                </p>
+              )}
+              <nav className={cn("space-y-0.5", expanded ? "px-3" : "px-2")}>
+                {filteredAdminNav.map((item) => (
+                  <NavItem
+                    key={item.name}
+                    item={item}
+                    active={isActive(item.href)}
+                    expanded={expanded}
+                    isAdmin
+                    onNavClick={handleNavClick}
+                  />
+                ))}
               </nav>
-            </div>
             </>
           )}
-          </div>
-        </ScrollArea>
-        <div className={cn("scroll-fade-bottom", scrollState.canScrollDown && "visible")} />
-      </div>
+        </div>
+      </ScrollArea>
 
-      {/* Ferramentas - Fixas no fundo */}
-      <div className="border-t border-border/50 px-2 py-2">
-        <div className="space-y-1">
-          <div className="flex items-center justify-center">
-            <NotificationPanel />
-          </div>
-          
-          <div className="flex items-center justify-center">
-            <ThemeSwitcher aria-label="Alternar tema" />
-          </div>
+      {/* Tools - Bottom */}
+      <div className="border-t border-border/50 px-2 py-2 shrink-0">
+        <div className={cn("space-y-0.5", expanded && "px-1")}>
+          {expanded ? (
+            <>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer">
+                <NotificationPanel />
+                <span className="text-sm text-muted-foreground">Notificações</span>
+              </div>
+              <div className="flex items-center gap-3 rounded-lg">
+                <ThemeSwitcher className="w-full justify-start gap-3 px-3 py-2 h-auto rounded-lg" showLabel />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-center">
+                <NotificationPanel />
+              </div>
+              <div className="flex items-center justify-center">
+                <ThemeSwitcher aria-label="Alternar tema" />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* User Profile - Sticky Bottom */}
+      {/* User Profile */}
       <SidebarUserProfile />
     </aside>
   );
