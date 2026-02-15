@@ -723,9 +723,9 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar logs..."
                 value={logSearchQuery}
@@ -734,7 +734,7 @@ export default function Admin() {
               />
             </div>
             <Select value={tableFilter} onValueChange={setTableFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder="Filtrar por tabela" />
               </SelectTrigger>
               <SelectContent>
