@@ -168,7 +168,7 @@ export function DesktopSidebar() {
           {/* Admin Section */}
           {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (
             <>
-              <div className="px-3 my-3">
+              <div className="px-3 my-5">
                 <Separator />
               </div>
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
