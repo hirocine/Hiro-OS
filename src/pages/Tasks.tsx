@@ -57,7 +57,7 @@ export default function Tasks() {
   );
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
         title={isPrivate ? "Tarefas Privadas" : "Tarefas Gerais"}
         subtitle={isPrivate ? "Suas tarefas pessoais, visíveis apenas para você" : "Gerencie as tarefas do time e acompanhe o progresso"}

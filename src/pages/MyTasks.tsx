@@ -141,7 +141,7 @@ export default function MyTasks() {
   ];
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <BreadcrumbNav 
         items={[
           { label: 'Tarefas', href: '/tarefas' },

@@ -66,7 +66,7 @@ export default function AVProjects() {
   };
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <div className="space-y-6">
         <PageHeader
           title="Projetos"
