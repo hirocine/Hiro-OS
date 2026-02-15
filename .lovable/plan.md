@@ -1,14 +1,15 @@
 
 
-## Mover a linha separadora para entre o logo e a busca
+## Adicionar label "Menu" e mais espaçamento acima da navegação principal
 
-### Alteracao em `src/components/Layout/DesktopSidebar.tsx`
+### Alteração em `src/components/Layout/DesktopSidebar.tsx`
 
-1. **Remover** o `border-b border-border` do container externo do header (linha 125)
-2. **Adicionar** `border-b border-border` no bloco do logo (linha 128), para que a linha fique entre o logo e o campo de busca
-3. **Ajustar espaçamentos**:
-   - Logo: manter `px-4 py-4`
-   - Search: trocar `px-3 pb-3` por `px-3 py-3` para ter espaçamento equilibrado acima e abaixo do campo de busca (já que não tem mais border-b no container, o search precisa de padding top e bottom iguais)
+1. Adicionar o label **"Menu"** acima dos itens de navegação principal, usando o mesmo estilo do label "Administração" (`text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2`)
+2. Aumentar o `pt` (padding-top) do bloco de navegação de `pt-4` para `pt-5` para dar mais respiro entre a busca e o início do menu
+
+### Alteração em `src/components/Layout/MobileSidebar.tsx`
+
+Aplicar a mesma alteração de espaçamento para manter consistência entre desktop e mobile. O mobile já possui o label "Menu", então apenas ajustar o padding se necessário.
 
 ### Resultado visual esperado
 
@@ -18,10 +19,15 @@
 ├─────────────────────┤
 │ 🔍 Buscar      ⌘K  │
 │                     │
+│  MENU               │
 │  Home               │
 │  Tarefas            │
 │  ...                │
+│  Plataformas        │
+│                     │
+│ ─────────────────── │
+│  ADMINISTRAÇÃO      │
+│  Dashboard          │
+│  ...                │
 ```
-
-A linha separadora fica entre o logo e a busca, criando uma hierarquia visual mais clara: identidade da marca separada das ferramentas de navegação.
 
