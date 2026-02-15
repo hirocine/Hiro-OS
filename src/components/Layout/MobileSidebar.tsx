@@ -89,7 +89,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group",
           expanded
-            ? "text-muted-foreground"
+            ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
             : "rounded-lg",
           parentActive && !expanded
             ? "bg-primary/10 text-primary font-medium"
@@ -98,7 +98,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
               : ""
         )}
       >
-        {parentActive && !expanded && (
+        {(parentActive && !expanded || childActive && expanded) && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
         )}
 
@@ -135,16 +135,13 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
                   to={child.href}
                   onClick={(e) => onNavClick(e, child.href)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm relative",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
                     active
-                      ? "text-primary font-medium"
+                      ? "text-success font-semibold"
                       : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   )}
                 >
-                  {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-                  )}
-                  <ChildIcon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
+                  <ChildIcon className={cn("h-[18px] w-[18px] shrink-0", active && "text-success")} />
                   <span>{child.name}</span>
                 </NavLink>
               );
