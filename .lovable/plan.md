@@ -1,21 +1,28 @@
 
-## Padronizar containers de busca (Usuários vs Logs)
 
-### Problema
-Os containers de filtros das abas Usuários e Logs possuem layouts diferentes:
+## Padronizar alturas e layouts das barras de busca na Administração
 
-| Propriedade | Usuarios | Logs |
-|---|---|---|
-| Container | `flex items-center gap-2` | `flex flex-col md:flex-row gap-3` |
-| SelectTrigger | `w-40` | `w-full md:w-[200px]` |
-| Search icon | sem `transform` | com `transform` redundante |
+### Problema raiz
 
-### Correção
+A diferença visual vem de duas causas:
 
-**Arquivo**: `src/pages/Admin.tsx`
+1. **Alturas diferentes**: O componente `Input` usa `h-10` (40px), mas o `SelectTrigger` usa `min-h-[44px]` (44px). Quando estao lado a lado, o select fica mais alto que o input.
+2. **Categorias**: O componente `CategoryManagement` envolve seu conteudo em `space-y-4`, que fica dentro do `TabsContent` que tambem tem `space-y-4`, criando espaçamento duplicado. Alem disso, a estrutura do search bar difere das outras abas.
 
-1. **Aba Logs (linha 726)**: Trocar o container de `flex flex-col md:flex-row gap-3` para `flex items-center gap-2` (igual Usuarios)
-2. **Aba Logs (linha 737)**: Trocar o SelectTrigger de `w-full md:w-[200px]` para `w-40`
-3. **Aba Logs (linha 728)**: Remover `transform` redundante da classe do icone Search
+### Correções
 
-Resultado: ambas as barras de filtro terao exatamente a mesma estrutura e aparencia.
+**Arquivo 1: `src/pages/Admin.tsx`**
+
+- Aba **Usuarios** (linha 589): Adicionar `h-10` ao `SelectTrigger` para forçar a mesma altura do Input
+- Aba **Logs** (linha 737): Adicionar `h-10` ao `SelectTrigger` para forçar a mesma altura do Input
+
+**Arquivo 2: `src/components/Settings/CategoryManagement.tsx`**
+
+- Linha 581: Remover o wrapper `space-y-4` externo (o `TabsContent` ja fornece `space-y-4`)
+- Manter a estrutura do search bar como esta (ja usa o padrao correto de icone/padding)
+
+### Resultado esperado
+
+- Todas as barras de busca e selects terao exatamente 40px de altura
+- O espaçamento da aba Categorias ficara identico ao das outras abas
+
