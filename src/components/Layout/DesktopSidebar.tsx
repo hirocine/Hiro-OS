@@ -150,7 +150,7 @@ export function DesktopSidebar() {
 
       {/* Navigation */}
       <ScrollArea className="flex-1">
-        <div className="py-3">
+        <div className="pt-5 pb-3">
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
             Menu
           </p>
