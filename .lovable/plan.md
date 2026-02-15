@@ -1,47 +1,59 @@
 
 
-## Mover botão "Adicionar Usuário" para o PageHeader
+## Mover busca e botão "Nova" para fora do Card na aba Categorias
 
 ### Problema
-O botão "Adicionar Usuário" está isolado na linha de filtros, abaixo do título. Nas demais páginas (ex: Plataformas), o botão de ação principal fica alinhado com o título no `PageHeader`.
+Na aba de categorias, a busca e o botão "Nova" estão dentro do Card. O padrão já aplicado na aba de Usuários coloca filtros/ações fora do Card, acima dele.
 
 ### O que muda
 
-**Arquivo**: `src/pages/Admin.tsx`
+**Arquivo**: `src/components/Settings/CategoryManagement.tsx`
 
-1. Adicionar prop `actions` ao `PageHeader`, renderizando o botão "Adicionar Usuário" condicionalmente quando `activeTab === 'users'`
-2. Remover o botão da barra de filtros (linha 587-590)
-3. A barra de filtros fica apenas com busca + select de role
+1. Extrair o bloco de busca + botão "Nova" para fora do `<Card>`, renderizando-os antes dele dentro de um wrapper `<div className="space-y-4">`
+2. O Card fica apenas com o conteúdo da tabela/lista de categorias
+3. Remover `space-y-4` do `CardContent` (já não precisa separar filtros do conteúdo)
 
-### Resultado
+### Layout resultante
 
 ```text
 +----------------------------------------------------------+
-| Gerenciamento de Usuários          [+ Adicionar Usuário]  |
-| Gerencie usuários e permissões                            |
+| Gerenciamento de Categorias                               |
+| Gerencie categorias e subcategorias de equipamentos       |
 +----------------------------------------------------------+
-| [Buscar usuários...]  [Todos v]                           |
+| [Q Buscar categorias...]              [+ Nova]            |
 +----------------------------------------------------------+
-| Card com tabela                                           |
+| Card                                                      |
+| +------------------------------------------------------+ |
+| | Lista de categorias (drag-and-drop)                  | |
+| +------------------------------------------------------+ |
 +----------------------------------------------------------+
 ```
 
 ### Detalhes técnicos
 
-No `PageHeader`, adicionar actions condicional:
+No `CategoryManagement.tsx`, o return passará de:
 
 ```tsx
-<PageHeader 
-  title={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).title}
-  subtitle={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).subtitle}
-  actions={activeTab === 'users' ? (
-    <Button onClick={() => setIsAddUserDialogOpen(true)}>
-      <UserPlus className="h-4 w-4 mr-2" />
-      Adicionar Usuário
-    </Button>
-  ) : undefined}
-/>
+<Card>
+  <CardContent className="pt-4 space-y-4">
+    <div className="flex ..."> {/* busca + botão */} </div>
+    <div className="space-y-2"> {/* lista */} </div>
+  </CardContent>
+</Card>
 ```
 
-Na barra de filtros, remover o botão e simplificar o layout (remover `justify-between`, manter apenas os filtros).
+Para:
+
+```tsx
+<div className="space-y-4">
+  <div className="flex ..."> {/* busca + botão - FORA do card */} </div>
+  <Card>
+    <CardContent className="pt-4">
+      <div className="space-y-2"> {/* lista */} </div>
+    </CardContent>
+  </Card>
+</div>
+```
+
+Apenas o arquivo `src/components/Settings/CategoryManagement.tsx` será editado.
 
