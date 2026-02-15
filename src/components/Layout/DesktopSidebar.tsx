@@ -4,8 +4,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
-import { NotificationPanel } from './NotificationPanel';
-import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { Z_INDEX } from '@/lib/z-index';
@@ -189,14 +187,6 @@ export function DesktopSidebar() {
           )}
         </div>
       </ScrollArea>
-
-      {/* Tools - Bottom */}
-      <div className="border-t border-border px-3 py-3 shrink-0">
-        <div className="flex items-center justify-center gap-1">
-          <NotificationPanel />
-          <ThemeSwitcher />
-        </div>
-      </div>
 
       {/* User Profile */}
       <SidebarUserProfile />
