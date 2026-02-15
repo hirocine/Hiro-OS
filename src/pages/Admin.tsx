@@ -253,6 +253,7 @@ export default function Admin() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [logFilter, setLogFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
+  const [logSearchQuery, setLogSearchQuery] = useState('');
 
   // Use equipment hook for CSV functionality
   const { 
@@ -722,24 +723,35 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar logs..."
+                value={logSearchQuery}
+                onChange={(e) => setLogSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={tableFilter} onValueChange={setTableFilter}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Filtrar por tabela" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as tabelas</SelectItem>
+                <SelectItem value="tasks">Tarefas</SelectItem>
+                <SelectItem value="audiovisual_projects">Projetos AV</SelectItem>
+                <SelectItem value="suppliers">Fornecedores</SelectItem>
+                <SelectItem value="loans">Empréstimos</SelectItem>
+                <SelectItem value="equipments">Equipamentos</SelectItem>
+                <SelectItem value="user_roles">Usuários</SelectItem>
+                <SelectItem value="projects">Retiradas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
            <Card>
             <CardContent className="pt-4">
-              <Select value={tableFilter} onValueChange={setTableFilter}>
-                <SelectTrigger className="w-[200px] mb-4">
-                  <SelectValue placeholder="Filtrar por tabela" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as tabelas</SelectItem>
-                  <SelectItem value="tasks">Tarefas</SelectItem>
-                  <SelectItem value="audiovisual_projects">Projetos AV</SelectItem>
-                  <SelectItem value="suppliers">Fornecedores</SelectItem>
-                  <SelectItem value="loans">Empréstimos</SelectItem>
-                  <SelectItem value="equipments">Equipamentos</SelectItem>
-                  <SelectItem value="user_roles">Usuários</SelectItem>
-                  <SelectItem value="projects">Retiradas</SelectItem>
-                </SelectContent>
-              </Select>
-
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
@@ -752,27 +764,47 @@ export default function Admin() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loadingLogs ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        <div className="flex items-center justify-center gap-2">
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Carregando logs...
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : auditLogs.filter(log => 
-                      (tableFilter === 'all' || log.table_name === tableFilter)
-                    ).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Nenhum log encontrado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    auditLogs
-                      .filter(log => tableFilter === 'all' || log.table_name === tableFilter)
-                      .map((log) => (
+                  {(() => {
+                    const searchLower = logSearchQuery.toLowerCase();
+                    const filtered = auditLogs.filter(log => {
+                      if (tableFilter !== 'all' && log.table_name !== tableFilter) return false;
+                      if (!logSearchQuery) return true;
+                      const description = getActionDescription(log);
+                      const actionLabel = ACTION_LABELS[log.action] || log.action;
+                      const tableLabel = TABLE_LABELS[log.table_name] || log.table_name;
+                      return (
+                        (log.user_email || '').toLowerCase().includes(searchLower) ||
+                        actionLabel.toLowerCase().includes(searchLower) ||
+                        tableLabel.toLowerCase().includes(searchLower) ||
+                        log.table_name.toLowerCase().includes(searchLower) ||
+                        description.toLowerCase().includes(searchLower)
+                      );
+                    });
+
+                    if (loadingLogs) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8">
+                            <div className="flex items-center justify-center gap-2">
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              Carregando logs...
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    if (filtered.length === 0) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Nenhum log encontrado
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    return filtered.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="truncate">
                           <span className="text-sm">{log.user_email || 'Sistema'}</span>
@@ -823,8 +855,8 @@ export default function Admin() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
+                    ));
+                  })()}
                 </TableBody>
               </Table>
             </CardContent>
