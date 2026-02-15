@@ -74,12 +74,12 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
       <div
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
-          anyActive
+          parentActive
             ? "bg-primary/10 text-primary font-medium"
             : "hover:bg-accent text-muted-foreground hover:text-foreground"
         )}
       >
-        {anyActive && (
+        {parentActive && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
         )}
 
@@ -92,7 +92,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
           <ChevronRight className={cn(
             "h-[18px] w-[18px] transition-transform duration-200",
             expanded && "rotate-90",
-            anyActive ? "text-primary" : "text-muted-foreground"
+            parentActive ? "text-primary" : "text-muted-foreground"
           )} />
         </button>
 
@@ -107,7 +107,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
 
       <Collapsible open={expanded}>
         <CollapsibleContent>
-          <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-3">
+          <div className="ml-4 mt-0.5 space-y-0.5 pl-3">
             {item.children!.map((child) => {
               const ChildIcon = child.icon;
               const active = isActive(child.href);
