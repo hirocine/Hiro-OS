@@ -1,67 +1,108 @@
 
 
-## Eliminar skeleton duplicado: remover Suspense redundante nas rotas filhas
+## Corrigir ausencia de skeleton durante carregamento
 
-### Problema
+### Problema raiz
 
-Existem duas camadas de `Suspense` para cada rota protegida:
+O `Layout.tsx` usa `<Suspense fallback={null}>`, o que significa que enquanto o chunk JS de qualquer pagina carrega via lazy loading, o usuario ve uma area completamente em branco. Isso afeta **todas** as paginas, nao so Home e Dashboard.
 
-1. **App.tsx** - cada rota filha tem `<Suspense fallback={<LoadingScreenSkeleton />}>` individualmente
-2. **Layout.tsx** - o `<Outlet />` ja esta envolto em `<Suspense fallback={null}>`
+Alem disso:
+- **Home**: nao tem skeleton de pagina — cada componente carrega separadamente
+- **Dashboard**: o estado `roleLoading` mostra um spinner generico de tela cheia ao inves do skeleton proprio do dashboard
 
-Quando o usuario navega entre paginas, o fluxo e:
-- Suspense do App.tsx mostra `LoadingScreenSkeleton` (generico, tela cheia com 6 blocos identicos) enquanto o chunk JS carrega
-- Chunk carrega e a pagina renderiza seu proprio skeleton inline (fiel ao layout)
+### Solucao (3 mudancas)
 
-Resultado: **flash do skeleton generico seguido pelo skeleton da pagina** — dois skeletons em sequencia.
+#### 1. Layout.tsx — trocar fallback do Suspense
 
-### Solucao
+Trocar `fallback={null}` por um skeleton generico leve que aparece apenas enquanto o chunk JS carrega (geralmente < 500ms).
 
-Remover os wrappers `<Suspense>` individuais de todas as rotas filhas do Layout no `App.tsx`. O `<Suspense fallback={null}>` do `Layout.tsx` ja cuida do lazy loading — quando o chunk carrega, o Suspense do Layout mostra `null` (nada), e em seguida a pagina renderiza seu proprio skeleton de loading (que ja espelha o layout real).
-
-Manter o `<Suspense>` apenas nas rotas que nao sao filhas do Layout:
-- `/entrar` (Auth) — nao tem Layout
-- `*` (NotFound) — nao tem Layout
-
-### Mudanca no App.tsx
-
-De:
 ```tsx
-<Route index element={<Suspense fallback={<LoadingScreenSkeleton />}><Home /></Suspense>} />
-<Route path="dashboard" element={<Suspense fallback={<LoadingScreenSkeleton />}><Dashboard /></Suspense>} />
-// ... 20+ rotas iguais
+// De:
+<Suspense fallback={null}>
+  <Outlet />
+</Suspense>
+
+// Para:
+<Suspense fallback={
+  <div className="p-6 lg:p-8 space-y-6 animate-pulse">
+    <div className="h-8 bg-muted rounded-lg w-1/3" />
+    <div className="h-4 bg-muted rounded w-1/2" />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="h-40 bg-muted rounded-lg" />
+      <div className="h-40 bg-muted rounded-lg" />
+      <div className="h-40 bg-muted rounded-lg" />
+    </div>
+  </div>
+}>
+  <Outlet />
+</Suspense>
 ```
 
-Para:
+#### 2. Home.tsx — adicionar skeleton de pagina
+
+A Home nao tem dados globais que determinem um estado `loading`. Mas os sub-componentes (HeroBanner e TeamDirectory) tem seus proprios loadings. Vou extrair os estados de loading dos hooks ja usados e mostrar um skeleton unificado.
+
+Alternativa mais simples: como a Home ja importa os componentes que fazem seus proprios skeletons, e o problema real era o `fallback={null}` do Layout (corrigido acima), a Home ja vai funcionar melhor. Porem, para consistencia visual, vou adicionar um skeleton no nivel da pagina para quando `useSiteSettings` e `useTeamMembers` estao carregando:
+
 ```tsx
-<Route index element={<Home />} />
-<Route path="dashboard" element={<Dashboard />} />
-// ... rotas diretas, sem Suspense individual
+export default function Home() {
+  const { isLoading: bannerLoading } = useSiteSettings();
+  const { isLoading: teamLoading } = useTeamMembers();
+
+  if (bannerLoading && teamLoading) {
+    return (
+      <ResponsiveContainer maxWidth="7xl">
+        {/* Banner skeleton */}
+        <div className="w-full h-48 md:h-64 lg:h-80 rounded-xl bg-muted animate-pulse" />
+        <div className="space-y-6 mt-6">
+          {/* AI Assistant skeleton */}
+          <div className="h-[220px] bg-muted rounded-lg animate-pulse" />
+          {/* Team skeleton */}
+          <div className="h-64 bg-muted rounded-lg animate-pulse" />
+        </div>
+      </ResponsiveContainer>
+    );
+  }
+  // ... resto normal
+}
 ```
 
-As rotas fora do Layout mantem o Suspense:
+Obs: Importar `useSiteSettings` e `useTeamMembers` no Home nao cria queries duplicadas — React Query reutiliza a mesma query se a key for igual (ja chamada dentro dos componentes filhos).
+
+#### 3. Dashboard.tsx — unificar roleLoading com skeleton
+
+Trocar o spinner generico de `roleLoading` pelo mesmo skeleton ja existente do estado `loading`:
+
 ```tsx
-<Route path="/entrar" element={
-  <Suspense fallback={<LoadingScreenSkeleton />}>
-    <Auth />
-  </Suspense>
-} />
-<Route path="*" element={
-  <Suspense fallback={<LoadingScreenSkeleton />}>
-    <NotFound />
-  </Suspense>
-} />
+// De:
+if (roleLoading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+    </div>
+  );
+}
+
+// Para:
+if (roleLoading || loading) {
+  return (
+    <ResponsiveContainer maxWidth="7xl">
+      <PageHeader title="Dashboard" subtitle="..." />
+      <div className="space-y-6 lg:space-y-8">
+        {/* skeleton existente do dashboard */}
+      </div>
+    </ResponsiveContainer>
+  );
+}
 ```
 
 ### Arquivos editados
 
-- `src/App.tsx` — remover Suspense wrappers de ~25 rotas filhas do Layout
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/Layout/Layout.tsx` | Trocar `fallback={null}` por skeleton generico |
+| `src/pages/Home.tsx` | Adicionar skeleton de pagina com hooks de loading |
+| `src/pages/Dashboard.tsx` | Unificar `roleLoading` e `loading` no mesmo skeleton |
 
-Nenhum outro arquivo precisa mudar. Nenhuma dependencia nova.
-
-### Resultado
-
-- Navegacao entre paginas: usuario ve apenas 1 skeleton (o da pagina, fiel ao layout real)
-- Primeiro carregamento (chunk nao cacheado): Layout mostra nada (`null`) por alguns ms enquanto o chunk carrega, depois a pagina mostra seu skeleton proprio
-- Rotas externas (Auth, NotFound): mantem o Suspense generico como fallback
+3 arquivos, nenhuma dependencia nova.
 
