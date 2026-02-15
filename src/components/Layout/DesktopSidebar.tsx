@@ -148,7 +148,10 @@ export function DesktopSidebar() {
 
       {/* Navigation */}
       <ScrollArea className="flex-1">
-        <div className="pt-4 pb-3">
+        <div className="pt-5 pb-3">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+            Menu
+          </p>
           <nav className="space-y-0.5 px-3">
             {filteredNav.map((item) => (
               <NavItem
