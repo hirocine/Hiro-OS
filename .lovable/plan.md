@@ -1,40 +1,34 @@
 
 
-## Corrigir animacao de deslocamento ao expandir subitens
+## Corrigir alinhamento do grupo expandido na sidebar
 
 ### Problema
 
-Quando o grupo expande, a classe `p-1` e adicionada ao container, empurrando todos os itens (incluindo o pai) 4px para a direita e para baixo. Isso causa um "pulo" visual desagradavel.
+O `p-1` permanente no container do grupo "Tarefas" empurra todos os itens 4px para dentro, desalinhando-os em relação a "Home", "Projetos AV" e os demais itens da sidebar.
 
-### Solucao
+### Solução
 
-Manter o `p-1` sempre presente no container (expandido ou nao), para que o item pai nunca se desloque. Apenas o fundo (`bg-muted/50` e `rounded-lg`) aparece/desaparece com transicao suave.
+Remover o `p-1` do container agrupador. O fundo `bg-muted/50 rounded-lg` continuará criando o efeito visual de agrupamento sem adicionar padding interno que desloca os itens.
 
-### Alteracoes
+### Alterações
 
-**`src/components/Layout/DesktopSidebar.tsx`** -- componente `NavItemWithChildren`, linha 106-109:
+**`src/components/Layout/DesktopSidebar.tsx`** -- container do `NavItemWithChildren`:
 
 Trocar:
 ```tsx
-<div className={cn(
-  "transition-colors duration-200",
-  expanded && "rounded-lg bg-muted/50 p-1"
-)}>
+"transition-colors duration-200 p-1 rounded-lg",
+expanded ? "bg-muted/50" : "bg-transparent"
 ```
 
 Por:
 ```tsx
-<div className={cn(
-  "transition-colors duration-200 p-1 rounded-lg",
-  expanded ? "bg-muted/50" : "bg-transparent"
-)}>
+"transition-colors duration-200 rounded-lg",
+expanded ? "bg-muted/50" : "bg-transparent"
 ```
 
-O `p-1` e `rounded-lg` ficam sempre aplicados, entao o item pai nunca muda de posicao. Apenas o `bg-muted/50` aparece quando expandido (com a transicao de cor ja existente).
-
-**`src/components/Layout/MobileSidebar.tsx`** -- mesma alteracao no componente equivalente.
+**`src/components/Layout/MobileSidebar.tsx`** -- mesma alteração.
 
 ### Resultado
 
-O item "Tarefas" permanece fixo na mesma posicao. Ao expandir, apenas o fundo sutil aparece atras dele e dos subitens, sem nenhum deslocamento.
+"Tarefas", "Gerais", "Privadas" ficam perfeitamente alinhados com "Home", "Projetos AV" e os demais itens. O fundo sutil do grupo se mantém sem deslocar nada.
 
