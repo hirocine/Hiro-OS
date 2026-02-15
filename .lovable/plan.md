@@ -1,62 +1,84 @@
 
 
-## Adicionar padding e borda nos subitens da sidebar ao hover
+## Dashboard Financeiro Executivo
 
-### Problema
+Substituir o dashboard atual de inventario por um dashboard financeiro executivo completo, com mock data preparado para futura integracao com Supabase.
 
-Quando o mouse passa sobre um subitem (ex: "Gerais", "Privadas"), o hover (`bg-background/80`) ocupa toda a largura do container `bg-muted/50`, criando a impressao visual de que o hover se funde com o fundo do grupo expandido. Falta separacao visual.
+### Arquivos a criar
 
-### Solucao
+**1. `src/data/mockFinancialData.ts`** — Dados ficticios estruturados
 
-Adicionar um pequeno recuo lateral no container dos subitens e uma borda sutil no hover de cada subitem, criando uma separacao clara entre o fundo do grupo e o hover do item.
-
-### Mudancas tecnicas
-
-**Arquivo: `src/components/Layout/DesktopSidebar.tsx`**
-
-1. No container dos subitens (linha 160), adicionar padding lateral `px-1.5` para que os subitens fiquem ligeiramente recuados em relacao ao fundo do grupo:
-
-```tsx
-// De:
-<div className="mt-0.5 space-y-0.5">
-
-// Para:
-<div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
+```
+financial_goals: revenue_goal (2M), margin_goal_pct (35%), profit_goal_pct (20%), cac_goal (500)
+financial_metrics: total_revenue (180k/mes), accumulated_revenue_ytd (1.2M), avg_ticket (15k), cac (420), ltv (45k), churn_rate (3.2%), burn_rate (95k), contribution_margin_actual (31%), net_profit_actual (17%), nps (72)
+monthly_data: 12 meses com meta vs realizado para grafico de barras
 ```
 
-2. No hover dos subitens (linha 172), adicionar uma borda sutil:
+**2. `src/hooks/useFinancialData.ts`** — Hook preparado para Supabase
 
-```tsx
-// De:
-"text-muted-foreground hover:bg-background/80 hover:text-foreground"
+Retorna mock data agora, mas com a estrutura de `useQuery` pronta para trocar por chamadas reais ao Supabase (`financial_metrics` table).
 
-// Para:
-"text-muted-foreground hover:bg-background/80 hover:text-foreground hover:border hover:border-border/50"
+**3. `src/pages/Dashboard.tsx`** — Reescrever completamente
+
+### Estrutura da nova pagina
+
+```
+ResponsiveContainer
+  PageHeader ("Dashboard Financeiro", subtitle com timestamp)
+
+  Secao 1: Header de Performance
+    - Card: Meta Anual (R$ 2M) vs Realizado (R$ 1.2M) com Progress bar (60%)
+    - Card: Meta YTD vs Realizado YTD
+    - Card: Faturamento do Mes vs Meta (com badge de celebracao se > 100%)
+
+  Secao 2: Graficos
+    - Grafico de Barras Duplas (Recharts): Meta vs Realizado por mes
+    - Indicadores laterais: Margem de Contribuicao e Lucro Liquido
+      (com cor de alerta se margem < meta)
+
+  Secao 3: Grid de Saude (Unit Economics)
+    - Grid 3-4 colunas com cards individuais:
+      LTV | CAC | LTV/CAC Ratio | Churn Rate | Ticket Medio | Burn Rate | NPS
 ```
 
-Nota: como `border` adiciona 1px que pode causar layout shift, usar `border border-transparent` como estado padrao para reservar o espaco:
+### Logica de UI
 
-```tsx
-// Classe base do subitem:
-"flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent"
+- `contribution_margin_actual (31%) < margin_goal_pct (35%)` => texto em `text-warning` ou `text-destructive`
+- Atingimento mensal > 100% => badge verde "Meta batida!" com icone de celebracao
+- Progress bars usando o componente `Progress` existente
+- Cards seguindo o padrao visual do dashboard atual (bg-gradient-card, shadow-elegant, hover:scale)
 
-// Hover inativo:
-"hover:bg-background/80 hover:text-foreground hover:border-border/50"
-```
+### Roteamento
 
-**Arquivo: `src/components/Layout/MobileSidebar.tsx`**
+Nenhuma mudanca necessaria em `App.tsx` — a rota `/dashboard` ja aponta para `Dashboard.tsx`.
 
-Aplicar a mesma mudanca nos subitens do mobile para consistencia.
+### Sidebar
 
-### Resultado
+Renomear o label na sidebar de "Dashboard" para "Dashboard Financeiro" nos arquivos:
+- `src/components/Layout/DesktopSidebar.tsx`
+- `src/components/Layout/MobileSidebar.tsx`
+- `src/components/Layout/Sidebar.tsx`
 
-- Subitens ficam com um recuo lateral dentro do grupo expandido
-- No hover, aparece uma borda sutil que separa visualmente o item do fundo do grupo
-- Sem layout shift gracas ao `border-transparent` como estado padrao
+### Detalhes tecnicos
+
+| Item | Detalhe |
+|------|---------|
+| Graficos | Recharts (ja instalado) — BarChart com duas series |
+| Formatacao | `formatCurrency` de `@/lib/utils` para valores em BRL |
+| Skeleton | Skeleton de loading seguindo o padrao atual com `StatsCardSkeleton` |
+| Protecao | Manter `isAdmin` guard existente |
+| Componentes | Reutilizar Card, Progress, PageHeader, ResponsiveContainer |
 
 ### Arquivos editados
 
-- `src/components/Layout/DesktopSidebar.tsx`
-- `src/components/Layout/MobileSidebar.tsx`
+| Arquivo | Acao |
+|---------|------|
+| `src/data/mockFinancialData.ts` | Criar (mock data) |
+| `src/hooks/useFinancialData.ts` | Criar (hook) |
+| `src/pages/Dashboard.tsx` | Reescrever (nova pagina) |
+| `src/components/Layout/DesktopSidebar.tsx` | Renomear label |
+| `src/components/Layout/MobileSidebar.tsx` | Renomear label |
+| `src/components/Layout/Sidebar.tsx` | Renomear label |
 
-Nenhuma dependencia nova.
+Nenhuma dependencia nova. 6 arquivos, 3 novos e 3 editados.
+
