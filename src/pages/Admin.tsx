@@ -553,29 +553,6 @@ export default function Admin() {
           if (value === 'logs') fetchAuditLogs();
         }}
       >
-        <TabsList>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Usuários
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Logs de Auditoria
-          </TabsTrigger>
-          <TabsTrigger value="categories" className="flex items-center gap-2">
-            <Tags className="h-4 w-4" />
-            Categorias
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Notificações
-          </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Sistema
-          </TabsTrigger>
-        </TabsList>
-
         <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
