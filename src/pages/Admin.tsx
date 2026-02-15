@@ -221,6 +221,14 @@ const TAB_TO_ROUTE: Record<string, string> = {
   'system': 'sistema',
 };
 
+const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
+  users: { title: 'Gerenciamento de Usuários', subtitle: 'Visualize e gerencie roles dos usuários do sistema' },
+  logs: { title: 'Logs de Auditoria', subtitle: 'Monitore todas as atividades do sistema' },
+  categories: { title: 'Gerenciamento de Categorias', subtitle: 'Gerencie categorias e subcategorias de equipamentos' },
+  notifications: { title: 'Notificações do Sistema', subtitle: 'Configure notificações e alertas do sistema' },
+  system: { title: 'Configurações do Sistema', subtitle: 'Gerencie configurações gerais do sistema' },
+};
+
 export default function Admin() {
   // TODOS OS HOOKS DEVEM VIR PRIMEIRO - ANTES DE QUALQUER RETURN CONDICIONAL
   const { user, isAdmin, roleLoading, role } = useAuthContext();
@@ -538,8 +546,8 @@ export default function Admin() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
-        title="Administração" 
-        subtitle="Gerencie usuários, permissões e monitore atividades do sistema"
+        title={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).title}
+        subtitle={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).subtitle}
       />
 
       <Tabs 
@@ -554,14 +562,8 @@ export default function Admin() {
         }}
       >
         <TabsContent value="users" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciamento de Usuários</CardTitle>
-              <CardDescription>
-                Visualize e gerencie roles dos usuários do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+           <Card>
+            <CardContent className="pt-6">
               <div className="flex items-center justify-between gap-4 mb-4">
                 <div className="flex items-center space-x-2 flex-1">
                   <div className="relative flex-1">
@@ -714,15 +716,9 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Logs de Auditoria</CardTitle>
-                  <CardDescription>
-                    Histórico de todas as ações realizadas no sistema
-                  </CardDescription>
-                </div>
+           <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-end mb-4">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -733,8 +729,6 @@ export default function Admin() {
                   Atualizar
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
               {/* Filters */}
               <div className="flex flex-wrap gap-4 mb-4">
                 <div className="flex items-center gap-2">
@@ -853,17 +847,8 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Configurações de Notificações
-              </CardTitle>
-              <CardDescription>
-                Gerencie as notificações do sistema para todos os usuários
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+           <Card>
+            <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Alertas de Manutenção</Label>
@@ -894,17 +879,8 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="system" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Sistema e Manutenção
-              </CardTitle>
-              <CardDescription>
-                Gerenciamento de dados, backup e informações do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+           <Card>
+            <CardContent className="pt-6 space-y-6">
               {/* Seção: Informações do Sistema */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
