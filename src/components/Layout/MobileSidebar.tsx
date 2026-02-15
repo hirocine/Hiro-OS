@@ -1,7 +1,6 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -9,7 +8,7 @@ import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { cn } from '@/lib/utils';
 import { useIsPWA } from '@/hooks/useIsPWA';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -39,25 +38,37 @@ const adminNavigation: NavigationItem[] = [
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
 
+// Exported so TopBar can open the sidebar
+let openMobileSidebar: (() => void) | null = null;
+
+export function useMobileSidebarTrigger() {
+  return useCallback(() => openMobileSidebar?.(), []);
+}
+
 export function MobileSidebar() {
   const { isAdmin } = useAuthContext();
-  const { openMobile, setOpenMobile } = useSidebar();
+  const [open, setOpen] = useState(false);
   const location = useLocation();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
   
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Expose open function for TopBar
   useEffect(() => {
-    if (openMobile) {
-      setOpenMobile(false);
-    }
-  }, [location.pathname, setOpenMobile]);
+    openMobileSidebar = () => setOpen(true);
+    return () => { openMobileSidebar = null; };
+  }, []);
+
+  // Close on route change
+  useEffect(() => {
+    if (open) setOpen(false);
+  }, [location.pathname]);
 
   // Clear search when closing
   useEffect(() => {
-    if (!openMobile) setSearchQuery('');
-  }, [openMobile]);
+    if (!open) setSearchQuery('');
+  }, [open]);
 
   const filteredNav = useMemo(() =>
     navigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
@@ -78,7 +89,7 @@ export function MobileSidebar() {
   };
 
   return (
-    <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent 
         side="left" 
         className={cn(
@@ -95,7 +106,7 @@ export function MobileSidebar() {
             <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover" />
             <span className="text-base font-bold text-foreground">Hiro Hub</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setOpenMobile(false)} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="h-8 w-8">
             <X className="h-5 w-5" />
           </Button>
         </SheetHeader>

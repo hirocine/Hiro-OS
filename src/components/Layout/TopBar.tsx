@@ -1,14 +1,14 @@
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { cn } from '@/lib/utils';
 import { Z_INDEX } from '@/lib/z-index';
 import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
+import { useMobileSidebarTrigger } from './MobileSidebar';
 
 export function TopBar() {
-  const { setOpenMobile } = useSidebar();
+  const openSidebar = useMobileSidebarTrigger();
   const isPWA = useIsPWA();
 
   return (
@@ -23,7 +23,7 @@ export function TopBar() {
       <Button 
         size="icon" 
         variant="ghost"
-        onClick={() => setOpenMobile(true)}
+        onClick={openSidebar}
         className="h-9 w-9"
         aria-label="Abrir menu"
       >
