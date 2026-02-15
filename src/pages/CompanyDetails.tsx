@@ -4,7 +4,6 @@ import { Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useAuthContext } from '@/contexts/AuthContext';
 
-// Componentes SVG para logos oficiais
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -16,6 +15,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
   </svg>
 );
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -24,46 +24,45 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useSuppliers } from '@/features/suppliers/hooks/useSuppliers';
-import { useSupplierNotes } from '@/features/suppliers/hooks/useSupplierNotes';
-import { SupplierDialog } from '@/features/suppliers/components/SupplierDialog';
-import { ExpertiseBadge } from '@/features/suppliers/components/ExpertiseBadge';
+import { useCompanies } from '@/features/supplier-companies/hooks/useCompanies';
+import { useCompanyNotes } from '@/features/supplier-companies/hooks/useCompanyNotes';
+import { CompanyDialog } from '@/features/supplier-companies/components/CompanyDialog';
 import { StarRating } from '@/features/suppliers/components/StarRating';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { Supplier } from '@/features/suppliers/types';
+import type { Company } from '@/features/supplier-companies/types';
 
-export default function SupplierDetails() {
+export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAdmin, roleLoading } = useAuthContext();
-  const { suppliers, loading, updateSupplier, deleteSupplier } = useSuppliers();
-  const { notes, loading: notesLoading, createNote, deleteNote } = useSupplierNotes(id);
+  const { companies, loading, updateCompany, deleteCompany } = useCompanies();
+  const { notes, loading: notesLoading, createNote, deleteNote } = useCompanyNotes(id);
 
-  const [supplier, setSupplier] = useState<Supplier | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [addingNote, setAddingNote] = useState(false);
 
   useEffect(() => {
-    const found = suppliers.find((s) => s.id === id);
-    if (found) setSupplier(found);
-  }, [suppliers, id]);
+    const found = companies.find((c) => c.id === id);
+    if (found) setCompany(found);
+  }, [companies, id]);
 
   const handleSave = async (data: any) => {
-    if (!supplier) return;
-    await updateSupplier(supplier.id, data);
-    setSupplier({ ...supplier, ...data });
+    if (!company) return;
+    await updateCompany(company.id, data);
+    setCompany({ ...company, ...data });
   };
 
   const handleDelete = async () => {
-    if (!supplier) return;
-    await deleteSupplier(supplier.id);
-    toast.success('Fornecedor excluído com sucesso');
-    navigate('/fornecedores/freelancers');
+    if (!company) return;
+    await deleteCompany(company.id);
+    toast.success('Empresa excluída com sucesso');
+    navigate('/fornecedores/empresas');
   };
 
   const handleAddNote = async () => {
@@ -98,15 +97,6 @@ export default function SupplierDetails() {
     return `https://instagram.com/${cleaned}`;
   };
 
-  const formatCurrency = (value?: number) => {
-    if (!value) return 'Não informado';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
-
-  // Proteção de rota: apenas admins podem acessar
   if (roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -128,13 +118,13 @@ export default function SupplierDetails() {
     );
   }
 
-  if (!supplier) {
+  if (!company) {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Fornecedor não encontrado</p>
-          <Button onClick={() => navigate('/fornecedores/freelancers')} className="mt-4">
-            Voltar para Freelancers
+          <p className="text-muted-foreground">Empresa não encontrada</p>
+          <Button onClick={() => navigate('/fornecedores/empresas')} className="mt-4">
+            Voltar para Empresas
           </Button>
         </div>
       </ResponsiveContainer>
@@ -143,20 +133,20 @@ export default function SupplierDetails() {
 
   return (
     <ResponsiveContainer maxWidth="7xl">
-      <BreadcrumbNav 
+      <BreadcrumbNav
         items={[
-          { label: 'Fornecedores', href: '/fornecedores/freelancers' },
-          { label: 'Freelancers', href: '/fornecedores/freelancers' },
-          { label: supplier.full_name }
-        ]} 
+          { label: 'Fornecedores', href: '/fornecedores/empresas' },
+          { label: 'Empresas', href: '/fornecedores/empresas' },
+          { label: company.company_name }
+        ]}
       />
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{supplier.full_name}</h1>
-          {!supplier.is_active && (
+          <h1 className="text-3xl font-bold">{company.company_name}</h1>
+          {!company.is_active && (
             <Badge variant="outline" className="mt-2">
-              Inativo
+              Inativa
             </Badge>
           )}
         </div>
@@ -179,26 +169,12 @@ export default function SupplierDetails() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Função Primária</p>
-              <p className="font-medium">{supplier.primary_role}</p>
-            </div>
-            {supplier.secondary_role && (
-              <div>
-                <p className="text-sm text-muted-foreground">Função Secundária</p>
-                <p className="font-medium">{supplier.secondary_role}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-sm text-muted-foreground">Expertise</p>
-              <ExpertiseBadge expertise={supplier.expertise} />
+              <p className="text-sm text-muted-foreground">Área de Atuação</p>
+              <p className="font-medium">{company.area}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Rating</p>
-              <StarRating rating={supplier.rating} readonly />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Valor Médio de Diária</p>
-              <p className="font-medium">{formatCurrency(supplier.daily_rate)}</p>
+              <StarRating rating={company.rating} readonly />
             </div>
           </CardContent>
         </Card>
@@ -208,45 +184,45 @@ export default function SupplierDetails() {
             <CardTitle>Contato e Links</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {supplier.whatsapp && (
+            {company.whatsapp && (
               <div>
                 <p className="text-sm text-muted-foreground">WhatsApp</p>
                 <a
-                  href={formatWhatsApp(supplier.whatsapp)}
+                  href={formatWhatsApp(company.whatsapp)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 font-medium"
                 >
                   <WhatsAppIcon className="h-4 w-4" />
-                  {supplier.whatsapp}
+                  {company.whatsapp}
                 </a>
               </div>
             )}
-            {supplier.instagram && (
+            {company.instagram && (
               <div>
                 <p className="text-sm text-muted-foreground">Instagram</p>
                 <a
-                  href={formatInstagram(supplier.instagram)}
+                  href={formatInstagram(company.instagram)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-pink-600 hover:text-pink-700 dark:text-pink-400 font-medium"
                 >
                   <InstagramIcon className="h-4 w-4" />
-                  {supplier.instagram}
+                  {company.instagram}
                 </a>
               </div>
             )}
-            {supplier.portfolio_url && (
+            {company.portfolio_url && (
               <div>
-                <p className="text-sm text-muted-foreground">Portfolio</p>
+                <p className="text-sm text-muted-foreground">Website</p>
                 <a
-                  href={supplier.portfolio_url}
+                  href={company.portfolio_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-primary hover:underline font-medium"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Ver Portfolio
+                  Ver Website
                 </a>
               </div>
             )}
@@ -261,7 +237,7 @@ export default function SupplierDetails() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Textarea
-              placeholder="Adicionar nova nota sobre o fornecedor..."
+              placeholder="Adicionar nova nota sobre a empresa..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               rows={3}
@@ -322,10 +298,10 @@ export default function SupplierDetails() {
         </CardContent>
       </Card>
 
-      <SupplierDialog
+      <CompanyDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        supplier={supplier}
+        company={company}
         onSave={handleSave}
       />
 
@@ -334,7 +310,7 @@ export default function SupplierDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o fornecedor {supplier.full_name}? Esta ação não
+              Tem certeza que deseja excluir a empresa {company.company_name}? Esta ação não
               pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -39,7 +39,13 @@ const navigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
-  { name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true },
+  {
+    name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true,
+    children: [
+      { name: 'Freelancers', href: '/fornecedores/freelancers', icon: UserCheck },
+      { name: 'Empresas', href: '/fornecedores/empresas', icon: Building2 },
+    ],
+  },
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
 
@@ -307,13 +313,22 @@ export function DesktopSidebar() {
               </p>
               <nav className="space-y-0.5 px-3">
                 {filteredAdminNav.map((item) => (
-                  <NavItem
-                    key={item.name}
-                    item={item}
-                    active={isActive(item.href)}
-                    isAdmin
-                    onNavClick={handleNavClick}
-                  />
+                  item.children ? (
+                    <NavItemWithChildren
+                      key={item.name}
+                      item={item}
+                      isActive={isActive}
+                      onNavClick={handleNavClick}
+                    />
+                  ) : (
+                    <NavItem
+                      key={item.name}
+                      item={item}
+                      active={isActive(item.href)}
+                      isAdmin
+                      onNavClick={handleNavClick}
+                    />
+                  )
                 ))}
               </nav>
             </>

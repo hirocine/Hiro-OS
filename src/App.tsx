@@ -37,6 +37,8 @@ const Policies = lazy(() => import("./pages/Policies"));
 const PolicyView = lazy(() => import("./pages/PolicyView"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
 const SupplierDetails = lazy(() => import("./pages/SupplierDetails"));
+const Companies = lazy(() => import("./pages/Companies"));
+const CompanyDetails = lazy(() => import("./pages/CompanyDetails"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
@@ -80,8 +82,11 @@ const App = () => (
                   <Route path="tarefas/gerais" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
                   <Route path="tarefas/privadas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Tasks /></Suspense>} />
                   <Route path="tarefas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><TaskDetails /></Suspense>} />
-                  <Route path="fornecedores" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
-                  <Route path="fornecedores/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />
+                  <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
+                  <Route path="fornecedores/freelancers" element={<Suspense fallback={<LoadingScreenSkeleton />}><Suppliers /></Suspense>} />
+                  <Route path="fornecedores/freelancers/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><SupplierDetails /></Suspense>} />
+                  <Route path="fornecedores/empresas" element={<Suspense fallback={<LoadingScreenSkeleton />}><Companies /></Suspense>} />
+                  <Route path="fornecedores/empresas/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><CompanyDetails /></Suspense>} />
                   <Route path="projetos-av" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjects /></Suspense>} />
                   <Route path="projetos-av/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjectDetails /></Suspense>} />
                   <Route path="perfil" element={<Suspense fallback={<LoadingScreenSkeleton />}><Profile /></Suspense>} />
