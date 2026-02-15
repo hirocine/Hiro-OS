@@ -1,28 +1,24 @@
 
 
-## Corrigir altura do SelectTrigger no componente base
+## Adicionar animação de entrada nas abas da Administração
 
-### Causa raiz
+### O que será feito
 
-O arquivo `src/components/ui/select.tsx` define `min-h-[44px]` no `SelectTrigger` (linha 21). O `Input` usa `h-10` (40px). Como `min-height` tem prioridade sobre `height`, adicionar `h-10` individualmente nao resolve -- o select continua com 44px.
+Adicionar uma animação suave de fade-in ao conteúdo de cada aba (Usuários, Logs, Categorias, Notificações, Sistema) ao trocar entre elas.
 
 ### Correção
 
-**Arquivo: `src/components/ui/select.tsx`**
-
-- Linha 21: Trocar `min-h-[44px]` por `h-10` no SelectTrigger base
-
-Isso padroniza todos os selects do sistema para 40px, igualando ao Input.
-
 **Arquivo: `src/pages/Admin.tsx`**
 
-- Remover os `h-10` manuais adicionados anteriormente nos SelectTriggers das abas Usuarios e Logs, pois nao serao mais necessarios.
+Adicionar a classe `animate-fade-in` a cada `TabsContent` existente. A animação já está definida no sistema (300ms ease-out com leve slide vertical).
 
-### Resultado
+Serão 5 `TabsContent` atualizados:
 
-Todos os inputs e selects terao exatamente 40px de altura em todo o sistema, sem necessidade de overrides manuais.
+- `value="users"` — de `space-y-4` para `space-y-4 animate-fade-in`
+- `value="logs"` — de `space-y-4` para `space-y-4 animate-fade-in`
+- `value="categories"` — de `space-y-4` para `space-y-4 animate-fade-in`
+- `value="notifications"` — de `space-y-4` para `space-y-4 animate-fade-in`
+- `value="system"` — de `space-y-4` para `space-y-4 animate-fade-in`
 
-### Secao tecnica
-
-A propriedade CSS `min-height` prevalece sobre `height` quando `min-height > height`. Por isso `h-10` (40px) era ignorado quando `min-h-[44px]` (44px) estava presente. A correção no componente base elimina o conflito na origem.
+Nenhum arquivo novo ou dependência necessária — a keyframe `fade-in` já existe no Tailwind config do projeto.
 
