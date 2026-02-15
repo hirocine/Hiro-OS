@@ -1,47 +1,22 @@
 
 
-## Titulo dinamico no header da pagina Admin
+## Corrigir layout da seção de Logs de Auditoria
+
+### Problemas identificados
+
+1. Botao "Atualizar" ocupa uma linha inteira sozinho, criando espaco vazio desnecessario (e conforme decisao anterior, refresh manual foi removido pois os dados atualizam automaticamente ao trocar de aba)
+2. `pt-6` no CardContent cria padding excessivo no topo
+3. O filtro com icone tem layout desalinhado e espaçamento ruim
 
 ### O que muda
 
-O `PageHeader` vai mostrar o titulo e subtitulo especificos de cada sub-ferramenta (ex: "Gerenciamento de Usuarios" / "Visualize e gerencie roles dos usuarios do sistema") em vez do generico "Administracao".
-
-### Detalhes tecnicos
-
 **Arquivo**: `src/pages/Admin.tsx`
 
-1. Criar um mapa de titulos/subtitulos por tab:
+1. **Remover o botao "Atualizar"** — os logs ja atualizam automaticamente ao navegar para a aba via sidebar (conforme decisao anterior do projeto)
 
-```tsx
-const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
-  users: { title: 'Gerenciamento de Usuários', subtitle: 'Visualize e gerencie roles dos usuários do sistema' },
-  logs: { title: 'Logs de Auditoria', subtitle: 'Monitore todas as atividades do sistema' },
-  categories: { title: 'Gerenciamento de Categorias', subtitle: 'Gerencie categorias e subcategorias de equipamentos' },
-  notifications: { title: 'Notificações do Sistema', subtitle: 'Configure notificações e alertas do sistema' },
-  system: { title: 'Configurações do Sistema', subtitle: 'Gerencie configurações gerais do sistema' },
-};
-```
+2. **Reduzir padding do CardContent** — trocar `pt-6` por `pt-4` para diminuir o espaco no topo
 
-2. Usar `activeTab` (ja existente) para derivar o header dinamico:
+3. **Simplificar o layout do filtro** — remover o wrapper `flex items-center gap-2` desnecessario e o icone `Filter` solto, deixando apenas o `Select` diretamente com `mb-4`
 
-```tsx
-const currentHeader = TAB_HEADERS[activeTab] || TAB_HEADERS.users;
-```
-
-3. Atualizar o `PageHeader`:
-
-```tsx
-<PageHeader 
-  title={currentHeader.title} 
-  subtitle={currentHeader.subtitle}
-/>
-```
-
-4. Opcionalmente, remover os `CardTitle`/`CardDescription` duplicados dos `Card` dentro de cada `TabsContent`, ja que o titulo agora aparece no `PageHeader`. (Os subtitulos exatos serao extraidos do conteudo atual dos `CardHeader` de cada tab.)
-
-### Resultado
-
-- Navegar para `/administracao/usuarios` mostra "Gerenciamento de Usuarios" no header
-- Navegar para `/administracao/logs` mostra "Logs de Auditoria" no header
-- E assim por diante para cada subitem
+**Resultado**: o filtro fica logo no topo do card, sem espaco desperdicado, e a tabela começa imediatamente abaixo.
 
