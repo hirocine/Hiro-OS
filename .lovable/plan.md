@@ -1,31 +1,24 @@
 
 
-## Remover negrito do item pai "Tarefas" quando expandido
+## Igualar altura visual dos subitens com os itens normais
 
 ### Problema
 
-O item pai "Tarefas" fica em negrito (`font-semibold`) quando expandido, mas o usuario quer que apenas o subitem selecionado tenha destaque visual. O pai deve ter peso normal.
+Os subitens ("Gerais", "Privadas") parecem visualmente menores que os itens normais ("Projetos AV"), mesmo ambos usando `py-2.5`. A diferenca e perceptual: itens normais ativos tem fundo (`bg-primary/10`) que preenche a linha toda, enquanto os subitens dentro da box agrupadora nao tem fundo proprio, parecendo mais compactos.
 
 ### Solucao
 
-Trocar `font-semibold` por `font-normal` (ou remover a declaracao) no estado expandido do item pai.
+Aumentar o padding vertical dos subitens de `py-2.5` para `py-3`, igualando visualmente a altura percebida. Aplicar nos dois arquivos.
 
 ### Alteracoes
 
-**`src/components/Layout/DesktopSidebar.tsx`** (linha 119):
+**`src/components/Layout/DesktopSidebar.tsx`** -- linha 176:
 
-```tsx
-// De:
-expanded ? "text-foreground font-semibold"
-// Para:
-expanded ? "text-muted-foreground"
-```
+Trocar `py-2.5` por `py-3` nos subitens (NavLink dentro do CollapsibleContent).
 
-**`src/components/Layout/MobileSidebar.tsx`** (linha 86):
-
-Mesma alteracao.
+**`src/components/Layout/MobileSidebar.tsx`** -- mesma alteracao nos subitens (linha ~129).
 
 ### Resultado
 
-O pai "Tarefas" fica com texto normal (muted) quando expandido, funcionando como titulo discreto do grupo. Apenas o subitem ativo ("Privadas" ou "Gerais") tem destaque com cor primary e barra lateral.
+Subitens ficam com a mesma altura visual dos itens pai e dos itens normais da sidebar.
 
