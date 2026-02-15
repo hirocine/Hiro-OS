@@ -1,34 +1,44 @@
 
 
-## Corrigir alinhamento do grupo expandido na sidebar
+## Diferenciar visualmente item pai vs subitem ativo na sidebar
 
 ### Problema
 
-O `p-1` permanente no container do grupo "Tarefas" empurra todos os itens 4px para dentro, desalinhando-os em relação a "Home", "Projetos AV" e os demais itens da sidebar.
+Quando um subitem esta selecionado (ex: "Privadas"), tanto o pai "Tarefas" quanto o subitem parecem ter o mesmo nivel visual, sem diferenciacao clara. O hover dos subitens tambem precisa de ajuste para ficar harmonioso dentro da box agrupadora.
 
-### Solução
+### Solucao
 
-Remover o `p-1` do container agrupador. O fundo `bg-muted/50 rounded-lg` continuará criando o efeito visual de agrupamento sem adicionar padding interno que desloca os itens.
+1. **Item pai quando expandido**: sempre exibido com `text-foreground font-semibold` (negrito sutil, sem cor de destaque). Ele funciona como "titulo do grupo", nao como item ativo.
 
-### Alterações
+2. **Subitem ativo**: recebe uma barra lateral esquerda (`w-[3px] bg-primary`) e `text-primary font-medium`, similar aos itens normais ativos mas sem fundo proprio (o fundo ja vem da box agrupadora).
 
-**`src/components/Layout/DesktopSidebar.tsx`** -- container do `NavItemWithChildren`:
+3. **Subitem hover (nao ativo)**: `hover:bg-background/80 rounded-lg` -- um fundo levemente mais claro que a box agrupadora, criando contraste sutil.
 
-Trocar:
-```tsx
-"transition-colors duration-200 p-1 rounded-lg",
-expanded ? "bg-muted/50" : "bg-transparent"
+4. **Item pai hover quando expandido**: sem hover background (ja esta dentro da box).
+
+### Visual esperado
+
+```text
+  Home
+  ┌─────────────────────────┐
+  │    Tarefas  (semibold)   │
+  │ |  Gerais   (primary)    │  <-- barra lateral + cor primary
+  │    Privadas              │  <-- texto muted, hover sutil
+  └─────────────────────────┘
+  Projetos AV
 ```
 
-Por:
-```tsx
-"transition-colors duration-200 rounded-lg",
-expanded ? "bg-muted/50" : "bg-transparent"
-```
+### Alteracoes tecnicas
 
-**`src/components/Layout/MobileSidebar.tsx`** -- mesma alteração.
+**`src/components/Layout/DesktopSidebar.tsx`** -- `NavItemWithChildren`:
+
+1. Item pai (div linha ~110-121): quando `expanded`, usar `text-foreground font-semibold` (sem hover bg). Quando colapsado, manter comportamento atual.
+
+2. Subitens (NavLink linha ~166-179): subitem ativo recebe `relative` + barra lateral `absolute left-0 w-[3px] h-5 bg-primary rounded-r-full` + `text-primary font-medium pl-3`. Subitem inativo: `text-muted-foreground hover:bg-background/80 hover:text-foreground rounded-lg`.
+
+**`src/components/Layout/MobileSidebar.tsx`** -- mesmas alteracoes.
 
 ### Resultado
 
-"Tarefas", "Gerais", "Privadas" ficam perfeitamente alinhados com "Home", "Projetos AV" e os demais itens. O fundo sutil do grupo se mantém sem deslocar nada.
+O pai "Tarefas" fica como cabecalho do grupo (bold, sem cor). O subitem ativo tem barra lateral colorida como diferenciador claro. Nenhum conflito visual entre pai e filho.
 
