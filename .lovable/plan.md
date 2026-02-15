@@ -1,42 +1,70 @@
 
-## Melhorar a secao de ferramentas no rodape da sidebar
+
+## Eliminar a secao intermediaria e integrar ferramentas ao perfil do usuario
 
 ### Problema
-A secao de "Notificacoes" e "Tema" no fundo da sidebar esta visualmente desalinhada e sem acabamento. O layout atual mistura um wrapper manual (div com flex) para Notificacoes com o componente ThemeSwitcher que ja e um botao, criando inconsistencia de padding e alinhamento.
+A secao com os icones de notificacao e tema ficou "solta" entre a navegacao e o perfil -- parece uma area vazia sem proposito claro. Sidebars modernas (Linear, Notion, Slack) nao tem essa faixa intermediaria.
 
 ### Solucao
-
-No arquivo `src/components/Layout/DesktopSidebar.tsx`, linhas 193-204:
-
-1. Remover o wrapper manual de "Notificacoes" -- o `NotificationPanel` ja renderiza um botao, entao o label "Notificacoes" e o wrapper sao redundantes e criam problemas de alinhamento
-2. Transformar a secao em dois botoes side-by-side (icones apenas) com um layout compacto e limpo, usando `flex` horizontal
-3. Melhorar o border-top para ter mais contraste
+Mover os botoes de notificacao e tema para dentro da barra do perfil do usuario, ao lado do chevron. Isso elimina a secao intermediaria e cria um rodape unico, compacto e coeso.
 
 ```text
-De:
+Antes:
 ┌─────────────────────┐
-│ 🔔  Notificações    │
-│ 🌙  Tema            │
+│  ...navegacao...     │
+├─────────────────────┤
+│      🔔    🌙       │  <-- secao solta
+├─────────────────────┤
+│ 👤 Nome       ⌃⌄    │
 └─────────────────────┘
 
-Para:
+Depois:
 ┌─────────────────────┐
-│   🔔        🌙      │
+│  ...navegacao...     │
+├─────────────────────┤
+│ 👤 Nome   🔔 🌙 ⌃⌄  │  <-- tudo junto
 └─────────────────────┘
 ```
 
-### Codigo
+### Alteracoes
 
-Substituir linhas 193-204 por:
+**1. `src/components/Layout/DesktopSidebar.tsx`**
+- Remover completamente o bloco "Tools - Bottom" (linhas 193-199)
+- O componente fica apenas com ScrollArea + SidebarUserProfile
 
+**2. `src/components/Layout/SidebarUserProfile.tsx`**
+- Adicionar imports de `NotificationPanel` e `ThemeSwitcher`
+- Inserir os dois botoes entre o bloco de texto (nome/email) e o icone ChevronsUpDown
+- Os botoes ficam fora do DropdownMenuTrigger para nao interferir no clique do menu
+- Ajustar o layout: o trigger do dropdown encapsula apenas avatar + nome, e os botoes de ferramentas ficam ao lado
+
+Estrutura do novo footer:
 ```tsx
-{/* Tools - Bottom */}
-<div className="border-t border-border px-3 py-3 shrink-0">
-  <div className="flex items-center justify-center gap-1">
-    <NotificationPanel />
-    <ThemeSwitcher />
+<div className="border-t border-border bg-card/50 p-2 shrink-0">
+  <div className="flex items-center gap-1 w-full p-1.5">
+    {/* Avatar + Nome (clicavel, abre dropdown) */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2.5 flex-1 min-w-0 p-1.5 hover:bg-accent/50 rounded-lg">
+          <Avatar ... />
+          <div className="flex-1 min-w-0 text-left">
+            <p>Nome</p>
+            <p>email</p>
+          </div>
+          <ChevronsUpDown />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent ... />
+    </DropdownMenu>
+
+    {/* Ferramentas */}
+    <div className="flex items-center shrink-0">
+      <NotificationPanel />
+      <ThemeSwitcher />
+    </div>
   </div>
 </div>
 ```
 
-Isso coloca os dois icones lado a lado, centralizados, sem labels redundantes. Fica muito mais limpo e profissional -- similar ao padrao de sidebars modernas (Notion, Linear, etc).
+Isso cria um rodape limpo e profissional, sem secoes intermediarias vazias.
+
