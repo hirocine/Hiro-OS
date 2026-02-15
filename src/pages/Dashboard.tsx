@@ -78,20 +78,12 @@ export default function Dashboard() {
   // formatRelativeTime imported from @/lib/utils
 
   // Proteção de rota: apenas admins podem acessar
-  if (roleLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
+  if (!roleLoading && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
-  // Loading state
-  if (loading) {
+  // Loading state (inclui roleLoading)
+  if (roleLoading || loading) {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <PageHeader 
