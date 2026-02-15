@@ -127,7 +127,6 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
         <CollapsibleContent>
           <div className="mt-0.5 space-y-0.5">
             {item.children!.map((child) => {
-              const ChildIcon = child.icon;
               const active = isActive(child.href);
               return (
                 <NavLink
@@ -141,7 +140,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
                       : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   )}
                 >
-                  <ChildIcon className={cn("h-[18px] w-[18px] shrink-0", active && "text-success")} />
+                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? "text-success" : "text-muted-foreground")}>●</span>
                   <span>{child.name}</span>
                 </NavLink>
               );
