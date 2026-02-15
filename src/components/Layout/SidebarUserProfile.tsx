@@ -42,7 +42,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
       <div className="flex items-center justify-between w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="p-1.5 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors shrink-0">
+            <button className="p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
               <div className="relative w-8 h-8">
                 <Avatar className="w-full h-full ring-2 ring-border">
                   <AvatarImage src={avatarData.url || undefined} className="object-cover" />
