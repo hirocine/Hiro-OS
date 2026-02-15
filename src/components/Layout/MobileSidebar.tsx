@@ -71,7 +71,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
 
   return (
     <div className={cn(
-      "transition-colors duration-200 p-1 rounded-lg",
+      "transition-colors duration-200 rounded-lg",
       expanded ? "bg-muted/50" : "bg-transparent"
     )}>
       <div
