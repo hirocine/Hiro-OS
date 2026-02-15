@@ -548,6 +548,8 @@ export default function Admin() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader 
+        key={activeTab}
+        className="animate-fade-in"
         title={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).title}
         subtitle={(TAB_HEADERS[activeTab] || TAB_HEADERS.users).subtitle}
         actions={activeTab === 'users' ? (
