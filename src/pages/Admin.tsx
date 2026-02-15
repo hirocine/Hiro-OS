@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -205,11 +205,28 @@ interface AuditLog {
   created_at: string;
 }
 
+const ROUTE_TO_TAB: Record<string, string> = {
+  'usuarios': 'users',
+  'logs': 'logs',
+  'categorias': 'categories',
+  'notificacoes': 'notifications',
+  'sistema': 'system',
+};
+
+const TAB_TO_ROUTE: Record<string, string> = {
+  'users': 'usuarios',
+  'logs': 'logs',
+  'categories': 'categorias',
+  'notifications': 'notificacoes',
+  'system': 'sistema',
+};
+
 export default function Admin() {
   // TODOS OS HOOKS DEVEM VIR PRIMEIRO - ANTES DE QUALQUER RETURN CONDICIONAL
   const { user, isAdmin, roleLoading, role } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -234,6 +251,12 @@ export default function Admin() {
     allEquipment,
     importEquipment 
   } = useEquipment();
+
+  // Derive active tab from URL
+  const activeTab = useMemo(() => {
+    const segment = location.pathname.split('/').pop() || '';
+    return ROUTE_TO_TAB[segment] || 'users';
+  }, [location.pathname]);
 
   useEffect(() => {
     logger.debug('Effect triggered', { 
@@ -520,9 +543,11 @@ export default function Admin() {
       />
 
       <Tabs 
-        defaultValue="users" 
+        value={activeTab}
         className="space-y-4"
         onValueChange={(value) => {
+          const route = TAB_TO_ROUTE[value];
+          if (route) navigate(`/administracao/${route}`);
           // Refresh automático ao trocar de aba
           if (value === 'users') fetchUsers();
           if (value === 'logs') fetchAuditLogs();

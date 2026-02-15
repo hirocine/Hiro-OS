@@ -46,7 +46,16 @@ const adminNavigation: NavigationItem[] = [
       { name: 'Empresas', href: '/fornecedores/empresas', icon: Building2 },
     ],
   },
-  { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
+  {
+    name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
+    children: [
+      { name: 'Usuários', href: '/administracao/usuarios', icon: Users },
+      { name: 'Logs de Auditoria', href: '/administracao/logs', icon: Users },
+      { name: 'Categorias', href: '/administracao/categorias', icon: Users },
+      { name: 'Notificações', href: '/administracao/notificacoes', icon: Users },
+      { name: 'Sistema', href: '/administracao/sistema', icon: Users },
+    ],
+  },
 ];
 
 function NavItem({ item, active, isAdmin: isAdminItem, onNavClick }: {

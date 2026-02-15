@@ -90,7 +90,12 @@ const App = () => (
                   <Route path="projetos-av" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjects /></Suspense>} />
                   <Route path="projetos-av/:id" element={<Suspense fallback={<LoadingScreenSkeleton />}><AVProjectDetails /></Suspense>} />
                   <Route path="perfil" element={<Suspense fallback={<LoadingScreenSkeleton />}><Profile /></Suspense>} />
-                  <Route path="administracao" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                  <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
+                  <Route path="administracao/usuarios" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                  <Route path="administracao/logs" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                  <Route path="administracao/categorias" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                  <Route path="administracao/notificacoes" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
+                  <Route path="administracao/sistema" element={<Suspense fallback={<LoadingScreenSkeleton />}><Admin /></Suspense>} />
                 </Route>
                 <Route path="*" element={
                   <Suspense fallback={<LoadingScreenSkeleton />}>
