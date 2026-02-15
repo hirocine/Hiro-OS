@@ -69,6 +69,11 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
     if (childActive) setExpanded(true);
   }, [childActive]);
 
+  // Auto-collapse when leaving the section entirely
+  useEffect(() => {
+    if (!anyActive) setExpanded(false);
+  }, [anyActive]);
+
   return (
     <div className={cn(
       "transition-colors duration-200 rounded-lg",
