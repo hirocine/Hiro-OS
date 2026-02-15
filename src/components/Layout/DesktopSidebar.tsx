@@ -56,8 +56,8 @@ function NavItem({ item, active, isAdmin: isAdminItem, onNavClick }: {
             ? "bg-destructive/10 text-destructive font-medium"
             : "bg-primary/10 text-primary font-medium"
           : isAdminItem
-            ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
-            : "hover:bg-accent text-muted-foreground hover:text-foreground"
+            ? "hover:bg-muted text-muted-foreground hover:text-foreground"
+            : "hover:bg-muted text-muted-foreground hover:text-foreground"
       )}
     >
       {active && (
