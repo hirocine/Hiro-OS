@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -42,7 +42,13 @@ const navigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
-  { name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true },
+  {
+    name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true,
+    children: [
+      { name: 'Freelancers', href: '/fornecedores/freelancers', icon: UserCheck },
+      { name: 'Empresas', href: '/fornecedores/empresas', icon: Building2 },
+    ],
+  },
   { name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true },
 ];
 
@@ -282,29 +288,38 @@ export function MobileSidebar() {
                   Administração
                 </p>
                 <nav className="space-y-0.5 px-4">
-                  {filteredAdminNav.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(item.href);
-                    return (
-                      <NavLink
+                  {filteredAdminNav.map((item) => (
+                    item.children ? (
+                      <MobileNavItemWithChildren
                         key={item.name}
-                        to={item.href}
-                        onClick={(e) => handleNavClick(e, item.href)}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
-                          active
-                            ? "bg-destructive/10 text-destructive font-medium"
-                            : "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {active && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-destructive rounded-r-full" />
-                        )}
-                        <Icon className={cn("h-[18px] w-[18px]", active && "text-destructive")} />
-                        <span className="text-sm">{item.name}</span>
-                      </NavLink>
-                    );
-                  })}
+                        item={item}
+                        isActive={isActive}
+                        onNavClick={handleNavClick}
+                      />
+                    ) : (() => {
+                      const Icon = item.icon;
+                      const active = isActive(item.href);
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                            active
+                              ? "bg-destructive/10 text-destructive font-medium"
+                              : "hover:bg-destructive/5 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-destructive rounded-r-full" />
+                          )}
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-destructive")} />
+                          <span className="text-sm">{item.name}</span>
+                        </NavLink>
+                      );
+                    })()
+                  ))}
                 </nav>
               </>
             )}

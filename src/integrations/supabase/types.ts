@@ -1041,6 +1041,86 @@ export type Database = {
           },
         ]
       }
+      supplier_companies: {
+        Row: {
+          area: string
+          company_name: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          instagram: string | null
+          is_active: boolean | null
+          portfolio_url: string | null
+          rating: number | null
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          area: string
+          company_name: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean | null
+          portfolio_url?: string | null
+          rating?: number | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          area?: string
+          company_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean | null
+          portfolio_url?: string | null
+          rating?: number | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      supplier_company_notes: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_company_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_notes: {
         Row: {
           content: string
