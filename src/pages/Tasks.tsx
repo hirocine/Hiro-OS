@@ -61,15 +61,15 @@ export default function Tasks() {
       <PageHeader
         title={isPrivate ? "Tarefas Privadas" : "Tarefas Gerais"}
         subtitle={isPrivate ? "Suas tarefas pessoais, visíveis apenas para você" : "Gerencie as tarefas do time e acompanhe o progresso"}
-      />
-
-      <div className="space-y-6">
-        <div className="flex items-center justify-end">
+        actions={
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nova Tarefa
           </Button>
-        </div>
+        }
+      />
+
+      <div className="space-y-6">
 
         {/* Calendar Widget */}
         <TaskCalendarWidget tasks={tasks} isPrivate={isPrivate} />
