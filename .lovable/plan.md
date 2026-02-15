@@ -1,27 +1,31 @@
 
 
-## Recolher subitens ao sair da ferramenta "Tarefas"
+## Remover negrito do item pai "Tarefas" quando expandido
 
 ### Problema
 
-Atualmente, ao navegar para fora de "Tarefas" (ex: clicar em "Home"), os subitens permanecem expandidos. O esperado e que recolham automaticamente.
+O item pai "Tarefas" fica em negrito (`font-semibold`) quando expandido, mas o usuario quer que apenas o subitem selecionado tenha destaque visual. O pai deve ter peso normal.
 
 ### Solucao
 
-Adicionar um `useEffect` que monitora quando `anyActive` (pai ou filho ativo) se torna `false` e fecha o grupo automaticamente.
+Trocar `font-semibold` por `font-normal` (ou remover a declaracao) no estado expandido do item pai.
 
 ### Alteracoes
 
-**`src/components/Layout/DesktopSidebar.tsx`** e **`src/components/Layout/MobileSidebar.tsx`** -- no componente `NavItemWithChildren`, apos o useEffect existente (linha ~100-103), adicionar:
+**`src/components/Layout/DesktopSidebar.tsx`** (linha 119):
 
 ```tsx
-// Auto-collapse when leaving the section entirely
-useEffect(() => {
-  if (!anyActive) setExpanded(false);
-}, [anyActive]);
+// De:
+expanded ? "text-foreground font-semibold"
+// Para:
+expanded ? "text-muted-foreground"
 ```
+
+**`src/components/Layout/MobileSidebar.tsx`** (linha 86):
+
+Mesma alteracao.
 
 ### Resultado
 
-Ao clicar em qualquer item fora de "Tarefas", o grupo se recolhe automaticamente. Ao voltar para "Tarefas" ou um subitem, expande novamente.
+O pai "Tarefas" fica com texto normal (muted) quando expandido, funcionando como titulo discreto do grupo. Apenas o subitem ativo ("Privadas" ou "Gerais") tem destaque com cor primary e barra lateral.
 
