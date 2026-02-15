@@ -59,10 +59,11 @@ export function useMobileSidebarTrigger() {
   return useCallback(() => openMobileSidebar?.(), []);
 }
 
-function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
+function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem }: {
   item: NavigationItem;
   isActive: (path: string) => boolean;
   onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+  isAdmin?: boolean;
 }) {
   const location = useLocation();
   const Icon = item.icon;
@@ -92,14 +93,14 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
             ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
             : "rounded-lg",
           parentActive && !expanded
-            ? "bg-primary/10 text-primary font-medium"
+            ? isAdminItem ? "bg-destructive/10 text-destructive font-medium" : "bg-primary/10 text-primary font-medium"
             : !expanded
-              ? "hover:bg-accent text-muted-foreground hover:text-foreground"
+              ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
               : ""
         )}
       >
         {(parentActive && !expanded || childActive && expanded) && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
         )}
 
         <button
@@ -110,7 +111,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
           <ChevronRight className={cn(
             "h-[18px] w-[18px] transition-transform duration-200",
             expanded && "rotate-90",
-            parentActive && !expanded ? "text-primary" : "text-muted-foreground"
+            parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
           )} />
         </button>
 
@@ -291,6 +292,7 @@ export function MobileSidebar() {
                         item={item}
                         isActive={isActive}
                         onNavClick={handleNavClick}
+                        isAdmin
                       />
                     ) : (() => {
                       const Icon = item.icon;

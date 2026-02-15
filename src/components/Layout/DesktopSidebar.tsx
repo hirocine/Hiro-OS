@@ -87,10 +87,11 @@ function NavItem({ item, active, isAdmin: isAdminItem, onNavClick }: {
   );
 }
 
-function NavItemWithChildren({ item, isActive, onNavClick }: {
+function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem }: {
   item: NavigationItem;
   isActive: (path: string) => boolean;
   onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+  isAdmin?: boolean;
 }) {
   const location = useLocation();
   const Icon = item.icon;
@@ -125,16 +126,16 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
             ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
             : "rounded-lg",
           parentActive && !expanded
-            ? "bg-primary/10 text-primary font-medium"
+            ? isAdminItem ? "bg-destructive/10 text-destructive font-medium" : "bg-primary/10 text-primary font-medium"
             : !expanded
-              ? "hover:bg-muted text-muted-foreground hover:text-foreground"
+              ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               : ""
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {(parentActive && !expanded || childActive && expanded) && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
+          <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
         )}
 
         {/* Icon area - clickable to toggle expand */}
@@ -146,13 +147,13 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
           <Icon className={cn(
             "h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
             hovered ? "opacity-0" : "opacity-100",
-            parentActive && !expanded && "text-primary"
+            parentActive && !expanded && (isAdminItem ? "text-destructive" : "text-primary")
           )} />
           <ChevronRight className={cn(
             "h-[18px] w-[18px] absolute inset-0 transition-all duration-200",
             hovered ? "opacity-100" : "opacity-0",
             expanded && "rotate-90",
-            parentActive && !expanded ? "text-primary" : "text-muted-foreground"
+            parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
           )} />
         </button>
 
@@ -315,6 +316,7 @@ export function DesktopSidebar() {
                       item={item}
                       isActive={isActive}
                       onNavClick={handleNavClick}
+                      isAdmin
                     />
                   ) : (
                     <NavItem
