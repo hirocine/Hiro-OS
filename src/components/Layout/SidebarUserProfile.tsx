@@ -39,7 +39,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
       "border-t border-border bg-card/50 backdrop-blur-sm shrink-0",
       isMobile ? "" : "p-2"
     )}>
-      <div className="flex items-center gap-1 w-full">
+      <div className="flex items-center justify-between w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-1.5 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors shrink-0">
@@ -52,7 +52,7 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
               </div>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top" className="w-56">
+          <DropdownMenuContent align="start" side="top" className="w-56">
             <DropdownMenuItem onClick={() => navigate('/perfil')}>
               <User className="mr-2 h-4 w-4" />
               Ver Perfil
@@ -67,8 +67,8 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
         {!isMobile && (
           <div className="flex items-center shrink-0">
-            <NotificationPanel />
             <ThemeSwitcher />
+            <NotificationPanel />
           </div>
         )}
       </div>
