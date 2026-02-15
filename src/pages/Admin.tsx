@@ -717,39 +717,22 @@ export default function Admin() {
 
         <TabsContent value="logs" className="space-y-4">
            <Card>
-            <CardContent className="pt-6">
-              <div className="flex justify-end mb-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={fetchAuditLogs}
-                  disabled={loadingLogs}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${loadingLogs ? 'animate-spin' : ''}`} />
-                  Atualizar
-                </Button>
-              </div>
-              {/* Filters */}
-              <div className="flex flex-wrap gap-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={tableFilter} onValueChange={setTableFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filtrar por tabela" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as tabelas</SelectItem>
-                      <SelectItem value="tasks">Tarefas</SelectItem>
-                      <SelectItem value="audiovisual_projects">Projetos AV</SelectItem>
-                      <SelectItem value="suppliers">Fornecedores</SelectItem>
-                      <SelectItem value="loans">Empréstimos</SelectItem>
-                      <SelectItem value="equipments">Equipamentos</SelectItem>
-                      <SelectItem value="user_roles">Usuários</SelectItem>
-                      <SelectItem value="projects">Retiradas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            <CardContent className="pt-4">
+              <Select value={tableFilter} onValueChange={setTableFilter}>
+                <SelectTrigger className="w-[200px] mb-4">
+                  <SelectValue placeholder="Filtrar por tabela" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as tabelas</SelectItem>
+                  <SelectItem value="tasks">Tarefas</SelectItem>
+                  <SelectItem value="audiovisual_projects">Projetos AV</SelectItem>
+                  <SelectItem value="suppliers">Fornecedores</SelectItem>
+                  <SelectItem value="loans">Empréstimos</SelectItem>
+                  <SelectItem value="equipments">Equipamentos</SelectItem>
+                  <SelectItem value="user_roles">Usuários</SelectItem>
+                  <SelectItem value="projects">Retiradas</SelectItem>
+                </SelectContent>
+              </Select>
 
               <Table className="table-fixed">
                 <TableHeader>
