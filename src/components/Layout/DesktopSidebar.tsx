@@ -120,38 +120,35 @@ export function DesktopSidebar() {
       )}
       style={{ zIndex: Z_INDEX.sidebar }}
     >
-      {/* Header */}
+      {/* Header + Search */}
       <div className={cn(
-        "flex items-center gap-3 px-4 py-4 border-b border-border shrink-0",
-        isPWA && "pt-[calc(1rem+env(safe-area-inset-top,0px))]"
+        "shrink-0 border-b border-border",
+        isPWA && "pt-[env(safe-area-inset-top,0px)]"
       )}>
-        <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
-        <span className="text-base font-bold text-foreground truncate">Hiro Hub</span>
-      </div>
-
-      {/* Search */}
-      <div className="shrink-0 px-3 py-3 border-b border-border">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            ref={searchInputRef}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar"
-            className="w-full h-8 pl-8 pr-12 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
-          />
-          <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
-            ⌘K
-          </kbd>
+        <div className="flex items-center gap-3 px-4 py-4">
+          <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
+          <span className="text-base font-bold text-foreground truncate">Hiro Hub</span>
+        </div>
+        <div className="px-3 pb-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar"
+              className="w-full h-8 pl-8 pr-12 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
+            />
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+              ⌘K
+            </kbd>
+          </div>
         </div>
       </div>
 
       {/* Navigation */}
       <ScrollArea className="flex-1">
-        <div className="pt-5 pb-3">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
-            Menu
-          </p>
+        <div className="pt-4 pb-3">
           <nav className="space-y-0.5 px-3">
             {filteredNav.map((item) => (
               <NavItem
