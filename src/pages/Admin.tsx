@@ -557,7 +557,7 @@ export default function Admin() {
         ) : activeTab === 'categories' ? (
           <Button onClick={() => setIsAddCategoryDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Nova
+            Nova Categoria
           </Button>
         ) : undefined}
       />
