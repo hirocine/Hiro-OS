@@ -122,14 +122,14 @@ export function DesktopSidebar() {
     >
       {/* Header + Search */}
       <div className={cn(
-        "shrink-0 border-b border-border",
+        "shrink-0",
         isPWA && "pt-[env(safe-area-inset-top,0px)]"
       )}>
-        <div className="flex items-center gap-3 px-4 py-4">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
           <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
           <span className="text-base font-bold text-foreground truncate">Hiro Hub</span>
         </div>
-        <div className="px-3 pb-3">
+        <div className="px-3 py-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
