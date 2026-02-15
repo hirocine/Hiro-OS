@@ -181,11 +181,11 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
                     active
-                      ? "text-success font-semibold"
+                      ? isAdminItem ? "text-destructive font-semibold" : "text-success font-semibold"
                       : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   )}
                 >
-                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? "text-success" : "text-muted-foreground")}>●</span>
+                  <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-destructive" : "text-success") : "text-muted-foreground")}>●</span>
                   <span className="truncate">{child.name}</span>
                 </NavLink>
               );
