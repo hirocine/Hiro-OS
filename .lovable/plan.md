@@ -1,52 +1,31 @@
 
 
-# Plano: Sidebar Fixa (Sempre Expandida)
+## Ajustes Visuais na Sidebar - Busca e Separador
 
-## Objetivo
+### Problema 1: Linha saindo para fora da sidebar
+O `Separator` na linha 151 usa `mx-3` mas visualmente ainda sangra. Vou trocar para `px-3` no container ou aplicar o separador dentro de um wrapper com padding adequado.
 
-Simplificar a sidebar removendo toda a logica de recolher/expandir. A sidebar ficara sempre fixa em **w-64** no desktop, sempre mostrando icones + texto + busca.
+### Problema 2: Espacamento da secao de busca
+A area de busca tem pouco respiro entre o header (border-b) e o separador abaixo. Precisa de padding top e bottom mais equilibrados.
 
-## O que muda
+### Solucao
 
-### 1. `src/components/Layout/DesktopSidebar.tsx`
+No arquivo `src/components/Layout/DesktopSidebar.tsx`:
 
-- Remover imports: `PanelLeftClose`, `PanelLeft`, `Tooltip`, `TooltipContent`, `TooltipTrigger`, `useSidebar`, `Button`
-- Remover `useSidebar()` e variavel `expanded`
-- Remover efeito de "clear search when collapsing"
-- Remover logica de "if !expanded toggleSidebar" no Ctrl+K
-- Sidebar sempre `w-64`, sem `transition-[width]`
-- Header: sempre mostra logo + "Hiro Hub", sem botao toggle
-- Busca: sempre visivel (remover estado colapsado com icone de lupa)
-- NavItem: simplificar removendo prop `expanded` e logica de tooltip (sempre mostra texto)
-- Tools (bottom): sempre mostra com label (remover branch de icone-only)
+- Adicionar `pt-3` ao container da busca (linha 135) para dar respiro acima, ficando `px-3 py-3`
+- Remover o `Separator` standalone (linha 151) -- usar `border-b` no container da busca para criar uma divisao mais limpa e contida, sem risco de sangrar
+- Resultado: header com border-b, secao de busca com padding uniforme e border-b, navegacao abaixo
 
-### 2. `src/components/Layout/Layout.tsx`
+### Resultado visual esperado
 
-- Remover `useSidebar()` e variavel `expanded`
-- Remover `getDefaultSidebarOpen()` e `SidebarProvider`
-- Main content: fixar `pl-64` no desktop, remover `transition-[padding-left]`
-- Simplificar: nao precisa mais do wrapper `LayoutContent` separado
-
-### 3. `src/components/Layout/SidebarUserProfile.tsx`
-
-- Remover import e uso de `useSidebar`
-- Remover logica condicional de `expanded` - sempre mostrar detalhes no desktop
-- Simplificar: `showDetails` sempre `true`
-
-### 4. `src/components/Layout/MobileSidebar.tsx`
-
-- Remover import de `useSidebar` (se usado apenas para toggle)
-- Verificar se `openMobile`/`setOpenMobile` ainda funciona sem `SidebarProvider`
-- Se necessario, criar estado local simples para controlar abertura do Sheet mobile
-
-## Impacto
-
-- **Codigo removido**: ~80 linhas de logica condicional
-- **Nenhuma quebra**: sidebar fica no estado "expandida" permanentemente, que ja funciona
-- **Performance**: menos re-renders (sem estado de toggle)
-- **Mobile**: sem alteracao funcional, apenas remocao de dependencia do SidebarProvider se possivel
-
-## Risco
-
-O `MobileSidebar` usa `useSidebar()` para `openMobile`/`setOpenMobile`. Precisamos manter o `SidebarProvider` ou migrar o controle do Sheet mobile para estado local. Vou verificar a melhor abordagem durante a implementacao -- provavelmente manter o `SidebarProvider` apenas para o mobile e ignorar o estado expand/collapse no desktop.
+```text
+[Logo] Hiro Hub
+─────────────────────  (border-b do header)
+   [ Q Buscar...  ⌘K ]
+─────────────────────  (border-b do container de busca)
+   MENU
+   Home
+   Tarefas
+   ...
+```
 
