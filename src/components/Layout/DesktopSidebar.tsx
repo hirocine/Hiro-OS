@@ -103,18 +103,26 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
   }, [childActive]);
 
   return (
-    <div>
+    <div className={cn(
+      "transition-colors duration-200",
+      expanded && "rounded-lg bg-muted/50 p-1"
+    )}>
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group cursor-pointer",
-        parentActive
+          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer",
+          expanded
+            ? "text-foreground"
+            : "rounded-lg",
+          parentActive && !expanded
             ? "bg-primary/10 text-primary font-medium"
-            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+            : !expanded
+              ? "hover:bg-muted text-muted-foreground hover:text-foreground"
+              : ""
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {parentActive && (
+        {parentActive && !expanded && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
         )}
 
@@ -127,13 +135,13 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
           <Icon className={cn(
             "h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
             hovered ? "opacity-0" : "opacity-100",
-            parentActive && "text-primary"
+            parentActive && !expanded && "text-primary"
           )} />
           <ChevronRight className={cn(
             "h-[18px] w-[18px] absolute inset-0 transition-all duration-200",
             hovered ? "opacity-100" : "opacity-0",
             expanded && "rotate-90",
-            parentActive ? "text-primary" : "text-muted-foreground"
+            parentActive && !expanded ? "text-primary" : "text-muted-foreground"
           )} />
         </button>
 
@@ -150,7 +158,7 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
       {/* Children */}
       <Collapsible open={expanded}>
         <CollapsibleContent>
-          <div className="ml-3 mt-0.5 space-y-0.5 pl-3">
+          <div className="mt-0.5 space-y-0.5">
             {item.children!.map((child) => {
               const ChildIcon = child.icon;
               const active = isActive(child.href);
@@ -160,13 +168,13 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
                   to={child.href}
                   onClick={(e) => onNavClick(e, child.href)}
                   className={cn(
-                    "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all duration-200 text-sm",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
                     active
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-primary font-medium"
+                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
                   )}
                 >
-                  <ChildIcon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                  <ChildIcon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
                   <span className="truncate">{child.name}</span>
                 </NavLink>
               );
