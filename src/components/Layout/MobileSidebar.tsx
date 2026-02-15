@@ -83,7 +83,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick }: {
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group",
           expanded
-            ? "text-foreground font-semibold"
+            ? "text-muted-foreground"
             : "rounded-lg",
           parentActive && !expanded
             ? "bg-primary/10 text-primary font-medium"
