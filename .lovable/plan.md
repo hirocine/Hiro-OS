@@ -1,33 +1,29 @@
 
-## Adicionar busca na aba de Logs de Auditoria
+
+## Padronizar caixas de busca na Administração
+
+### Problema
+As 3 caixas de busca (Usuários, Categorias, Logs) usam posicionamentos de ícone e padding diferentes, resultando em aparência inconsistente.
+
+### Diferenças atuais
+
+| Aba | Ícone (posição) | Input (padding) |
+|---|---|---|
+| Usuários | `left-2 top-2.5` | `pl-8` |
+| Categorias | `left-3 top-3` | `pl-9` |
+| Logs | `left-3 top-1/2 -translate-y-1/2` | `pl-10` |
+
+### Padrão escolhido
+
+Usar `left-3 top-1/2 -translate-y-1/2` para o ícone e `pl-10` para o input. Esse padrão centraliza o ícone verticalmente de forma confiável independente da altura do input.
 
 ### O que muda
 
-**Arquivo**: `src/pages/Admin.tsx`
+**Arquivo 1**: `src/pages/Admin.tsx`
+- Aba Usuários (linha ~580): ajustar ícone para `left-3 top-1/2 -translate-y-1/2` e input para `pl-10`
 
-1. Adicionar um estado `logSearchQuery` para armazenar o texto de busca
-2. Mover o `Select` de tabelas para fora do Card (seguindo o padrão das outras abas) e adicionar um campo de busca ao lado
-3. Filtrar os logs também pelo texto de busca (pesquisando em usuário, ação e detalhes)
+**Arquivo 2**: `src/components/Settings/CategoryManagement.tsx`
+- Busca de categorias (linha ~583): ajustar ícone para `left-3 top-1/2 -translate-y-1/2` e input para `pl-10`
 
-### Layout resultante
+A aba de Logs já está no padrão correto, não precisa de alteração.
 
-```text
-+----------------------------------------------------------+
-| Logs de Auditoria                                         |
-| Monitore todas as atividades do sistema                   |
-+----------------------------------------------------------+
-| [Q Buscar logs...]              [Todas as tabelas v]      |
-+----------------------------------------------------------+
-| Card                                                      |
-| +------------------------------------------------------+ |
-| | Tabela de logs                                       | |
-| +------------------------------------------------------+ |
-+----------------------------------------------------------+
-```
-
-### Detalhes tecnicos
-
-- Novo estado: `const [logSearchQuery, setLogSearchQuery] = useState('')`
-- Mover o `Select` e adicionar `Input` de busca para fora do `Card`, em um `div` com layout flex
-- O filtro de busca pesquisara em: `user_email`, `action_type`, `table_name` e detalhes (description gerada)
-- Manter o filtro de tabela existente funcionando junto com a busca
