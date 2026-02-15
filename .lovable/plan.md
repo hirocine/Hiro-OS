@@ -1,22 +1,18 @@
 
 
-## Corrigir layout da seção de Logs de Auditoria
+## Remover CardHeader redundante do CategoryManagement
 
-### Problemas identificados
+### Problema
 
-1. Botao "Atualizar" ocupa uma linha inteira sozinho, criando espaco vazio desnecessario (e conforme decisao anterior, refresh manual foi removido pois os dados atualizam automaticamente ao trocar de aba)
-2. `pt-6` no CardContent cria padding excessivo no topo
-3. O filtro com icone tem layout desalinhado e espaçamento ruim
+O titulo "Gerenciamento de Categorias" e subtitulo aparecem duas vezes: no `PageHeader` dinamico (implementado anteriormente) e dentro do `CardHeader` do componente `CategoryManagement`.
 
 ### O que muda
 
-**Arquivo**: `src/pages/Admin.tsx`
+**Arquivo**: `src/components/Settings/CategoryManagement.tsx`
 
-1. **Remover o botao "Atualizar"** — os logs ja atualizam automaticamente ao navegar para a aba via sidebar (conforme decisao anterior do projeto)
+1. Remover o bloco `<CardHeader>` (linhas 575-580) que contem `CardTitle` e `CardDescription` duplicados
+2. Adicionar `pt-4` ao `CardContent` para manter espaçamento adequado sem o header
+3. Remover imports nao utilizados (`CardHeader`, `CardTitle`, `CardDescription`)
 
-2. **Reduzir padding do CardContent** — trocar `pt-6` por `pt-4` para diminuir o espaco no topo
-
-3. **Simplificar o layout do filtro** — remover o wrapper `flex items-center gap-2` desnecessario e o icone `Filter` solto, deixando apenas o `Select` diretamente com `mb-4`
-
-**Resultado**: o filtro fica logo no topo do card, sem espaco desperdicado, e a tabela começa imediatamente abaixo.
+O conteudo do card (busca, botoes, tabela de categorias) permanece inalterado.
 
