@@ -149,7 +149,12 @@ const getSubcategoryPlaceholder = (category: string | null): string => {
   return placeholders[category] || `Ex: Subcategoria de ${category}...`;
 };
 
-export function CategoryManagement() {
+interface CategoryManagementProps {
+  externalAddDialogOpen?: boolean;
+  onExternalAddDialogChange?: (open: boolean) => void;
+}
+
+export function CategoryManagement({ externalAddDialogOpen, onExternalAddDialogChange }: CategoryManagementProps = {}) {
   const { 
     categories,
     loading,
@@ -171,7 +176,9 @@ export function CategoryManagement() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   
   // Dialogs state
-  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [internalAddCategoryDialog, setInternalAddCategoryDialog] = useState(false);
+  const showAddCategoryDialog = externalAddDialogOpen ?? internalAddCategoryDialog;
+  const setShowAddCategoryDialog = onExternalAddDialogChange ?? setInternalAddCategoryDialog;
   const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -572,20 +579,14 @@ export function CategoryManagement() {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar categorias..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Button onClick={() => setShowAddCategoryDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova
-          </Button>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar categorias..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
         <Card>
