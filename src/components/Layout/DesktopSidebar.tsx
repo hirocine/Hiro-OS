@@ -139,7 +139,7 @@ export function DesktopSidebar() {
             ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar..."
+            placeholder="Buscar"
             className="w-full h-8 pl-8 pr-12 rounded-lg border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-background transition-colors"
           />
           <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden xl:inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
