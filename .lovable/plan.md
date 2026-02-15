@@ -1,64 +1,20 @@
 
 
-## Adicionar subitens de Administracao na sidebar
+## Remover TabsList do header da pagina Admin
 
 ### O que muda
 
-O item "Admin" na sidebar vai virar um menu expansivel (igual Fornecedores e Tarefas), com 5 subitens correspondendo as abas da pagina:
-
-- Usuarios (`/administracao/usuarios`)
-- Logs de Auditoria (`/administracao/logs`)
-- Categorias (`/administracao/categorias`)
-- Notificacoes (`/administracao/notificacoes`)
-- Sistema (`/administracao/sistema`)
+Como a navegacao entre as secoes de Administracao agora e feita pela sidebar (subitens), a barra de abas (TabsList) no topo da pagina se torna redundante e sera removida.
 
 ### Detalhes tecnicos
 
-**1. Rotas (App.tsx)**
+**Arquivo**: `src/pages/Admin.tsx`
 
-Adicionar sub-rotas para cada aba e um redirect da rota pai:
+1. **Remover o bloco `<TabsList>` inteiro** (linhas 556-577) que contem os 5 `TabsTrigger` (Usuarios, Logs, Categorias, Notificacoes, Sistema).
 
-```
-/administracao        -> redireciona para /administracao/usuarios
-/administracao/usuarios
-/administracao/logs
-/administracao/categorias
-/administracao/notificacoes
-/administracao/sistema
-```
+2. **Manter o componente `<Tabs>`** com `value={activeTab}` e o `onValueChange` para que a logica de refresh automatico ao trocar de aba continue funcionando (o `onValueChange` e disparado quando a URL muda via sidebar).
 
-**2. Sidebar (DesktopSidebar.tsx e MobileSidebar.tsx)**
+3. **Manter todos os `<TabsContent>`** inalterados — eles continuam controlados pelo `activeTab` derivado da URL.
 
-Transformar o item "Admin" de item simples para item com `children`:
+Resultado: a pagina mostra direto o conteudo da aba ativa sem a barra de navegacao duplicada no topo.
 
-```
-{
-  name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
-  children: [
-    { name: 'Usuarios', href: '/administracao/usuarios' },
-    { name: 'Logs de Auditoria', href: '/administracao/logs' },
-    { name: 'Categorias', href: '/administracao/categorias' },
-    { name: 'Notificacoes', href: '/administracao/notificacoes' },
-    { name: 'Sistema', href: '/administracao/sistema' },
-  ],
-}
-```
-
-Os subitens terao o mesmo estilo vermelho (`text-destructive`) dos outros itens admin, com pontinho no lugar do icone.
-
-**3. Pagina Admin (Admin.tsx)**
-
-Extrair o tab ativo da URL em vez de usar `defaultValue="users"`. O componente vai ler o ultimo segmento da rota (ex: `/administracao/logs` -> `logs`) e usar como `value` controlado do `Tabs`. Ao trocar de aba, navega para a sub-rota correspondente. Os valores dos tabs serao mapeados:
-
-- `/administracao/usuarios` -> tab `users`
-- `/administracao/logs` -> tab `logs`
-- `/administracao/categorias` -> tab `categories`
-- `/administracao/notificacoes` -> tab `notifications`
-- `/administracao/sistema` -> tab `system`
-
-### Arquivos editados
-
-- `src/App.tsx` - Novas sub-rotas + redirect
-- `src/components/Layout/DesktopSidebar.tsx` - Admin com children
-- `src/components/Layout/MobileSidebar.tsx` - Admin com children
-- `src/pages/Admin.tsx` - Tabs controlados pela URL
