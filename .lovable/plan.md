@@ -1,32 +1,58 @@
 
 
-## Ajustes visuais nos subitens da sidebar
+## Box agrupadora envolvendo item pai + subitens
 
-### 1. Remover a linha vertical (border-l)
+### Conceito
 
-Remover o `border-l border-border` do container dos subitens em `DesktopSidebar.tsx` (linha 153) e no `MobileSidebar.tsx`. Os subitens continuam indentados, mas sem a linha vertical conectando-os.
+Quando o grupo esta expandido, uma unica box de fundo (rounded, bg-muted ou similar) envolve o item pai ("Tarefas") e todos os subitens ("Gerais", "Privadas"), criando um visual de agrupamento. Os subitens ficam alinhados no mesmo padding esquerdo do pai -- sem indentacao extra. O subitem ativo recebe destaque de texto/cor mas sem box propria.
 
-### 2. Apenas o subitem ativo fica destacado (não o pai)
+### Estrutura HTML proposta
 
-Quando um child está ativo, o item pai "Tarefas" não deve ficar com fundo colorido nem com a barra lateral. Ele mantém apenas o texto normal (como se não estivesse selecionado). Somente o subitem clicado (ex: "Gerais") recebe o destaque visual (bg-primary/10, text-primary, barra lateral).
+```text
+<div class="rounded-lg bg-muted/50 p-1">       <-- box agrupadora (so aparece quando expanded)
+  <div class="flex items-center ...">            <-- item pai (Tarefas)
+    [chevron] [nome]
+  </div>
+  <Collapsible>
+    <NavLink class="flex items-center px-3 py-2.5 ...">  <-- subitem, mesmo padding do pai
+      [icon] Gerais
+    </NavLink>
+    <NavLink ...>
+      [icon] Privadas
+    </NavLink>
+  </Collapsible>
+</div>
+```
 
-### Detalhes técnicos
+### Visual esperado
+
+```text
+  Home
+  ┌─────────────────────────┐
+  │ v  Tarefas              │  <-- fundo sutil envolvendo tudo
+  │ 👥 Gerais    (destaque) │
+  │ 🔒 Privadas             │
+  └─────────────────────────┘
+  Projetos AV
+```
+
+Quando colapsado, a box desaparece e "Tarefas" volta a ser um item normal como os outros.
+
+### Detalhes tecnicos
 
 **`src/components/Layout/DesktopSidebar.tsx`** -- componente `NavItemWithChildren`:
 
-- Linha 109-112: trocar `anyActive` por `parentActive` na classe do container pai. Assim, o fundo colorido só aparece quando o usuario navega diretamente para `/tarefas`, não quando está em `/tarefas/gerais`.
-- Linha 117-118: trocar `anyActive` por `parentActive` na barra lateral esquerda do pai.
-- Linha 130: trocar `anyActive` por `parentActive` na cor do ícone.
-- Linha 136: trocar `anyActive` por `parentActive` na cor do chevron.
-- Linha 153: remover `border-l border-border` do container dos subitens.
+1. O `<div>` raiz do componente recebe classes condicionais: quando `expanded`, aplica `rounded-lg bg-muted/50 p-1` (ou similar) para criar a box agrupadora. Quando colapsado, sem fundo.
+2. O item pai perde o `rounded-lg` e `hover:bg-muted` proprios quando expandido (ja que o fundo vem do container).
+3. Remover `ml-3 pl-3` do container dos subitens -- os subitens usam o mesmo `px-3 py-2.5 gap-3` dos itens normais, alinhados a esquerda.
+4. Icones dos subitens com `h-[18px] w-[18px]` (mesmo tamanho do pai).
+5. Subitem ativo: apenas `text-primary font-medium`, sem `bg-primary/10` proprio (o fundo ja vem do container agrupador).
+6. Subitem hover (nao ativo): `hover:bg-background/60 rounded-lg` para um destaque sutil dentro da box.
 
-**`src/components/Layout/MobileSidebar.tsx`** -- aplicar as mesmas alterações de lógica (parentActive em vez de anyActive) e remover border-l dos subitens.
+**`src/components/Layout/MobileSidebar.tsx`**: mesmas alteracoes para manter consistencia.
 
-### Resultado visual esperado
+### Animacao
 
-```text
-  Tarefas              <-- sem destaque (texto normal)
-     Gerais             <-- destacado (bg-primary/10 + barra lateral)
-     Privadas           <-- sem destaque
-```
+- A box agrupadora aparece/desaparece junto com a expansao dos subitens, usando a animacao de collapsible ja existente.
+- Como o fundo esta no container externo, basta aplicar `transition-colors duration-200` para um fade suave do fundo ao expandir/colapsar.
 
