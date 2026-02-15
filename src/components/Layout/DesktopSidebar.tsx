@@ -173,7 +173,7 @@ function NavItemWithChildren({ item, isActive, onNavClick }: {
                   to={child.href}
                   onClick={(e) => onNavClick(e, child.href)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-sm relative",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm relative",
                     active
                       ? "text-primary font-medium"
                       : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
