@@ -88,7 +88,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
     )}>
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group",
+          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
           expanded
             ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
             : "rounded-lg",
@@ -98,29 +98,19 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
               ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
               : ""
         )}
+        onClick={() => setExpanded(!expanded)}
       >
         {(parentActive && !expanded || childActive && expanded) && (
           <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
         )}
 
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center"
-        >
-          <ChevronRight className={cn(
-            "h-[18px] w-[18px] transition-transform duration-200",
-            expanded && "rotate-90",
-            parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
-          )} />
-        </button>
+        <ChevronRight className={cn(
+          "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
+          expanded && "rotate-90",
+          parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
+        )} />
 
-        <span
-          onClick={() => setExpanded(!expanded)}
-          className="text-sm flex-1 cursor-pointer"
-        >
-          {item.name}
-        </span>
+        <span className="text-sm flex-1">{item.name}</span>
       </div>
 
       <Collapsible open={expanded}>

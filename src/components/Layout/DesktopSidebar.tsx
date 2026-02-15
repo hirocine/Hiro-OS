@@ -121,7 +121,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
     )}>
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer",
+          "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer select-none",
           expanded
             ? childActive ? "text-foreground font-medium" : "text-muted-foreground"
             : "rounded-lg",
@@ -131,6 +131,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
               ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               : ""
         )}
+        onClick={() => setExpanded(!expanded)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -138,12 +139,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
           <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
         )}
 
-        {/* Icon area - clickable to toggle expand */}
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center"
-        >
+        <div className="relative h-[18px] w-[18px] shrink-0 flex items-center justify-center">
           <Icon className={cn(
             "h-[18px] w-[18px] absolute inset-0 transition-opacity duration-150",
             hovered ? "opacity-0" : "opacity-100",
@@ -155,15 +151,9 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
             expanded && "rotate-90",
             parentActive && !expanded ? (isAdminItem ? "text-destructive" : "text-primary") : "text-muted-foreground"
           )} />
-        </button>
+        </div>
 
-        {/* Name - clickable to navigate */}
-        <span
-          onClick={() => setExpanded(!expanded)}
-          className="text-sm truncate flex-1 cursor-pointer"
-        >
-          {item.name}
-        </span>
+        <span className="text-sm truncate flex-1">{item.name}</span>
       </div>
 
       {/* Children */}
