@@ -115,7 +115,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
 
       <Collapsible open={expanded}>
         <CollapsibleContent>
-          <div className="mt-0.5 space-y-0.5">
+          <div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
             {item.children!.map((child) => {
               const active = isActive(child.href);
               return (
@@ -124,10 +124,10 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
                   to={child.href}
                   onClick={(e) => onNavClick(e, child.href)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
                       ? isAdminItem ? "text-destructive font-semibold" : "text-success font-semibold"
-                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-background/80 hover:text-foreground hover:border-border/50"
                   )}
                 >
                   <span className={cn("h-[18px] w-[18px] shrink-0 flex items-center justify-center text-[8px]", active ? (isAdminItem ? "text-destructive" : "text-success") : "text-muted-foreground")}>●</span>
