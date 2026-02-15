@@ -562,36 +562,36 @@ export default function Admin() {
         }}
       >
         <TabsContent value="users" className="space-y-4">
-           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="flex items-center space-x-2 flex-1">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar usuários..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                  <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Filtrar por role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="admin">Administradores</SelectItem>
-                      <SelectItem value="user">Usuários</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Adicionar Usuário
-                </Button>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center space-x-2 flex-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar usuários..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
               </div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Filtrar por role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="admin">Administradores</SelectItem>
+                  <SelectItem value="user">Usuários</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={() => setIsAddUserDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Adicionar Usuário
+            </Button>
+          </div>
 
+           <Card>
+            <CardContent className="pt-4">
                 <Table>
                   <TableHeader>
                     <TableRow>
