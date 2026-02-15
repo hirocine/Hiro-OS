@@ -1,24 +1,29 @@
 
 
-## Adicionar animação de entrada nas abas da Administração
+## Adicionar animação de entrada no PageHeader da Administração
 
-### O que será feito
+### Problema
 
-Adicionar uma animação suave de fade-in ao conteúdo de cada aba (Usuários, Logs, Categorias, Notificações, Sistema) ao trocar entre elas.
+O `PageHeader` (título + subtítulo) muda de conteúdo ao trocar de aba, mas como o componente não é desmontado/remontado (apenas o texto muda), a animação `animate-fade-in` nunca é disparada.
 
-### Correção
+### Solução
 
 **Arquivo: `src/pages/Admin.tsx`**
 
-Adicionar a classe `animate-fade-in` a cada `TabsContent` existente. A animação já está definida no sistema (300ms ease-out com leve slide vertical).
+Adicionar duas props ao `PageHeader` (linha 550):
 
-Serão 5 `TabsContent` atualizados:
+1. `key={activeTab}` — força o React a desmontar e remontar o componente ao trocar de aba, disparando a animação
+2. `className="animate-fade-in"` — aplica a animação de fade-in ao montar
 
-- `value="users"` — de `space-y-4` para `space-y-4 animate-fade-in`
-- `value="logs"` — de `space-y-4` para `space-y-4 animate-fade-in`
-- `value="categories"` — de `space-y-4` para `space-y-4 animate-fade-in`
-- `value="notifications"` — de `space-y-4` para `space-y-4 animate-fade-in`
-- `value="system"` — de `space-y-4` para `space-y-4 animate-fade-in`
+```tsx
+<PageHeader 
+  key={activeTab}
+  className="animate-fade-in"
+  title={...}
+  subtitle={...}
+  actions={...}
+/>
+```
 
-Nenhum arquivo novo ou dependência necessária — a keyframe `fade-in` já existe no Tailwind config do projeto.
+Nenhum arquivo novo, dependência ou alteração no componente `PageHeader` base. A prop `className` já é suportada pelo componente.
 
