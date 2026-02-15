@@ -1,46 +1,64 @@
 
 
-## Permitir fechar submenus clicando no nome
+## Adicionar subitens de Administracao na sidebar
 
-### Problema
+### O que muda
 
-Atualmente, clicar no nome do item pai (ex: "Tarefas") navega para a rota pai, mas nao fecha/abre o submenu. So o icone (area do chevron) faz toggle do submenu.
+O item "Admin" na sidebar vai virar um menu expansivel (igual Fornecedores e Tarefas), com 5 subitens correspondendo as abas da pagina:
 
-### Solucao
-
-Transformar o `NavLink` do nome em um elemento clicavel que:
-- **Se o menu esta colapsado**: expande o submenu (e navega para a rota pai)
-- **Se o menu esta expandido**: apenas fecha o submenu (sem navegar)
-
-Na pratica, trocar o `NavLink` por um `<span>` com `onClick` que faz toggle do `expanded`, e so navega quando esta colapsado.
+- Usuarios (`/administracao/usuarios`)
+- Logs de Auditoria (`/administracao/logs`)
+- Categorias (`/administracao/categorias`)
+- Notificacoes (`/administracao/notificacoes`)
+- Sistema (`/administracao/sistema`)
 
 ### Detalhes tecnicos
 
-**Arquivos**: `DesktopSidebar.tsx` (linhas 160-167) e `MobileSidebar.tsx` (linhas 118-124)
+**1. Rotas (App.tsx)**
 
-Substituir o `NavLink` do nome por:
+Adicionar sub-rotas para cada aba e um redirect da rota pai:
 
-```tsx
-<span
-  onClick={() => {
-    if (expanded) {
-      setExpanded(false);
-    } else {
-      setExpanded(true);
-    }
-  }}
-  className="text-sm truncate flex-1 cursor-pointer"
->
-  {item.name}
-</span>
+```
+/administracao        -> redireciona para /administracao/usuarios
+/administracao/usuarios
+/administracao/logs
+/administracao/categorias
+/administracao/notificacoes
+/administracao/sistema
 ```
 
-Isso remove a navegacao ao clicar no nome e transforma em puro toggle de expansao/colapso. A navegacao para subitens ja e feita pelos proprios subitens dentro do submenu.
+**2. Sidebar (DesktopSidebar.tsx e MobileSidebar.tsx)**
 
-### Comportamento esperado
+Transformar o item "Admin" de item simples para item com `children`:
 
-- Clicar no nome "Tarefas" quando fechado -> abre o submenu
-- Clicar no nome "Tarefas" quando aberto -> fecha o submenu
-- Clicar no icone/chevron -> mesma coisa (toggle)
-- Clicar nos subitens "Gerais"/"Privadas" -> navega normalmente
+```
+{
+  name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
+  children: [
+    { name: 'Usuarios', href: '/administracao/usuarios' },
+    { name: 'Logs de Auditoria', href: '/administracao/logs' },
+    { name: 'Categorias', href: '/administracao/categorias' },
+    { name: 'Notificacoes', href: '/administracao/notificacoes' },
+    { name: 'Sistema', href: '/administracao/sistema' },
+  ],
+}
+```
 
+Os subitens terao o mesmo estilo vermelho (`text-destructive`) dos outros itens admin, com pontinho no lugar do icone.
+
+**3. Pagina Admin (Admin.tsx)**
+
+Extrair o tab ativo da URL em vez de usar `defaultValue="users"`. O componente vai ler o ultimo segmento da rota (ex: `/administracao/logs` -> `logs`) e usar como `value` controlado do `Tabs`. Ao trocar de aba, navega para a sub-rota correspondente. Os valores dos tabs serao mapeados:
+
+- `/administracao/usuarios` -> tab `users`
+- `/administracao/logs` -> tab `logs`
+- `/administracao/categorias` -> tab `categories`
+- `/administracao/notificacoes` -> tab `notifications`
+- `/administracao/sistema` -> tab `system`
+
+### Arquivos editados
+
+- `src/App.tsx` - Novas sub-rotas + redirect
+- `src/components/Layout/DesktopSidebar.tsx` - Admin com children
+- `src/components/Layout/MobileSidebar.tsx` - Admin com children
+- `src/pages/Admin.tsx` - Tabs controlados pela URL
