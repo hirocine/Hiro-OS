@@ -586,7 +586,7 @@ export default function Admin() {
               />
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 h-10">
                 <SelectValue placeholder="Filtrar por role" />
               </SelectTrigger>
               <SelectContent>
@@ -734,7 +734,7 @@ export default function Admin() {
               />
             </div>
             <Select value={tableFilter} onValueChange={setTableFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 h-10">
                 <SelectValue placeholder="Filtrar por tabela" />
               </SelectTrigger>
               <SelectContent>
