@@ -1,50 +1,67 @@
 
 
-## Mover botao "Nova Tarefa" para dentro do PageHeader
+## Eliminar skeleton duplicado: remover Suspense redundante nas rotas filhas
 
 ### Problema
 
-Na pagina `Tasks.tsx`, o botao "Nova Tarefa" esta em um `<div>` separado abaixo do `PageHeader`, criando um espaco vazio entre o titulo e o botao. O botao deveria estar alinhado horizontalmente com o titulo, usando a prop `actions` do `PageHeader`.
+Existem duas camadas de `Suspense` para cada rota protegida:
+
+1. **App.tsx** - cada rota filha tem `<Suspense fallback={<LoadingScreenSkeleton />}>` individualmente
+2. **Layout.tsx** - o `<Outlet />` ja esta envolto em `<Suspense fallback={null}>`
+
+Quando o usuario navega entre paginas, o fluxo e:
+- Suspense do App.tsx mostra `LoadingScreenSkeleton` (generico, tela cheia com 6 blocos identicos) enquanto o chunk JS carrega
+- Chunk carrega e a pagina renderiza seu proprio skeleton inline (fiel ao layout)
+
+Resultado: **flash do skeleton generico seguido pelo skeleton da pagina** — dois skeletons em sequencia.
 
 ### Solucao
 
-**Arquivo: `src/pages/Tasks.tsx`**
+Remover os wrappers `<Suspense>` individuais de todas as rotas filhas do Layout no `App.tsx`. O `<Suspense fallback={null}>` do `Layout.tsx` ja cuida do lazy loading — quando o chunk carrega, o Suspense do Layout mostra `null` (nada), e em seguida a pagina renderiza seu proprio skeleton de loading (que ja espelha o layout real).
 
-1. Mover o `<Button>` para a prop `actions` do `PageHeader`
-2. Remover o `<div className="flex items-center justify-end">` que envolve o botao
+Manter o `<Suspense>` apenas nas rotas que nao sao filhas do Layout:
+- `/entrar` (Auth) — nao tem Layout
+- `*` (NotFound) — nao tem Layout
+
+### Mudanca no App.tsx
 
 De:
 ```tsx
-<PageHeader
-  title={...}
-  subtitle={...}
-/>
-
-<div className="space-y-6">
-  <div className="flex items-center justify-end">
-    <Button onClick={() => setDialogOpen(true)}>
-      <Plus className="w-4 h-4 mr-2" />
-      Nova Tarefa
-    </Button>
-  </div>
-  ...
+<Route index element={<Suspense fallback={<LoadingScreenSkeleton />}><Home /></Suspense>} />
+<Route path="dashboard" element={<Suspense fallback={<LoadingScreenSkeleton />}><Dashboard /></Suspense>} />
+// ... 20+ rotas iguais
 ```
 
 Para:
 ```tsx
-<PageHeader
-  title={...}
-  subtitle={...}
-  actions={
-    <Button onClick={() => setDialogOpen(true)}>
-      <Plus className="w-4 h-4 mr-2" />
-      Nova Tarefa
-    </Button>
-  }
-/>
-
-<div className="space-y-6">
-  ...
+<Route index element={<Home />} />
+<Route path="dashboard" element={<Dashboard />} />
+// ... rotas diretas, sem Suspense individual
 ```
 
-Apenas 1 arquivo editado, nenhuma dependencia nova.
+As rotas fora do Layout mantem o Suspense:
+```tsx
+<Route path="/entrar" element={
+  <Suspense fallback={<LoadingScreenSkeleton />}>
+    <Auth />
+  </Suspense>
+} />
+<Route path="*" element={
+  <Suspense fallback={<LoadingScreenSkeleton />}>
+    <NotFound />
+  </Suspense>
+} />
+```
+
+### Arquivos editados
+
+- `src/App.tsx` — remover Suspense wrappers de ~25 rotas filhas do Layout
+
+Nenhum outro arquivo precisa mudar. Nenhuma dependencia nova.
+
+### Resultado
+
+- Navegacao entre paginas: usuario ve apenas 1 skeleton (o da pagina, fiel ao layout real)
+- Primeiro carregamento (chunk nao cacheado): Layout mostra nada (`null`) por alguns ms enquanto o chunk carrega, depois a pagina mostra seu skeleton proprio
+- Rotas externas (Auth, NotFound): mantem o Suspense generico como fallback
+
