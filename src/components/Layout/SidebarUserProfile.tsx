@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -36,22 +37,24 @@ export function SidebarUserProfile({ isMobile = false }: SidebarUserProfileProps
 
   return (
     <div className={cn(
-      "border-t border-border bg-card/50 backdrop-blur-sm shrink-0",
+      "border-t border-border/50 bg-card/50 backdrop-blur-sm shrink-0",
       isMobile ? "" : "p-2"
     )}>
       <div className="flex items-center justify-between w-full">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
-              <div className="relative w-8 h-8">
-                <Avatar className="w-full h-full ring-2 ring-border">
-                  <AvatarImage src={avatarData.url || undefined} className="object-cover" />
-                  <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-success rounded-full border-2 border-card" />
-              </div>
-            </button>
-          </DropdownMenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1.5 hover:bg-muted rounded-lg cursor-pointer transition-colors shrink-0">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={avatarData.url || undefined} className="object-cover" />
+                    <AvatarFallback className="text-xs font-medium">{avatarData.initials}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top">{avatarData.displayName || user?.email || 'Usuário'}</TooltipContent>
+          </Tooltip>
           <DropdownMenuContent align="start" side="top" className="w-56">
             <DropdownMenuItem onClick={() => navigate('/perfil')}>
               <User className="mr-2 h-4 w-4" />
