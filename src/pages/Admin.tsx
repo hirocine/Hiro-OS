@@ -574,7 +574,7 @@ export default function Admin() {
           if (value === 'logs') fetchAuditLogs();
         }}
       >
-        <TabsContent value="users" className="space-y-4">
+        <TabsContent value="users" className="space-y-4 animate-fade-in">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -722,7 +722,7 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="logs" className="space-y-4">
+        <TabsContent value="logs" className="space-y-4 animate-fade-in">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -863,14 +863,14 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="categories" className="space-y-4">
+        <TabsContent value="categories" className="space-y-4 animate-fade-in">
           <CategoryManagement 
             externalAddDialogOpen={isAddCategoryDialogOpen}
             onExternalAddDialogChange={setIsAddCategoryDialogOpen}
           />
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-4">
+        <TabsContent value="notifications" className="space-y-4 animate-fade-in">
            <Card>
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -902,7 +902,7 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="system" className="space-y-4">
+        <TabsContent value="system" className="space-y-4 animate-fade-in">
            <Card>
             <CardContent className="pt-6 space-y-6">
               {/* Seção: Informações do Sistema */}
