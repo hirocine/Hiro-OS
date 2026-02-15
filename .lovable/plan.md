@@ -1,59 +1,33 @@
 
-
-## Mover busca e botão "Nova" para fora do Card na aba Categorias
-
-### Problema
-Na aba de categorias, a busca e o botão "Nova" estão dentro do Card. O padrão já aplicado na aba de Usuários coloca filtros/ações fora do Card, acima dele.
+## Adicionar busca na aba de Logs de Auditoria
 
 ### O que muda
 
-**Arquivo**: `src/components/Settings/CategoryManagement.tsx`
+**Arquivo**: `src/pages/Admin.tsx`
 
-1. Extrair o bloco de busca + botão "Nova" para fora do `<Card>`, renderizando-os antes dele dentro de um wrapper `<div className="space-y-4">`
-2. O Card fica apenas com o conteúdo da tabela/lista de categorias
-3. Remover `space-y-4` do `CardContent` (já não precisa separar filtros do conteúdo)
+1. Adicionar um estado `logSearchQuery` para armazenar o texto de busca
+2. Mover o `Select` de tabelas para fora do Card (seguindo o padrão das outras abas) e adicionar um campo de busca ao lado
+3. Filtrar os logs também pelo texto de busca (pesquisando em usuário, ação e detalhes)
 
 ### Layout resultante
 
 ```text
 +----------------------------------------------------------+
-| Gerenciamento de Categorias                               |
-| Gerencie categorias e subcategorias de equipamentos       |
+| Logs de Auditoria                                         |
+| Monitore todas as atividades do sistema                   |
 +----------------------------------------------------------+
-| [Q Buscar categorias...]              [+ Nova]            |
+| [Q Buscar logs...]              [Todas as tabelas v]      |
 +----------------------------------------------------------+
 | Card                                                      |
 | +------------------------------------------------------+ |
-| | Lista de categorias (drag-and-drop)                  | |
+| | Tabela de logs                                       | |
 | +------------------------------------------------------+ |
 +----------------------------------------------------------+
 ```
 
-### Detalhes técnicos
+### Detalhes tecnicos
 
-No `CategoryManagement.tsx`, o return passará de:
-
-```tsx
-<Card>
-  <CardContent className="pt-4 space-y-4">
-    <div className="flex ..."> {/* busca + botão */} </div>
-    <div className="space-y-2"> {/* lista */} </div>
-  </CardContent>
-</Card>
-```
-
-Para:
-
-```tsx
-<div className="space-y-4">
-  <div className="flex ..."> {/* busca + botão - FORA do card */} </div>
-  <Card>
-    <CardContent className="pt-4">
-      <div className="space-y-2"> {/* lista */} </div>
-    </CardContent>
-  </Card>
-</div>
-```
-
-Apenas o arquivo `src/components/Settings/CategoryManagement.tsx` será editado.
-
+- Novo estado: `const [logSearchQuery, setLogSearchQuery] = useState('')`
+- Mover o `Select` e adicionar `Input` de busca para fora do `Card`, em um `div` com layout flex
+- O filtro de busca pesquisara em: `user_email`, `action_type`, `table_name` e detalhes (description gerada)
+- Manter o filtro de tabela existente funcionando junto com a busca
