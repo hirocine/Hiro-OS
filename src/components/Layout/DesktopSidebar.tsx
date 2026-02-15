@@ -158,13 +158,12 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem 
         </button>
 
         {/* Name - clickable to navigate */}
-        <NavLink
-          to={item.href}
-          onClick={(e) => onNavClick(e, item.href)}
-          className="text-sm truncate flex-1"
+        <span
+          onClick={() => setExpanded(!expanded)}
+          className="text-sm truncate flex-1 cursor-pointer"
         >
           {item.name}
-        </NavLink>
+        </span>
       </div>
 
       {/* Children */}

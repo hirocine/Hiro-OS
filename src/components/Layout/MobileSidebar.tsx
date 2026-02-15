@@ -115,13 +115,12 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
           )} />
         </button>
 
-        <NavLink
-          to={item.href}
-          onClick={(e) => onNavClick(e, item.href)}
-          className="text-sm flex-1"
+        <span
+          onClick={() => setExpanded(!expanded)}
+          className="text-sm flex-1 cursor-pointer"
         >
           {item.name}
-        </NavLink>
+        </span>
       </div>
 
       <Collapsible open={expanded}>
