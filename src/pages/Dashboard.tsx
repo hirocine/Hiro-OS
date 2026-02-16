@@ -92,6 +92,14 @@ export default function Dashboard() {
     [metrics.ltv, metrics.cac]
   );
 
+  const chartData = useMemo(() =>
+    monthlyData.map(d => ({
+      ...d,
+      realizado: d.realizado > 0 ? d.realizado : null,
+    })),
+    [monthlyData]
+  );
+
   const marginAlert = metrics.contribution_margin_actual < goals.margin_goal_pct;
   const profitAlert = metrics.net_profit_actual < goals.profit_goal_pct;
   const monthlyGoalExceeded = monthlyProgress > 100;
@@ -294,7 +302,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="h-80">
                   <RechartsContainer width="100%" height="100%">
-                    <ComposedChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis
@@ -314,6 +322,7 @@ export default function Dashboard() {
                         strokeWidth={3}
                         dot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 0 }}
                         activeDot={{ fill: 'hsl(var(--primary))', r: 7, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                        connectNulls={false}
                       />
                     </ComposedChart>
                   </RechartsContainer>
