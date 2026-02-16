@@ -1,58 +1,119 @@
 
-## Varredura Mobile -- Problemas Encontrados e Correcoes
 
-Apos verificacao completa da aplicacao em viewport mobile (390x844), identifiquei os seguintes pontos:
+## Integracao Financeira Real com Supabase (Intradia + Timestamp de Sincronizacao)
 
-### Problemas Encontrados
+### Resumo
 
-**1. SSD Details Dialog nao e responsivo no mobile**
-O `SSDDetailsDialog` usa `Dialog` puro ao inves de um componente responsivo. No mobile, dialogs podem ficar dificeis de interagir -- o padrao da aplicacao e usar Drawer (bottom sheet) para mobile. Alem disso, o form de datas com `grid-cols-2` fica apertado em telas pequenas.
+Criar as tabelas `financial_snapshots` e `financial_goals` no Supabase, uma edge function `sync-financial-data` como webhook para o n8n, e atualizar os hooks para buscar dados reais com staleTime curto, suporte a refetch manual, e exibicao do timestamp da ultima sincronizacao.
 
-**2. 5 chamadas `alert()` nativo no SSD Details Dialog**
-Validacoes usam `alert()` do navegador, que quebra a experiencia no mobile (especialmente PWA). Deve usar `toast` como o resto da aplicacao.
+---
 
-**3. Kanban Board sem suporte a touch adequado**
-O `SSDKanbanBoard` usa apenas `PointerSensor` com `distance: 8`. No mobile, seria ideal adicionar `TouchSensor` com `delay` para diferenciar scroll de drag, evitando ativacoes acidentais.
+### 1. Migration SQL
 
-**4. TopBar com altura excessiva (h-28 = 112px)**
-A barra superior mobile ocupa 112px, o que e bastante para telas pequenas. Isso reduz o espaco util disponivel, especialmente na pagina de SSDs com o Kanban.
+**Tabela `financial_snapshots`** -- Dados brutos enviados pelo n8n (pode ter multiplas atualizacoes por dia):
 
-### Plano de Correcoes
+- `id` uuid PK default gen_random_uuid()
+- `year` int NOT NULL
+- `month` int NOT NULL
+- `revenue` numeric default 0
+- `revenue_goal` numeric default 0
+- `contribution_margin_pct` numeric default 0
+- `contribution_margin_value` numeric default 0
+- `net_profit_pct` numeric default 0
+- `net_profit_value` numeric default 0
+- `avg_ticket` numeric default 0
+- `cac` numeric default 0
+- `ltv` numeric default 0
+- `churn_rate` numeric default 0
+- `burn_rate` numeric default 0
+- `nps` numeric default 0
+- `cash_balance` numeric default 0
+- `realized_income` numeric default 0
+- `realized_expenses` numeric default 0
+- `receivables_30d` numeric default 0
+- `payables_30d` numeric default 0
+- `created_at` timestamptz default now()
+- `updated_at` timestamptz default now()
+- UNIQUE(year, month)
 
-**Arquivo 1: `src/components/SSD/SSDDetailsDialog.tsx`**
-- Trocar `Dialog` por `ResponsiveDialog` (que usa Drawer no mobile)
-- Adaptar o layout das datas para `grid-cols-1` no mobile
-- Substituir os 5 `alert()` por `toast.error()` usando o `enhancedToast` ja existente
+**Tabela `financial_goals`** -- Metas anuais:
 
-**Arquivo 2: `src/components/SSD/SSDKanbanBoard.tsx`**
-- Adicionar `TouchSensor` com `activationConstraint: { delay: 250, tolerance: 5 }` para suporte touch adequado
-- Isso permite scroll normal e so ativa drag apos segurar 250ms
+- `id` uuid PK default gen_random_uuid()
+- `year` int UNIQUE NOT NULL
+- `revenue_goal` numeric default 0
+- `margin_goal_pct` numeric default 0
+- `profit_goal_pct` numeric default 0
+- `cac_goal` numeric default 0
+- `created_at` timestamptz default now()
+- `updated_at` timestamptz default now()
 
-**Arquivo 3: `src/components/Layout/TopBar.tsx`**
-- Reduzir altura de `h-28` para `h-16` (64px, padrao mobile)
-- Ajustar o padding-top correspondente no Layout.tsx
+**RLS**: SELECT para usuarios autenticados, INSERT/UPDATE com `true` (edge function usa service_role).
 
-**Arquivo 4: `src/components/Layout/Layout.tsx`**
-- Atualizar o padding-top do main content para acompanhar a nova altura da TopBar (de `pt-28` para `pt-16`, e o calculo PWA correspondente)
+**Trigger**: `updated_at` automatico via trigger para registrar exatamente quando o n8n atualizou.
 
-### Detalhes Tecnicos
+---
 
-**SSDDetailsDialog -- Migracao para ResponsiveDialog:**
-- Importar `ResponsiveDialog` e `ResponsiveDialogContent` do componente existente `@/components/ui/responsive-dialog`
-- Trocar `Dialog` por `ResponsiveDialog`, `DialogContent` por `ResponsiveDialogContent`
-- Grid de datas: `grid-cols-1 sm:grid-cols-2`
-- Trocar `alert('mensagem')` por `toast.error('mensagem')` importando de `sonner`
+### 2. Edge Function `sync-financial-data`
 
-**SSDKanbanBoard -- TouchSensor:**
-```text
-import { TouchSensor } from '@dnd-kit/core';
+- Endpoint POST que o n8n chama via webhook
+- Autenticacao via header `x-api-key` contra secret `FINANCIAL_SYNC_API_KEY`
+- UPSERT em `financial_snapshots` (ON CONFLICT year+month) -- atualiza o registro do mes a cada chamada
+- Aceita campo `goals` opcional para atualizar `financial_goals`
+- Usa `createClient` com `SUPABASE_SERVICE_ROLE_KEY` para bypassar RLS
+- `verify_jwt = false` no config.toml (autenticacao propria via API key)
 
-const sensors = useSensors(
-  useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-  useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-);
-```
+---
 
-**TopBar + Layout -- Reducao de altura:**
-- TopBar: `h-28` para `h-16`
-- Layout.tsx: `pt-28` para `pt-16`, e calculo PWA de `7rem` para `4rem`
+### 3. Hooks Atualizados
+
+**`useFinancialData`**:
+- Busca `financial_goals` (ano corrente) e `financial_snapshots` (ano corrente, ordenado por month)
+- staleTime: **60 segundos** (dados quase em tempo real)
+- refetchOnWindowFocus: **true** (ao voltar para a aba, busca dados frescos)
+- Calcula no frontend: accumulated_revenue_ytd (soma), cash_runway (balance/burn_rate), monthlyData (12 meses)
+- Retorna `lastSyncedAt: Date | null` baseado no `updated_at` do snapshot mais recente
+- Fallback para mock se nao ha dados no banco
+
+**`useCashFlowData`**:
+- Busca snapshots do ano corrente para montar evolucao e dados do mes atual
+- Mesmas configs de staleTime/refetchOnWindowFocus
+- Retorna `lastSyncedAt` tambem
+
+**`queryClient.ts`**: Adicionar query keys `financial.goals`, `financial.snapshots`.
+
+---
+
+### 4. Dashboard -- Exibicao do Timestamp
+
+O Dashboard ja tem um `lastUpdate` no header. A mudanca e:
+- Trocar o `lastUpdate` local (que marca quando o React terminou de carregar) pelo `lastSyncedAt` vindo do hook (que marca quando o n8n realmente enviou dados)
+- Exibir "Dados sincronizados ha X minutos" usando `formatRelativeTime`
+- Se `lastSyncedAt` for null (sem dados no banco), exibir "Dados de exemplo"
+
+---
+
+### 5. Tratamento de Nulos
+
+- Toda metrica que vier `null` sera tratada como `0` via `?? 0`
+- Cash Runway: se burn_rate for 0, exibir `--`
+- LTV/CAC: se CAC for 0, exibir `--`
+- Valores `NaN` sao impossibilitados pelas verificacoes de divisao por zero
+
+---
+
+### 6. Arquivos a Criar/Editar
+
+| Arquivo | Acao |
+|---------|------|
+| Migration SQL | Criar 2 tabelas + RLS + trigger updated_at |
+| `supabase/functions/sync-financial-data/index.ts` | Criar edge function |
+| `supabase/config.toml` | Adicionar `[functions.sync-financial-data]` com verify_jwt = false |
+| `src/hooks/useFinancialData.ts` | Reescrever: Supabase + calculos + lastSyncedAt |
+| `src/hooks/useCashFlowData.ts` | Reescrever: Supabase + calculos + lastSyncedAt |
+| `src/lib/queryClient.ts` | Adicionar query keys financeiras |
+| `src/pages/Dashboard.tsx` | Usar lastSyncedAt do hook em vez de lastUpdate local |
+
+### 7. Configuracao Pos-Deploy
+
+O secret `FINANCIAL_SYNC_API_KEY` precisa ser criado no painel do Supabase (Settings > Edge Functions) antes do n8n conseguir autenticar.
+
