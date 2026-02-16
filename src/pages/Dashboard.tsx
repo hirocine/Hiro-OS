@@ -255,53 +255,92 @@ export default function Dashboard() {
             <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Fluxo de Caixa</h2>
           </div>
           {cashFlowLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
+            <div className="space-y-4">
+              <Skeleton className="h-32 w-full rounded-lg" />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <CashFlowDashCard
-                title="Saldo Total Disponível"
-                value={cashFlow.total_balance}
-                icon={Wallet}
-                subtitle="Soma de todas as contas bancárias"
-              />
-              <CashFlowDashCard
-                title="Fluxo Líquido do Mês"
-                value={cashFlow.net_flow}
-                icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                subtitle={`Recebido: ${formatCurrency(cashFlow.monthly_income)} · Pago: ${formatCurrency(cashFlow.monthly_expenses)}`}
-                iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-              />
-              <CashFlowDashCard
-                title="Saldo Projetado (Fim do Mês)"
-                value={cashFlow.projected_balance}
-                icon={Target}
-                subtitle="Saldo Atual + Receber − Pagar"
-                cardClassName={cn(
-                  'border-primary/40 bg-primary/5',
-                  cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
-                )}
-                iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-              />
-              <CashFlowDashCard
-                title="Contas a Receber (30 dias)"
-                value={cashFlow.receivables_30d}
-                icon={ArrowDownLeft}
-                subtitle="Dinheiro previsto para entrar"
-                iconClassName="text-success"
-                valueClassName="text-success"
-              />
-              <CashFlowDashCard
-                title="Contas a Pagar (30 dias)"
-                value={cashFlow.payables_30d}
-                icon={ArrowUpRight}
-                subtitle="Compromissos a honrar"
-                iconClassName="text-warning"
-                valueClassName="text-warning"
-              />
+            <div className="space-y-4">
+              {/* Linha 1: Saldo Atual — destaque full-width */}
+              <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
+                    Saldo Atual Disponível
+                  </CardTitle>
+                  <Wallet className="h-6 w-6 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl sm:text-4xl font-bold text-primary">
+                    {formatCurrency(cashFlow.total_balance)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
+                </CardContent>
+              </Card>
+
+              {/* Linha 2: Realizado do Mês */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <CashFlowDashCard
+                  title="Receitas Realizado"
+                  value={cashFlow.realized_income}
+                  icon={ArrowDownLeft}
+                  subtitle="Dinheiro que já entrou no mês"
+                  iconClassName="text-success"
+                  valueClassName="text-success"
+                />
+                <CashFlowDashCard
+                  title="Despesas Realizado"
+                  value={cashFlow.realized_expenses}
+                  icon={ArrowUpRight}
+                  subtitle="Dinheiro que já saiu no mês"
+                  iconClassName="text-destructive"
+                  valueClassName="text-destructive"
+                />
+                <CashFlowDashCard
+                  title="Fluxo Líquido Atual"
+                  value={cashFlow.net_flow}
+                  icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
+                  subtitle={`${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
+                  valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
+                />
+              </div>
+
+              {/* Linha 3: Projeção / Não Realizado */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <CashFlowDashCard
+                  title="Contas a Receber"
+                  value={cashFlow.receivables_30d}
+                  icon={ArrowDownLeft}
+                  subtitle="Previsto para entrar (não realizado)"
+                  iconClassName="text-success"
+                  valueClassName="text-success"
+                />
+                <CashFlowDashCard
+                  title="Contas a Pagar"
+                  value={cashFlow.payables_30d}
+                  icon={ArrowUpRight}
+                  subtitle="Compromissos pendentes (não realizado)"
+                  iconClassName="text-destructive"
+                  valueClassName="text-destructive"
+                />
+                <CashFlowDashCard
+                  title="Saldo Projetado (Fim do Mês)"
+                  value={cashFlow.projected_balance}
+                  icon={Target}
+                  subtitle="Saldo + Receber − Pagar"
+                  cardClassName={cn(
+                    'border-primary/40 bg-primary/5',
+                    cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
+                  )}
+                  iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
+                  valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
+                />
+              </div>
             </div>
           )}
         </section>
