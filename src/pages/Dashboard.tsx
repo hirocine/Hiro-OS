@@ -192,15 +192,17 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className={cn(
-                  "text-3xl sm:text-4xl font-bold",
-                  marginAlert ? "text-warning" : "text-foreground"
-                )}>
-                  {metrics.contribution_margin_actual}%
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className={cn(
+                    "text-3xl sm:text-4xl font-bold",
+                    marginAlert ? "text-warning" : "text-foreground"
+                  )}>
+                    {metrics.contribution_margin_actual}%
+                  </span>
+                  <span className="text-lg font-semibold text-foreground/70">
+                    {formatCurrency(metrics.contribution_margin_value)}
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(metrics.contribution_margin_value)}
-                </p>
                 {marginAlert && (
                   <p className="text-xs text-warning flex items-center gap-1">
                     <TrendingDown className="h-3 w-3" />
@@ -222,15 +224,17 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className={cn(
-                  "text-3xl sm:text-4xl font-bold",
-                  profitAlert ? "text-warning" : "text-foreground"
-                )}>
-                  {metrics.net_profit_actual}%
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className={cn(
+                    "text-3xl sm:text-4xl font-bold",
+                    profitAlert ? "text-warning" : "text-foreground"
+                  )}>
+                    {metrics.net_profit_actual}%
+                  </span>
+                  <span className="text-lg font-semibold text-foreground/70">
+                    {formatCurrency(metrics.net_profit_value)}
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(metrics.net_profit_value)}
-                </p>
                 {profitAlert && (
                   <p className="text-xs text-warning flex items-center gap-1">
                     <TrendingDown className="h-3 w-3" />
