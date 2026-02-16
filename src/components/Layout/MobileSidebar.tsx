@@ -51,7 +51,13 @@ const producaoNavigation: NavigationItem[] = [
 ];
 
 const adminNavigation: NavigationItem[] = [
-  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
+  {
+    name: 'Financeiro', href: '/financeiro', icon: LayoutDashboard, adminOnly: true,
+    children: [
+      { name: 'Dashboard', href: '/financeiro/dashboard', icon: Users },
+      { name: 'Fluxo de Caixa', href: '/financeiro/fluxo-de-caixa', icon: Users },
+    ],
+  },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
