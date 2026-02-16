@@ -93,53 +93,82 @@ export default function CashFlow() {
       {loading || roleLoading ? (
         <CashFlowSkeleton />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <CashFlowCard
-            title="Saldo Total Disponível"
-            value={data.total_balance}
-            icon={Wallet}
-            subtitle="Soma de todas as contas bancárias"
-          />
+        <div className="space-y-4 md:space-y-6">
+          {/* Linha 1: Saldo Atual — destaque full-width */}
+          <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
+                Saldo Atual Disponível
+              </CardTitle>
+              <Wallet className="h-6 w-6 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl sm:text-4xl font-bold text-primary">
+                {formatCurrency(data.total_balance)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
+            </CardContent>
+          </Card>
 
-          <CashFlowCard
-            title="Fluxo Líquido do Mês"
-            value={data.net_flow}
-            icon={isNetFlowNegative ? TrendingDown : TrendingUp}
-            subtitle={`Recebido: ${formatCurrency(data.monthly_income)} · Pago: ${formatCurrency(data.monthly_expenses)}`}
-            iconClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
-            valueClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
-          />
+          {/* Linha 2: Realizado do Mês */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <CashFlowCard
+              title="Receitas Realizado"
+              value={data.realized_income}
+              icon={ArrowDownLeft}
+              subtitle="Dinheiro que já entrou no mês"
+              iconClassName="text-success"
+              valueClassName="text-success"
+            />
+            <CashFlowCard
+              title="Despesas Realizado"
+              value={data.realized_expenses}
+              icon={ArrowUpRight}
+              subtitle="Dinheiro que já saiu no mês"
+              iconClassName="text-destructive"
+              valueClassName="text-destructive"
+            />
+            <CashFlowCard
+              title="Fluxo Líquido Atual"
+              value={data.net_flow}
+              icon={isNetFlowNegative ? TrendingDown : TrendingUp}
+              subtitle={`${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
+              iconClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
+              valueClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
+            />
+          </div>
 
-          <CashFlowCard
-            title="Saldo Projetado (Fim do Mês)"
-            value={data.projected_balance}
-            icon={Target}
-            subtitle="Saldo Atual + Receber − Pagar"
-            cardClassName={cn(
-              'border-primary/40 bg-primary/5',
-              isProjectedNegative && 'border-destructive/40 bg-destructive/5'
-            )}
-            iconClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
-            valueClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
-          />
-
-          <CashFlowCard
-            title="Contas a Receber (30 dias)"
-            value={data.receivables_30d}
-            icon={ArrowDownLeft}
-            subtitle="Dinheiro previsto para entrar"
-            iconClassName="text-success"
-            valueClassName="text-success"
-          />
-
-          <CashFlowCard
-            title="Contas a Pagar (30 dias)"
-            value={data.payables_30d}
-            icon={ArrowUpRight}
-            subtitle="Compromissos a honrar"
-            iconClassName="text-warning"
-            valueClassName="text-warning"
-          />
+          {/* Linha 3: Projeção / Não Realizado */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <CashFlowCard
+              title="Contas a Receber"
+              value={data.receivables_30d}
+              icon={ArrowDownLeft}
+              subtitle="Previsto para entrar (não realizado)"
+              iconClassName="text-success"
+              valueClassName="text-success"
+            />
+            <CashFlowCard
+              title="Contas a Pagar"
+              value={data.payables_30d}
+              icon={ArrowUpRight}
+              subtitle="Compromissos pendentes (não realizado)"
+              iconClassName="text-destructive"
+              valueClassName="text-destructive"
+            />
+            <CashFlowCard
+              title="Saldo Projetado (Fim do Mês)"
+              value={data.projected_balance}
+              icon={Target}
+              subtitle="Saldo + Receber − Pagar"
+              cardClassName={cn(
+                'border-primary/40 bg-primary/5',
+                isProjectedNegative && 'border-destructive/40 bg-destructive/5'
+              )}
+              iconClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
+              valueClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
+            />
+          </div>
         </div>
       )}
     </ResponsiveContainer>
