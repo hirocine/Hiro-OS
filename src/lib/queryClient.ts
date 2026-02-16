@@ -42,6 +42,10 @@ export const queryKeys = {
   notifications: {
     all: ['notifications'] as const,
   },
+  financial: {
+    dashboard: (year: number) => ['financial', 'dashboard', year] as const,
+    cashFlow: (year: number) => ['financial', 'cash-flow', year] as const,
+  },
   tasks: {
     all: ['tasks'] as const,
     list: ['tasks', 'list'] as const,

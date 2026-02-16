@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useFinancialData } from '@/hooks/useFinancialData';
@@ -58,18 +58,16 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function Dashboard() {
   const { isAdmin, roleLoading } = useAuthContext();
-  const { goals, metrics, monthlyData, loading } = useFinancialData();
-  const { data: cashFlow, evolution: cashEvolution, loading: cashFlowLoading } = useCashFlowData();
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const { goals, metrics, monthlyData, loading, lastSyncedAt } = useFinancialData();
+  const { data: cashFlow, evolution: cashEvolution, loading: cashFlowLoading, lastSyncedAt: cashLastSynced } = useCashFlowData();
+  const lastUpdate = lastSyncedAt ?? cashLastSynced;
   const [valuesHidden, setValuesHidden] = useState(true);
 
   const toggleValuesVisibility = () => {
     setValuesHidden(prev => !prev);
   };
 
-  useEffect(() => {
-    if (!loading) setLastUpdate(new Date());
-  }, [loading]);
+  // lastUpdate is now derived from hooks, no need for useEffect
 
   // Current month label
   const currentMonthLabel = useMemo(() => {
@@ -143,15 +141,13 @@ export default function Dashboard() {
         subtitle={
           <>
             Visão executiva de performance e saúde financeira
-            {lastUpdate && (
-              <>
-                <span className="text-muted-foreground/50"> • </span>
-                <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Atualizado {formatRelativeTime(lastUpdate)}
-                </span>
-              </>
-            )}
+            <span className="text-muted-foreground/50"> • </span>
+            <span className="text-xs text-muted-foreground/70 inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {lastUpdate
+                ? `Sincronizado ${formatRelativeTime(lastUpdate)}`
+                : 'Dados de exemplo'}
+            </span>
           </>
         }
       />
