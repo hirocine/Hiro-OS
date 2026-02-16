@@ -1,51 +1,63 @@
 
 
-## Transformar "Dashboard Financeiro" em "Financeiro" com Subitens
+## Pesquisa na Sidebar Incluindo Sub-itens
 
-### Resumo
+### Problema
 
-O item "Dashboard Financeiro" na sidebar sera transformado em um item pai "Financeiro" com dois subitens: "Dashboard" (pagina atual) e "Fluxo de Caixa" (pagina nova, inicialmente em branco).
+A busca na sidebar atualmente so filtra pelos nomes dos itens pai. Quando voce digita "das" (como na imagem), o item "Tarefas" aparece porque contem "das", mas os sub-itens como "Dashboard" (dentro de Financeiro) nao aparecem. Alem disso, o filtro de admin (`filteredAdminNav`) so verifica o nome do pai, ignorando completamente os filhos.
 
-### Mudancas
+### Solucao
 
-**1. Sidebar - Desktop e Mobile (`DesktopSidebar.tsx` e `MobileSidebar.tsx`)**
+1. **Corrigir filtro do admin** para tambem verificar nomes dos filhos (igual ja funciona para `filteredNav` e `filteredProducaoNav`)
 
-Substituir o item simples:
-```text
-Dashboard Financeiro  ->  /dashboard
-```
+2. **Auto-expandir itens quando um filho corresponde a busca** - se o usuario digitar "dash", o grupo "Financeiro" deve aparecer expandido mostrando o sub-item "Dashboard"
 
-Por um item pai com filhos:
-```text
-Financeiro
-  Dashboard        ->  /financeiro/dashboard
-  Fluxo de Caixa   ->  /financeiro/fluxo-de-caixa
-```
+3. **Aplicar nos dois sidebars** (Desktop e Mobile) de forma consistente
 
-Usar o icone `LayoutDashboard` para o pai. Os filhos usarao o padrao de ponto (bullet) ja existente nos outros submenus.
+4. **Respeitar roles** - a filtragem ja acontece depois da verificacao de `canAccessSuppliers` e `isAdmin`, entao itens restritos continuam invisiveis
 
-**2. Sidebar legada (`Sidebar.tsx`)**
+### Detalhes Tecnicos
 
-Atualizar a mesma estrutura para manter consistencia.
-
-**3. Rotas (`App.tsx`)**
-
-- Adicionar redirect: `/financeiro` -> `/financeiro/dashboard`
-- Mover rota do Dashboard: `/dashboard` -> `/financeiro/dashboard`
-- Manter redirect antigo `/dashboard` -> `/financeiro/dashboard` para compatibilidade
-- Adicionar nova rota: `/financeiro/fluxo-de-caixa` -> nova pagina `CashFlow`
-
-**4. Nova pagina `src/pages/CashFlow.tsx`**
-
-Pagina simples com PageHeader "Fluxo de Caixa" e um estado vazio indicando que a funcionalidade esta em desenvolvimento. Mantera a mesma verificacao de `isAdmin` que o Dashboard usa.
-
-### Arquivos editados
+**Arquivos editados:**
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/Layout/DesktopSidebar.tsx` | Transformar "Dashboard Financeiro" em item pai "Financeiro" com subitens |
-| `src/components/Layout/MobileSidebar.tsx` | Mesma mudanca |
-| `src/components/Layout/Sidebar.tsx` | Mesma mudanca |
-| `src/App.tsx` | Adicionar rotas `/financeiro/*` e redirect de `/dashboard` |
-| `src/pages/CashFlow.tsx` | Criar pagina em branco para Fluxo de Caixa |
+| `src/components/Layout/DesktopSidebar.tsx` | Corrigir filtro admin para incluir filhos; auto-expandir ao buscar |
+| `src/components/Layout/MobileSidebar.tsx` | Mesma correcao |
+
+**Mudancas no filtro (`DesktopSidebar.tsx` e `MobileSidebar.tsx`):**
+
+Corrigir `filteredAdminNav` para incluir filhos:
+```typescript
+// De:
+adminNavigation.filter(item => item.name.toLowerCase().includes(query))
+
+// Para:
+adminNavigation.filter(item =>
+  item.name.toLowerCase().includes(query) ||
+  item.children?.some(c => c.name.toLowerCase().includes(query))
+)
+```
+
+**Auto-expansao ao buscar:**
+
+Adicionar um `useEffect` que, quando `searchQuery` nao esta vazio, encontra o primeiro item pai cujo filho corresponde a busca e expande-o automaticamente:
+
+```typescript
+useEffect(() => {
+  if (!searchQuery) return;
+  const query = searchQuery.toLowerCase();
+  const allItems = [
+    ...navigation,
+    ...(canAccessSuppliers ? producaoNavigation : []),
+    ...(isAdmin ? adminNavigation : []),
+  ];
+  const match = allItems.find(item =>
+    item.children?.some(c => c.name.toLowerCase().includes(query))
+  );
+  if (match) setExpandedItem(match.name);
+}, [searchQuery, canAccessSuppliers, isAdmin]);
+```
+
+Isso garante que ao digitar "dash", o grupo "Financeiro" expande automaticamente mostrando "Dashboard" como resultado.
 
