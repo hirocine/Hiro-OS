@@ -51,47 +51,35 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace
       onClick={onClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="p-2 rounded-lg bg-primary/10 shrink-0 w-9 h-9 flex items-center justify-center">
-              {ssd.ssdNumber ? (
-                <span className="text-sm font-bold text-primary">{ssd.ssdNumber}</span>
-              ) : (
-                <HardDrive className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-primary/10 shrink-0 w-11 h-11 flex items-center justify-center">
+            {ssd.ssdNumber ? (
+              <span className="text-base font-bold text-primary">{ssd.ssdNumber}</span>
+            ) : (
+              <HardDrive className="h-6 w-6 text-primary" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-medium line-clamp-2 mb-1.5">
+              {ssd.name}
+            </h4>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {shouldShowFreeSpace && (
+                <Badge 
+                  variant="outline"
+                  className="shrink-0 text-[10px]"
+                >
+                  {allocatedSpace.toFixed(1)} / {ssd.capacity} GB
+                </Badge>
               )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-sm truncate">
-                  {ssd.name}
-                </h4>
-              </div>
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                {ssd.ssdNumber && (
-                  <Badge 
-                    variant="outline" 
-                    className="shrink-0 text-[10px]"
-                  >
-                    #{ssd.ssdNumber}
-                  </Badge>
-                )}
-                {shouldShowFreeSpace && (
-                  <Badge 
-                    variant="outline"
-                    className="shrink-0 text-[10px]"
-                  >
-                    {freeSpace.toFixed(0)} GB de {ssd.capacity} GB
-                  </Badge>
-                )}
-                {kanbanStatus && (
-                  <Badge 
-                    variant={getKanbanStatusVariant(kanbanStatus)}
-                    className="shrink-0 text-[10px]"
-                  >
-                    {getKanbanStatusLabel(kanbanStatus)}
-                  </Badge>
-                )}
-              </div>
+              {kanbanStatus && (
+                <Badge 
+                  variant={getKanbanStatusVariant(kanbanStatus)}
+                  className="shrink-0 text-[10px]"
+                >
+                  {getKanbanStatusLabel(kanbanStatus)}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
