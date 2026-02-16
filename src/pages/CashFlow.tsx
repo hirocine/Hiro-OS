@@ -51,7 +51,8 @@ interface CashFlowCardProps {
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
-  displayValue: (v: number) => string;
+  blurred?: boolean;
+  subtitleBlurred?: boolean;
 }
 
 function CashFlowCard({
@@ -62,7 +63,8 @@ function CashFlowCard({
   iconClassName,
   valueClassName,
   cardClassName,
-  displayValue,
+  blurred,
+  subtitleBlurred,
 }: CashFlowCardProps) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -73,11 +75,11 @@ function CashFlowCard({
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-2xl font-bold', valueClassName)}>
-          {displayValue(value)}
+        <div className={cn('text-2xl font-bold', valueClassName, blurred && 'blur-sm select-none')}>
+          {formatCurrency(value)}
         </div>
         {subtitle && (
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+          <p className={cn("text-xs text-muted-foreground mt-1", subtitleBlurred && "blur-sm select-none")}>{subtitle}</p>
         )}
       </CardContent>
     </Card>
@@ -87,18 +89,11 @@ function CashFlowCard({
 export default function CashFlow() {
   const { isAdmin, roleLoading } = useAuthContext();
   const { data, evolution: cashEvolution, loading } = useCashFlowData();
-  const [valuesHidden, setValuesHidden] = useState(() =>
-    localStorage.getItem('cashflow-values-hidden') === 'true'
-  );
+  const [valuesHidden, setValuesHidden] = useState(true);
 
   const toggleValuesVisibility = () => {
-    const newState = !valuesHidden;
-    setValuesHidden(newState);
-    localStorage.setItem('cashflow-values-hidden', String(newState));
+    setValuesHidden(prev => !prev);
   };
-
-  const displayValue = (value: number) =>
-    valuesHidden ? 'R$ ••••••' : formatCurrency(value);
 
   if (!roleLoading && !isAdmin) {
     return <Navigate to="/" replace />;
@@ -135,8 +130,8 @@ export default function CashFlow() {
                 </button>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-primary">
-                  {displayValue(data.total_balance)}
+                <div className={cn("text-xl sm:text-2xl font-bold text-primary", valuesHidden && "blur-sm select-none")}>
+                  {formatCurrency(data.total_balance)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
               </CardContent>
@@ -174,7 +169,7 @@ export default function CashFlow() {
                           return (
                             <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
                               <p className="font-semibold text-foreground mb-1">{label}</p>
-                              <p className="text-primary font-medium">{displayValue(val)}</p>
+                              <p className={cn("text-primary font-medium", valuesHidden && "blur-sm select-none")}>{formatCurrency(val)}</p>
                             </div>
                           );
                         }}
@@ -204,7 +199,7 @@ export default function CashFlow() {
               subtitle="Dinheiro que já entrou no mês"
               iconClassName="text-success"
               valueClassName="text-success"
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
             <CashFlowCard
               title="Despesas Realizado"
@@ -213,16 +208,17 @@ export default function CashFlow() {
               subtitle="Dinheiro que já saiu no mês"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
             <CashFlowCard
               title="Fluxo Líquido Atual"
               value={data.net_flow}
               icon={isNetFlowNegative ? TrendingDown : TrendingUp}
-              subtitle={valuesHidden ? undefined : `${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
+              subtitle={`${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
+              subtitleBlurred={valuesHidden}
               iconClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
               valueClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
           </div>
 
@@ -235,7 +231,7 @@ export default function CashFlow() {
               subtitle="Previsto para entrar (não realizado)"
               iconClassName="text-success"
               valueClassName="text-success"
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
             <CashFlowCard
               title="Contas a Pagar"
@@ -244,7 +240,7 @@ export default function CashFlow() {
               subtitle="Compromissos pendentes (não realizado)"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
             <CashFlowCard
               title="Saldo Projetado (Fim do Mês)"
@@ -257,7 +253,7 @@ export default function CashFlow() {
               )}
               iconClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
               valueClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
-              displayValue={displayValue}
+              blurred={valuesHidden}
             />
           </div>
         </div>
