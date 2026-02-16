@@ -246,15 +246,15 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Left column: Meta Anual + Meta YTD */}
-            <div className="space-y-4">
-              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+            <div className="flex flex-col gap-4 h-full">
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200 flex-1 flex flex-col">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
                     Meta Anual
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
@@ -264,14 +264,14 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200 flex-1 flex flex-col">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <BarChart3 className="h-4 w-4" />
                     Meta YTD
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
@@ -292,7 +292,7 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72">
+                <div className="h-80">
                   <RechartsContainer width="100%" height="100%">
                     <ComposedChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
