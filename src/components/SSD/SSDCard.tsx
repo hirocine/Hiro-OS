@@ -53,12 +53,11 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="p-2 rounded-lg bg-primary/10 shrink-0 relative">
-              <HardDrive className="h-5 w-5 text-primary" />
-              {ssd.ssdNumber && (
-                <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
-                  {ssd.ssdNumber}
-                </span>
+            <div className="p-2 rounded-lg bg-primary/10 shrink-0 w-9 h-9 flex items-center justify-center">
+              {ssd.ssdNumber ? (
+                <span className="text-sm font-bold text-primary">{ssd.ssdNumber}</span>
+              ) : (
+                <HardDrive className="h-5 w-5 text-primary" />
               )}
             </div>
             <div className="flex-1 min-w-0">
