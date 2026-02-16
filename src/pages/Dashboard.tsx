@@ -11,7 +11,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
-  Users, Zap, BarChart3, Heart, PartyPopper
+  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer, Legend
@@ -283,6 +283,12 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <UnitCard
+              title="Ticket Médio"
+              value={formatCurrency(metrics.avg_ticket)}
+              icon={DollarSign}
+              subtitle="Receita média por cliente"
+            />
+            <UnitCard
               title="LTV"
               value={formatCurrency(metrics.ltv)}
               icon={TrendingUp}
@@ -310,10 +316,12 @@ export default function Dashboard() {
               alert={metrics.churn_rate > 5}
             />
             <UnitCard
-              title="Ticket Médio"
-              value={formatCurrency(metrics.avg_ticket)}
-              icon={DollarSign}
-              subtitle="Receita média por cliente"
+              title="NPS"
+              value={String(metrics.nps)}
+              icon={Heart}
+              subtitle={metrics.nps >= 70 ? 'Excelente' : metrics.nps >= 50 ? 'Bom' : 'Atenção'}
+              highlight={metrics.nps >= 70}
+              alert={metrics.nps < 50}
             />
             <UnitCard
               title="Burn Rate"
@@ -322,12 +330,12 @@ export default function Dashboard() {
               subtitle="Gastos mensais fixos"
             />
             <UnitCard
-              title="NPS"
-              value={String(metrics.nps)}
-              icon={Heart}
-              subtitle={metrics.nps >= 70 ? 'Excelente' : metrics.nps >= 50 ? 'Bom' : 'Atenção'}
-              highlight={metrics.nps >= 70}
-              alert={metrics.nps < 50}
+              title="Cash Runway"
+              value={`${metrics.cash_runway_months} meses`}
+              icon={Hourglass}
+              subtitle={metrics.cash_runway_months <= 6 ? 'Atenção: runway curto' : 'Saúde financeira'}
+              alert={metrics.cash_runway_months <= 6}
+              highlight={metrics.cash_runway_months >= 18}
             />
           </div>
         </section>
