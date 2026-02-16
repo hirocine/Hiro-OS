@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Equipment } from '@/types/equipment';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -85,21 +86,21 @@ export const SSDDetailsDialog = ({
 
     // Validações
     if (status === 'in_use' && !internalUserId) {
-      alert('Selecione um responsável interno');
+      toast.error('Selecione um responsável interno');
       return;
     }
 
     if (status === 'loaned') {
       if (!externalBorrowerName.trim()) {
-        alert('Digite o nome do tomador externo');
+        toast.error('Digite o nome do tomador externo');
         return;
       }
       if (!loanDate || !returnDate) {
-        alert('Preencha as datas de empréstimo e devolução');
+        toast.error('Preencha as datas de empréstimo e devolução');
         return;
       }
       if (returnDate < loanDate) {
-        alert('A data de devolução deve ser posterior à data de empréstimo');
+        toast.error('A data de devolução deve ser posterior à data de empréstimo');
         return;
       }
     }
@@ -107,7 +108,7 @@ export const SSDDetailsDialog = ({
     // Validar alocações
     const totalAllocated = projectAllocations.reduce((sum, a) => sum + (a.allocated_gb || 0), 0);
     if (ssd.capacity && totalAllocated > ssd.capacity) {
-      alert(`A capacidade total foi ultrapassada em ${(totalAllocated - ssd.capacity).toFixed(0)} GB`);
+      toast.error(`A capacidade total foi ultrapassada em ${(totalAllocated - ssd.capacity).toFixed(0)} GB`);
       return;
     }
 
@@ -142,21 +143,21 @@ export const SSDDetailsDialog = ({
   const freeSpace = (ssd.capacity || 0) - totalAllocated;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-2xl">
+        <ResponsiveDialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
               <HardDrive className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle>{ssd.name}</DialogTitle>
-              <DialogDescription>
+              <ResponsiveDialogTitle>{ssd.name}</ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
                 {formatCapacity(ssd.capacity)}{ssd.ssdNumber ? ` • #${ssd.ssdNumber}` : ''}
-              </DialogDescription>
+              </ResponsiveDialogDescription>
             </div>
           </div>
-        </DialogHeader>
+        </ResponsiveDialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Número do SSD */}
@@ -225,7 +226,7 @@ export const SSDDetailsDialog = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Data de Empréstimo *</Label>
                   <Popover>
@@ -308,15 +309,15 @@ export const SSDDetailsDialog = ({
           )}
         </div>
 
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={loading}>
             {loading ? 'Salvando...' : 'Salvar'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };
