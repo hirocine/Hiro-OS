@@ -1,66 +1,29 @@
 
 
-## Fluxo de Caixa - Pagina Completa
+## Adicionar Secao "Fluxo de Caixa" ao Dashboard
 
 ### Resumo
 
-Construir a pagina de Fluxo de Caixa com 5 cards principais mostrando a saude financeira de curto prazo da empresa. Usara dados mock (mesmo padrao do Dashboard) preparados para futura integracao com Supabase.
+Inserir uma nova secao "Fluxo de Caixa" no Dashboard, entre "Mes Atual" e "Faturamento (2026)", reutilizando os mesmos 5 cards da pagina `/financeiro/fluxo-de-caixa`.
 
 ### Layout
 
-A pagina tera um header com titulo "Fluxo de Caixa" e uma secao com 5 cards em grid responsivo:
-
 ```text
-Desktop (3 colunas):
-[Saldo Total Disponivel] [Fluxo Liquido do Mes] [Saldo Projetado (destaque)]
-[Contas a Receber]       [Contas a Pagar]
-
-Mobile (1 coluna): empilhados verticalmente
+Secao 1: Mes Atual (Fev)        <-- ja existe
+Secao 2: Fluxo de Caixa         <-- NOVA
+Secao 3: Faturamento (2026)     <-- ja existe
+Secao 4: Indicadores            <-- ja existe
 ```
 
-### Os 5 Cards
-
-1. **Saldo Total Disponivel** - Soma de todas as contas bancarias. Icone: Wallet. Cor neutra.
-2. **Fluxo Liquido do Mes** - (Recebido - Pago). Se negativo, alerta visual vermelho/warning. Icone: TrendingUp/TrendingDown conforme sinal.
-3. **Contas a Receber (30 dias)** - Dinheiro previsto para entrar. Icone: ArrowDownLeft. Cor verde/success.
-4. **Contas a Pagar (30 dias)** - Compromissos a honrar. Icone: ArrowUpRight. Cor laranja/warning.
-5. **Saldo Projetado (Fim do Mes)** - (Saldo Atual + Receber - Pagar). Card com destaque visual (borda primary, fundo sutil). Icone: Target. Alerta se negativo.
+A nova secao tera o mesmo grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` com os 5 cards: Saldo Total, Fluxo Liquido, Saldo Projetado (destaque), Contas a Receber e Contas a Pagar. Visual identico a pagina dedicada.
 
 ### Detalhes Tecnicos
 
-**Arquivos criados/editados:**
+**Arquivo editado:** `src/pages/Dashboard.tsx`
 
-| Arquivo | Acao |
-|---------|------|
-| `src/data/mockCashFlowData.ts` | Criar dados mock e tipos para fluxo de caixa |
-| `src/hooks/useCashFlowData.ts` | Criar hook com useQuery (mesmo padrao do useFinancialData) |
-| `src/pages/CashFlow.tsx` | Substituir pagina em branco pelo layout completo |
+Mudancas:
+1. Importar `useCashFlowData` e icones adicionais (`Wallet`, `ArrowDownLeft`, `ArrowUpRight`)
+2. Chamar `useCashFlowData()` junto aos outros hooks no topo do componente
+3. Adicionar a secao entre as linhas 243 (fim do "Mes Atual") e 245 (inicio do "Faturamento"), com header "Fluxo de Caixa" (icone Wallet) e os 5 `CashFlowCard`-style cards inline (reutilizando o mesmo padrao visual de Card/CardHeader/CardContent ja usado no Dashboard)
+4. Incluir o loading do cash flow no skeleton (adicionar mais um bloco de 5 skeletons no estado de carregamento)
 
-**`src/data/mockCashFlowData.ts`:**
-
-Tipos e dados mock:
-```typescript
-export interface CashFlowData {
-  total_balance: number;          // Saldo total disponivel
-  monthly_income: number;         // Total recebido no mes
-  monthly_expenses: number;       // Total pago no mes
-  net_flow: number;               // monthly_income - monthly_expenses
-  receivables_30d: number;        // Contas a receber proximos 30 dias
-  payables_30d: number;           // Contas a pagar proximos 30 dias
-  projected_balance: number;      // total_balance + receivables - payables
-}
-```
-
-**`src/hooks/useCashFlowData.ts`:**
-
-Hook usando `useQuery` com dados mock e delay simulado (mesmo padrao de `useFinancialData`).
-
-**`src/pages/CashFlow.tsx`:**
-
-- Verificacao de `isAdmin` e `roleLoading` (mesmo padrao do Dashboard)
-- Skeleton loading que espelha o layout dos 5 cards
-- Grid responsivo: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
-- Card "Saldo Projetado" com borda/fundo de destaque (primary)
-- Fluxo Liquido com cor condicional (verde se positivo, vermelho se negativo)
-- Formatacao em BRL usando `formatCurrency` existente
-- Estilo dos cards seguindo o padrao `shadow-card hover:shadow-elegant` do Dashboard
