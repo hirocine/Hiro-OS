@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -14,6 +15,8 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Target,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -44,6 +47,7 @@ interface CashFlowCardProps {
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
+  displayValue: (v: number) => string;
 }
 
 function CashFlowCard({
@@ -54,6 +58,7 @@ function CashFlowCard({
   iconClassName,
   valueClassName,
   cardClassName,
+  displayValue,
 }: CashFlowCardProps) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -65,7 +70,7 @@ function CashFlowCard({
       </CardHeader>
       <CardContent>
         <div className={cn('text-2xl font-bold', valueClassName)}>
-          {formatCurrency(value)}
+          {displayValue(value)}
         </div>
         {subtitle && (
           <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
@@ -78,6 +83,18 @@ function CashFlowCard({
 export default function CashFlow() {
   const { isAdmin, roleLoading } = useAuthContext();
   const { data, loading } = useCashFlowData();
+  const [valuesHidden, setValuesHidden] = useState(() =>
+    localStorage.getItem('cashflow-values-hidden') === 'true'
+  );
+
+  const toggleValuesVisibility = () => {
+    const newState = !valuesHidden;
+    setValuesHidden(newState);
+    localStorage.setItem('cashflow-values-hidden', String(newState));
+  };
+
+  const displayValue = (value: number) =>
+    valuesHidden ? 'R$ ••••••' : formatCurrency(value);
 
   if (!roleLoading && !isAdmin) {
     return <Navigate to="/" replace />;
@@ -100,11 +117,21 @@ export default function CashFlow() {
               <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
                 Saldo Atual Disponível
               </CardTitle>
-              <Wallet className="h-6 w-6 text-primary" />
+              <button
+                onClick={toggleValuesVisibility}
+                className="p-1.5 rounded-md hover:bg-primary/10 transition-colors"
+                aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
+              >
+                {valuesHidden ? (
+                  <EyeOff className="h-5 w-5 text-primary" />
+                ) : (
+                  <Eye className="h-5 w-5 text-primary" />
+                )}
+              </button>
             </CardHeader>
             <CardContent>
               <div className="text-3xl sm:text-4xl font-bold text-primary">
-                {formatCurrency(data.total_balance)}
+                {displayValue(data.total_balance)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
             </CardContent>
@@ -119,6 +146,7 @@ export default function CashFlow() {
               subtitle="Dinheiro que já entrou no mês"
               iconClassName="text-success"
               valueClassName="text-success"
+              displayValue={displayValue}
             />
             <CashFlowCard
               title="Despesas Realizado"
@@ -127,14 +155,16 @@ export default function CashFlow() {
               subtitle="Dinheiro que já saiu no mês"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
+              displayValue={displayValue}
             />
             <CashFlowCard
               title="Fluxo Líquido Atual"
               value={data.net_flow}
               icon={isNetFlowNegative ? TrendingDown : TrendingUp}
-              subtitle={`${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
+              subtitle={valuesHidden ? undefined : `${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
               iconClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
               valueClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
+              displayValue={displayValue}
             />
           </div>
 
@@ -147,6 +177,7 @@ export default function CashFlow() {
               subtitle="Previsto para entrar (não realizado)"
               iconClassName="text-success"
               valueClassName="text-success"
+              displayValue={displayValue}
             />
             <CashFlowCard
               title="Contas a Pagar"
@@ -155,6 +186,7 @@ export default function CashFlow() {
               subtitle="Compromissos pendentes (não realizado)"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
+              displayValue={displayValue}
             />
             <CashFlowCard
               title="Saldo Projetado (Fim do Mês)"
@@ -167,6 +199,7 @@ export default function CashFlow() {
               )}
               iconClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
               valueClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
+              displayValue={displayValue}
             />
           </div>
         </div>
