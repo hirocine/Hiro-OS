@@ -117,7 +117,7 @@ export default function CashFlow() {
         <div className="space-y-4 md:space-y-6">
           {/* Linha 1: Saldo Atual + Gráfico de Evolução */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-            <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01] flex flex-col justify-center">
+            <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01] flex flex-col">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
                   Saldo Atual Disponível
@@ -135,7 +135,7 @@ export default function CashFlow() {
                 </button>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl sm:text-4xl font-bold text-primary">
+                <div className="text-2xl sm:text-3xl font-bold text-primary">
                   {displayValue(data.total_balance)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
