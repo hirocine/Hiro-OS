@@ -25,7 +25,7 @@ import type { CompanyFilters as Filters, Company } from '@/features/supplier-com
 
 export default function Companies() {
   const navigate = useNavigate();
-  const { isAdmin, roleLoading } = useAuthContext();
+  const { canAccessSuppliers, roleLoading } = useAuthContext();
   const {
     companies,
     loading,
@@ -80,8 +80,8 @@ export default function Companies() {
     );
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+  if (!canAccessSuppliers) {
+    return <Navigate to="/" replace />;
   }
 
   return (

@@ -26,7 +26,7 @@ import type { Company } from '@/features/supplier-companies/types';
 export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin, roleLoading } = useAuthContext();
+  const { canAccessSuppliers, roleLoading } = useAuthContext();
   const { companies, loading, updateCompany, deleteCompany } = useCompanies();
   const { notes, loading: notesLoading, createNote, deleteNote } = useCompanyNotes(id);
 
@@ -94,8 +94,8 @@ export default function CompanyDetails() {
     );
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+  if (!canAccessSuppliers) {
+    return <Navigate to="/" replace />;
   }
 
   if (loading) {

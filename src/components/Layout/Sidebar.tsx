@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare, Users, UserCheck, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/contexts/AuthContext';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -54,7 +54,26 @@ const navigation: NavigationItem[] = [
   },
 ];
 
+const producaoNavigation: NavigationItem[] = [
+  {
+    name: 'Freelancers',
+    href: '/fornecedores/freelancers',
+    icon: UserCheck,
+  },
+  {
+    name: 'Empresas',
+    href: '/fornecedores/empresas',
+    icon: Building2,
+  },
+];
+
 const adminNavigation: NavigationItem[] = [
+  {
+    name: 'Dashboard Financeiro',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    adminOnly: true,
+  },
   {
     name: 'Administração',
     href: '/administracao',
@@ -64,7 +83,7 @@ const adminNavigation: NavigationItem[] = [
 ];
 
 export function Sidebar() {
-  const { isAdmin } = useAuthContext();
+  const { isAdmin, canAccessSuppliers } = useAuthContext();
 
   return (
     <div className="w-64 bg-card border-r border-border shadow-card flex flex-col">
@@ -101,6 +120,33 @@ export function Sidebar() {
           </NavLink>
         ))}
         
+        {canAccessSuppliers && (
+          <div className="pt-4 border-t border-border mt-4">
+            <div className="pb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Produção
+              </p>
+            </div>
+            {producaoNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-elegant'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  )
+                }
+              >
+                <item.icon className="mr-3 h-4 w-4" />
+                {item.name}
+              </NavLink>
+            ))}
+          </div>
+        )}
+
         {isAdmin && (
           <div className="pt-4 border-t border-border mt-4">
             <div className="pb-2">

@@ -40,15 +40,18 @@ const navigation: NavigationItem[] = [
   { name: 'Plataformas', href: '/plataformas', icon: Key },
 ];
 
-const adminNavigation: NavigationItem[] = [
-  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
+const producaoNavigation: NavigationItem[] = [
   {
-    name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true,
+    name: 'Fornecedores', href: '/fornecedores', icon: Users,
     children: [
       { name: 'Freelancers', href: '/fornecedores/freelancers', icon: UserCheck },
       { name: 'Empresas', href: '/fornecedores/empresas', icon: Building2 },
     ],
   },
+];
+
+const adminNavigation: NavigationItem[] = [
+  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
@@ -143,7 +146,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
 }
 
 export function MobileSidebar() {
-  const { isAdmin } = useAuthContext();
+  const { isAdmin, canAccessSuppliers } = useAuthContext();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const isPWA = useIsPWA();
@@ -154,7 +157,7 @@ export function MobileSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...navigation, ...adminNavigation];
+    const allItems = [...navigation, ...producaoNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => isActive(c.href))) {
         setExpandedItem(item.name);
@@ -188,6 +191,13 @@ export function MobileSidebar() {
   );
   const filteredAdminNav = useMemo(() =>
     adminNavigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [searchQuery]
+  );
+  const filteredProducaoNav = useMemo(() =>
+    producaoNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
     [searchQuery]
   );
 
@@ -278,6 +288,54 @@ export function MobileSidebar() {
                 })()
               ))}
             </nav>
+
+            {/* Produção Section */}
+            {canAccessSuppliers && (filteredProducaoNav.length > 0 || !searchQuery) && (
+              <>
+                <div className="px-4 my-3">
+                  <Separator />
+                </div>
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+                  Produção
+                </p>
+                <nav className="space-y-0.5 px-4">
+                  {filteredProducaoNav.map((item) => (
+                    item.children ? (
+                      <MobileNavItemWithChildren
+                        key={item.name}
+                        item={item}
+                        isActive={isActive}
+                        onNavClick={handleNavClick}
+                        expanded={expandedItem === item.name}
+                        onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
+                      />
+                    ) : (() => {
+                      const Icon = item.icon;
+                      const active = isActive(item.href);
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                            active
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                          )}
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                          <span className="text-sm">{item.name}</span>
+                        </NavLink>
+                      );
+                    })()
+                  ))}
+                </nav>
+              </>
+            )}
 
             {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (
               <>
