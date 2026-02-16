@@ -263,7 +263,7 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+                  <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
                     <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-xs text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
                   </div>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+                  <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
                     <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-xs text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
                   </div>
