@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, User, Building2, Edit, Archive, Trash2, LayoutList } from 'lucide-react';
@@ -35,6 +36,7 @@ import {
 import { useState } from 'react';
 
 export default function AVProjectDetails() {
+  const { canAccessSuppliers } = useAuthContext();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -65,6 +67,18 @@ export default function AVProjectDetails() {
     const completed = steps.filter((s) => s.status === 'concluido').length;
     return Math.round((completed / steps.length) * 100);
   }, [steps]);
+
+  if (!canAccessSuppliers) {
+    return (
+      <ResponsiveContainer maxWidth="7xl">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+          <button className="mt-4 text-primary underline" onClick={() => navigate('/')}>Voltar ao início</button>
+        </div>
+      </ResponsiveContainer>
+    );
+  }
+
 
   const handleArchive = () => {
     if (!project) return;
