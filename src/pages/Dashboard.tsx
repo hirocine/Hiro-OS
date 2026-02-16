@@ -191,22 +191,22 @@ export default function Dashboard() {
                   Margem de Contribuição
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-                  <span className={cn(
-                    "text-xl sm:text-2xl font-bold",
-                    marginAlert ? "text-warning" : "text-foreground"
-                  )}>
-                    {metrics.contribution_margin_actual}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatCurrency(metrics.contribution_margin_value)}
-                  </span>
+              <CardContent className="space-y-2">
+                <div className={cn(
+                  "text-3xl sm:text-4xl font-bold",
+                  marginAlert ? "text-warning" : "text-foreground"
+                )}>
+                  {metrics.contribution_margin_actual}%
                 </div>
-                <Progress value={Math.min(Math.round((metrics.contribution_margin_actual / goals.margin_goal_pct) * 100), 100)} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {Math.round((metrics.contribution_margin_actual / goals.margin_goal_pct) * 100)}% da meta ({goals.margin_goal_pct}%)
+                <p className="text-sm text-muted-foreground">
+                  {formatCurrency(metrics.contribution_margin_value)}
                 </p>
+                {marginAlert && (
+                  <p className="text-xs text-warning flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3" />
+                    {(goals.margin_goal_pct - metrics.contribution_margin_actual).toFixed(1)}pp abaixo da meta ({goals.margin_goal_pct}%)
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -221,22 +221,22 @@ export default function Dashboard() {
                   Lucro Líquido
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-                  <span className={cn(
-                    "text-xl sm:text-2xl font-bold",
-                    profitAlert ? "text-warning" : "text-foreground"
-                  )}>
-                    {metrics.net_profit_actual}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatCurrency(metrics.net_profit_value)}
-                  </span>
+              <CardContent className="space-y-2">
+                <div className={cn(
+                  "text-3xl sm:text-4xl font-bold",
+                  profitAlert ? "text-warning" : "text-foreground"
+                )}>
+                  {metrics.net_profit_actual}%
                 </div>
-                <Progress value={Math.min(Math.round((metrics.net_profit_actual / goals.profit_goal_pct) * 100), 100)} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {Math.round((metrics.net_profit_actual / goals.profit_goal_pct) * 100)}% da meta ({goals.profit_goal_pct}%)
+                <p className="text-sm text-muted-foreground">
+                  {formatCurrency(metrics.net_profit_value)}
                 </p>
+                {profitAlert && (
+                  <p className="text-xs text-warning flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3" />
+                    {(goals.profit_goal_pct - metrics.net_profit_actual).toFixed(1)}pp abaixo da meta ({goals.profit_goal_pct}%)
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
