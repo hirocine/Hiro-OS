@@ -14,7 +14,9 @@ export interface FinancialMetrics {
   churn_rate: number;
   burn_rate: number;
   contribution_margin_actual: number;
+  contribution_margin_value: number;
   net_profit_actual: number;
+  net_profit_value: number;
   nps: number;
   cash_runway_months: number;
 }
@@ -41,7 +43,9 @@ export const mockMetrics: FinancialMetrics = {
   churn_rate: 3.2,
   burn_rate: 95_000,
   contribution_margin_actual: 31,
+  contribution_margin_value: 55_800,
   net_profit_actual: 17,
+  net_profit_value: 30_600,
   nps: 72,
   cash_runway_months: 18,
 };

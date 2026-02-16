@@ -11,7 +11,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
-  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass
+  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass, Calendar
 } from 'lucide-react';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer
@@ -63,13 +63,19 @@ export default function Dashboard() {
     if (!loading) setLastUpdate(new Date());
   }, [loading]);
 
+  // Current month label
+  const currentMonthLabel = useMemo(() => {
+    const raw = new Date().toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }, []);
+
   // Derived calculations
   const annualProgress = useMemo(() =>
     Math.round((metrics.accumulated_revenue_ytd / goals.revenue_goal) * 100),
     [metrics.accumulated_revenue_ytd, goals.revenue_goal]
   );
 
-  const currentMonth = new Date().getMonth(); // 0-indexed
+  const currentMonth = new Date().getMonth();
   const ytdGoal = useMemo(() =>
     Math.round((goals.revenue_goal / 12) * (currentMonth + 1)),
     [goals.revenue_goal, currentMonth]
@@ -90,7 +96,6 @@ export default function Dashboard() {
   const profitAlert = metrics.net_profit_actual < goals.profit_goal_pct;
   const monthlyGoalExceeded = monthlyProgress > 100;
 
-  // Route protection
   if (!roleLoading && !isAdmin) {
     return <Navigate to="/" replace />;
   }
@@ -133,52 +138,14 @@ export default function Dashboard() {
       />
 
       <div className="space-y-6 lg:space-y-8">
-        {/* Section 1: Performance Header */}
+        {/* Section 1: Mês Atual */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <Target className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Faturamento</h2>
+            <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-xl lg:text-2xl font-semibold">Mês Atual ({currentMonthLabel})</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Annual Goal */}
-            <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Meta Anual
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                  <span className="text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
-                </div>
-                <Progress value={Math.min(annualProgress, 100)} className="h-2" />
-                <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
-              </CardContent>
-            </Card>
-
-            {/* YTD Goal */}
-            <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Meta YTD
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                  <span className="text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
-                </div>
-                <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100)}% da meta até {new Date().toLocaleString('pt-BR', { month: 'long' })}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Monthly Revenue */}
+            {/* Faturamento do Mês */}
             <Card className={cn(
               "shadow-card hover:shadow-elegant transition-all duration-200",
               monthlyGoalExceeded && "border-success/30 bg-success/5"
@@ -204,17 +171,120 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">{monthlyProgress}% da meta mensal</p>
               </CardContent>
             </Card>
+
+            {/* Margem de Contribuição */}
+            <Card className={cn(
+              "shadow-card hover:shadow-elegant transition-all duration-200",
+              marginAlert && "border-warning/30"
+            )}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Margem de Contribuição
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className={cn(
+                    "text-2xl font-bold",
+                    marginAlert ? "text-warning" : "text-foreground"
+                  )}>
+                    {formatCurrency(metrics.contribution_margin_value)}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {metrics.contribution_margin_actual}% do faturamento
+                </p>
+                {marginAlert && (
+                  <p className="text-xs text-warning flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3" />
+                    {(goals.margin_goal_pct - metrics.contribution_margin_actual).toFixed(1)}pp abaixo da meta ({goals.margin_goal_pct}%)
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Lucro Líquido */}
+            <Card className={cn(
+              "shadow-card hover:shadow-elegant transition-all duration-200",
+              profitAlert && "border-warning/30"
+            )}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Lucro Líquido
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className={cn(
+                    "text-2xl font-bold",
+                    profitAlert ? "text-warning" : "text-foreground"
+                  )}>
+                    {formatCurrency(metrics.net_profit_value)}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {metrics.net_profit_actual}% do faturamento
+                </p>
+                {profitAlert && (
+                  <p className="text-xs text-warning flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3" />
+                    {(goals.profit_goal_pct - metrics.net_profit_actual).toFixed(1)}pp abaixo da meta ({goals.profit_goal_pct}%)
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </section>
 
-        {/* Section 2: Charts */}
+        {/* Section 2: Faturamento (2026) */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Faturamento Mensal</h2>
+            <h2 className="text-xl lg:text-2xl font-semibold">Faturamento (2026)</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-            {/* Bar Chart */}
+            {/* Left column: Meta Anual + Meta YTD */}
+            <div className="space-y-4">
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Meta Anual
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
+                  </div>
+                  <Progress value={Math.min(annualProgress, 100)} className="h-2" />
+                  <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Meta YTD
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
+                  </div>
+                  <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100)}% da meta até {new Date().toLocaleString('pt-BR', { month: 'long' })}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right column: Chart */}
             <Card className="lg:col-span-2 shadow-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -223,7 +293,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-72">
-                <RechartsContainer width="100%" height="100%">
+                  <RechartsContainer width="100%" height="100%">
                     <ComposedChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
@@ -250,77 +320,32 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Margin & Profit Indicators */}
-            <div className="space-y-4">
-              <Card className={cn(
-                "shadow-card hover:shadow-elegant transition-all duration-200",
-                marginAlert && "border-warning/30"
-              )}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Margem de Contribuição
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline gap-2">
-                    <span className={cn(
-                      "text-3xl font-bold",
-                      marginAlert ? "text-warning" : "text-foreground"
-                    )}>
-                      {metrics.contribution_margin_actual}%
-                    </span>
-                    <span className="text-sm text-muted-foreground">/ meta {goals.margin_goal_pct}%</span>
-                  </div>
-                  {marginAlert && (
-                    <p className="text-xs text-warning mt-2 flex items-center gap-1">
-                      <TrendingDown className="h-3 w-3" />
-                      {(goals.margin_goal_pct - metrics.contribution_margin_actual).toFixed(1)}pp abaixo da meta
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className={cn(
-                "shadow-card hover:shadow-elegant transition-all duration-200",
-                profitAlert && "border-warning/30"
-              )}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    Lucro Líquido
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline gap-2">
-                    <span className={cn(
-                      "text-3xl font-bold",
-                      profitAlert ? "text-warning" : "text-foreground"
-                    )}>
-                      {metrics.net_profit_actual}%
-                    </span>
-                    <span className="text-sm text-muted-foreground">/ meta {goals.profit_goal_pct}%</span>
-                  </div>
-                  {profitAlert && (
-                    <p className="text-xs text-warning mt-2 flex items-center gap-1">
-                      <TrendingDown className="h-3 w-3" />
-                      {(goals.profit_goal_pct - metrics.net_profit_actual).toFixed(1)}pp abaixo da meta
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </section>
 
-        {/* Section 3: Unit Economics Grid */}
+        {/* Section 3: Indicadores */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
             <h2 className="text-xl lg:text-2xl font-semibold">Indicadores</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <UnitCard
+              title="% Margem Contribuição"
+              value={`${metrics.contribution_margin_actual}%`}
+              icon={TrendingUp}
+              subtitle={`Meta: ${goals.margin_goal_pct}%`}
+              alert={marginAlert}
+              highlight={!marginAlert}
+            />
+            <UnitCard
+              title="% Lucro Líquido"
+              value={`${metrics.net_profit_actual}%`}
+              icon={DollarSign}
+              subtitle={`Meta: ${goals.profit_goal_pct}%`}
+              alert={profitAlert}
+              highlight={!profitAlert}
+            />
             <UnitCard
               title="Ticket Médio"
               value={formatCurrency(metrics.avg_ticket)}
