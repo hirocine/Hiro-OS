@@ -1,123 +1,68 @@
 
 
-## Reimaginar o Grafico de Faturamento Mensal com ComposedChart
+## Reestruturar o Dashboard em 3 Secoes
 
-### O que muda
+### Nova Estrutura
 
-Substituir o `BarChart` atual por um `ComposedChart` da Recharts que combina barras (Meta) com linha (Realizado), criando um visual mais moderno e limpo.
-
-### Mudancas tecnicas
-
-**Arquivo: `src/pages/Dashboard.tsx`**
-
-**1. Imports (linha 16-18)**
-
-Substituir os imports do Recharts:
-
-```tsx
-// De:
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer, Legend } from 'recharts';
-
-// Para:
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer } from 'recharts';
+```text
++-------------------------------------------------------+
+| Secao 1: "Mes Atual (Fev)"                            |
+| [Faturamento vs Meta] [Margem Contrib R$] [Lucro Liq] |
++-------------------------------------------------------+
+| Secao 2: "Faturamento (2026)"                          |
+| [Meta Anual ]  [                                  ]    |
+| [Meta YTD   ]  [   Grafico Meta vs Realizado      ]    |
++-------------------------------------------------------+
+| Secao 3: "Indicadores"                                 |
+| [% Margem] [% Lucro] [Ticket] [LTV] [CAC] [LTV/CAC]  |
+| [Churn] [NPS] [Burn Rate] [Cash Runway]                |
++-------------------------------------------------------+
 ```
 
-Remove `BarChart`, `Legend`. Adiciona `ComposedChart`, `Line`.
+### Mudancas no mock data (`src/data/mockFinancialData.ts`)
 
-**2. Grafico (linhas 188-211)**
+Adicionar novos campos a `FinancialMetrics`:
+- `contribution_margin_value: number` -- Margem de contribuicao em R$ (ex: 55_800)
+- `net_profit_value: number` -- Lucro liquido em R$ (ex: 30_600)
 
-Substituir o bloco do grafico por:
+Esses valores representam o valor absoluto no mes, enquanto os campos `_actual` existentes representam a %.
 
-```tsx
-<RechartsContainer width="100%" height="100%">
-  <ComposedChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-    <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-    <YAxis
-      orientation="right"
-      tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
-      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-      axisLine={false}
-      tickLine={false}
-    />
-    <Tooltip content={<CustomTooltip />} />
-    <Bar dataKey="meta" name="Meta" fill="rgba(255,255,255,0.1)" radius={[4,4,0,0]} barSize={32} />
-    <Line
-      type="monotone"
-      dataKey="realizado"
-      name="Realizado"
-      stroke="hsl(var(--primary))"
-      strokeWidth={3}
-      dot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 0 }}
-      activeDot={{ fill: 'hsl(var(--primary))', r: 7, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-    />
-  </ComposedChart>
-</RechartsContainer>
-```
+### Mudancas no Dashboard (`src/pages/Dashboard.tsx`)
 
-Destaques:
-- `vertical={false}` remove linhas de grade verticais
-- Sem `<Legend />`
-- Eixo Y movido para a direita com `orientation="right"`, sem linhas de eixo
-- Barras de meta com opacidade baixa como pano de fundo
-- Linha de realizado com `strokeWidth={3}`, curva suave, marcadores circulares solidos
+**Secao 1 -- "Mes Atual (Fev)"**
 
-**3. Tooltip Personalizado (novo componente interno)**
+- Titulo dinamico: pega o mes atual abreviado (ex: `new Date().toLocaleString('pt-BR', { month: 'short' })` -> "fev") e exibe "Mes Atual (Fev)"
+- Icone: `Calendar` do lucide-react
+- 3 cards lado a lado (`grid grid-cols-1 md:grid-cols-3`):
+  1. **Faturamento do Mes** -- Mantem o card atual com faturamento vs meta, progress bar e badge "Meta batida!"
+  2. **Margem de Contribuicao** -- Valor em R$ (ex: R$ 55.800,00) com a % entre parenteses representando quanto isso e do faturamento (ex: "31% do faturamento")
+  3. **Lucro Liquido** -- Valor em R$ (ex: R$ 30.600,00) com a % (ex: "17% do faturamento"). Subtitulo mostra "Faturamento - custos de projeto - custos fixos"
 
-Adicionar antes do `export default function Dashboard()`:
+**Secao 2 -- "Faturamento (2026)"**
 
-```tsx
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
+- Titulo: "Faturamento (2026)" com icone BarChart3
+- Layout: grid `lg:grid-cols-3`
+  - Coluna esquerda (`lg:col-span-1`): 2 cards empilhados
+    - Meta Anual (card existente)
+    - Meta YTD (card existente)
+  - Coluna direita (`lg:col-span-2`): Grafico ComposedChart (card existente, move de col-span-2 para a direita)
 
-  const meta = payload.find((p: any) => p.dataKey === 'meta')?.value ?? 0;
-  const realizado = payload.find((p: any) => p.dataKey === 'realizado')?.value ?? 0;
-  const diff = meta > 0 ? (((realizado - meta) / meta) * 100).toFixed(1) : '0.0';
-  const isPositive = Number(diff) >= 0;
+**Secao 3 -- "Indicadores"**
 
-  return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
-      <p className="font-semibold text-foreground mb-2">{label}</p>
-      <div className="space-y-1">
-        <div className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="w-2.5 h-2.5 rounded-sm bg-white/10 inline-block" />
-            Meta
-          </span>
-          <span className="font-medium text-muted-foreground">{formatCurrency(meta)}</span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-primary">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
-            Realizado
-          </span>
-          <span className="font-medium text-foreground">{formatCurrency(realizado)}</span>
-        </div>
-      </div>
-      <div className="mt-2 pt-2 border-t border-border">
-        <span className={isPositive ? 'text-success' : 'text-warning'}>
-          {isPositive ? '+' : ''}{diff}%
-        </span>
-        <span className="text-muted-foreground text-xs ml-1">vs meta</span>
-      </div>
-    </div>
-  );
-}
-```
-
-### Resultado visual
-
-- Barras cinza escuro transparentes como pano de fundo indicando a meta
-- Linha verde protagonista com marcadores circulares solidos
-- Sem legenda (autoexplicativo)
-- Eixo Y a direita com formato "100k", "200k"
-- Sem linhas de grade verticais
-- Tooltip moderno com mes, meta, realizado e diferenca percentual
+- Mantem titulo e icone atuais
+- Adiciona 2 novos UnitCards no inicio do grid:
+  1. **% Margem de Contribuicao** -- valor `31%`, meta `35%`, alerta se abaixo
+  2. **% Lucro Liquido** -- valor `17%`, meta `20%`, alerta se abaixo
+- Seguidos pelos 8 cards existentes (Ticket Medio, LTV, CAC, LTV/CAC, Churn, NPS, Burn Rate, Cash Runway)
+- Grid passa para `lg:grid-cols-5` na primeira linha (5 cards) e continua na segunda
 
 ### Arquivos editados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/pages/Dashboard.tsx` | Substituir imports, grafico e adicionar CustomTooltip |
+| `src/data/mockFinancialData.ts` | Adicionar `contribution_margin_value` e `net_profit_value` |
+| `src/hooks/useFinancialData.ts` | Nenhuma mudanca (tipos vem do mock) |
+| `src/pages/Dashboard.tsx` | Reestruturar as 3 secoes conforme descrito |
 
-Nenhuma dependencia nova.
+Nenhuma dependencia nova. Apenas adiciona import de `Calendar` do lucide-react.
+
