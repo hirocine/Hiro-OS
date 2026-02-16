@@ -192,16 +192,14 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span className={cn(
-                    "text-xl sm:text-2xl font-bold",
-                    marginAlert ? "text-warning" : "text-foreground"
-                  )}>
-                    {formatCurrency(metrics.contribution_margin_value)}
-                  </span>
+                <div className={cn(
+                  "text-3xl sm:text-4xl font-bold",
+                  marginAlert ? "text-warning" : "text-foreground"
+                )}>
+                  {metrics.contribution_margin_actual}%
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {metrics.contribution_margin_actual}% do faturamento
+                  {formatCurrency(metrics.contribution_margin_value)}
                 </p>
                 {marginAlert && (
                   <p className="text-xs text-warning flex items-center gap-1">
@@ -224,16 +222,14 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span className={cn(
-                    "text-xl sm:text-2xl font-bold",
-                    profitAlert ? "text-warning" : "text-foreground"
-                  )}>
-                    {formatCurrency(metrics.net_profit_value)}
-                  </span>
+                <div className={cn(
+                  "text-3xl sm:text-4xl font-bold",
+                  profitAlert ? "text-warning" : "text-foreground"
+                )}>
+                  {metrics.net_profit_actual}%
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {metrics.net_profit_actual}% do faturamento
+                  {formatCurrency(metrics.net_profit_value)}
                 </p>
                 {profitAlert && (
                   <p className="text-xs text-warning flex items-center gap-1">
