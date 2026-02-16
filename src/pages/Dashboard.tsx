@@ -264,7 +264,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
-                    <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-lg lg:text-xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-xs text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
                   </div>
                   <Progress value={Math.min(annualProgress, 100)} className="h-2" />
@@ -281,7 +281,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
-                    <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-lg lg:text-xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
                     <span className="text-xs text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
                   </div>
                   <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
