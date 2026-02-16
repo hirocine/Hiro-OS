@@ -71,7 +71,7 @@ export default function Dashboard() {
     localStorage.setItem('cashflow-values-hidden', String(newState));
   };
 
-  const blurClass = valuesHidden ? 'blur-md select-none' : '';
+  const blurClass = cn('transition-[filter] duration-300', valuesHidden && 'blur-md select-none');
 
   useEffect(() => {
     if (!loading) setLastUpdate(new Date());
@@ -616,7 +616,7 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName, blurred && 'blur-md select-none')}>
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate transition-[filter] duration-300', valueClassName, blurred && 'blur-md select-none')}>
           {formatCurrency(value)}
         </div>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
