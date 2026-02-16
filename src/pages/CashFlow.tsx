@@ -45,26 +45,22 @@ function CashFlowSkeleton() {
 
 interface CashFlowCardProps {
   title: string;
-  value: number;
   icon: LucideIcon;
   subtitle?: string;
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
-  blurred?: boolean;
-  subtitleBlurred?: boolean;
+  displayValue: string;
 }
 
 function CashFlowCard({
   title,
-  value,
   icon: Icon,
   subtitle,
   iconClassName,
   valueClassName,
   cardClassName,
-  blurred,
-  subtitleBlurred,
+  displayValue,
 }: CashFlowCardProps) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -75,11 +71,11 @@ function CashFlowCard({
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-2xl font-bold', valueClassName, blurred && 'blur-sm select-none')}>
-          {formatCurrency(value)}
+        <div className={cn('text-2xl font-bold', valueClassName)}>
+          {displayValue}
         </div>
         {subtitle && (
-          <p className={cn("text-xs text-muted-foreground mt-1", subtitleBlurred && "blur-sm select-none")}>{subtitle}</p>
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
         )}
       </CardContent>
     </Card>
@@ -130,8 +126,8 @@ export default function CashFlow() {
                 </button>
               </CardHeader>
               <CardContent>
-                <div className={cn("text-xl sm:text-2xl font-bold text-primary", valuesHidden && "blur-sm select-none")}>
-                  {formatCurrency(data.total_balance)}
+                <div className="text-xl sm:text-2xl font-bold text-primary">
+                  {valuesHidden ? 'R$ ••••••' : formatCurrency(data.total_balance)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
               </CardContent>
@@ -169,7 +165,7 @@ export default function CashFlow() {
                           return (
                             <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
                               <p className="font-semibold text-foreground mb-1">{label}</p>
-                              <p className={cn("text-primary font-medium", valuesHidden && "blur-sm select-none")}>{formatCurrency(val)}</p>
+                              <p className="text-primary font-medium">{valuesHidden ? 'R$ ••••••' : formatCurrency(val)}</p>
                             </div>
                           );
                         }}
@@ -194,31 +190,27 @@ export default function CashFlow() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <CashFlowCard
               title="Receitas Realizado"
-              value={data.realized_income}
               icon={ArrowDownLeft}
               subtitle="Dinheiro que já entrou no mês"
               iconClassName="text-success"
               valueClassName="text-success"
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.realized_income)}
             />
             <CashFlowCard
               title="Despesas Realizado"
-              value={data.realized_expenses}
               icon={ArrowUpRight}
               subtitle="Dinheiro que já saiu no mês"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.realized_expenses)}
             />
             <CashFlowCard
               title="Fluxo Líquido Atual"
-              value={data.net_flow}
               icon={isNetFlowNegative ? TrendingDown : TrendingUp}
-              subtitle={`${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
-              subtitleBlurred={valuesHidden}
+              subtitle={valuesHidden ? 'R$ •••••• − R$ ••••••' : `${formatCurrency(data.realized_income)} − ${formatCurrency(data.realized_expenses)}`}
               iconClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
               valueClassName={isNetFlowNegative ? 'text-destructive' : 'text-success'}
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.net_flow)}
             />
           </div>
 
@@ -226,25 +218,22 @@ export default function CashFlow() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <CashFlowCard
               title="Contas a Receber"
-              value={data.receivables_30d}
               icon={ArrowDownLeft}
               subtitle="Previsto para entrar (não realizado)"
               iconClassName="text-success"
               valueClassName="text-success"
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.receivables_30d)}
             />
             <CashFlowCard
               title="Contas a Pagar"
-              value={data.payables_30d}
               icon={ArrowUpRight}
               subtitle="Compromissos pendentes (não realizado)"
               iconClassName="text-destructive"
               valueClassName="text-destructive"
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.payables_30d)}
             />
             <CashFlowCard
               title="Saldo Projetado (Fim do Mês)"
-              value={data.projected_balance}
               icon={Target}
               subtitle="Saldo + Receber − Pagar"
               cardClassName={cn(
@@ -253,7 +242,7 @@ export default function CashFlow() {
               )}
               iconClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
               valueClassName={isProjectedNegative ? 'text-destructive' : 'text-primary'}
-              blurred={valuesHidden}
+              displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(data.projected_balance)}
             />
           </div>
         </div>
