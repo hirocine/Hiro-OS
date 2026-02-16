@@ -30,8 +30,8 @@ export function Layout() {
           "flex-1 w-full min-h-screen bg-background [contain:layout]",
           isMobile 
             ? isPWA 
-              ? "pt-[calc(7rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
-              : "pt-28 pb-4"
+              ? "pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,1rem)]"
+              : "pt-16 pb-4"
             : "pl-64"
         )}
       >

@@ -9,6 +9,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   useDroppable,
@@ -158,6 +159,12 @@ export const SSDKanbanBoard = ({ ssdsByStatus, ssdAllocations, onStatusChange, o
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
