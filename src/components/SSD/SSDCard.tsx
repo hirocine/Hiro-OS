@@ -63,12 +63,12 @@ export const SSDCard = ({ ssd, isDragging, kanbanStatus, onClick, allocatedSpace
                 </h4>
               </div>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                {ssd.patrimonyNumber && (
+                {ssd.ssdNumber && (
                   <Badge 
                     variant="outline" 
                     className="shrink-0 text-[10px]"
                   >
-                    #{ssd.patrimonyNumber}
+                    #{ssd.ssdNumber}
                   </Badge>
                 )}
                 {shouldShowFreeSpace && (

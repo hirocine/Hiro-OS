@@ -35,6 +35,7 @@ export interface Equipment {
   capacity?: number;
   displayOrder?: number;
   internal_user_id?: string;
+  ssdNumber?: string;
 }
 
 export interface EquipmentCategoryData {
