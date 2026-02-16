@@ -1,16 +1,40 @@
 
+## Redesign do Card de SSD no Kanban
 
-## Destacar Numero do SSD no Lugar do Icone
+### Objetivo
 
-Substituir o icone `HardDrive` pelo numero do SSD quando ele existir. O numero sera exibido em destaque dentro do mesmo container arredondado, funcionando como identificador visual principal do card.
+Tornar o card mais limpo, com hierarquia visual clara: numero do SSD em destaque, nome do equipamento, e badges informativos organizados.
 
-### Mudanca
+### Mudancas no arquivo `src/components/SSD/SSDCard.tsx`
 
-**Arquivo:** `src/components/SSD/SSDCard.tsx`
+**1. Numero do SSD com mais destaque**
+- Aumentar o container do numero para `w-11 h-11` com `rounded-xl`
+- Usar `text-base font-bold` para o numero ficar maior e mais legivel
+- Manter fallback do icone `HardDrive` quando nao ha numero
 
-- Quando `ssd.ssdNumber` existir: exibir o numero (ex: "01") em texto bold dentro do container `bg-primary/10`, sem o icone de HardDrive
-- Quando nao existir: manter o icone `HardDrive` como fallback
-- Remover o badge circular sobreposto (adicionado anteriormente) ja que o numero agora ocupa o espaco principal
-- Manter o badge `#01` na linha de tags abaixo (ja existe)
-- Estilo do numero: `text-sm font-bold text-primary` centralizado no container de 36x36px (mesmo tamanho do icone+padding atual)
+**2. Remover badge duplicado `#01`**
+- O numero ja aparece no quadrado a esquerda, nao precisa repetir como badge na linha de tags
+- Remover o badge `#{ssd.ssdNumber}` da secao de badges
 
+**3. Melhorar tipografia do nome**
+- Aumentar o nome para `text-sm font-medium` com `line-clamp-2` ao inves de `truncate`, permitindo ate 2 linhas para nomes longos
+
+**4. Reorganizar badges**
+- Badges de capacidade e status ficam em uma linha abaixo do nome
+- Adicionar gap e alinhamento vertical centralizado entre badges
+- Badge de capacidade: mostrar barra de uso simplificada como texto (ex: "8.2 TB / 16 TB")
+
+**5. Padding e espacamento**
+- Manter `p-4` no CardContent
+- Usar `gap-3` entre o numero e o conteudo textual
+- Adicionar `items-center` no flex principal para alinhar verticalmente o numero com o texto
+
+### Resultado visual esperado
+
+```text
++------------------------------------------+
+|  +------+  LaCie 16TB d2 Professional    |
+|  |  01  |  USB-C 3.2 Gen 2 ...           |
+|  +------+  [8.2 TB / 16 TB] [Em uso]     |
++------------------------------------------+
+```
