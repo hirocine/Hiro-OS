@@ -1,63 +1,46 @@
 
 
-## Pesquisa na Sidebar Incluindo Sub-itens
+## Renomear "Projetos AV" para "Projetos" e Mover para Producao
 
-### Problema
+### Resumo
 
-A busca na sidebar atualmente so filtra pelos nomes dos itens pai. Quando voce digita "das" (como na imagem), o item "Tarefas" aparece porque contem "das", mas os sub-itens como "Dashboard" (dentro de Financeiro) nao aparecem. Alem disso, o filtro de admin (`filteredAdminNav`) so verifica o nome do pai, ignorando completamente os filhos.
+Renomear o item de navegacao "Projetos AV" para "Projetos" e move-lo do menu principal para a secao "Producao", tornando-o visivel apenas para usuarios com role `producao` ou `admin`.
 
-### Solucao
+### Mudancas
 
-1. **Corrigir filtro do admin** para tambem verificar nomes dos filhos (igual ja funciona para `filteredNav` e `filteredProducaoNav`)
+**1. Sidebar - Desktop, Mobile e Legada**
 
-2. **Auto-expandir itens quando um filho corresponde a busca** - se o usuario digitar "dash", o grupo "Financeiro" deve aparecer expandido mostrando o sub-item "Dashboard"
+Remover "Projetos AV" do array `navigation` (menu principal) e adiciona-lo ao array `producaoNavigation` (secao Producao):
 
-3. **Aplicar nos dois sidebars** (Desktop e Mobile) de forma consistente
+```text
+Antes:
+  Menu Principal: Home, Tarefas, [Projetos AV], Retiradas, Inventario, ...
+  Producao: Fornecedores
 
-4. **Respeitar roles** - a filtragem ja acontece depois da verificacao de `canAccessSuppliers` e `isAdmin`, entao itens restritos continuam invisiveis
+Depois:
+  Menu Principal: Home, Tarefas, Retiradas, Inventario, ...
+  Producao: Projetos, Fornecedores
+```
 
-### Detalhes Tecnicos
+Arquivos: `DesktopSidebar.tsx`, `MobileSidebar.tsx`, `Sidebar.tsx`
 
-**Arquivos editados:**
+**2. Paginas AVProjects e AVProjectDetails**
+
+Adicionar verificacao `canAccessSuppliers` (que cobre `admin` e `producao`) para proteger o acesso. Usuarios sem permissao verao uma mensagem de acesso negado ou serao redirecionados.
+
+Arquivos: `AVProjects.tsx`, `AVProjectDetails.tsx`
+
+**3. Rotas (App.tsx)**
+
+As rotas `/projetos-av` e `/projetos-av/:id` permanecem inalteradas no roteador - a protecao sera feita no nivel da pagina (mesmo padrao usado em Suppliers/Companies).
+
+### Arquivos editados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/Layout/DesktopSidebar.tsx` | Corrigir filtro admin para incluir filhos; auto-expandir ao buscar |
-| `src/components/Layout/MobileSidebar.tsx` | Mesma correcao |
-
-**Mudancas no filtro (`DesktopSidebar.tsx` e `MobileSidebar.tsx`):**
-
-Corrigir `filteredAdminNav` para incluir filhos:
-```typescript
-// De:
-adminNavigation.filter(item => item.name.toLowerCase().includes(query))
-
-// Para:
-adminNavigation.filter(item =>
-  item.name.toLowerCase().includes(query) ||
-  item.children?.some(c => c.name.toLowerCase().includes(query))
-)
-```
-
-**Auto-expansao ao buscar:**
-
-Adicionar um `useEffect` que, quando `searchQuery` nao esta vazio, encontra o primeiro item pai cujo filho corresponde a busca e expande-o automaticamente:
-
-```typescript
-useEffect(() => {
-  if (!searchQuery) return;
-  const query = searchQuery.toLowerCase();
-  const allItems = [
-    ...navigation,
-    ...(canAccessSuppliers ? producaoNavigation : []),
-    ...(isAdmin ? adminNavigation : []),
-  ];
-  const match = allItems.find(item =>
-    item.children?.some(c => c.name.toLowerCase().includes(query))
-  );
-  if (match) setExpandedItem(match.name);
-}, [searchQuery, canAccessSuppliers, isAdmin]);
-```
-
-Isso garante que ao digitar "dash", o grupo "Financeiro" expande automaticamente mostrando "Dashboard" como resultado.
+| `src/components/Layout/DesktopSidebar.tsx` | Mover "Projetos" de navigation para producaoNavigation |
+| `src/components/Layout/MobileSidebar.tsx` | Mesma mudanca |
+| `src/components/Layout/Sidebar.tsx` | Mesma mudanca |
+| `src/pages/AVProjects.tsx` | Adicionar guard `canAccessSuppliers` |
+| `src/pages/AVProjectDetails.tsx` | Adicionar guard `canAccessSuppliers` |
 
