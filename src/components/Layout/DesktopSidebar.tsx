@@ -214,6 +214,21 @@ export function DesktopSidebar() {
     }
   }, [location.pathname]);
 
+  // Auto-expand when search matches a child
+  useEffect(() => {
+    if (!searchQuery) return;
+    const query = searchQuery.toLowerCase();
+    const allItems = [
+      ...navigation,
+      ...(canAccessSuppliers ? producaoNavigation : []),
+      ...(isAdmin ? adminNavigation : []),
+    ];
+    const match = allItems.find(item =>
+      item.children?.some(c => c.name.toLowerCase().includes(query))
+    );
+    if (match) setExpandedItem(match.name);
+  }, [searchQuery, canAccessSuppliers, isAdmin]);
+
   // Ctrl+K to focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -234,7 +249,10 @@ export function DesktopSidebar() {
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
-    adminNavigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    adminNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
     [searchQuery]
   );
   const filteredProducaoNav = useMemo(() =>
