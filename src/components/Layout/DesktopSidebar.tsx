@@ -375,7 +375,8 @@ export function DesktopSidebar() {
               <div className="px-3 my-5">
                 <Separator />
               </div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2 flex items-center gap-1.5">
+                <Lock className="h-3 w-3" />
                 Administração
               </p>
               <nav className="space-y-0.5 px-3">
