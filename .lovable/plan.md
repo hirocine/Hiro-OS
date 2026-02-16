@@ -1,60 +1,49 @@
 
 
-## Alinhar Altura dos Cards com o Grafico
+## Ocultar Linha de "Realizado" para Meses Futuros (valor zero)
 
 ### Problema
-
-Os cards de Meta Anual e Meta YTD na coluna esquerda estao menores que o card do grafico na coluna direita, causando desalinhamento visual.
+A linha "Realizado" no grafico conecta todos os 12 meses, incluindo os meses futuros que tem valor zero, criando uma queda abrupta no grafico.
 
 ### Solucao
 
 **Arquivo: `src/pages/Dashboard.tsx`**
 
-1. **Coluna esquerda**: Adicionar `h-full` ao container dos cards e usar `flex flex-col gap-4` em vez de `space-y-4`, com cada card recebendo `flex-1` para distribuir a altura igualmente e preencher toda a coluna.
+Criar um `useMemo` que filtra o `monthlyData` para separar os dados da linha: substituir o valor `realizado` por `null` nos meses onde o valor e zero. O Recharts automaticamente interrompe a linha quando encontra `null` em um dataKey, desde que se adicione `connectNulls={false}` (comportamento padrao).
 
-2. **Grafico**: Aumentar a altura do grafico de `h-72` para `h-80` para dar mais espaco visual.
+Alternativa mais limpa: usar uma propriedade computada `realizadoVisible` que retorna o valor real ou `null`:
 
-3. **Cards internos**: Adicionar `flex flex-col justify-between` nos cards para que o conteudo se distribua verticalmente dentro de cada card expandido.
-
-### Detalhes tecnicos
-
-Linha 249 -- Container da coluna esquerda:
 ```tsx
-// De:
-<div className="space-y-4">
-
-// Para:
-<div className="flex flex-col gap-4 h-full">
+const chartData = useMemo(() =>
+  monthlyData.map(d => ({
+    ...d,
+    realizado: d.realizado > 0 ? d.realizado : null,
+  })),
+  [monthlyData]
+);
 ```
 
-Linhas 250 e 267 -- Cards de Meta Anual e Meta YTD:
+Depois, passar `chartData` no lugar de `monthlyData` no `ComposedChart`:
+
 ```tsx
-// Adicionar flex-1 a cada Card:
-<Card className="shadow-card hover:shadow-elegant transition-all duration-200 flex-1 flex flex-col">
+<ComposedChart data={chartData} ...>
 ```
 
-Linhas 257 e 274 -- CardContent dos dois cards:
-```tsx
-// Adicionar flex-1 para empurrar conteudo:
-<CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-```
+E adicionar `connectNulls={false}` na `Line` (para garantir que a linha para):
 
-Linha 295 -- Altura do grafico:
 ```tsx
-// De:
-<div className="h-72">
-
-// Para:
-<div className="h-80">
+<Line
+  ...
+  connectNulls={false}
+/>
 ```
 
 ### Resultado
-
-Os dois cards da esquerda crescem para ocupar a mesma altura total do card do grafico, ficando perfeitamente alinhados.
+A linha "Realizado" para no ultimo mes com dados reais (Setembro) e nao conecta aos meses futuros com valor zero. As barras de Meta continuam aparecendo para todos os 12 meses.
 
 ### Arquivo editado
 
 | Arquivo | Acao |
 |---------|------|
-| `src/pages/Dashboard.tsx` | Ajustar classes CSS para alinhar alturas |
+| `src/pages/Dashboard.tsx` | Adicionar `useMemo` para `chartData` e usar no grafico |
 
