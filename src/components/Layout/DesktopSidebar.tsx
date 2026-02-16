@@ -37,15 +37,18 @@ const navigation: NavigationItem[] = [
   { name: 'Plataformas', href: '/plataformas', icon: Key },
 ];
 
-const adminNavigation: NavigationItem[] = [
-  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
+const producaoNavigation: NavigationItem[] = [
   {
-    name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true,
+    name: 'Fornecedores', href: '/fornecedores', icon: Users,
     children: [
       { name: 'Freelancers', href: '/fornecedores/freelancers', icon: UserCheck },
       { name: 'Empresas', href: '/fornecedores/empresas', icon: Building2 },
     ],
   },
+];
+
+const adminNavigation: NavigationItem[] = [
+  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
@@ -185,7 +188,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
 }
 
 export function DesktopSidebar() {
-  const { isAdmin } = useAuthContext();
+  const { isAdmin, canAccessSuppliers } = useAuthContext();
   const location = useLocation();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
@@ -196,7 +199,7 @@ export function DesktopSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...navigation, ...adminNavigation];
+    const allItems = [...navigation, ...producaoNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => isActive(c.href))) {
         setExpandedItem(item.name);
@@ -226,6 +229,13 @@ export function DesktopSidebar() {
   );
   const filteredAdminNav = useMemo(() =>
     adminNavigation.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [searchQuery]
+  );
+  const filteredProducaoNav = useMemo(() =>
+    producaoNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
     [searchQuery]
   );
 
@@ -300,6 +310,40 @@ export function DesktopSidebar() {
               )
             ))}
           </nav>
+
+          {/* Produção Section */}
+          {canAccessSuppliers && (filteredProducaoNav.length > 0 || !searchQuery) && (
+            <>
+              <div className="px-3 my-5">
+                <Separator />
+              </div>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+                Produção
+              </p>
+              <nav className="space-y-0.5 px-3">
+                {filteredProducaoNav.map((item) => (
+                  item.children ? (
+                    <NavItemWithChildren
+                      key={item.name}
+                      item={item}
+                      isActive={isActive}
+                      onNavClick={handleNavClick}
+                      expanded={expandedItem === item.name}
+                      onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
+                    />
+                  ) : (
+                    <NavItem
+                      key={item.name}
+                      item={item}
+                      active={isActive(item.href)}
+                      onNavClick={handleNavClick}
+                      onClearExpanded={() => setExpandedItem(null)}
+                    />
+                  )
+                ))}
+              </nav>
+            </>
+          )}
 
           {/* Admin Section */}
           {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (

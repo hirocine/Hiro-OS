@@ -8,7 +8,7 @@ export interface User {
   display_name: string | null;
   position: string | null;
   department: string | null;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'producao';
   is_active: boolean;
   avatar_url: string | null;
   user_metadata?: {

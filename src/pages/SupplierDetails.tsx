@@ -27,7 +27,7 @@ import type { Supplier } from '@/features/suppliers/types';
 export default function SupplierDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin, roleLoading } = useAuthContext();
+  const { canAccessSuppliers, roleLoading } = useAuthContext();
   const { suppliers, loading, updateSupplier, deleteSupplier } = useSuppliers();
   const { notes, loading: notesLoading, createNote, deleteNote } = useSupplierNotes(id);
 
@@ -101,8 +101,8 @@ export default function SupplierDetails() {
     );
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+  if (!canAccessSuppliers) {
+    return <Navigate to="/" replace />;
   }
 
   if (loading) {

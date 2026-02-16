@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger';
 import { wrapAsync } from '@/lib/errors';
 import type { Json } from '@/integrations/supabase/types';
 
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'user' | 'producao';
 
 interface UserRoleState {
   role: UserRole | null;

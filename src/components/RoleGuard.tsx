@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useAuthContext, UserRole } from '@/contexts/AuthContext';
+import { useAuthContext, type UserRole } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface RoleGuardProps {

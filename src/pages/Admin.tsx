@@ -159,7 +159,7 @@ const getActionDescription = (log: { action: string; new_values: any; old_values
     
     // User role change
     if (log.action === 'UPDATE_USER_ROLE' && values.role) {
-      return `Permissão alterada para: ${values.role === 'admin' ? 'Administrador' : 'Usuário'}`;
+      return `Permissão alterada para: ${values.role === 'admin' ? 'Administrador' : values.role === 'producao' ? 'Produção' : 'Usuário'}`;
     }
     
     // Equipment specific
@@ -188,7 +188,7 @@ interface User {
   position: string;
   department: string;
   created_at: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'producao';
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
   is_active: boolean;
@@ -397,7 +397,7 @@ export default function Admin() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao') => {
     try {
       logger.debug('Updating user role', { 
         module: 'admin',
@@ -594,6 +594,7 @@ export default function Admin() {
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="admin">Administradores</SelectItem>
+                <SelectItem value="producao">Produção</SelectItem>
                 <SelectItem value="user">Usuários</SelectItem>
               </SelectContent>
             </Select>
@@ -646,9 +647,9 @@ export default function Admin() {
                             <span className="text-sm">{tableUser.department}</span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={tableUser.role === 'admin' ? 'default' : 'secondary'} className="gap-1">
+                            <Badge variant={tableUser.role === 'admin' ? 'default' : tableUser.role === 'producao' ? 'outline' : 'secondary'} className="gap-1">
                               <Shield className="h-3 w-3" />
-                              {tableUser.role === 'admin' ? 'Admin' : 'Usuário'}
+                              {tableUser.role === 'admin' ? 'Admin' : tableUser.role === 'producao' ? 'Produção' : 'Usuário'}
                             </Badge>
                           </TableCell>
                           <TableCell>
