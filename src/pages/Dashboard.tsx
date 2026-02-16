@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
   Users, Zap, BarChart3, Heart, PartyPopper, Hourglass, Calendar,
-  Wallet, ArrowDownLeft, ArrowUpRight
+  Wallet, ArrowDownLeft, ArrowUpRight, Eye, EyeOff
 } from 'lucide-react';
 import { useCashFlowData } from '@/hooks/useCashFlowData';
 import {
@@ -61,6 +61,18 @@ export default function Dashboard() {
   const { goals, metrics, monthlyData, loading } = useFinancialData();
   const { data: cashFlow, loading: cashFlowLoading } = useCashFlowData();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [valuesHidden, setValuesHidden] = useState(() =>
+    localStorage.getItem('cashflow-values-hidden') === 'true'
+  );
+
+  const toggleValuesVisibility = () => {
+    const newState = !valuesHidden;
+    setValuesHidden(newState);
+    localStorage.setItem('cashflow-values-hidden', String(newState));
+  };
+
+  const displayValue = (value: number) =>
+    valuesHidden ? 'R$ ••••••' : formatCurrency(value);
 
   useEffect(() => {
     if (!loading) setLastUpdate(new Date());
@@ -272,11 +284,21 @@ export default function Dashboard() {
                   <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
                     Saldo Atual Disponível
                   </CardTitle>
-                  <Wallet className="h-6 w-6 text-primary" />
+                  <button
+                    onClick={toggleValuesVisibility}
+                    className="p-1.5 rounded-md hover:bg-primary/10 transition-colors"
+                    aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
+                  >
+                    {valuesHidden ? (
+                      <EyeOff className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-primary" />
+                    )}
+                  </button>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl sm:text-4xl font-bold text-primary">
-                    {formatCurrency(cashFlow.total_balance)}
+                    {displayValue(cashFlow.total_balance)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
                 </CardContent>
@@ -291,6 +313,7 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já entrou no mês"
                   iconClassName="text-success"
                   valueClassName="text-success"
+                  displayValue={displayValue}
                 />
                 <CashFlowDashCard
                   title="Despesas Realizado"
@@ -299,14 +322,16 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já saiu no mês"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
+                  displayValue={displayValue}
                 />
                 <CashFlowDashCard
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  subtitle={`${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  subtitle={valuesHidden ? undefined : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
+                  displayValue={displayValue}
                 />
               </div>
 
@@ -319,6 +344,7 @@ export default function Dashboard() {
                   subtitle="Previsto para entrar (não realizado)"
                   iconClassName="text-success"
                   valueClassName="text-success"
+                  displayValue={displayValue}
                 />
                 <CashFlowDashCard
                   title="Contas a Pagar"
@@ -327,6 +353,7 @@ export default function Dashboard() {
                   subtitle="Compromissos pendentes (não realizado)"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
+                  displayValue={displayValue}
                 />
                 <CashFlowDashCard
                   title="Saldo Projetado (Fim do Mês)"
@@ -339,6 +366,7 @@ export default function Dashboard() {
                   )}
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
+                  displayValue={displayValue}
                 />
               </div>
             </div>
@@ -516,7 +544,7 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName }: {
+function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
   title: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
@@ -524,6 +552,7 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
+  displayValue: (v: number) => string;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -535,7 +564,7 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
         <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
-          {formatCurrency(value)}
+          {displayValue(value)}
         </div>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
       </CardContent>
