@@ -71,8 +71,7 @@ export default function Dashboard() {
     localStorage.setItem('cashflow-values-hidden', String(newState));
   };
 
-  const displayValue = (value: number) =>
-    valuesHidden ? 'R$ ••••••' : formatCurrency(value);
+  const blurClass = valuesHidden ? 'blur-md select-none' : '';
 
   useEffect(() => {
     if (!loading) setLastUpdate(new Date());
@@ -298,8 +297,8 @@ export default function Dashboard() {
                     </button>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-primary">
-                      {displayValue(cashFlow.total_balance)}
+                    <div className={cn("text-xl sm:text-2xl font-bold text-primary", blurClass)}>
+                      {formatCurrency(cashFlow.total_balance)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
                   </CardContent>
@@ -331,13 +330,13 @@ export default function Dashboard() {
                             tickLine={false}
                           />
                           <Tooltip
-                            content={({ active, payload, label }) => {
+                          content={({ active, payload, label }) => {
                               if (!active || !payload?.length) return null;
                               const val = payload[0]?.value as number;
                               return (
                                 <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
                                   <p className="font-semibold text-foreground mb-1">{label}</p>
-                                  <p className="text-primary font-medium">{displayValue(val)}</p>
+                                  <p className={cn("text-primary font-medium", blurClass)}>{formatCurrency(val)}</p>
                                 </div>
                               );
                             }}
@@ -367,7 +366,7 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já entrou no mês"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Despesas Realizado"
@@ -376,7 +375,7 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já saiu no mês"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Fluxo Líquido Atual"
@@ -385,7 +384,7 @@ export default function Dashboard() {
                   subtitle={valuesHidden ? undefined : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
               </div>
 
@@ -398,7 +397,7 @@ export default function Dashboard() {
                   subtitle="Previsto para entrar (não realizado)"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Contas a Pagar"
@@ -407,7 +406,7 @@ export default function Dashboard() {
                   subtitle="Compromissos pendentes (não realizado)"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Saldo Projetado (Fim do Mês)"
@@ -420,7 +419,7 @@ export default function Dashboard() {
                   )}
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
               </div>
             </div>
@@ -598,7 +597,7 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
+function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, blurred }: {
   title: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
@@ -606,7 +605,7 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
-  displayValue: (v: number) => string;
+  blurred?: boolean;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -617,8 +616,8 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
-          {displayValue(value)}
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName, blurred && 'blur-md select-none')}>
+          {formatCurrency(value)}
         </div>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
       </CardContent>
