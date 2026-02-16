@@ -73,7 +73,7 @@ function CashFlowCard({
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-2xl font-bold', valueClassName, blurred && 'blur-md select-none')}>
+        <div className={cn('text-2xl font-bold transition-[filter] duration-300', valueClassName, blurred && 'blur-md select-none')}>
           {formatCurrency(value)}
         </div>
         {subtitle && (
@@ -97,7 +97,7 @@ export default function CashFlow() {
     localStorage.setItem('cashflow-values-hidden', String(newState));
   };
 
-  const blurClass = valuesHidden ? 'blur-md select-none' : '';
+  const blurClass = cn('transition-[filter] duration-300', valuesHidden && 'blur-md select-none');
 
   if (!roleLoading && !isAdmin) {
     return <Navigate to="/" replace />;
