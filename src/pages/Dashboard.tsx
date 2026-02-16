@@ -159,7 +159,7 @@ export default function Dashboard() {
               monthlyGoalExceeded && "border-success/30 bg-success/5"
             )}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2 flex-wrap">
                   <TrendingUp className="h-4 w-4" />
                   Faturamento do Mês
                   {monthlyGoalExceeded && (
@@ -171,9 +171,9 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
                   <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.total_revenue)}</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground">meta {formatCurrency(monthlyGoal)}</span>
+                  <span className="text-xs text-muted-foreground">meta {formatCurrency(monthlyGoal)}</span>
                 </div>
                 <Progress value={Math.min(monthlyProgress, 100)} className="h-2" />
                 <p className="text-xs text-muted-foreground">{monthlyProgress}% da meta mensal</p>
@@ -263,9 +263,9 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
                     <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-xs sm:text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
+                    <span className="text-xs text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
                   </div>
                   <Progress value={Math.min(annualProgress, 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
@@ -280,9 +280,9 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
                     <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-xs sm:text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
+                    <span className="text-xs text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
                   </div>
                   <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">
@@ -431,7 +431,7 @@ function UnitCard({ title, value, icon: Icon, subtitle, alert, highlight }: {
       alert && "border-warning/30",
       highlight && "border-success/30"
     )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-6 sm:pt-6">
         <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-2">
           {title}
         </CardTitle>
@@ -440,9 +440,9 @@ function UnitCard({ title, value, icon: Icon, subtitle, alert, highlight }: {
           alert ? "text-warning" : highlight ? "text-success" : "text-muted-foreground"
         )} />
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
         <div className={cn(
-          "text-lg sm:text-xl lg:text-2xl font-bold",
+          "text-base sm:text-lg lg:text-xl font-bold truncate",
           alert ? "text-warning" : highlight ? "text-success" : "text-foreground"
         )}>
           {value}
