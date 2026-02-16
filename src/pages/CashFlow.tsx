@@ -119,7 +119,7 @@ export default function CashFlow() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01] flex flex-col">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
+                <CardTitle className="text-sm font-medium text-primary/80">
                   Saldo Atual Disponível
                 </CardTitle>
                 <button
@@ -128,14 +128,14 @@ export default function CashFlow() {
                   aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
                 >
                   {valuesHidden ? (
-                    <EyeOff className="h-5 w-5 text-primary" />
+                    <EyeOff className="h-4 w-4 text-primary" />
                   ) : (
-                    <Eye className="h-5 w-5 text-primary" />
+                    <Eye className="h-4 w-4 text-primary" />
                   )}
                 </button>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl sm:text-3xl font-bold text-primary">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {displayValue(data.total_balance)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
