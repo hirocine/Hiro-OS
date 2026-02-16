@@ -41,7 +41,7 @@ const navigation: NavigationItem[] = [
 ];
 
 const adminNavigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
+  { name: 'Dashboard Financeiro', href: '/dashboard', icon: LayoutDashboard, adminOnly: true },
   {
     name: 'Fornecedores', href: '/fornecedores', icon: Users, adminOnly: true,
     children: [
