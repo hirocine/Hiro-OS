@@ -496,6 +496,114 @@ export type Database = {
           },
         ]
       }
+      financial_goals: {
+        Row: {
+          cac_goal: number
+          created_at: string
+          id: string
+          margin_goal_pct: number
+          profit_goal_pct: number
+          revenue_goal: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          cac_goal?: number
+          created_at?: string
+          id?: string
+          margin_goal_pct?: number
+          profit_goal_pct?: number
+          revenue_goal?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          cac_goal?: number
+          created_at?: string
+          id?: string
+          margin_goal_pct?: number
+          profit_goal_pct?: number
+          revenue_goal?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      financial_snapshots: {
+        Row: {
+          avg_ticket: number
+          burn_rate: number
+          cac: number
+          cash_balance: number
+          churn_rate: number
+          contribution_margin_pct: number
+          contribution_margin_value: number
+          created_at: string
+          id: string
+          ltv: number
+          month: number
+          net_profit_pct: number
+          net_profit_value: number
+          nps: number
+          payables_30d: number
+          realized_expenses: number
+          realized_income: number
+          receivables_30d: number
+          revenue: number
+          revenue_goal: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          avg_ticket?: number
+          burn_rate?: number
+          cac?: number
+          cash_balance?: number
+          churn_rate?: number
+          contribution_margin_pct?: number
+          contribution_margin_value?: number
+          created_at?: string
+          id?: string
+          ltv?: number
+          month: number
+          net_profit_pct?: number
+          net_profit_value?: number
+          nps?: number
+          payables_30d?: number
+          realized_expenses?: number
+          realized_income?: number
+          receivables_30d?: number
+          revenue?: number
+          revenue_goal?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          avg_ticket?: number
+          burn_rate?: number
+          cac?: number
+          cash_balance?: number
+          churn_rate?: number
+          contribution_margin_pct?: number
+          contribution_margin_value?: number
+          created_at?: string
+          id?: string
+          ltv?: number
+          month?: number
+          net_profit_pct?: number
+          net_profit_value?: number
+          nps?: number
+          payables_30d?: number
+          realized_expenses?: number
+          realized_income?: number
+          receivables_30d?: number
+          revenue?: number
+          revenue_goal?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       loans: {
         Row: {
           actual_return_date: string | null

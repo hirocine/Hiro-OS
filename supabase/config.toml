@@ -81,6 +81,9 @@ verify_jwt = false
 [functions.manage-user]
 verify_jwt = false
 
+[functions.sync-financial-data]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 policy = "per_worker"
