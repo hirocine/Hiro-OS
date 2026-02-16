@@ -1,34 +1,79 @@
 
-
-## Corrigir Tamanho de Fonte nos Cards "Meta Anual" e "Meta YTD"
+## Dar Mais Destaque as Porcentagens nos Cards de Margem e Lucro
 
 ### Problema
 
-Os cards "Meta Anual" e "Meta YTD" ocupam 1/3 da largura da tela (coluna lateral do grid `lg:grid-cols-3`). O breakpoint `sm:text-2xl` ativa a partir de 640px de largura de **tela**, mas os cards continuam estreitos. Resultado: "R$ 1.200.000,00" com `text-2xl` (1.5rem) transborda o card.
-
-O `flex-col` ja funciona (valor e "de" estao empilhados), mas o valor em si e grande demais para a largura disponivel.
+Os cards "Margem de Contribuicao" e "Lucro Liquido" mostram o valor monetario grande e a porcentagem como texto secundario pequeno ("31% do faturamento"). Isso deixa os cards com sensacao de vazios e a informacao mais importante (a %) perde destaque.
 
 ### Solucao
 
-Reduzir o tamanho da fonte dos valores financeiros **apenas** nos cards Meta Anual e Meta YTD, que ficam na coluna estreita.
+Reformular o layout desses dois cards para destacar a porcentagem como metrica principal, ao lado do valor monetario:
 
 **Arquivo: `src/pages/Dashboard.tsx`**
 
-**Card Meta Anual (linha 267) e Meta YTD (linha 284):**
+**Card Margem de Contribuicao (linhas 194-212) e Lucro Liquido (linhas 226-244):**
 
-```tsx
-// De:
-<span className="text-xl sm:text-2xl font-bold text-foreground">
-
-// Para:
-<span className="text-lg lg:text-xl font-bold text-foreground">
+Layout atual:
+```
+R$ 55.800,00        (grande, bold)
+31% do faturamento   (pequeno, cinza)
+4.0pp abaixo...      (pequeno, warning)
 ```
 
-Isso usa `text-lg` (1.125rem) como padrao e so sobe para `text-xl` (1.25rem) no breakpoint `lg` (1024px+), quando a coluna lateral tem largura suficiente.
+Layout proposto:
+```
+31%                  (muito grande, bold, cor de destaque)
+R$ 55.800,00         (medio, secundario)
+4.0pp abaixo...      (pequeno, warning)
+```
+
+Mudancas especificas:
+
+1. **Porcentagem como valor principal**: Exibir `{metrics.contribution_margin_actual}%` em `text-3xl sm:text-4xl font-bold` com cor condicional (warning se abaixo da meta, success/foreground se ok)
+
+2. **Valor monetario como secundario**: Mover `formatCurrency(metrics.contribution_margin_value)` para uma linha abaixo em `text-sm text-muted-foreground`
+
+3. **Remover texto redundante**: Eliminar "do faturamento" pois o titulo do card ja deixa claro o contexto
+
+4. **Manter alerta**: O texto de "Xpp abaixo da meta" continua igual
+
+Resultado visual para Margem de Contribuicao:
+```
+[icone] Margem de Contribuicao
+31%
+R$ 55.800,00
+4.0pp abaixo da meta (35%)
+```
+
+Resultado visual para Lucro Liquido:
+```
+[icone] Lucro Liquido
+17%
+R$ 30.600,00
+3.0pp abaixo da meta (20%)
+```
+
+### Detalhes Tecnicos
+
+**Margem de Contribuicao (linhas 194-212):**
+```tsx
+<CardContent className="space-y-2">
+  <div className="text-3xl sm:text-4xl font-bold" style com cor condicional>
+    {metrics.contribution_margin_actual}%
+  </div>
+  <p className="text-sm text-muted-foreground">
+    {formatCurrency(metrics.contribution_margin_value)}
+  </p>
+  {marginAlert && (
+    <p className="text-xs text-warning ...">...</p>
+  )}
+</CardContent>
+```
+
+**Lucro Liquido (linhas 226-244):** Mesma estrutura, usando `net_profit_actual` e `net_profit_value`.
 
 ### Arquivo editado
 
 | Arquivo | Acao |
 |---------|------|
-| `src/pages/Dashboard.tsx` | Reduzir fonte dos valores nos cards Meta Anual e Meta YTD de `text-xl sm:text-2xl` para `text-lg lg:text-xl` |
-
+| `src/pages/Dashboard.tsx` | Reformular cards de Margem e Lucro para destacar porcentagem como metrica principal |
