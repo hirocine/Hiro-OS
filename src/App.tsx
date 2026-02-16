@@ -32,7 +32,7 @@ const Tasks = lazy(() => import("./pages/Tasks"));
 const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
-const CashFlow = lazy(() => import("./pages/CashFlow"));
+const Capex = lazy(() => import("./pages/Capex"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -56,7 +56,7 @@ const App = () => (
                 <Route path="dashboard" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro" element={<Navigate to="/financeiro/dashboard" replace />} />
                 <Route path="financeiro/dashboard" element={<Dashboard />} />
-                <Route path="financeiro/fluxo-de-caixa" element={<CashFlow />} />
+                <Route path="financeiro/capex" element={<Capex />} />
                 <Route path="inventario" element={<Equipment />} />
                 <Route path="inventario/novo" element={<AddEquipment />} />
                 <Route path="inventario/editar/:id" element={<AddEquipment />} />

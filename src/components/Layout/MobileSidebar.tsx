@@ -55,7 +55,7 @@ const adminNavigation: NavigationItem[] = [
     name: 'Financeiro', href: '/financeiro', icon: LayoutDashboard, adminOnly: true,
     children: [
       { name: 'Dashboard', href: '/financeiro/dashboard', icon: Users },
-      { name: 'Fluxo de Caixa', href: '/financeiro/fluxo-de-caixa', icon: Users },
+      { name: 'Gestão de CAPEX', href: '/financeiro/capex', icon: Users },
     ],
   },
   {
