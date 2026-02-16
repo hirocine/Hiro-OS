@@ -19,6 +19,10 @@ import {
   EyeOff,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer as RechartsContainer,
+} from 'recharts';
 
 function CashFlowSkeleton() {
   return (
@@ -82,7 +86,7 @@ function CashFlowCard({
 
 export default function CashFlow() {
   const { isAdmin, roleLoading } = useAuthContext();
-  const { data, loading } = useCashFlowData();
+  const { data, evolution: cashEvolution, loading } = useCashFlowData();
   const [valuesHidden, setValuesHidden] = useState(() =>
     localStorage.getItem('cashflow-values-hidden') === 'true'
   );
@@ -111,31 +115,85 @@ export default function CashFlow() {
         <CashFlowSkeleton />
       ) : (
         <div className="space-y-4 md:space-y-6">
-          {/* Linha 1: Saldo Atual — destaque full-width */}
-          <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
-                Saldo Atual Disponível
-              </CardTitle>
-              <button
-                onClick={toggleValuesVisibility}
-                className="p-1.5 rounded-md hover:bg-primary/10 transition-colors"
-                aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
-              >
-                {valuesHidden ? (
-                  <EyeOff className="h-5 w-5 text-primary" />
-                ) : (
-                  <Eye className="h-5 w-5 text-primary" />
-                )}
-              </button>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl sm:text-4xl font-bold text-primary">
-                {displayValue(data.total_balance)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
-            </CardContent>
-          </Card>
+          {/* Linha 1: Saldo Atual + Gráfico de Evolução */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <Card className="border-primary/40 bg-primary/5 shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.01] flex flex-col justify-center">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-primary/80 uppercase tracking-wider">
+                  Saldo Atual Disponível
+                </CardTitle>
+                <button
+                  onClick={toggleValuesVisibility}
+                  className="p-1.5 rounded-md hover:bg-primary/10 transition-colors"
+                  aria-label={valuesHidden ? 'Mostrar valores' : 'Esconder valores'}
+                >
+                  {valuesHidden ? (
+                    <EyeOff className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-primary" />
+                  )}
+                </button>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-primary">
+                  {displayValue(data.total_balance)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2 shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Evolução de Caixa (2026)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-52 sm:h-64 lg:h-80">
+                  <RechartsContainer width="100%" height="100%">
+                    <AreaChart data={cashEvolution} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="cashGradientPage" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                      <YAxis
+                        orientation="right"
+                        tickFormatter={(v: number) => valuesHidden ? '•••' : `${(v / 1000).toFixed(0)}k`}
+                        tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          const val = payload[0]?.value as number;
+                          return (
+                            <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
+                              <p className="font-semibold text-foreground mb-1">{label}</p>
+                              <p className="text-primary font-medium">{displayValue(val)}</p>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="balance"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={3}
+                        fill="url(#cashGradientPage)"
+                        dot={{ fill: 'hsl(var(--primary))', r: 4, strokeWidth: 0 }}
+                        activeDot={{ fill: 'hsl(var(--primary))', r: 6, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                      />
+                    </AreaChart>
+                  </RechartsContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Linha 2: Realizado do Mês */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

@@ -10,14 +10,34 @@ export interface CashFlowData {
   projected_balance: number;
 }
 
+export interface MonthlyCashEvolution {
+  month: string;
+  balance: number;
+}
+
 export const mockCashFlowData: CashFlowData = {
   total_balance: 320_000,
   realized_income: 142_000,
   realized_expenses: 108_000,
   monthly_income: 180_000,
   monthly_expenses: 145_000,
-  net_flow: 34_000, // 142k - 108k (realizado)
+  net_flow: 34_000,
   receivables_30d: 95_000,
   payables_30d: 72_000,
-  projected_balance: 343_000, // 320k + 95k - 72k
+  projected_balance: 343_000,
 };
+
+export const mockCashEvolution: MonthlyCashEvolution[] = [
+  { month: 'Jan', balance: 280_000 },
+  { month: 'Fev', balance: 295_000 },
+  { month: 'Mar', balance: 260_000 },
+  { month: 'Abr', balance: 310_000 },
+  { month: 'Mai', balance: 290_000 },
+  { month: 'Jun', balance: 305_000 },
+  { month: 'Jul', balance: 330_000 },
+  { month: 'Ago', balance: 315_000 },
+  { month: 'Set', balance: 340_000 },
+  { month: 'Out', balance: 325_000 },
+  { month: 'Nov', balance: 350_000 },
+  { month: 'Dez', balance: 320_000 },
+];
