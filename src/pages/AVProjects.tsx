@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,8 @@ import {
 } from '@/features/audiovisual-projects';
 
 export default function AVProjects() {
+  const { canAccessSuppliers } = useAuthContext();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
   const [archivedOpen, setArchivedOpen] = useState(false);
@@ -23,6 +27,17 @@ export default function AVProjects() {
   const { data: activeProjects, isLoading: activeLoading } = useAVProjects('active');
   const { data: completedProjects, isLoading: completedLoading } = useAVProjects('completed');
   const { data: archivedProjects, isLoading: archivedLoading } = useAVProjects('archived');
+
+  if (!canAccessSuppliers) {
+    return (
+      <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+          <button className="mt-4 text-primary underline" onClick={() => navigate('/')}>Voltar ao início</button>
+        </div>
+      </ResponsiveContainer>
+    );
+  }
 
   const renderProjectsGrid = (projects: typeof activeProjects, isLoading: boolean) => {
     if (isLoading) {

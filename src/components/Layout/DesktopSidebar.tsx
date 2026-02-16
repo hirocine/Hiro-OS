@@ -29,7 +29,6 @@ const navigation: NavigationItem[] = [
       { name: 'Privadas', href: '/tarefas/privadas', icon: Lock },
     ],
   },
-  { name: 'Projetos AV', href: '/projetos-av', icon: Film },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
@@ -38,6 +37,7 @@ const navigation: NavigationItem[] = [
 ];
 
 const producaoNavigation: NavigationItem[] = [
+  { name: 'Projetos', href: '/projetos-av', icon: Film },
   {
     name: 'Fornecedores', href: '/fornecedores', icon: Users,
     children: [
