@@ -33,8 +33,8 @@ const navigation: NavigationItem[] = [
     icon: Package,
   },
   {
-    name: 'Dashboard Financeiro',
-    href: '/dashboard',
+    name: 'Financeiro',
+    href: '/financeiro',
     icon: LayoutDashboard,
   },
   {
@@ -69,8 +69,8 @@ const producaoNavigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
   {
-    name: 'Dashboard Financeiro',
-    href: '/dashboard',
+    name: 'Financeiro',
+    href: '/financeiro',
     icon: LayoutDashboard,
     adminOnly: true,
   },
