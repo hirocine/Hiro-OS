@@ -1,53 +1,63 @@
 
 
-## Destacar Valor em Reais ao Lado da Porcentagem
+## Padronizar Cards de Margem e Lucro com o Card de Faturamento
 
 ### Problema
 
-A porcentagem agora esta em destaque, mas o valor em reais ficou pequeno e cinza demais, perdendo relevancia visual.
+Os cards "Margem de Contribuicao" e "Lucro Liquido" usam `text-3xl sm:text-4xl` para a porcentagem, que e muito maior que o `text-xl sm:text-2xl` usado no card "Faturamento do Mes". Isso quebra a consistencia visual da secao.
 
 ### Solucao
 
-Colocar a porcentagem e o valor em reais na mesma linha, com a % grande e bold e o valor em reais medio ao lado, separados visualmente.
+Alinhar a tipografia dos cards de Margem e Lucro com o padrao do card de Faturamento:
 
-**Arquivo: `src/pages/Dashboard.tsx`**
+- Porcentagem: de `text-3xl sm:text-4xl` para `text-xl sm:text-2xl font-bold` (mesmo tamanho do valor de faturamento)
+- Valor em reais: manter ao lado, mas ajustar para `text-sm font-medium text-muted-foreground` (similar ao "meta R$..." do card de faturamento)
+- Adicionar uma `Progress` bar mostrando a % vs meta, igual ao card de Faturamento
+- Adicionar texto auxiliar com a meta, no mesmo estilo dos outros cards
 
-**Card Margem de Contribuicao e Lucro Liquido - layout proposto:**
+Layout final para cada card:
 
 ```
 [icone] Margem de Contribuicao
 31%  R$ 55.800,00
-4.0pp abaixo da meta (35%)
+[===progress bar===]           <- novo
+Meta: 35%                      <- novo
+4.0pp abaixo da meta (35%)     <- alerta condicional
 ```
-
-A % fica em `text-3xl sm:text-4xl font-bold` e o valor em reais fica em `text-lg font-semibold text-foreground/70` na mesma linha, alinhados pelo baseline.
 
 ### Detalhes Tecnicos
 
-Substituir o layout atual (div com % + p com valor) por um unico flex row com alinhamento baseline:
+**Arquivo: `src/pages/Dashboard.tsx`**
+
+**Card Margem de Contribuicao (linhas 194-212):**
 
 ```tsx
-<CardContent className="space-y-2">
-  <div className="flex items-baseline gap-2 flex-wrap">
+<CardContent className="space-y-3">
+  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
     <span className={cn(
-      "text-3xl sm:text-4xl font-bold",
+      "text-xl sm:text-2xl font-bold",
       marginAlert ? "text-warning" : "text-foreground"
     )}>
       {metrics.contribution_margin_actual}%
     </span>
-    <span className="text-lg font-semibold text-foreground/70">
+    <span className="text-xs text-muted-foreground">
       {formatCurrency(metrics.contribution_margin_value)}
     </span>
   </div>
-  {/* alerta continua igual */}
+  <Progress value={Math.min(Math.round((metrics.contribution_margin_actual / goals.margin_goal_pct) * 100), 100)} className="h-2" />
+  <p className="text-xs text-muted-foreground">
+    {Math.round((metrics.contribution_margin_actual / goals.margin_goal_pct) * 100)}% da meta ({goals.margin_goal_pct}%)
+  </p>
 </CardContent>
 ```
 
-Mesma estrutura para o card de Lucro Liquido.
+**Card Lucro Liquido (linhas 226-244):** Mesma estrutura usando `net_profit_actual`, `net_profit_value` e `profit_goal_pct`.
+
+Isso mantem os 3 cards da secao "Mes Atual" com exatamente o mesmo padrao visual: valor principal + texto secundario + barra de progresso + texto de meta.
 
 ### Arquivo editado
 
 | Arquivo | Acao |
 |---------|------|
-| `src/pages/Dashboard.tsx` | Colocar % e valor em reais lado a lado nos cards Margem e Lucro |
+| `src/pages/Dashboard.tsx` | Padronizar layout dos cards Margem e Lucro com o mesmo formato do card Faturamento (valor + progress bar + meta) |
 
