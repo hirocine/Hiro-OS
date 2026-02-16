@@ -69,7 +69,8 @@ export function useSSDDetails(ssd: Equipment | null) {
     status: SSDStatus,
     internalUserId: string | null,
     allocationsData: ProjectAllocation[],
-    externalLoanData: SSDExternalLoan | null
+    externalLoanData: SSDExternalLoan | null,
+    ssdNumber?: string | null
   ) => {
     if (!ssd?.id) return false;
 
@@ -81,12 +82,16 @@ export function useSSDDetails(ssd: Equipment | null) {
       else if (status === 'loaned') displayOrder = 2000;
 
       // Atualizar equipamento
+      const updatePayload: Record<string, any> = {
+        display_order: displayOrder,
+        internal_user_id: internalUserId
+      };
+      if (ssdNumber !== undefined) {
+        updatePayload.ssd_number = ssdNumber;
+      }
       const { error: equipError } = await supabase
         .from('equipments')
-        .update({
-          display_order: displayOrder,
-          internal_user_id: internalUserId
-        })
+        .update(updatePayload)
         .eq('id', ssd.id);
 
       if (equipError) throw equipError;

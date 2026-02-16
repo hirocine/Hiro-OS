@@ -72,7 +72,8 @@ const fetchSSDs = async (): Promise<{ ssds: Equipment[], allocations: SSDAllocat
     receiveDate: item.receive_date,
     customCategory: item.custom_category,
     parentId: item.parent_id,
-    displayOrder: item.display_order
+    displayOrder: item.display_order,
+    ssdNumber: item.ssd_number
   })) as Equipment[];
 
   // Fetch all allocations in batch

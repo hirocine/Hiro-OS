@@ -406,6 +406,7 @@ export type Database = {
           receive_date: string | null
           serial_number: string | null
           simplified_status: string | null
+          ssd_number: string | null
           status: string
           store: string | null
           subcategory: string | null
@@ -438,6 +439,7 @@ export type Database = {
           receive_date?: string | null
           serial_number?: string | null
           simplified_status?: string | null
+          ssd_number?: string | null
           status?: string
           store?: string | null
           subcategory?: string | null
@@ -470,6 +472,7 @@ export type Database = {
           receive_date?: string | null
           serial_number?: string | null
           simplified_status?: string | null
+          ssd_number?: string | null
           status?: string
           store?: string | null
           subcategory?: string | null

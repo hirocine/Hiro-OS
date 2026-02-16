@@ -49,6 +49,7 @@ export const SSDDetailsDialog = ({
 
   const [status, setStatus] = useState<SSDStatus>('available');
   const [internalUserId, setInternalUserId] = useState<string>('');
+  const [ssdNumber, setSsdNumber] = useState('');
   const [externalBorrowerName, setExternalBorrowerName] = useState('');
   const [loanDate, setLoanDate] = useState<Date>();
   const [returnDate, setReturnDate] = useState<Date>();
@@ -64,6 +65,7 @@ export const SSDDetailsDialog = ({
       
       setStatus(currentStatus);
       setInternalUserId(ssd.internal_user_id || '');
+      setSsdNumber(ssd.ssdNumber || '');
       setProjectAllocations(allocations || []);
 
       if (externalLoan) {
@@ -124,7 +126,8 @@ export const SSDDetailsDialog = ({
       status,
       status === 'in_use' ? internalUserId : null,
       projectAllocations,
-      externalLoanData
+      externalLoanData,
+      ssdNumber.trim() || null
     );
 
     if (success) {
@@ -149,13 +152,28 @@ export const SSDDetailsDialog = ({
             <div>
               <DialogTitle>{ssd.name}</DialogTitle>
               <DialogDescription>
-                {formatCapacity(ssd.capacity)} • #{ssd.patrimonyNumber}
+                {formatCapacity(ssd.capacity)}{ssd.ssdNumber ? ` • #${ssd.ssdNumber}` : ''}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Número do SSD */}
+          <div className="space-y-2">
+            <Label htmlFor="ssd-number">Número do SSD</Label>
+            <Input
+              id="ssd-number"
+              value={ssdNumber}
+              onChange={(e) => setSsdNumber(e.target.value)}
+              placeholder="Ex: 01, 02, 03"
+              className="h-10"
+            />
+            <p className="text-xs text-muted-foreground">
+              Identificador visual único (etiqueta física do SSD)
+            </p>
+          </div>
+
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>

@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
-import { Plus, Clock, HardDrive } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, HardDrive } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
-import { AddSSDDialog } from '@/components/SSD/AddSSDDialog';
 import { useSSDs } from '@/features/ssds';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -12,7 +10,6 @@ import { formatRelativeTime } from '@/lib/utils';
 
 const SSDs = () => {
   const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -88,7 +85,7 @@ const SSDs = () => {
         title="Controle de SSDs e HDs"
         subtitle={
           <>
-            Gerencie seus SSDs e HDs de forma visual
+            Gerencie seus SSDs e HDs de forma visual. Cadastre novos itens pelo Inventário.
             {lastUpdate && (
               <span className="text-muted-foreground/50"> • </span>
             )}
@@ -99,12 +96,6 @@ const SSDs = () => {
               </span>
             )}
           </>
-        }
-        actions={
-          <Button onClick={() => setShowAddDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar SSD
-          </Button>
         }
       />
 
@@ -172,11 +163,6 @@ const SSDs = () => {
         />
       </div>
 
-      <AddSSDDialog 
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSuccess={refetch}
-      />
     </ResponsiveContainer>
   );
 };
