@@ -16,6 +16,7 @@ export interface FinancialMetrics {
   contribution_margin_actual: number;
   net_profit_actual: number;
   nps: number;
+  cash_runway_months: number;
 }
 
 export interface MonthlyData {
@@ -42,6 +43,7 @@ export const mockMetrics: FinancialMetrics = {
   contribution_margin_actual: 31,
   net_profit_actual: 17,
   nps: 72,
+  cash_runway_months: 18,
 };
 
 // Monthly goal = revenue_goal / 12 ≈ 166_667
