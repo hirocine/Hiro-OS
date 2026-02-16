@@ -61,18 +61,11 @@ export default function Dashboard() {
   const { goals, metrics, monthlyData, loading } = useFinancialData();
   const { data: cashFlow, evolution: cashEvolution, loading: cashFlowLoading } = useCashFlowData();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [valuesHidden, setValuesHidden] = useState(() =>
-    localStorage.getItem('cashflow-values-hidden') === 'true'
-  );
+  const [valuesHidden, setValuesHidden] = useState(true);
 
   const toggleValuesVisibility = () => {
-    const newState = !valuesHidden;
-    setValuesHidden(newState);
-    localStorage.setItem('cashflow-values-hidden', String(newState));
+    setValuesHidden(prev => !prev);
   };
-
-  const displayValue = (value: number) =>
-    valuesHidden ? 'R$ ••••••' : formatCurrency(value);
 
   useEffect(() => {
     if (!loading) setLastUpdate(new Date());
@@ -298,8 +291,8 @@ export default function Dashboard() {
                     </button>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-primary">
-                      {displayValue(cashFlow.total_balance)}
+                    <div className={cn("text-xl sm:text-2xl font-bold text-primary", valuesHidden && "blur-sm select-none")}>
+                      {formatCurrency(cashFlow.total_balance)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
                   </CardContent>
@@ -337,7 +330,7 @@ export default function Dashboard() {
                               return (
                                 <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
                                   <p className="font-semibold text-foreground mb-1">{label}</p>
-                                  <p className="text-primary font-medium">{displayValue(val)}</p>
+                                  <p className={cn("text-primary font-medium", valuesHidden && "blur-sm select-none")}>{formatCurrency(val)}</p>
                                 </div>
                               );
                             }}
@@ -367,7 +360,7 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já entrou no mês"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Despesas Realizado"
@@ -376,16 +369,17 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já saiu no mês"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  subtitle={valuesHidden ? undefined : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  subtitle={`${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  subtitleBlurred={valuesHidden}
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
               </div>
 
@@ -398,7 +392,7 @@ export default function Dashboard() {
                   subtitle="Previsto para entrar (não realizado)"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Contas a Pagar"
@@ -407,7 +401,7 @@ export default function Dashboard() {
                   subtitle="Compromissos pendentes (não realizado)"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
                 <CashFlowDashCard
                   title="Saldo Projetado (Fim do Mês)"
@@ -420,7 +414,7 @@ export default function Dashboard() {
                   )}
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                  displayValue={displayValue}
+                  blurred={valuesHidden}
                 />
               </div>
             </div>
@@ -598,7 +592,7 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
+function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, blurred, subtitleBlurred }: {
   title: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
@@ -606,7 +600,8 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
-  displayValue: (v: number) => string;
+  blurred?: boolean;
+  subtitleBlurred?: boolean;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -617,10 +612,10 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
-          {displayValue(value)}
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName, blurred && 'blur-sm select-none')}>
+          {formatCurrency(value)}
         </div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+        {subtitle && <p className={cn("text-xs text-muted-foreground mt-1", subtitleBlurred && "blur-sm select-none")}>{subtitle}</p>}
       </CardContent>
     </Card>
   );
