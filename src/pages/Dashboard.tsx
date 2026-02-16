@@ -291,8 +291,8 @@ export default function Dashboard() {
                     </button>
                   </CardHeader>
                   <CardContent>
-                    <div className={cn("text-xl sm:text-2xl font-bold text-primary", valuesHidden && "blur-sm select-none")}>
-                      {formatCurrency(cashFlow.total_balance)}
+                    <div className="text-xl sm:text-2xl font-bold text-primary">
+                      {valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.total_balance)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">Soma de todas as contas bancárias</p>
                   </CardContent>
@@ -330,7 +330,7 @@ export default function Dashboard() {
                               return (
                                 <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
                                   <p className="font-semibold text-foreground mb-1">{label}</p>
-                                  <p className={cn("text-primary font-medium", valuesHidden && "blur-sm select-none")}>{formatCurrency(val)}</p>
+                                  <p className="text-primary font-medium">{valuesHidden ? 'R$ ••••••' : formatCurrency(val)}</p>
                                 </div>
                               );
                             }}
@@ -360,7 +360,7 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já entrou no mês"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_income)}
                 />
                 <CashFlowDashCard
                   title="Despesas Realizado"
@@ -369,17 +369,16 @@ export default function Dashboard() {
                   subtitle="Dinheiro que já saiu no mês"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_expenses)}
                 />
                 <CashFlowDashCard
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  subtitle={`${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
-                  subtitleBlurred={valuesHidden}
+                  subtitle={valuesHidden ? 'R$ •••••• − R$ ••••••' : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
                 />
               </div>
 
@@ -392,7 +391,7 @@ export default function Dashboard() {
                   subtitle="Previsto para entrar (não realizado)"
                   iconClassName="text-success"
                   valueClassName="text-success"
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
                 />
                 <CashFlowDashCard
                   title="Contas a Pagar"
@@ -401,7 +400,7 @@ export default function Dashboard() {
                   subtitle="Compromissos pendentes (não realizado)"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_30d)}
                 />
                 <CashFlowDashCard
                   title="Saldo Projetado (Fim do Mês)"
@@ -414,7 +413,7 @@ export default function Dashboard() {
                   )}
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
-                  blurred={valuesHidden}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance)}
                 />
               </div>
             </div>
@@ -592,16 +591,15 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, blurred, subtitleBlurred }: {
+function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
   title: string;
-  value: number;
+  value?: number;
   icon: React.ComponentType<{ className?: string }>;
   subtitle?: string;
   iconClassName?: string;
   valueClassName?: string;
   cardClassName?: string;
-  blurred?: boolean;
-  subtitleBlurred?: boolean;
+  displayValue: string;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -612,10 +610,10 @@ function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, v
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName, blurred && 'blur-sm select-none')}>
-          {formatCurrency(value)}
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
+          {displayValue}
         </div>
-        {subtitle && <p className={cn("text-xs text-muted-foreground mt-1", subtitleBlurred && "blur-sm select-none")}>{subtitle}</p>}
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
       </CardContent>
     </Card>
   );
