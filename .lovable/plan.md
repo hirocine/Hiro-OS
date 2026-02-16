@@ -1,39 +1,35 @@
 
 
-## Substituir Pontinhos por Blur nos Valores Financeiros
+## Adicionar Transicao Suave no Toggle de Blur
 
 ### Resumo
 
-Trocar o mascaramento "R$ ••••••" por um efeito de blur CSS (`filter: blur()`) aplicado sobre o valor real formatado. Isso cria um efeito visual mais moderno e elegante, igual aos apps bancarios atuais -- o usuario ve que tem um numero ali, mas nao consegue ler.
+Quando o usuario clica no icone do olho para ocultar/mostrar valores, o blur vai transicionar suavemente (300ms) ao inves de aplicar instantaneamente. Isso cria um efeito mais polido e natural.
 
 ### Como vai funcionar
 
-- Quando oculto: o valor real (ex: `R$ 45.320,00`) continua sendo renderizado, mas com `blur(8px)` aplicado via CSS, adicionando tambem `select-none` para impedir copia via selecao de texto
-- Quando visivel: valor normal sem blur
-- O grafico tambem mantera o blur no tooltip e Y-axis (ja usando `•••` -- passara a usar blur tambem onde possivel)
+- O valor passa de nitido para blur (e vice-versa) com uma transicao CSS de 300ms
+- O efeito se aplica a todos os valores: cards, tooltips do grafico, e o card principal de saldo
 
 ### Detalhes Tecnicos
 
 **Arquivos editados:** `src/pages/Dashboard.tsx` e `src/pages/CashFlow.tsx`
 
-**Mudancas:**
+**Mudanca unica:** Onde hoje temos `blur-md select-none`, trocar para `blur-md select-none transition-all duration-300` (ou aplicar a classe de transicao no elemento pai).
 
-1. **Remover `displayValue` como funcao de formatacao de texto** -- agora sempre retorna `formatCurrency(value)`
+Concretamente, a variavel `blurClass` muda de:
+```
+const blurClass = valuesHidden ? 'blur-md select-none' : '';
+```
+Para:
+```
+const blurClass = cn('transition-[filter] duration-300', valuesHidden && 'blur-md select-none');
+```
 
-2. **Adicionar classe condicional de blur** nos elementos que exibem valores:
-   - No card "Saldo Atual": `className={cn("text-xl sm:text-2xl font-bold text-primary", valuesHidden && "blur-sm select-none")}`
-   - No `CashFlowDashCard` / `CashFlowCard`: receber prop `blurred: boolean` ao inves de `displayValue`, e aplicar `blur-sm select-none` condicionalmente no valor
+Isso garante que a propriedade `filter` (que controla o blur) transicione suavemente tanto ao ativar quanto ao desativar.
 
-3. **Componente CashFlowDashCard (Dashboard)** -- mudar interface:
-   - Remover prop `displayValue: (v: number) => string`
-   - Adicionar prop `blurred?: boolean`
-   - Valor sempre renderiza `formatCurrency(value)`, com classe `blur-sm select-none` quando `blurred=true`
-
-4. **Componente CashFlowCard (CashFlow.tsx)** -- mesma mudanca de interface
-
-5. **Tooltip do grafico**: quando `valuesHidden`, aplicar `blur-sm` no texto do valor dentro do tooltip customizado
-
-6. **Y-axis do grafico**: manter o `•••` no eixo Y pois blur nao se aplica a texto SVG facilmente -- ou alternativamente mostrar os ticks normais com opacity reduzida
-
-A classe utilitaria `blur-sm` do Tailwind aplica `filter: blur(4px)`, que e suficiente para ocultar valores. Se precisar mais forte, usaremos `blur-md` (8px).
+A mesma mudanca sera aplicada:
+1. No `blurClass` do Dashboard
+2. No `blurClass` do CashFlow
+3. Na prop `blurred` dos componentes `CashFlowDashCard` e `CashFlowCard` -- adicionar a classe de transicao junto ao blur condicional dentro do componente
 
