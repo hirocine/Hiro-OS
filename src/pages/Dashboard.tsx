@@ -150,9 +150,9 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Mês Atual ({currentMonthLabel})</h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Mês Atual ({currentMonthLabel})</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Faturamento do Mês */}
             <Card className={cn(
               "shadow-card hover:shadow-elegant transition-all duration-200",
@@ -172,8 +172,8 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.total_revenue)}</span>
-                  <span className="text-sm text-muted-foreground">meta {formatCurrency(monthlyGoal)}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.total_revenue)}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">meta {formatCurrency(monthlyGoal)}</span>
                 </div>
                 <Progress value={Math.min(monthlyProgress, 100)} className="h-2" />
                 <p className="text-xs text-muted-foreground">{monthlyProgress}% da meta mensal</p>
@@ -194,7 +194,7 @@ export default function Dashboard() {
               <CardContent className="space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className={cn(
-                    "text-2xl font-bold",
+                    "text-xl sm:text-2xl font-bold",
                     marginAlert ? "text-warning" : "text-foreground"
                   )}>
                     {formatCurrency(metrics.contribution_margin_value)}
@@ -226,7 +226,7 @@ export default function Dashboard() {
               <CardContent className="space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className={cn(
-                    "text-2xl font-bold",
+                    "text-xl sm:text-2xl font-bold",
                     profitAlert ? "text-warning" : "text-foreground"
                   )}>
                     {formatCurrency(metrics.net_profit_value)}
@@ -250,7 +250,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Faturamento (2026)</h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Faturamento (2026)</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Left column: Meta Anual + Meta YTD */}
@@ -264,8 +264,8 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
                   </div>
                   <Progress value={Math.min(annualProgress, 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
@@ -281,8 +281,8 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">de {formatCurrency(ytdGoal)}</span>
                   </div>
                   <Progress value={Math.min(Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100), 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">
@@ -300,11 +300,11 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-52 sm:h-64 lg:h-80">
                   <RechartsContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis
                         orientation="right"
                         tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
@@ -336,7 +336,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Indicadores</h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Indicadores</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <UnitCard
@@ -432,7 +432,7 @@ function UnitCard({ title, value, icon: Icon, subtitle, alert, highlight }: {
       highlight && "border-success/30"
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-2">
           {title}
         </CardTitle>
         <Icon className={cn(
@@ -442,7 +442,7 @@ function UnitCard({ title, value, icon: Icon, subtitle, alert, highlight }: {
       </CardHeader>
       <CardContent>
         <div className={cn(
-          "text-xl lg:text-2xl font-bold",
+          "text-lg sm:text-xl lg:text-2xl font-bold",
           alert ? "text-warning" : highlight ? "text-success" : "text-foreground"
         )}>
           {value}
