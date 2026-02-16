@@ -11,8 +11,10 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import {
   Clock, TrendingUp, TrendingDown, DollarSign, Target, Award,
-  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass, Calendar
+  Users, Zap, BarChart3, Heart, PartyPopper, Hourglass, Calendar,
+  Wallet, ArrowDownLeft, ArrowUpRight
 } from 'lucide-react';
+import { useCashFlowData } from '@/hooks/useCashFlowData';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer as RechartsContainer
 } from 'recharts';
@@ -57,6 +59,7 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function Dashboard() {
   const { isAdmin, roleLoading } = useAuthContext();
   const { goals, metrics, monthlyData, loading } = useFinancialData();
+  const { data: cashFlow, loading: cashFlowLoading } = useCashFlowData();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -115,6 +118,9 @@ export default function Dashboard() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-36 w-full rounded-lg" />)}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
           </div>
           <Skeleton className="h-80 w-full rounded-lg" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -242,7 +248,65 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Section 2: Faturamento (2026) */}
+        {/* Section 2: Fluxo de Caixa */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Wallet className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Fluxo de Caixa</h2>
+          </div>
+          {cashFlowLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <CashFlowDashCard
+                title="Saldo Total Disponível"
+                value={cashFlow.total_balance}
+                icon={Wallet}
+                subtitle="Soma de todas as contas bancárias"
+              />
+              <CashFlowDashCard
+                title="Fluxo Líquido do Mês"
+                value={cashFlow.net_flow}
+                icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
+                subtitle={`Recebido: ${formatCurrency(cashFlow.monthly_income)} · Pago: ${formatCurrency(cashFlow.monthly_expenses)}`}
+                iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
+                valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
+              />
+              <CashFlowDashCard
+                title="Saldo Projetado (Fim do Mês)"
+                value={cashFlow.projected_balance}
+                icon={Target}
+                subtitle="Saldo Atual + Receber − Pagar"
+                cardClassName={cn(
+                  'border-primary/40 bg-primary/5',
+                  cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
+                )}
+                iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
+                valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
+              />
+              <CashFlowDashCard
+                title="Contas a Receber (30 dias)"
+                value={cashFlow.receivables_30d}
+                icon={ArrowDownLeft}
+                subtitle="Dinheiro previsto para entrar"
+                iconClassName="text-success"
+                valueClassName="text-success"
+              />
+              <CashFlowDashCard
+                title="Contas a Pagar (30 dias)"
+                value={cashFlow.payables_30d}
+                icon={ArrowUpRight}
+                subtitle="Compromissos a honrar"
+                iconClassName="text-warning"
+                valueClassName="text-warning"
+              />
+            </div>
+          )}
+        </section>
+
+        {/* Section 3: Faturamento (2026) */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -410,6 +474,33 @@ export default function Dashboard() {
         </section>
       </div>
     </ResponsiveContainer>
+  );
+}
+
+function CashFlowDashCard({ title, value, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName }: {
+  title: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  subtitle?: string;
+  iconClassName?: string;
+  valueClassName?: string;
+  cardClassName?: string;
+}) {
+  return (
+    <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-6 sm:pt-6">
+        <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-2">
+          {title}
+        </CardTitle>
+        <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
+      </CardHeader>
+      <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
+          {formatCurrency(value)}
+        </div>
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+      </CardContent>
+    </Card>
   );
 }
 
