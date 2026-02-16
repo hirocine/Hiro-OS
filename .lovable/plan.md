@@ -1,46 +1,66 @@
 
 
-## Renomear "Projetos AV" para "Projetos" e Mover para Producao
+## Fluxo de Caixa - Pagina Completa
 
 ### Resumo
 
-Renomear o item de navegacao "Projetos AV" para "Projetos" e move-lo do menu principal para a secao "Producao", tornando-o visivel apenas para usuarios com role `producao` ou `admin`.
+Construir a pagina de Fluxo de Caixa com 5 cards principais mostrando a saude financeira de curto prazo da empresa. Usara dados mock (mesmo padrao do Dashboard) preparados para futura integracao com Supabase.
 
-### Mudancas
+### Layout
 
-**1. Sidebar - Desktop, Mobile e Legada**
-
-Remover "Projetos AV" do array `navigation` (menu principal) e adiciona-lo ao array `producaoNavigation` (secao Producao):
+A pagina tera um header com titulo "Fluxo de Caixa" e uma secao com 5 cards em grid responsivo:
 
 ```text
-Antes:
-  Menu Principal: Home, Tarefas, [Projetos AV], Retiradas, Inventario, ...
-  Producao: Fornecedores
+Desktop (3 colunas):
+[Saldo Total Disponivel] [Fluxo Liquido do Mes] [Saldo Projetado (destaque)]
+[Contas a Receber]       [Contas a Pagar]
 
-Depois:
-  Menu Principal: Home, Tarefas, Retiradas, Inventario, ...
-  Producao: Projetos, Fornecedores
+Mobile (1 coluna): empilhados verticalmente
 ```
 
-Arquivos: `DesktopSidebar.tsx`, `MobileSidebar.tsx`, `Sidebar.tsx`
+### Os 5 Cards
 
-**2. Paginas AVProjects e AVProjectDetails**
+1. **Saldo Total Disponivel** - Soma de todas as contas bancarias. Icone: Wallet. Cor neutra.
+2. **Fluxo Liquido do Mes** - (Recebido - Pago). Se negativo, alerta visual vermelho/warning. Icone: TrendingUp/TrendingDown conforme sinal.
+3. **Contas a Receber (30 dias)** - Dinheiro previsto para entrar. Icone: ArrowDownLeft. Cor verde/success.
+4. **Contas a Pagar (30 dias)** - Compromissos a honrar. Icone: ArrowUpRight. Cor laranja/warning.
+5. **Saldo Projetado (Fim do Mes)** - (Saldo Atual + Receber - Pagar). Card com destaque visual (borda primary, fundo sutil). Icone: Target. Alerta se negativo.
 
-Adicionar verificacao `canAccessSuppliers` (que cobre `admin` e `producao`) para proteger o acesso. Usuarios sem permissao verao uma mensagem de acesso negado ou serao redirecionados.
+### Detalhes Tecnicos
 
-Arquivos: `AVProjects.tsx`, `AVProjectDetails.tsx`
-
-**3. Rotas (App.tsx)**
-
-As rotas `/projetos-av` e `/projetos-av/:id` permanecem inalteradas no roteador - a protecao sera feita no nivel da pagina (mesmo padrao usado em Suppliers/Companies).
-
-### Arquivos editados
+**Arquivos criados/editados:**
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/Layout/DesktopSidebar.tsx` | Mover "Projetos" de navigation para producaoNavigation |
-| `src/components/Layout/MobileSidebar.tsx` | Mesma mudanca |
-| `src/components/Layout/Sidebar.tsx` | Mesma mudanca |
-| `src/pages/AVProjects.tsx` | Adicionar guard `canAccessSuppliers` |
-| `src/pages/AVProjectDetails.tsx` | Adicionar guard `canAccessSuppliers` |
+| `src/data/mockCashFlowData.ts` | Criar dados mock e tipos para fluxo de caixa |
+| `src/hooks/useCashFlowData.ts` | Criar hook com useQuery (mesmo padrao do useFinancialData) |
+| `src/pages/CashFlow.tsx` | Substituir pagina em branco pelo layout completo |
 
+**`src/data/mockCashFlowData.ts`:**
+
+Tipos e dados mock:
+```typescript
+export interface CashFlowData {
+  total_balance: number;          // Saldo total disponivel
+  monthly_income: number;         // Total recebido no mes
+  monthly_expenses: number;       // Total pago no mes
+  net_flow: number;               // monthly_income - monthly_expenses
+  receivables_30d: number;        // Contas a receber proximos 30 dias
+  payables_30d: number;           // Contas a pagar proximos 30 dias
+  projected_balance: number;      // total_balance + receivables - payables
+}
+```
+
+**`src/hooks/useCashFlowData.ts`:**
+
+Hook usando `useQuery` com dados mock e delay simulado (mesmo padrao de `useFinancialData`).
+
+**`src/pages/CashFlow.tsx`:**
+
+- Verificacao de `isAdmin` e `roleLoading` (mesmo padrao do Dashboard)
+- Skeleton loading que espelha o layout dos 5 cards
+- Grid responsivo: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+- Card "Saldo Projetado" com borda/fundo de destaque (primary)
+- Fluxo Liquido com cor condicional (verde se positivo, vermelho se negativo)
+- Formatacao em BRL usando `formatCurrency` existente
+- Estilo dos cards seguindo o padrao `shadow-card hover:shadow-elegant` do Dashboard
