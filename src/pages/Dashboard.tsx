@@ -137,7 +137,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Target className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h2 className="text-xl lg:text-2xl font-semibold">Performance</h2>
+            <h2 className="text-xl lg:text-2xl font-semibold">Faturamento</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Annual Goal */}
