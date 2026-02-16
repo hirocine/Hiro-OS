@@ -33,7 +33,7 @@ const navigation: NavigationItem[] = [
     icon: Package,
   },
   {
-    name: 'Dashboard',
+    name: 'Dashboard Financeiro',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
