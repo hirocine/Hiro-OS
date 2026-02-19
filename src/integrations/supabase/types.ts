@@ -498,108 +498,108 @@ export type Database = {
       }
       financial_goals: {
         Row: {
-          cac_goal: number
-          created_at: string
+          cac_goal: number | null
+          created_at: string | null
           id: string
-          margin_goal_pct: number
-          profit_goal_pct: number
-          revenue_goal: number
-          updated_at: string
+          margin_goal_pct: number | null
+          profit_goal_pct: number | null
+          revenue_goal: number | null
+          updated_at: string | null
           year: number
         }
         Insert: {
-          cac_goal?: number
-          created_at?: string
+          cac_goal?: number | null
+          created_at?: string | null
           id?: string
-          margin_goal_pct?: number
-          profit_goal_pct?: number
-          revenue_goal?: number
-          updated_at?: string
+          margin_goal_pct?: number | null
+          profit_goal_pct?: number | null
+          revenue_goal?: number | null
+          updated_at?: string | null
           year: number
         }
         Update: {
-          cac_goal?: number
-          created_at?: string
+          cac_goal?: number | null
+          created_at?: string | null
           id?: string
-          margin_goal_pct?: number
-          profit_goal_pct?: number
-          revenue_goal?: number
-          updated_at?: string
+          margin_goal_pct?: number | null
+          profit_goal_pct?: number | null
+          revenue_goal?: number | null
+          updated_at?: string | null
           year?: number
         }
         Relationships: []
       }
       financial_snapshots: {
         Row: {
-          avg_ticket: number
-          burn_rate: number
-          cac: number
-          cash_balance: number
-          churn_rate: number
-          contribution_margin_pct: number
-          contribution_margin_value: number
-          created_at: string
+          avg_ticket: number | null
+          burn_rate: number | null
+          cac: number | null
+          cash_balance: number | null
+          churn_rate: number | null
+          contribution_margin_pct: number | null
+          contribution_margin_value: number | null
+          created_at: string | null
           id: string
-          ltv: number
+          ltv: number | null
           month: number
-          net_profit_pct: number
-          net_profit_value: number
-          nps: number
-          payables_30d: number
-          realized_expenses: number
-          realized_income: number
-          receivables_30d: number
-          revenue: number
-          revenue_goal: number
-          updated_at: string
+          net_profit_pct: number | null
+          net_profit_value: number | null
+          nps: number | null
+          payables_30d: number | null
+          realized_expenses: number | null
+          realized_income: number | null
+          receivables_30d: number | null
+          revenue: number | null
+          revenue_goal: number | null
+          updated_at: string | null
           year: number
         }
         Insert: {
-          avg_ticket?: number
-          burn_rate?: number
-          cac?: number
-          cash_balance?: number
-          churn_rate?: number
-          contribution_margin_pct?: number
-          contribution_margin_value?: number
-          created_at?: string
+          avg_ticket?: number | null
+          burn_rate?: number | null
+          cac?: number | null
+          cash_balance?: number | null
+          churn_rate?: number | null
+          contribution_margin_pct?: number | null
+          contribution_margin_value?: number | null
+          created_at?: string | null
           id?: string
-          ltv?: number
+          ltv?: number | null
           month: number
-          net_profit_pct?: number
-          net_profit_value?: number
-          nps?: number
-          payables_30d?: number
-          realized_expenses?: number
-          realized_income?: number
-          receivables_30d?: number
-          revenue?: number
-          revenue_goal?: number
-          updated_at?: string
+          net_profit_pct?: number | null
+          net_profit_value?: number | null
+          nps?: number | null
+          payables_30d?: number | null
+          realized_expenses?: number | null
+          realized_income?: number | null
+          receivables_30d?: number | null
+          revenue?: number | null
+          revenue_goal?: number | null
+          updated_at?: string | null
           year: number
         }
         Update: {
-          avg_ticket?: number
-          burn_rate?: number
-          cac?: number
-          cash_balance?: number
-          churn_rate?: number
-          contribution_margin_pct?: number
-          contribution_margin_value?: number
-          created_at?: string
+          avg_ticket?: number | null
+          burn_rate?: number | null
+          cac?: number | null
+          cash_balance?: number | null
+          churn_rate?: number | null
+          contribution_margin_pct?: number | null
+          contribution_margin_value?: number | null
+          created_at?: string | null
           id?: string
-          ltv?: number
+          ltv?: number | null
           month?: number
-          net_profit_pct?: number
-          net_profit_value?: number
-          nps?: number
-          payables_30d?: number
-          realized_expenses?: number
-          realized_income?: number
-          receivables_30d?: number
-          revenue?: number
-          revenue_goal?: number
-          updated_at?: string
+          net_profit_pct?: number | null
+          net_profit_value?: number | null
+          nps?: number | null
+          payables_30d?: number | null
+          realized_expenses?: number | null
+          realized_income?: number | null
+          receivables_30d?: number | null
+          revenue?: number | null
+          revenue_goal?: number | null
+          updated_at?: string | null
           year?: number
         }
         Relationships: []
