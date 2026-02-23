@@ -322,6 +322,24 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_stats: {
+        Row: {
+          id: number
+          label: string | null
+          value: number | null
+        }
+        Insert: {
+          id?: number
+          label?: string | null
+          value?: number | null
+        }
+        Update: {
+          id?: number
+          label?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string | null
