@@ -56,8 +56,10 @@ export function useFinancialData(): FinancialData {
         cac_goal: Number(goalsRow?.cac_goal ?? 0),
       };
 
-      // Latest snapshot = most recent month
-      const latestSnapshot = snapshots[snapshots.length - 1];
+      // Current month snapshot (based on actual calendar month)
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const currentMonthSnapshot = snapshots.find(s => s.month === currentMonth);
+      const latestSnapshot = currentMonthSnapshot ?? snapshots[snapshots.length - 1];
 
       // Accumulated YTD
       const accumulated_revenue_ytd = snapshots.reduce(
