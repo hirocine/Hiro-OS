@@ -1,50 +1,42 @@
 
 
-# Padding Universal na Proposta (Alinhado ao hiro.film)
+# Video Full-Width com Conteúdo no Padding
 
-## Problema Atual
+## Problema
 
-Cada secao define seu proprio padding horizontal (`px-6`) e depois usa `max-w-*xl mx-auto` para centralizar o conteudo. Isso cria inconsistencia: o header tem `px-6 sm:px-10 lg:px-16` enquanto as secoes tem apenas `px-6` com max-width variavel (3xl, 4xl, 5xl). No site hiro.film, todo o conteudo respeita um padding lateral uniforme.
+Atualmente o HeroSection está dentro do wrapper `max-w-7xl mx-auto px-6 sm:px-10 lg:px-16`, o que faz o vídeo de fundo ficar limitado a essa largura. No site hiro.film, backgrounds como vídeos e imagens se estendem até as bordas da tela, enquanto o conteúdo textual respeita o padding.
 
-## Solucao
+## Solução
 
-Definir um padding horizontal universal no wrapper `proposal-content` em `ProposalPublicPage.tsx` e remover o `px-6` individual de cada secao. Tambem remover os `max-w-*xl mx-auto` dos wrappers internos para que o conteudo ocupe toda a largura disponivel dentro do padding, como no site institucional.
+Mover o HeroSection para **fora** do wrapper com padding, diretamente no nível raiz da página. O vídeo e overlays já são `absolute inset-0`, então basta que a `<section>` ocupe 100% da largura. O conteúdo textual dentro do Hero já tem seu próprio padding (`px-6 sm:px-10 lg:px-16`), então continuará alinhado.
 
-## Alteracoes
+## Alterações
 
-### 1. `ProposalPublicPage.tsx`
-- Adicionar classe de padding universal no div `proposal-content`: `px-6 sm:px-10 lg:px-16`
-- Adicionar `max-w-7xl mx-auto` no wrapper para limitar largura total (consistente com o header)
+### `ProposalPublicPage.tsx`
 
-### 2. Remover `px-6` de cada secao:
-- **`AboutSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
-- **`BriefingSection.tsx`**: Remover `px-6`, remover `max-w-5xl mx-auto` do wrapper externo (manter `max-w-3xl mx-auto` no texto do briefing para legibilidade)
-- **`ScopeSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
-- **`TimelineSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
-- **`InvestmentSection.tsx`**: Remover `px-6`, remover `max-w-2xl mx-auto`
-- **`ShowcaseSection.tsx`**: Remover `px-6`, remover `max-w-4xl mx-auto`
+Mover o `<HeroSection>` para antes do wrapper `proposal-content`, ficando como irmão direto do div raiz (fora do max-w-7xl):
 
-### 3. `HeroSection.tsx`
-- Manter com padding proprio (fullscreen, independente do wrapper)
+```
+Antes:
+<div className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+  <HeroSection ... />     ← constrained
+  <AboutSection />
+  ...
+</div>
 
-## Detalhes Tecnicos
+Depois:
+<HeroSection ... />       ← full-width
+<div className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+  <AboutSection />
+  ...
+</div>
+```
 
-O padding segue a mesma escala do header e do HeroSection:
-- Mobile: `px-6` (24px)
-- Tablet: `sm:px-10` (40px)
-- Desktop: `lg:px-16` (64px)
-
-O `max-w-7xl` (80rem = 1280px) no container externo garante que em telas muito largas o conteudo nao se espalhe demais, igual ao header.
+Nenhuma alteração no `HeroSection.tsx` — ele já tem padding próprio e o vídeo já é `absolute inset-0`.
 
 ## Arquivos
 
-| Arquivo | Alteracao |
+| Arquivo | Alteração |
 |---|---|
-| `ProposalPublicPage.tsx` | Adicionar padding universal e max-w-7xl no wrapper |
-| `AboutSection.tsx` | Remover px-6 e max-w centralizado |
-| `BriefingSection.tsx` | Remover px-6 e max-w externo |
-| `ScopeSection.tsx` | Remover px-6 e max-w centralizado |
-| `TimelineSection.tsx` | Remover px-6 e max-w centralizado |
-| `InvestmentSection.tsx` | Remover px-6 e max-w centralizado |
-| `ShowcaseSection.tsx` | Remover px-6 e max-w centralizado |
+| `ProposalPublicPage.tsx` | Mover HeroSection para fora do wrapper com padding |
 
