@@ -44,15 +44,16 @@ export function ProposalPublicPage() {
         <ProposalHeader />
       </div>
 
+      <HeroSection
+        clientName={proposal.client_name}
+        projectName={proposal.project_name}
+        projectNumber={proposal.project_number}
+        validityDate={proposal.validity_date}
+        createdAt={proposal.created_at}
+        clientResponsible={proposal.client_responsible}
+      />
+
       <div ref={contentRef} className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-        <HeroSection
-          clientName={proposal.client_name}
-          projectName={proposal.project_name}
-          projectNumber={proposal.project_number}
-          validityDate={proposal.validity_date}
-          createdAt={proposal.created_at}
-          clientResponsible={proposal.client_responsible}
-        />
         <AboutSection />
 
         {proposal.video_url && (
