@@ -22,7 +22,7 @@ export function HeroSection({ projectName, clientName, projectNumber, validityDa
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-between bg-[#111113] overflow-hidden px-6 sm:px-10 lg:px-16 py-8 sm:py-12">
+    <section className="relative min-h-screen flex flex-col justify-between bg-[#111113] overflow-hidden px-6 sm:px-10 lg:px-16 pt-24 sm:pt-28 pb-8 sm:pb-12">
       {/* Green radial glow — bottom right */}
       <div
         className="pointer-events-none absolute inset-0"
