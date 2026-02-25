@@ -563,7 +563,7 @@ export type Database = {
           contribution_margin_pct?: number | null
           contribution_margin_value?: number | null
           created_at?: string | null
-          id?: string
+          id: string
           ltv?: number | null
           month: number
           net_profit_pct?: number | null
