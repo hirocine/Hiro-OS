@@ -1,61 +1,54 @@
 
 
-# Replicar TopBar do hiro.film na Proposta
+# Cálculo Automático de `contribution_margin_value`
 
 ## Contexto
 
-O usuario quer que o `ProposalHeader` replique exatamente o header do site hiro.film. Ele tambem forneceu o SVG oficial do logo (Asset_10-2.svg com "HIROヒロシ" em branco e verde).
+A tabela `financial_snapshots` já possui as colunas `revenue`, `costs_projects` e `contribution_margin_value`. O usuário quer que `contribution_margin_value` seja calculado automaticamente como `revenue - costs_projects`.
 
-## Alteracoes
+## Solução
 
-### 1. Copiar o novo logo SVG para o projeto
+Criar um trigger `BEFORE INSERT OR UPDATE` que calcula `contribution_margin_value = revenue - costs_projects` automaticamente, similar ao trigger existente `auto_fill_snapshot_revenue_goal`.
 
-Copiar `user-uploads://Asset_10-2.svg` para `src/assets/hiro-logo-full.svg` (substituindo o atual).
+## Alterações
 
-### 2. Atualizar `ProposalHeader.tsx`
+### Migration SQL
 
-Reescrever o componente para replicar exatamente o header do hiro.film:
+```sql
+CREATE OR REPLACE FUNCTION public.auto_fill_contribution_margin_value()
+  RETURNS trigger
+  LANGUAGE plpgsql
+  SET search_path TO 'public'
+AS $$
+BEGIN
+  NEW.contribution_margin_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs_projects, 0);
+  RETURN NEW;
+END;
+$$;
 
-- **Fundo**: Transparente com backdrop-blur (sem o fundo solido `#0A0A0A/95`), posicionado fixo no topo logo abaixo da UrgencyBar
-- **Logo**: Usar o novo SVG importado, sem filtros de `brightness-0 invert` (o SVG ja tem as cores corretas branco + verde)
-- **Links de navegacao**: "Sobre nos", "Cases" com hover suave (opacity transition)
-- **Icone Instagram**: Verde neon `#4CFF5C` (ja existe)
-- **Botao "Contato"**: Pill com borda branca/20, hover bg-white/10 (ja existe)
-- **Mobile**: Adicionar menu hamburger que abre um menu mobile com os links
+CREATE TRIGGER trg_auto_fill_contribution_margin_value
+  BEFORE INSERT OR UPDATE OF revenue, costs_projects
+  ON public.financial_snapshots
+  FOR EACH ROW
+  EXECUTE FUNCTION public.auto_fill_contribution_margin_value();
 
-### 3. Estrutura do Header
-
-```text
-┌──────────────────────────────────────────────────┐
-│  [HIROヒロシ®]          Sobre nós  Cases  🟢  [Contato]  │
-│  (logo SVG)            (links)    (IG)  (pill btn)      │
-└──────────────────────────────────────────────────┘
-
-Mobile:
-┌──────────────────────────────┐
-│  [HIROヒロシ®]          [≡]  │
-└──────────────────────────────┘
-  → Menu abre overlay com links
+-- Atualizar dados existentes
+UPDATE public.financial_snapshots
+SET contribution_margin_value = COALESCE(revenue, 0) - COALESCE(costs_projects, 0);
 ```
 
-### 4. Detalhes de estilo
+### Edge Function `sync-financial-data`
 
-- Header: `fixed top-[37px]` (abaixo da UrgencyBar), fundo `bg-black/80 backdrop-blur-md`
-- Logo: altura `h-5 sm:h-6`, sem filtros de cor
-- Links: `text-sm text-white/60 hover:text-white transition-colors duration-300`
-- Botao Contato: `border border-white/20 rounded-full px-5 py-1.5`
-- Instagram: `text-[#4CFF5C]`
-- Mobile: Botao hamburger visivel em `sm:hidden`, links escondidos com `hidden sm:flex`
-- Menu mobile: Overlay fullscreen com links empilhados verticalmente
+Remover `contribution_margin_value` do payload de upsert, já que o trigger calcula automaticamente. O campo será ignorado mesmo se enviado, pois o trigger sobrescreve.
 
-### 5. Sobre o Hero Section
+### Hook `useFinancialData.ts`
 
-O Hero Section da proposta mantem seu layout atual (nome do cliente em tipografia gigante, metadados, video de fundo). O pedido de replicar o hero do hiro.film ("No marketing digital...") nao se aplica aqui pois a proposta tem seu proprio conteudo dinamico. Nenhuma alteracao no HeroSection.
+Nenhuma alteração necessária — já lê `contribution_margin_value` do snapshot retornado pelo banco.
 
 ## Arquivos
 
-| Arquivo | Alteracao |
+| Arquivo | Alteração |
 |---|---|
-| `src/assets/hiro-logo-full.svg` | Substituir pelo novo SVG (Asset_10-2.svg) |
-| `src/features/proposals/components/ProposalHeader.tsx` | Reescrever com layout exato do hiro.film + menu mobile hamburger |
+| Migration SQL | Criar function + trigger + atualizar dados existentes |
+| `supabase/functions/sync-financial-data/index.ts` | Remover `contribution_margin_value` do objeto de upsert |
 
