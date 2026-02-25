@@ -11,6 +11,7 @@ import { ScopeSection } from './ScopeSection';
 import { TimelineSection } from './TimelineSection';
 import { InvestmentSection } from './InvestmentSection';
 import { FloatingActions } from './FloatingActions';
+import { ProposalHeader } from './ProposalHeader';
 
 export function ProposalPublicPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -40,6 +41,7 @@ export function ProposalPublicPage() {
     <div className="min-h-screen bg-[#111113] text-white">
       <div className="print:hidden">
         <UrgencyBar validityDate={proposal.validity_date} />
+        <ProposalHeader />
       </div>
 
       <div ref={contentRef} className="proposal-content">
