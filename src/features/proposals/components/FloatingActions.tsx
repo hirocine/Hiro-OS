@@ -17,7 +17,7 @@ export function FloatingActions({ projectName }: Props) {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105"
+        className="flex items-center gap-2 bg-[#4CFF5C] hover:bg-[#4CFF5C]/90 text-black px-6 py-3 rounded-full shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105"
       >
         <MessageCircle className="h-4 w-4" />
         Aprovar Orçamento

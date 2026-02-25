@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { Loader2 } from 'lucide-react';
@@ -20,7 +20,7 @@ export function ProposalPublicPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white/50" />
       </div>
     );
@@ -28,7 +28,7 @@ export function ProposalPublicPage() {
 
   if (error || !proposal) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center text-white">
         <div className="text-center space-y-3">
           <h1 className="text-2xl font-bold">Proposta não encontrada</h1>
           <p className="text-white/50">O link pode ter expirado ou estar incorreto.</p>
@@ -38,7 +38,7 @@ export function ProposalPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111113] text-white">
+    <div className="min-h-screen bg-[#0A0A0A] text-white">
       <div className="print:hidden">
         <UrgencyBar validityDate={proposal.validity_date} />
         <ProposalHeader />

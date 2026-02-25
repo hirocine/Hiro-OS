@@ -18,9 +18,9 @@ export function ScopeSection({ preProduction, production, postProduction }: Prop
   if (sections.length === 0) return null;
 
   return (
-    <section className="py-16 px-6 border-t border-white/5">
+    <section className="py-20 px-6 border-t border-white/10">
       <div className="max-w-3xl mx-auto space-y-8">
-        <h2 className="text-xs uppercase tracking-[0.3em] text-white/30 font-medium text-center">Escopo do Projeto</h2>
+        <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium text-center">Escopo do Projeto</h2>
 
         <Accordion type="multiple" defaultValue={sections.map(s => s.key)} className="space-y-3">
           {sections.map(({ key, label, icon: Icon, items }) => (
@@ -35,7 +35,7 @@ export function ScopeSection({ preProduction, production, postProduction }: Prop
                 <ul className="space-y-2.5">
                   {items.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-white/60">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/20 mt-2.5 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#4CFF5C]/40 mt-2.5 shrink-0" />
                       <span className="text-sm sm:text-base">{item.item}</span>
                     </li>
                   ))}
