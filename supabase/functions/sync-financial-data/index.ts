@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       revenue: body.revenue ?? 0,
       revenue_goal: body.revenue_goal ?? 0,
       contribution_margin_pct: body.contribution_margin_pct ?? 0,
-      contribution_margin_value: body.contribution_margin_value ?? 0,
+      
       net_profit_pct: body.net_profit_pct ?? 0,
       net_profit_value: body.net_profit_value ?? 0,
       avg_ticket: body.avg_ticket ?? 0,
