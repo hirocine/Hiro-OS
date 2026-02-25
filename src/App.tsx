@@ -33,6 +33,9 @@ const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
 const Capex = lazy(() => import("./pages/Capex"));
+const Proposals = lazy(() => import("./pages/Proposals"));
+const NewProposal = lazy(() => import("./pages/NewProposal"));
+const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -45,6 +48,11 @@ const App = () => (
             <Route path="/entrar" element={
               <Suspense fallback={<LoadingScreenSkeleton />}>
                 <Auth />
+              </Suspense>
+            } />
+            <Route path="/orcamento/:slug" element={
+              <Suspense fallback={<LoadingScreenSkeleton />}>
+                <ProposalPublic />
               </Suspense>
             } />
             <Route path="/" element={
@@ -81,6 +89,8 @@ const App = () => (
                 <Route path="fornecedores/empresas/:id" element={<CompanyDetails />} />
                 <Route path="projetos-av" element={<AVProjects />} />
                 <Route path="projetos-av/:id" element={<AVProjectDetails />} />
+                <Route path="orcamentos" element={<Proposals />} />
+                <Route path="orcamentos/novo" element={<NewProposal />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<Admin />} />

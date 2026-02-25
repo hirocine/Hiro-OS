@@ -742,6 +742,81 @@ export type Database = {
         }
         Relationships: []
       }
+      orcamentos: {
+        Row: {
+          base_value: number | null
+          briefing: string | null
+          client_name: string
+          client_responsible: string | null
+          created_at: string
+          created_by: string | null
+          discount_pct: number | null
+          final_value: number | null
+          id: string
+          moodboard_images: Json | null
+          payment_terms: string | null
+          project_name: string
+          project_number: string | null
+          scope_post_production: Json | null
+          scope_pre_production: Json | null
+          scope_production: Json | null
+          slug: string
+          status: string
+          timeline: Json | null
+          updated_at: string
+          validity_date: string
+          video_url: string | null
+        }
+        Insert: {
+          base_value?: number | null
+          briefing?: string | null
+          client_name: string
+          client_responsible?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_pct?: number | null
+          final_value?: number | null
+          id?: string
+          moodboard_images?: Json | null
+          payment_terms?: string | null
+          project_name: string
+          project_number?: string | null
+          scope_post_production?: Json | null
+          scope_pre_production?: Json | null
+          scope_production?: Json | null
+          slug: string
+          status?: string
+          timeline?: Json | null
+          updated_at?: string
+          validity_date: string
+          video_url?: string | null
+        }
+        Update: {
+          base_value?: number | null
+          briefing?: string | null
+          client_name?: string
+          client_responsible?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_pct?: number | null
+          final_value?: number | null
+          id?: string
+          moodboard_images?: Json | null
+          payment_terms?: string | null
+          project_name?: string
+          project_number?: string | null
+          scope_post_production?: Json | null
+          scope_pre_production?: Json | null
+          scope_production?: Json | null
+          slug?: string
+          status?: string
+          timeline?: Json | null
+          updated_at?: string
+          validity_date?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       platform_accesses: {
         Row: {
           category: Database["public"]["Enums"]["platform_category"] | null
