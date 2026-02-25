@@ -1,44 +1,50 @@
 
 
-# Video de Fundo em Loop na HeroSection
+# Padding Universal na Proposta (Alinhado ao hiro.film)
 
-## O que sera feito
+## Problema Atual
 
-Copiar o video MP4 enviado para `public/videos/hero-bg.mp4` e adicionar um elemento `<video>` com `autoPlay`, `muted`, `loop`, `playsInline` como fundo absoluto da HeroSection, com um overlay escuro semi-transparente por cima para manter a legibilidade do texto.
+Cada secao define seu proprio padding horizontal (`px-6`) e depois usa `max-w-*xl mx-auto` para centralizar o conteudo. Isso cria inconsistencia: o header tem `px-6 sm:px-10 lg:px-16` enquanto as secoes tem apenas `px-6` com max-width variavel (3xl, 4xl, 5xl). No site hiro.film, todo o conteudo respeita um padding lateral uniforme.
+
+## Solucao
+
+Definir um padding horizontal universal no wrapper `proposal-content` em `ProposalPublicPage.tsx` e remover o `px-6` individual de cada secao. Tambem remover os `max-w-*xl mx-auto` dos wrappers internos para que o conteudo ocupe toda a largura disponivel dentro do padding, como no site institucional.
 
 ## Alteracoes
 
-### 1. Copiar o video para o projeto
+### 1. `ProposalPublicPage.tsx`
+- Adicionar classe de padding universal no div `proposal-content`: `px-6 sm:px-10 lg:px-16`
+- Adicionar `max-w-7xl mx-auto` no wrapper para limitar largura total (consistente com o header)
 
-- `user-uploads://Capa_motion_-_Trim_1.mp4` → `public/videos/hero-bg.mp4`
-- Usa pasta `public/` porque videos grandes nao devem passar pelo bundler do Vite
+### 2. Remover `px-6` de cada secao:
+- **`AboutSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
+- **`BriefingSection.tsx`**: Remover `px-6`, remover `max-w-5xl mx-auto` do wrapper externo (manter `max-w-3xl mx-auto` no texto do briefing para legibilidade)
+- **`ScopeSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
+- **`TimelineSection.tsx`**: Remover `px-6`, remover `max-w-3xl mx-auto`
+- **`InvestmentSection.tsx`**: Remover `px-6`, remover `max-w-2xl mx-auto`
+- **`ShowcaseSection.tsx`**: Remover `px-6`, remover `max-w-4xl mx-auto`
 
-### 2. `src/features/proposals/components/HeroSection.tsx`
+### 3. `HeroSection.tsx`
+- Manter com padding proprio (fullscreen, independente do wrapper)
 
-Adicionar antes dos overlays existentes (green glow, grid pattern):
+## Detalhes Tecnicos
 
-```tsx
-{/* Background video */}
-<video
-  autoPlay
-  muted
-  loop
-  playsInline
-  className="absolute inset-0 w-full h-full object-cover"
->
-  <source src="/videos/hero-bg.mp4" type="video/mp4" />
-</video>
+O padding segue a mesma escala do header e do HeroSection:
+- Mobile: `px-6` (24px)
+- Tablet: `sm:px-10` (40px)
+- Desktop: `lg:px-16` (64px)
 
-{/* Dark overlay for readability */}
-<div className="absolute inset-0 bg-black/60" />
-```
+O `max-w-7xl` (80rem = 1280px) no container externo garante que em telas muito largas o conteudo nao se espalhe demais, igual ao header.
 
-O green glow e grid pattern permanecem por cima do overlay, criando a camada visual: **video → overlay escuro → glow verde → grid → conteudo**.
-
-### Arquivos
+## Arquivos
 
 | Arquivo | Alteracao |
 |---|---|
-| `public/videos/hero-bg.mp4` | Novo — video de fundo |
-| `HeroSection.tsx` | Adicionar `<video>` e overlay escuro |
+| `ProposalPublicPage.tsx` | Adicionar padding universal e max-w-7xl no wrapper |
+| `AboutSection.tsx` | Remover px-6 e max-w centralizado |
+| `BriefingSection.tsx` | Remover px-6 e max-w externo |
+| `ScopeSection.tsx` | Remover px-6 e max-w centralizado |
+| `TimelineSection.tsx` | Remover px-6 e max-w centralizado |
+| `InvestmentSection.tsx` | Remover px-6 e max-w centralizado |
+| `ShowcaseSection.tsx` | Remover px-6 e max-w centralizado |
 
