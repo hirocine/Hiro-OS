@@ -7,7 +7,7 @@ import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, D
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+
 import type { Proposal } from '../types';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -28,13 +28,6 @@ export function ProposalCard({ proposal, onDelete }: Props) {
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
   const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
 
-  const getBorderColor = () => {
-    switch (proposal.status) {
-      case 'approved': return 'border-l-success';
-      case 'expired': return 'border-l-destructive';
-      default: return 'border-l-primary';
-    }
-  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl).then(() => toast.success('Link copiado!'));
@@ -45,10 +38,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
   };
 
   return (
-    <Card className={cn(
-      "group hover:shadow-lg transition-all duration-300 border-l-4 overflow-hidden",
-      getBorderColor()
-    )}>
+    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <CardContent className="p-4">
         {/* Header: Logo + Info + Menu */}
         <div className="flex items-start justify-between mb-3">
