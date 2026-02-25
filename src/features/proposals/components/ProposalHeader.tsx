@@ -16,9 +16,9 @@ export const ProposalHeader = forwardRef<HTMLElement, Props>(({ projectName }, r
   return (
     <header ref={ref} className="print:hidden">
       <div className="bg-black/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex items-center justify-between h-14">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex items-center justify-between h-16 sm:h-18">
           <a href="https://hiro.film" target="_blank" rel="noopener noreferrer">
-            <img src={hiroLogo} alt="Hiro Films" className="h-4 sm:h-5" />
+            <img src={hiroLogo} alt="Hiro Films" className="h-3 sm:h-4" />
           </a>
 
           <div className="flex items-center gap-3">
