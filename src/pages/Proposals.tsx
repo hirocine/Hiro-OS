@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
 
 const STATUS_OPTIONS = [
@@ -19,7 +20,7 @@ export default function Proposals() {
   const { data: proposals, isLoading, deleteProposal } = useProposals(status);
 
   return (
-    <div className="space-y-6">
+    <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Orçamentos"
         subtitle="Gerencie suas propostas comerciais"
@@ -67,6 +68,6 @@ export default function Proposals() {
           </Button>
         </div>
       )}
-    </div>
+    </ResponsiveContainer>
   );
 }

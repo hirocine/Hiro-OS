@@ -80,7 +80,7 @@ export function ProposalWizard() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 w-full">
       {/* Progress */}
       <div className="flex items-center gap-2">
         {STEPS.map((s, i) => (
