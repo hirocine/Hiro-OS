@@ -118,7 +118,7 @@ export default function AVProjects() {
         <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
           <Card>
             <CollapsibleTrigger asChild>
-              <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-lg bg-success/10">
@@ -148,7 +148,7 @@ export default function AVProjects() {
         <Collapsible open={archivedOpen} onOpenChange={setArchivedOpen}>
           <Card>
             <CollapsibleTrigger asChild>
-              <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+              <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-lg bg-muted">
