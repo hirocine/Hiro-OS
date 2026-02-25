@@ -1,42 +1,40 @@
 
 
-# Video Full-Width com Conteúdo no Padding
+# Corrigir Alinhamento do Conteúdo do HeroSection
 
 ## Problema
 
-Atualmente o HeroSection está dentro do wrapper `max-w-7xl mx-auto px-6 sm:px-10 lg:px-16`, o que faz o vídeo de fundo ficar limitado a essa largura. No site hiro.film, backgrounds como vídeos e imagens se estendem até as bordas da tela, enquanto o conteúdo textual respeita o padding.
+O HeroSection foi movido para fora do wrapper `max-w-7xl mx-auto`, o que é correto para o vídeo de fundo ir até as bordas. Porém, o conteúdo textual (número do projeto, nome do cliente, metadados) agora não tem `max-w-7xl mx-auto` limitando sua largura — ele se espalha por toda a tela usando apenas o padding `px-6 sm:px-10 lg:px-16` da section.
+
+Para alinhar com o resto da página, o conteúdo interno precisa estar dentro de um wrapper `max-w-7xl mx-auto` enquanto o fundo (vídeo, overlays) continua full-width.
 
 ## Solução
 
-Mover o HeroSection para **fora** do wrapper com padding, diretamente no nível raiz da página. O vídeo e overlays já são `absolute inset-0`, então basta que a `<section>` ocupe 100% da largura. O conteúdo textual dentro do Hero já tem seu próprio padding (`px-6 sm:px-10 lg:px-16`), então continuará alinhado.
+No `HeroSection.tsx`, mover o padding horizontal da `<section>` para um wrapper interno com `max-w-7xl mx-auto`, mantendo a section com largura total para o vídeo.
 
-## Alterações
+### `HeroSection.tsx`
 
-### `ProposalPublicPage.tsx`
+**Section**: Remover `px-6 sm:px-10 lg:px-16` da section (manter apenas layout/spacing vertical).
 
-Mover o `<HeroSection>` para antes do wrapper `proposal-content`, ficando como irmão direto do div raiz (fora do max-w-7xl):
+**Adicionar wrapper interno** que envolve todo o conteúdo (top bar, client name, bottom section) com `max-w-7xl mx-auto px-6 sm:px-10 lg:px-16` + `relative z-10 flex flex-col justify-between h-full min-h-screen`.
+
+Os backgrounds (video, overlay, glow, grid) ficam na section (full-width), e o conteúdo fica dentro do wrapper centralizado.
 
 ```
-Antes:
-<div className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-  <HeroSection ... />     ← constrained
-  <AboutSection />
-  ...
-</div>
-
-Depois:
-<HeroSection ... />       ← full-width
-<div className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-  <AboutSection />
-  ...
-</div>
+section (full-width, min-h-screen, relative, overflow-hidden)
+  ├── video (absolute inset-0) ← full-width
+  ├── overlay escuro (absolute inset-0) ← full-width
+  ├── glow verde (absolute inset-0) ← full-width
+  ├── grid pattern (absolute inset-0) ← full-width
+  └── div.max-w-7xl.mx-auto.px-6... (conteúdo alinhado)
+       ├── top bar
+       ├── client name
+       └── bottom section (metadata + footer)
 ```
 
-Nenhuma alteração no `HeroSection.tsx` — ele já tem padding próprio e o vídeo já é `absolute inset-0`.
-
-## Arquivos
+## Arquivo
 
 | Arquivo | Alteração |
 |---|---|
-| `ProposalPublicPage.tsx` | Mover HeroSection para fora do wrapper com padding |
+| `HeroSection.tsx` | Mover padding para wrapper interno com max-w-7xl mx-auto |
 
