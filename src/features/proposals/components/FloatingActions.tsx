@@ -2,9 +2,10 @@ import { MessageCircle, Download } from 'lucide-react';
 
 interface Props {
   projectName: string;
+  visible: boolean;
 }
 
-export function FloatingActions({ projectName }: Props) {
+export function FloatingActions({ projectName, visible }: Props) {
   const whatsappUrl = `https://wa.me/5511951513862?text=${encodeURIComponent(`Olá! Gostaria de aprovar o orçamento do projeto ${projectName}.`)}`;
 
   const handleExportPDF = () => {
@@ -12,7 +13,11 @@ export function FloatingActions({ projectName }: Props) {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-3">
+    <div
+      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-3 transition-all duration-300 ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+      }`}
+    >
       <a
         href={whatsappUrl}
         target="_blank"
