@@ -18,8 +18,8 @@ export function ScopeSection({ preProduction, production, postProduction }: Prop
   if (sections.length === 0) return null;
 
   return (
-    <section className="py-20 px-6 border-t border-white/10">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <section className="py-20 border-t border-white/10">
+      <div className="space-y-8">
         <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium text-center">Escopo do Projeto</h2>
 
         <Accordion type="multiple" defaultValue={sections.map(s => s.key)} className="space-y-3">
