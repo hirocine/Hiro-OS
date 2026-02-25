@@ -17,8 +17,8 @@ export function ShowcaseSection({ videoUrl }: Props) {
   if (!embedUrl) return null;
 
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <section className="py-20">
+      <div className="space-y-6">
         <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium text-center">Showcase</h2>
         <div className="relative aspect-video rounded-xl overflow-hidden bg-black/50 shadow-2xl ring-1 ring-white/5">
           <iframe

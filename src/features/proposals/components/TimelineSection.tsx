@@ -8,8 +8,8 @@ export function TimelineSection({ timeline }: Props) {
   if (timeline.length === 0) return null;
 
   return (
-    <section className="py-20 px-6 border-t border-white/10">
-      <div className="max-w-3xl mx-auto space-y-10">
+    <section className="py-20 border-t border-white/10">
+      <div className="space-y-10">
         <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium text-center">Cronograma</h2>
 
         <div className="relative">

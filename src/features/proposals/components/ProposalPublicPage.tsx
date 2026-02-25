@@ -44,7 +44,7 @@ export function ProposalPublicPage() {
         <ProposalHeader />
       </div>
 
-      <div ref={contentRef} className="proposal-content">
+      <div ref={contentRef} className="proposal-content max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
         <HeroSection
           clientName={proposal.client_name}
           projectName={proposal.project_name}

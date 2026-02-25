@@ -2,8 +2,8 @@ const CLIENTS = ['Burger King', 'Kopenhagen', 'Porsche', 'SPFW', 'Grupo Primo', 
 
 export function AboutSection() {
   return (
-    <section className="py-20 px-6 border-t border-white/10">
-      <div className="max-w-3xl mx-auto text-center space-y-8">
+    <section className="py-20 border-t border-white/10">
+      <div className="text-center space-y-8">
         <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium">Quem Somos</h2>
         <p className="text-lg sm:text-xl text-white/70 leading-relaxed font-light">
           A <span className="text-white font-semibold">HIRO</span> é um studio de produção audiovisual especializado em conteúdo criativo.
