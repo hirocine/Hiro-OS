@@ -55,6 +55,7 @@ export function ProposalPublicPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       <div className="print:hidden">
         <UrgencyBar validityDate={proposal.validity_date} />
+        <div className="h-10" />
         <ProposalHeader ref={headerRef} projectName={proposal.project_name} />
       </div>
 
