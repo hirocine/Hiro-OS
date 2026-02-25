@@ -1,40 +1,61 @@
 
 
-# Corrigir Alinhamento do Conteúdo do HeroSection
+# Replicar TopBar do hiro.film na Proposta
 
-## Problema
+## Contexto
 
-O HeroSection foi movido para fora do wrapper `max-w-7xl mx-auto`, o que é correto para o vídeo de fundo ir até as bordas. Porém, o conteúdo textual (número do projeto, nome do cliente, metadados) agora não tem `max-w-7xl mx-auto` limitando sua largura — ele se espalha por toda a tela usando apenas o padding `px-6 sm:px-10 lg:px-16` da section.
+O usuario quer que o `ProposalHeader` replique exatamente o header do site hiro.film. Ele tambem forneceu o SVG oficial do logo (Asset_10-2.svg com "HIROヒロシ" em branco e verde).
 
-Para alinhar com o resto da página, o conteúdo interno precisa estar dentro de um wrapper `max-w-7xl mx-auto` enquanto o fundo (vídeo, overlays) continua full-width.
+## Alteracoes
 
-## Solução
+### 1. Copiar o novo logo SVG para o projeto
 
-No `HeroSection.tsx`, mover o padding horizontal da `<section>` para um wrapper interno com `max-w-7xl mx-auto`, mantendo a section com largura total para o vídeo.
+Copiar `user-uploads://Asset_10-2.svg` para `src/assets/hiro-logo-full.svg` (substituindo o atual).
 
-### `HeroSection.tsx`
+### 2. Atualizar `ProposalHeader.tsx`
 
-**Section**: Remover `px-6 sm:px-10 lg:px-16` da section (manter apenas layout/spacing vertical).
+Reescrever o componente para replicar exatamente o header do hiro.film:
 
-**Adicionar wrapper interno** que envolve todo o conteúdo (top bar, client name, bottom section) com `max-w-7xl mx-auto px-6 sm:px-10 lg:px-16` + `relative z-10 flex flex-col justify-between h-full min-h-screen`.
+- **Fundo**: Transparente com backdrop-blur (sem o fundo solido `#0A0A0A/95`), posicionado fixo no topo logo abaixo da UrgencyBar
+- **Logo**: Usar o novo SVG importado, sem filtros de `brightness-0 invert` (o SVG ja tem as cores corretas branco + verde)
+- **Links de navegacao**: "Sobre nos", "Cases" com hover suave (opacity transition)
+- **Icone Instagram**: Verde neon `#4CFF5C` (ja existe)
+- **Botao "Contato"**: Pill com borda branca/20, hover bg-white/10 (ja existe)
+- **Mobile**: Adicionar menu hamburger que abre um menu mobile com os links
 
-Os backgrounds (video, overlay, glow, grid) ficam na section (full-width), e o conteúdo fica dentro do wrapper centralizado.
+### 3. Estrutura do Header
 
+```text
+┌──────────────────────────────────────────────────┐
+│  [HIROヒロシ®]          Sobre nós  Cases  🟢  [Contato]  │
+│  (logo SVG)            (links)    (IG)  (pill btn)      │
+└──────────────────────────────────────────────────┘
+
+Mobile:
+┌──────────────────────────────┐
+│  [HIROヒロシ®]          [≡]  │
+└──────────────────────────────┘
+  → Menu abre overlay com links
 ```
-section (full-width, min-h-screen, relative, overflow-hidden)
-  ├── video (absolute inset-0) ← full-width
-  ├── overlay escuro (absolute inset-0) ← full-width
-  ├── glow verde (absolute inset-0) ← full-width
-  ├── grid pattern (absolute inset-0) ← full-width
-  └── div.max-w-7xl.mx-auto.px-6... (conteúdo alinhado)
-       ├── top bar
-       ├── client name
-       └── bottom section (metadata + footer)
-```
 
-## Arquivo
+### 4. Detalhes de estilo
 
-| Arquivo | Alteração |
+- Header: `fixed top-[37px]` (abaixo da UrgencyBar), fundo `bg-black/80 backdrop-blur-md`
+- Logo: altura `h-5 sm:h-6`, sem filtros de cor
+- Links: `text-sm text-white/60 hover:text-white transition-colors duration-300`
+- Botao Contato: `border border-white/20 rounded-full px-5 py-1.5`
+- Instagram: `text-[#4CFF5C]`
+- Mobile: Botao hamburger visivel em `sm:hidden`, links escondidos com `hidden sm:flex`
+- Menu mobile: Overlay fullscreen com links empilhados verticalmente
+
+### 5. Sobre o Hero Section
+
+O Hero Section da proposta mantem seu layout atual (nome do cliente em tipografia gigante, metadados, video de fundo). O pedido de replicar o hero do hiro.film ("No marketing digital...") nao se aplica aqui pois a proposta tem seu proprio conteudo dinamico. Nenhuma alteracao no HeroSection.
+
+## Arquivos
+
+| Arquivo | Alteracao |
 |---|---|
-| `HeroSection.tsx` | Mover padding para wrapper interno com max-w-7xl mx-auto |
+| `src/assets/hiro-logo-full.svg` | Substituir pelo novo SVG (Asset_10-2.svg) |
+| `src/features/proposals/components/ProposalHeader.tsx` | Reescrever com layout exato do hiro.film + menu mobile hamburger |
 
