@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Proposal, ProposalFormData } from '../types';
-import { normalizeString } from '@/lib/stringUtils';
 
 function generateSlug(clientName: string, projectName: string): string {
   const year = new Date().getFullYear();
@@ -15,22 +14,17 @@ function generateSlug(clientName: string, projectName: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export function useProposals(statusFilter?: string) {
+export function useProposals() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['proposals', statusFilter],
+    queryKey: ['proposals'],
     queryFn: async () => {
-      let q = supabase
+      const { data, error } = await supabase
         .from('orcamentos')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (statusFilter && statusFilter !== 'all') {
-        q = q.eq('status', statusFilter);
-      }
-
-      const { data, error } = await q;
       if (error) throw error;
       return (data || []).map(mapProposal);
     },
@@ -38,6 +32,21 @@ export function useProposals(statusFilter?: string) {
 
   const createProposal = useMutation({
     mutationFn: async (form: ProposalFormData) => {
+      // Upload client logo
+      let clientLogoUrl: string | null = null;
+      if (form.client_logo_file) {
+        const ext = form.client_logo_file.name.split('.').pop();
+        const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: logoError } = await supabase.storage
+          .from('proposal-moodboard')
+          .upload(path, form.client_logo_file);
+        if (logoError) throw logoError;
+        const { data: logoUrlData } = supabase.storage
+          .from('proposal-moodboard')
+          .getPublicUrl(path);
+        clientLogoUrl = logoUrlData.publicUrl;
+      }
+
       // Upload moodboard images
       const imageUrls: string[] = [];
       for (const file of form.moodboard_files) {
@@ -83,6 +92,7 @@ export function useProposals(statusFilter?: string) {
           project_name: form.project_name.trim(),
           project_number: form.project_number.trim() || null,
           client_responsible: form.client_responsible.trim() || null,
+          client_logo: clientLogoUrl,
           validity_date: form.validity_date?.toISOString().split('T')[0],
           briefing: form.briefing.trim() || null,
           video_url: form.video_url.trim() || null,
@@ -130,6 +140,7 @@ export function useProposals(statusFilter?: string) {
 function mapProposal(row: any): Proposal {
   return {
     ...row,
+    client_logo: row.client_logo || null,
     moodboard_images: Array.isArray(row.moodboard_images) ? row.moodboard_images : [],
     scope_pre_production: Array.isArray(row.scope_pre_production) ? row.scope_pre_production : [],
     scope_production: Array.isArray(row.scope_production) ? row.scope_production : [],

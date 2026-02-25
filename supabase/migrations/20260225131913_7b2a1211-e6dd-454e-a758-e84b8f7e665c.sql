@@ -1,0 +1,1 @@
+ALTER TABLE public.orcamentos ADD COLUMN client_logo text;

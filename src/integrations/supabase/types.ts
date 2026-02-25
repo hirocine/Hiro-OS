@@ -746,6 +746,7 @@ export type Database = {
         Row: {
           base_value: number | null
           briefing: string | null
+          client_logo: string | null
           client_name: string
           client_responsible: string | null
           created_at: string
@@ -770,6 +771,7 @@ export type Database = {
         Insert: {
           base_value?: number | null
           briefing?: string | null
+          client_logo?: string | null
           client_name: string
           client_responsible?: string | null
           created_at?: string
@@ -794,6 +796,7 @@ export type Database = {
         Update: {
           base_value?: number | null
           briefing?: string | null
+          client_logo?: string | null
           client_name?: string
           client_responsible?: string | null
           created_at?: string
