@@ -450,3 +450,39 @@ html, body {
   color: hsl(var(--primary));
   text-decoration: underline;
 }
+
+/* Marquee animation for proposal public page */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Print styles for proposal PDF export */
+@media print {
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .proposal-content {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  .proposal-content * {
+    color: #111 !important;
+  }
+
+  .proposal-content section {
+    border-color: #e5e5e5 !important;
+    page-break-inside: avoid;
+  }
+}

@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -41,6 +41,7 @@ const navigation: NavigationItem[] = [
 
 const producaoNavigation: NavigationItem[] = [
   { name: 'Projetos', href: '/projetos-av', icon: Film },
+  { name: 'Orçamentos', href: '/orcamentos', icon: Receipt },
   {
     name: 'Fornecedores', href: '/fornecedores', icon: Users,
     children: [
