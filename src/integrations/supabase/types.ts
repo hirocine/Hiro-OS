@@ -538,6 +538,7 @@ export type Database = {
           churn_rate: number | null
           contribution_margin_pct: number | null
           contribution_margin_value: number | null
+          costs: number | null
           costs_projects: number | null
           created_at: string | null
           id: string
@@ -563,6 +564,7 @@ export type Database = {
           churn_rate?: number | null
           contribution_margin_pct?: number | null
           contribution_margin_value?: number | null
+          costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
           id: string
@@ -588,6 +590,7 @@ export type Database = {
           churn_rate?: number | null
           contribution_margin_pct?: number | null
           contribution_margin_value?: number | null
+          costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
           id?: string

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { Loader2 } from 'lucide-react';
@@ -17,6 +17,20 @@ export function ProposalPublicPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: proposal, isLoading, error } = useProposalDetails(slug);
   const contentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeaderVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [proposal]);
 
   if (isLoading) {
     return (
@@ -41,7 +55,7 @@ export function ProposalPublicPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       <div className="print:hidden">
         <UrgencyBar validityDate={proposal.validity_date} />
-        <ProposalHeader />
+        <ProposalHeader ref={headerRef} projectName={proposal.project_name} />
       </div>
 
       <HeroSection
@@ -87,10 +101,9 @@ export function ProposalPublicPage() {
       </div>
 
       <div className="print:hidden">
-        <FloatingActions projectName={proposal.project_name} />
+        <FloatingActions projectName={proposal.project_name} visible={!headerVisible} />
       </div>
 
-      {/* Spacer for floating actions */}
       <div className="h-24 print:hidden" />
     </div>
   );
