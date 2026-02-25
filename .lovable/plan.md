@@ -1,75 +1,41 @@
 
 
-# Redesenhar HeroSection da Proposta Publica
+# Adicionar Header/Navbar na Pagina Publica da Proposta
 
-## Referencia Visual
+## O que o usuario quer
 
-A imagem de referencia mostra um hero fullscreen cinematografico com:
-- Fundo escuro com gradiente verde no canto direito
-- Grid pattern sutil de quadrados
-- Barra superior com 3 colunas: numero do orcamento | HIRO FILMS® | PROPOSTA DE INVESTIMENTO
-- Nome do cliente em tipografia gigante (bold, condensed) ocupando o centro
-- Barra inferior com metadados: RESPONSAVEL, DATA, VALIDADE (labels em verde, valores em branco)
-- Canto inferior esquerdo: elementos decorativos "+ +"
-- Canto inferior direito: logo Hiro
+Baseado na imagem de referencia (screenshot do site da Hiro Films), o usuario quer um header/navbar fixo na pagina publica da proposta com:
+- Logo SVG da Hiro (arquivo `Asset_10.svg` enviado) no lado esquerdo
+- Links de navegacao no lado direito: "Sobre nos", "Cases", icone Spotify/social verde, botao "Contato" com borda
 
 ## Alteracoes
 
-### `src/features/proposals/components/HeroSection.tsx` — Reescrita completa
+### 1. Copiar o SVG do logo para o projeto
+- Copiar `user-uploads://Asset_10.svg` para `src/assets/hiro-logo-full.svg`
 
-**Props necessarias** (expandir para receber dados do proposal):
-- `projectName` (ja existe — mas na referencia o nome grande e o CLIENTE, nao o projeto)
-- `clientName` (ja existe)
-- `projectNumber` (novo)
-- `validityDate` (novo)
-- `createdAt` (novo)
-- `clientResponsible` (novo)
+### 2. Criar componente `ProposalHeader.tsx`
+- **Arquivo**: `src/features/proposals/components/ProposalHeader.tsx`
+- Header fixo com fundo escuro (`bg-[#111113]/95 backdrop-blur`) e borda inferior sutil
+- Posicionado abaixo da UrgencyBar (precisa considerar o offset)
+- Logo SVG a esquerda (importado como componente React ou img)
+- Links a direita: "Sobre nos" e "Cases" como links externos para o site da Hiro (https://hirofilms.com.br ou equivalente), icone social verde, e botao "Contato" com borda arredondada
+- `z-index: 40` (abaixo da UrgencyBar que e z-50)
+- Classe `print:hidden` para nao aparecer no PDF
 
-**Novo layout:**
+### 3. Integrar no `ProposalPublicPage.tsx`
+- Importar e renderizar `<ProposalHeader />` logo apos a UrgencyBar
+- Ajustar o padding-top do conteudo para compensar o header fixo
 
-```text
-+--------------------------------------------------------------+
-| Nº 2025.XXXX      HIRO FILMS®      PROPOSTA DE INVESTIMENTO |
-|                                                              |
-|                                                              |
-|   NOME                                                       |
-|   DO CLIENTE          [grid pattern overlay]    [green glow] |
-|                                                              |
-|                                                              |
-| RESPONSÁVEL:    DATA:          VALIDADE:                     |
-| Lucas Oliveira  20/04/2023     20/05/2023                    |
-|                                                              |
-| + +                                    HIROヒロシ.            |
-+--------------------------------------------------------------+
-```
+### 4. Ajustar `HeroSection.tsx`
+- Adicionar padding-top para compensar a altura do header fixo (aprox. `pt-16` adicional)
+- A barra superior com "Nº / HIRO FILMS / PROPOSTA DE INVESTIMENTO" permanece como esta
 
-- Secao fullscreen (`min-h-screen`) com `bg-[#111113]`
-- Gradiente verde radial no canto inferior direito (`radial-gradient` posicionado)
-- Grid pattern com quadrados (SVG ou CSS, opacidade sutil)
-- Barra superior: flex justify-between, texto uppercase tracking wide, `text-white/60`
-- Nome do cliente: `text-7xl sm:text-8xl lg:text-[10rem]` font-bold uppercase, tracking-tighter, leading-none
-- Barra de metadados: labels em verde (`text-green-400`), valores em branco
-- Logo Hiro no canto inferior direito (importar de `src/assets/hiro-logo.png`)
-- Elementos decorativos "+ +" no canto inferior esquerdo
-
-### `src/features/proposals/components/ProposalPublicPage.tsx` — Atualizar props
-
-Passar os novos props para `HeroSection`:
-```
-<HeroSection
-  clientName={proposal.client_name}
-  projectName={proposal.project_name}
-  projectNumber={proposal.project_number}
-  validityDate={proposal.validity_date}
-  createdAt={proposal.created_at}
-  clientResponsible={proposal.client_responsible}
-/>
-```
-
-### Arquivos alterados
+### Arquivos
 
 | Arquivo | Alteracao |
 |---|---|
-| `src/features/proposals/components/HeroSection.tsx` | Reescrita completa do layout |
-| `src/features/proposals/components/ProposalPublicPage.tsx` | Passar props adicionais ao HeroSection |
+| `src/assets/hiro-logo-full.svg` | Novo arquivo — logo SVG da Hiro |
+| `src/features/proposals/components/ProposalHeader.tsx` | Novo componente — header/navbar da proposta publica |
+| `src/features/proposals/components/ProposalPublicPage.tsx` | Importar e renderizar ProposalHeader |
+| `src/features/proposals/components/HeroSection.tsx` | Ajustar padding-top para compensar header |
 
