@@ -65,7 +65,7 @@ export default function Proposals() {
           <Collapsible open={showApproved} onOpenChange={setShowApproved}>
             <Card>
               <CollapsibleTrigger asChild>
-                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-2 rounded-lg bg-success/10">
@@ -103,7 +103,7 @@ export default function Proposals() {
           <Collapsible open={showArchived} onOpenChange={setShowArchived}>
             <Card>
               <CollapsibleTrigger asChild>
-                <CardHeader className="pb-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                <CardHeader className="py-4 cursor-pointer hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-2 rounded-lg bg-muted">
