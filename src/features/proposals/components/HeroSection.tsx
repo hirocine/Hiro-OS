@@ -30,6 +30,20 @@ export function HeroSection({ projectName, clientName, projectNumber, validityDa
 
   return (
     <section className="relative min-h-screen flex flex-col justify-between bg-[#0A0A0A] overflow-hidden px-6 sm:px-10 lg:px-16 pt-24 sm:pt-28 pb-8 sm:pb-12">
+      {/* Background video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/videos/hero-bg.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-black/60" />
+
       {/* Green radial glow — bottom right */}
       <div
         className="pointer-events-none absolute inset-0"
