@@ -1,20 +1,26 @@
 
 
-# Fix: UrgencyBar sobrepondo o Header
+# Automação: net_profit_value e net_profit_pct
 
-## Problema
+## Situação Atual
 
-A `UrgencyBar` é `fixed top-0`, então ela fica por cima do `ProposalHeader` que agora é estático (não fixo). Os botões do header ficam escondidos atrás da barra de urgência.
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
 
-## Solução
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
 
-Adicionar um `padding-top` ou `margin-top` no conteúdo abaixo da UrgencyBar para compensar a altura dela (~40px). A forma mais limpa: manter a UrgencyBar fixa e adicionar um espaçador abaixo dela.
+## Alteração
 
-## Alterações
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
 
-| Arquivo | Alteração |
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
+
+| Recurso | Alteração |
 |---|---|
-| `ProposalPublicPage.tsx` | Adicionar um `div` espaçador (`h-10`) logo após a UrgencyBar para empurrar o header para baixo da barra fixa |
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
 
-Apenas 1 linha adicionada — um `<div className="h-10" />` entre a UrgencyBar e o ProposalHeader dentro do wrapper `print:hidden`, para compensar a altura fixa da barra.
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 
