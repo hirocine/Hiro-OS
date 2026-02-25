@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check, Upload, X } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check, Upload, X, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,19 @@ export function ProposalWizard() {
 
   const updateField = <K extends keyof ProposalFormData>(key: K, value: ProposalFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      updateField('client_logo_file', file);
+      updateField('client_logo_preview', URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    updateField('client_logo_file', null);
+    updateField('client_logo_preview', '');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,6 +116,44 @@ export function ProposalWizard() {
           {step === 0 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">Dados Básicos</h3>
+
+              {/* Logo Upload */}
+              <div className="space-y-2">
+                <Label>Logo do Cliente</Label>
+                <div className="flex items-center gap-4">
+                  <div className="relative group">
+                    <Avatar className="h-16 w-16">
+                      {form.client_logo_preview ? (
+                        <AvatarImage src={form.client_logo_preview} alt="Logo" />
+                      ) : null}
+                      <AvatarFallback className="bg-muted">
+                        <Building2 className="h-6 w-6 text-muted-foreground" />
+                      </AvatarFallback>
+                    </Avatar>
+                    {form.client_logo_preview && (
+                      <button
+                        onClick={removeLogo}
+                        className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" id="logo-upload" />
+                    <label htmlFor="logo-upload">
+                      <Button variant="outline" size="sm" asChild>
+                        <span className="cursor-pointer">
+                          <Upload className="h-4 w-4 mr-1" />
+                          {form.client_logo_preview ? 'Trocar' : 'Enviar Logo'}
+                        </span>
+                      </Button>
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-1">Opcional. PNG, JPG até 2MB</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nome do Cliente *</Label>
@@ -183,7 +235,6 @@ export function ProposalWizard() {
           {step === 2 && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-foreground">Escopo e Cronograma</h3>
-              {/* Scope sections */}
               {([
                 { key: 'scope_pre_production' as const, label: 'Pré-Produção' },
                 { key: 'scope_production' as const, label: 'Produção' },
@@ -213,7 +264,6 @@ export function ProposalWizard() {
                 </div>
               ))}
 
-              {/* Timeline */}
               <div className="space-y-3 pt-4 border-t border-border">
                 <Label className="text-sm font-semibold">Cronograma</Label>
                 {form.timeline.map((item, i) => (
@@ -282,7 +332,6 @@ export function ProposalWizard() {
                 <Textarea value={form.payment_terms} onChange={e => updateField('payment_terms', e.target.value)} rows={3} />
               </div>
 
-              {/* Preview */}
               {form.base_value > 0 && (
                 <div className="bg-muted rounded-lg p-4 space-y-2">
                   <p className="text-sm text-muted-foreground">Preview do Investimento:</p>

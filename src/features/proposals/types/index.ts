@@ -5,6 +5,7 @@ export interface Proposal {
   project_name: string;
   project_number: string | null;
   client_responsible: string | null;
+  client_logo: string | null;
   validity_date: string;
   briefing: string | null;
   video_url: string | null;
@@ -37,6 +38,8 @@ export interface ProposalFormData {
   project_name: string;
   project_number: string;
   client_responsible: string;
+  client_logo_file: File | null;
+  client_logo_preview: string;
   validity_date: Date | undefined;
   briefing: string;
   video_url: string;
@@ -56,6 +59,8 @@ export const defaultFormData: ProposalFormData = {
   project_name: '',
   project_number: '',
   client_responsible: '',
+  client_logo_file: null,
+  client_logo_preview: '',
   validity_date: undefined,
   briefing: '',
   video_url: '',

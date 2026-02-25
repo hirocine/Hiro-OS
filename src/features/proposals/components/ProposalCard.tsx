@@ -1,10 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, ExternalLink, Trash2, Calendar } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { Proposal } from '../types';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -25,53 +28,126 @@ export function ProposalCard({ proposal, onDelete }: Props) {
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
   const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
 
+  const getBorderColor = () => {
+    switch (proposal.status) {
+      case 'approved': return 'border-l-success';
+      case 'expired': return 'border-l-destructive';
+      default: return 'border-l-primary';
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(publicUrl).then(() => toast.success('Link copiado!'));
+  };
+
+  const handleOpenProposal = () => {
+    window.open(`/orcamento/${proposal.slug}`, '_blank');
+  };
+
   return (
-    <Card className="group hover:shadow-elegant transition-shadow">
-      <CardContent className="p-5 space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{proposal.project_name}</h3>
-            <p className="text-sm text-muted-foreground truncate">{proposal.client_name}</p>
+    <Card className={cn(
+      "group hover:shadow-lg transition-all duration-300 border-l-4 overflow-hidden",
+      getBorderColor()
+    )}>
+      <CardContent className="p-4">
+        {/* Header: Logo + Info + Menu */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <Avatar className="h-10 w-10 shrink-0">
+              {proposal.client_logo ? (
+                <AvatarImage src={proposal.client_logo} alt={proposal.client_name} />
+              ) : null}
+              <AvatarFallback className="bg-muted">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              {proposal.project_number && (
+                <p className="text-xs font-medium text-muted-foreground/70 mb-0.5">
+                  Nº {proposal.project_number}
+                </p>
+              )}
+              <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                {proposal.project_name}
+              </h3>
+              <p className="text-sm text-muted-foreground truncate">{proposal.client_name}</p>
+            </div>
           </div>
-          <Badge variant={status.variant}>{status.label}</Badge>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="shrink-0 ml-2 h-7 w-7 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleOpenProposal}>
+                <Eye className="mr-2 h-4 w-4" />
+                Ver Proposta
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCopyLink}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copiar Link
+              </DropdownMenuItem>
+              {onDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onDelete(proposal.id)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {format(new Date(proposal.validity_date), "dd/MM/yyyy")}
-          </span>
+        {/* Badges */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <Badge variant={status.variant} className="text-xs px-2 py-0.5">
+            {status.label}
+          </Badge>
           {daysLeft > 0 ? (
-            <span className="text-success">{daysLeft} dias restantes</span>
+            <Badge variant="outline" className="text-xs px-2 py-0.5 text-success border-success/30">
+              {daysLeft} dias restantes
+            </Badge>
           ) : (
-            <span className="text-destructive">Expirada</span>
+            <Badge variant="destructive" className="text-xs px-2 py-0.5">
+              Expirada
+            </Badge>
           )}
         </div>
 
-        <p className="text-lg font-bold text-foreground">{formattedValue}</p>
-
-        <div className="flex gap-2 pt-1">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => navigator.clipboard.writeText(publicUrl).then(() => toast.success('Link copiado!'))}
-          >
-            <Copy className="h-3.5 w-3.5 mr-1" /> Copiar Link
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </Button>
-          {onDelete && (
-            <Button variant="ghost" size="sm" onClick={() => onDelete(proposal.id)} className="text-destructive hover:text-destructive">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+        {/* Compact Info */}
+        <div className="space-y-1.5 text-xs mb-3">
+          {proposal.client_responsible && (
+            <div className="flex items-center gap-2">
+              <User className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+              <span className="truncate">{proposal.client_responsible}</span>
+            </div>
           )}
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+            <span className="font-semibold text-foreground">{formattedValue}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+            <span>
+              Validade: {format(new Date(proposal.validity_date), "dd/MM/yyyy")}
+            </span>
+          </div>
         </div>
+
+        {/* Action Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleOpenProposal}
+          className="w-full h-8 text-xs group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
+        >
+          <ExternalLink className="mr-1.5 h-3 w-3" />
+          Ver Proposta
+        </Button>
       </CardContent>
     </Card>
   );
