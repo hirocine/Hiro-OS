@@ -10,15 +10,15 @@ export function InvestmentSection({ baseValue, discountPct, finalValue, paymentT
   const hasDiscount = discountPct > 0;
 
   return (
-    <section className="py-20 px-6 border-t border-white/5">
+    <section className="py-20 px-6 border-t border-white/10">
       <div className="max-w-2xl mx-auto text-center space-y-8">
-        <h2 className="text-xs uppercase tracking-[0.3em] text-white/30 font-medium">Investimento</h2>
+        <h2 className="text-xs uppercase tracking-[0.3em] text-[#4CFF5C] font-medium">Investimento</h2>
 
         <div className="space-y-3">
           {hasDiscount && (
             <div className="space-y-2">
               <p className="text-lg text-white/30 line-through">{fmt(baseValue)}</p>
-              <span className="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="inline-block bg-[#4CFF5C]/20 text-[#4CFF5C] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 {discountPct}% OFF
               </span>
             </div>
