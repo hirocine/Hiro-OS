@@ -1,54 +1,66 @@
 
 
-# Cálculo Automático de `contribution_margin_value`
+# Redesign do Header da Proposta Pública
 
-## Contexto
+## Resumo
 
-A tabela `financial_snapshots` já possui as colunas `revenue`, `costs_projects` e `contribution_margin_value`. O usuário quer que `contribution_margin_value` seja calculado automaticamente como `revenue - costs_projects`.
+Simplificar o ProposalHeader: remover links de navegação (Sobre nós, Cases, Instagram, Contato), manter apenas logo (menor) à esquerda e botões "Aprovar Orçamento" + "PDF" à direita. O header NÃO é fixo — fica no topo normalmente. Quando o usuário scrolla para baixo e o header sai da tela, os botões aparecem flutuantes. Ao voltar ao topo, os botões voltam para o header.
 
-## Solução
+## Comportamento de Scroll
 
-Criar um trigger `BEFORE INSERT OR UPDATE` que calcula `contribution_margin_value = revenue - costs_projects` automaticamente, similar ao trigger existente `auto_fill_snapshot_revenue_goal`.
+```text
+Estado 1 – Topo (header visível):
+┌─────────────────────────────────────────────────────┐
+│ ⏰ Urgency Bar (fixa)                               │
+├─────────────────────────────────────────────────────┤
+│ [HIROヒロシ®]          [Aprovar Orçamento] [PDF]    │
+│ (logo menor)           (botões inline)              │
+├─────────────────────────────────────────────────────┤
+│ Hero / Conteúdo...                                  │
+└─────────────────────────────────────────────────────┘
+  → Botões flutuantes OCULTOS
+
+Estado 2 – Scrollou para baixo (header fora da tela):
+┌─────────────────────────────────────────────────────┐
+│ ⏰ Urgency Bar (fixa)                               │
+├─────────────────────────────────────────────────────┤
+│ Conteúdo...                                         │
+│                                                     │
+│              ┌──────────────────────────┐           │
+│              │ [Aprovar] [PDF] (float)  │           │
+│              └──────────────────────────┘           │
+└─────────────────────────────────────────────────────┘
+  → Botões flutuantes VISÍVEIS
+```
 
 ## Alterações
 
-### Migration SQL
+### 1. `ProposalHeader.tsx`
 
-```sql
-CREATE OR REPLACE FUNCTION public.auto_fill_contribution_margin_value()
-  RETURNS trigger
-  LANGUAGE plpgsql
-  SET search_path TO 'public'
-AS $$
-BEGIN
-  NEW.contribution_margin_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs_projects, 0);
-  RETURN NEW;
-END;
-$$;
+- Remover TODOS os links de navegação, Instagram, botão Contato, menu hamburger mobile
+- Manter apenas logo à esquerda (reduzir de `h-5 sm:h-6` para `h-4 sm:h-5`)
+- Adicionar botões "Aprovar Orçamento" e "PDF" à direita (mesmo estilo dos atuais FloatingActions)
+- Mudar de `fixed` para posição estática (relativa ao fluxo do documento)
+- Receber `projectName` como prop para construir o link WhatsApp
+- Usar `ref` no header para detectar visibilidade via IntersectionObserver
 
-CREATE TRIGGER trg_auto_fill_contribution_margin_value
-  BEFORE INSERT OR UPDATE OF revenue, costs_projects
-  ON public.financial_snapshots
-  FOR EACH ROW
-  EXECUTE FUNCTION public.auto_fill_contribution_margin_value();
+### 2. `FloatingActions.tsx`
 
--- Atualizar dados existentes
-UPDATE public.financial_snapshots
-SET contribution_margin_value = COALESCE(revenue, 0) - COALESCE(costs_projects, 0);
-```
+- Adicionar prop `visible: boolean` que controla se os botões flutuantes aparecem
+- Aplicar transição suave (opacity + translate) para entrada/saída
 
-### Edge Function `sync-financial-data`
+### 3. `ProposalPublicPage.tsx`
 
-Remover `contribution_margin_value` do payload de upsert, já que o trigger calcula automaticamente. O campo será ignorado mesmo se enviado, pois o trigger sobrescreve.
-
-### Hook `useFinancialData.ts`
-
-Nenhuma alteração necessária — já lê `contribution_margin_value` do snapshot retornado pelo banco.
+- Usar `useRef` + `IntersectionObserver` no ProposalHeader para detectar quando ele sai/entra na viewport
+- Criar estado `headerVisible` que controla a visibilidade dos FloatingActions
+- Passar `projectName` para o ProposalHeader
+- Passar `visible={!headerVisible}` para FloatingActions
 
 ## Arquivos
 
 | Arquivo | Alteração |
 |---|---|
-| Migration SQL | Criar function + trigger + atualizar dados existentes |
-| `supabase/functions/sync-financial-data/index.ts` | Remover `contribution_margin_value` do objeto de upsert |
+| `src/features/proposals/components/ProposalHeader.tsx` | Simplificar: só logo + botões de ação, posição estática, aceitar `projectName` |
+| `src/features/proposals/components/FloatingActions.tsx` | Adicionar prop `visible` com transição |
+| `src/features/proposals/components/ProposalPublicPage.tsx` | IntersectionObserver no header, controlar visibilidade dos floating actions |
 
