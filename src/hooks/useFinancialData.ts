@@ -101,7 +101,7 @@ export function useFinancialData(): FinancialData {
         return {
           month: label,
           meta: isFutureMonth ? 0 : (revenueGoal > 0 ? revenueGoal : monthlyGoal),
-          realizado: Number(snap?.revenue ?? 0),
+          realizado: isFutureMonth ? 0 : Number(snap?.revenue ?? 0),
         };
       });
 
