@@ -77,8 +77,8 @@ export default function Dashboard() {
 
   // Derived calculations
   const annualProgress = useMemo(() =>
-    Math.round((metrics.accumulated_revenue_ytd / goals.revenue_goal) * 100),
-    [metrics.accumulated_revenue_ytd, goals.revenue_goal]
+    ytdGoal > 0 ? Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100) : 0,
+    [metrics.accumulated_revenue_ytd, ytdGoal]
   );
 
   const currentMonth = new Date().getMonth();
