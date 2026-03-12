@@ -61,10 +61,10 @@ export function useFinancialData(): FinancialData {
       const currentMonthSnapshot = snapshots.find(s => s.month === currentMonth);
       const latestSnapshot = currentMonthSnapshot ?? snapshots[snapshots.length - 1];
 
-      // Accumulated YTD
-      const accumulated_revenue_ytd = snapshots.reduce(
-        (sum, s) => sum + Number(s.revenue ?? 0), 0
-      );
+      // Accumulated YTD (only months up to current)
+      const accumulated_revenue_ytd = snapshots
+        .filter(s => s.month <= currentMonth)
+        .reduce((sum, s) => sum + Number(s.revenue ?? 0), 0);
 
       // Cash runway
       const burnRate = Number(latestSnapshot?.burn_rate ?? 0);
@@ -94,11 +94,13 @@ export function useFinancialData(): FinancialData {
       const snapshotByMonth = new Map(snapshots.map(s => [s.month, s]));
 
       const monthlyData: MonthlyData[] = MONTH_LABELS.map((label, i) => {
-        const snap = snapshotByMonth.get(i + 1);
+        const monthNum = i + 1;
+        const snap = snapshotByMonth.get(monthNum);
         const revenueGoal = snap ? Number(snap.revenue_goal ?? 0) : 0;
+        const isFutureMonth = monthNum > currentMonth;
         return {
           month: label,
-          meta: revenueGoal > 0 ? revenueGoal : monthlyGoal,
+          meta: isFutureMonth ? 0 : (revenueGoal > 0 ? revenueGoal : monthlyGoal),
           realizado: Number(snap?.revenue ?? 0),
         };
       });

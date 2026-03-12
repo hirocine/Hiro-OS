@@ -1,29 +1,26 @@
 
 
-# Corrigir escopo temporal: Faturamento até o mês atual
+# Automação: net_profit_value e net_profit_pct
 
-## Problema
+## Situação Atual
 
-Os cards "Meta Anual", "Meta YTD" e o gráfico "Meta vs Realizado" consideram dados e metas dos 12 meses do ano. O correto é limitar tudo até o mês corrente (março = meses 1-3).
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
 
-Impactos concretos:
-- **`accumulated_revenue_ytd`** no hook soma todos os snapshots do ano (inclusive meses futuros se existirem) — deve filtrar apenas `month <= currentMonth`
-- **Card "Meta Anual"**: compara YTD contra meta do ano inteiro (ex: 60% parece baixo em março) — deve comparar contra meta proporcional até o mês atual
-- **Gráfico**: barras de Meta aparecem para os 12 meses — meses futuros não devem ter barra de meta
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
 
-## Alterações
+## Alteração
 
-### 1. `src/hooks/useFinancialData.ts`
-- Filtrar `accumulated_revenue_ytd` para somar apenas snapshots com `month <= currentMonth`
-- No `monthlyData`, zerar a meta (`meta: 0`) para meses futuros (`i + 1 > currentMonth`)
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
 
-### 2. `src/pages/Dashboard.tsx`
-- **Card "Meta Anual"**: trocar o denominador de `goals.revenue_goal` (anual) para `ytdGoal` (proporcional), tornando o progresso relativo ao período decorrido
-- Ajustar o texto descritivo para indicar que é a meta proporcional ao período (ex: "de R$ 500.000 (até março)")
-- `annualProgress` passa a usar `ytdGoal` como denominador
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
 
-| Arquivo | O que muda |
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
+
+| Recurso | Alteração |
 |---|---|
-| `useFinancialData.ts` | Filtrar YTD por `month <= currentMonth`; zerar meta de meses futuros no chart |
-| `Dashboard.tsx` | Card "Meta Anual" usa `ytdGoal` como referência; ajustar labels |
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
+
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 
