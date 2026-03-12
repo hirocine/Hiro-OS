@@ -61,10 +61,10 @@ export function useFinancialData(): FinancialData {
       const currentMonthSnapshot = snapshots.find(s => s.month === currentMonth);
       const latestSnapshot = currentMonthSnapshot ?? snapshots[snapshots.length - 1];
 
-      // Accumulated YTD
-      const accumulated_revenue_ytd = snapshots.reduce(
-        (sum, s) => sum + Number(s.revenue ?? 0), 0
-      );
+      // Accumulated YTD (only months up to current)
+      const accumulated_revenue_ytd = snapshots
+        .filter(s => s.month <= currentMonth)
+        .reduce((sum, s) => sum + Number(s.revenue ?? 0), 0);
 
       // Cash runway
       const burnRate = Number(latestSnapshot?.burn_rate ?? 0);
