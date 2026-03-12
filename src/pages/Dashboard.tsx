@@ -76,15 +76,15 @@ export default function Dashboard() {
   }, []);
 
   // Derived calculations
-  const annualProgress = useMemo(() =>
-    ytdGoal > 0 ? Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100) : 0,
-    [metrics.accumulated_revenue_ytd, ytdGoal]
-  );
-
   const currentMonth = new Date().getMonth();
   const ytdGoal = useMemo(() =>
     Math.round((goals.revenue_goal / 12) * (currentMonth + 1)),
     [goals.revenue_goal, currentMonth]
+  );
+
+  const annualProgress = useMemo(() =>
+    ytdGoal > 0 ? Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100) : 0,
+    [metrics.accumulated_revenue_ytd, ytdGoal]
   );
 
   const monthlyGoal = useMemo(() => Math.round(goals.revenue_goal / 12), [goals.revenue_goal]);
