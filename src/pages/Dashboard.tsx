@@ -83,8 +83,8 @@ export default function Dashboard() {
   );
 
   const annualProgress = useMemo(() =>
-    ytdGoal > 0 ? Math.round((metrics.accumulated_revenue_ytd / ytdGoal) * 100) : 0,
-    [metrics.accumulated_revenue_ytd, ytdGoal]
+    goals.revenue_goal > 0 ? Math.round((metrics.accumulated_revenue_ytd / goals.revenue_goal) * 100) : 0,
+    [metrics.accumulated_revenue_ytd, goals.revenue_goal]
   );
 
   const monthlyGoal = useMemo(() => Math.round(goals.revenue_goal / 12), [goals.revenue_goal]);
