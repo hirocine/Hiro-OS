@@ -94,11 +94,13 @@ export function useFinancialData(): FinancialData {
       const snapshotByMonth = new Map(snapshots.map(s => [s.month, s]));
 
       const monthlyData: MonthlyData[] = MONTH_LABELS.map((label, i) => {
-        const snap = snapshotByMonth.get(i + 1);
+        const monthNum = i + 1;
+        const snap = snapshotByMonth.get(monthNum);
         const revenueGoal = snap ? Number(snap.revenue_goal ?? 0) : 0;
+        const isFutureMonth = monthNum > currentMonth;
         return {
           month: label,
-          meta: revenueGoal > 0 ? revenueGoal : monthlyGoal,
+          meta: isFutureMonth ? 0 : (revenueGoal > 0 ? revenueGoal : monthlyGoal),
           realizado: Number(snap?.revenue ?? 0),
         };
       });

@@ -435,7 +435,7 @@ export default function Dashboard() {
                 <CardContent className="space-y-3 flex-1 flex flex-col justify-center">
                   <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-0.5">
                     <span className="text-lg lg:text-xl font-bold text-foreground">{formatCurrency(metrics.accumulated_revenue_ytd)}</span>
-                    <span className="text-xs text-muted-foreground">de {formatCurrency(goals.revenue_goal)}</span>
+                    <span className="text-xs text-muted-foreground">de {formatCurrency(ytdGoal)} (até {new Date().toLocaleString('pt-BR', { month: 'short' }).replace('.', '')})</span>
                   </div>
                   <Progress value={Math.min(annualProgress, 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">{annualProgress}% atingido</p>
