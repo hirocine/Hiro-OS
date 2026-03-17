@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
-import { Clock, HardDrive } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, HardDrive, CheckCircle2, FolderOpen, Share2 } from 'lucide-react';
 import { SSDKanbanBoard } from '@/components/SSD/SSDKanbanBoard';
 import { useSSDs } from '@/features/ssds';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { formatRelativeTime } from '@/lib/utils';
+import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
 
 const SSDs = () => {
   const { ssds, ssdsByStatus, ssdAllocations, loading, updateSSDStatus, updateSSDOrder, refetch } = useSSDs();
@@ -17,8 +17,6 @@ const SSDs = () => {
       setLastUpdate(new Date());
     }
   }, [loading, ssds.length]);
-
-  // formatRelativeTime imported from @/lib/utils
 
   const stats = useMemo(() => {
     const total = ssds.length;
@@ -38,20 +36,10 @@ const SSDs = () => {
           subtitle="Gerencie seus SSDs e HDs de forma visual"
         />
 
-        {/* Stats cards skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4 rounded-full" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-12 mb-2" />
-                <Skeleton className="h-3 w-28" />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="mt-6">
+          <StatsCardGrid columns={4}>
+            {[1, 2, 3, 4].map(i => <StatsCardSkeleton key={i} />)}
+          </StatsCardGrid>
         </div>
 
         {/* Kanban columns skeleton */}
@@ -79,6 +67,13 @@ const SSDs = () => {
     );
   }
 
+  const statsCards = [
+    { title: 'Total de SSDs/HDs', value: stats.total, icon: HardDrive, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary', description: `${stats.totalCapacity.toFixed(0)} GB capacidade total` },
+    { title: 'Disponíveis', value: stats.available, icon: CheckCircle2, color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-l-success', description: 'Prontos para uso' },
+    { title: 'Em Projetos', value: stats.inUse, icon: FolderOpen, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', borderColor: 'border-l-blue-500', description: 'Alocados em projetos' },
+    { title: 'Emprestados', value: stats.loaned, icon: Share2, color: 'text-warning', bgColor: 'bg-warning/10', borderColor: 'border-l-warning', description: 'Fora do estoque' },
+  ];
+
   return (
     <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
@@ -99,58 +94,10 @@ const SSDs = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de SSDs/HDs</CardTitle>
-            <HardDrive className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalCapacity.toFixed(0)} GB capacidade total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disponíveis</CardTitle>
-            <div className="h-4 w-4 rounded-full bg-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.available}</div>
-            <p className="text-xs text-muted-foreground">
-              Prontos para uso
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Projetos</CardTitle>
-            <div className="h-4 w-4 rounded-full bg-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inUse}</div>
-            <p className="text-xs text-muted-foreground">
-              Alocados em projetos
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Emprestados</CardTitle>
-            <div className="h-4 w-4 rounded-full bg-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.loaned}</div>
-            <p className="text-xs text-muted-foreground">
-              Fora do estoque
-            </p>
-          </CardContent>
-        </Card>
+      <div className="mt-6">
+        <StatsCardGrid columns={4}>
+          {statsCards.map(card => <StatsCard key={card.title} {...card} />)}
+        </StatsCardGrid>
       </div>
 
       <div className="mt-6">
@@ -162,7 +109,6 @@ const SSDs = () => {
           onUpdate={refetch}
         />
       </div>
-
     </ResponsiveContainer>
   );
 };

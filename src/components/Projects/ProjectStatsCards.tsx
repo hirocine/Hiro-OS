@@ -1,6 +1,5 @@
 import { FolderOpen, Clock, Play } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
 import { ProjectStats } from '@/types/project';
 
 interface ProjectStatsCardsProps {
@@ -11,68 +10,21 @@ interface ProjectStatsCardsProps {
 export function ProjectStatsCards({ stats, isLoading }: ProjectStatsCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-lg" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-6 w-8" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <StatsCardGrid columns={3}>
+        {[1, 2, 3].map(i => <StatsCardSkeleton key={i} />)}
+      </StatsCardGrid>
     );
   }
 
   const cards = [
-    {
-      title: 'Retiradas Ativas',
-      value: stats?.active || 0,
-      icon: FolderOpen,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      borderColor: 'border-l-primary',
-    },
-    {
-      title: 'Pendente Separação',
-      value: stats?.byStep?.pending_separation || 0,
-      icon: Clock,
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
-      borderColor: 'border-l-warning',
-    },
-    {
-      title: 'Em Gravação',
-      value: stats?.byStep?.in_use || 0,
-      icon: Play,
-      color: 'text-success',
-      bgColor: 'bg-success/10',
-      borderColor: 'border-l-success',
-    },
+    { title: 'Retiradas Ativas', value: stats?.active || 0, icon: FolderOpen, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary' },
+    { title: 'Pendente Separação', value: stats?.byStep?.pending_separation || 0, icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', borderColor: 'border-l-warning' },
+    { title: 'Em Gravação', value: stats?.byStep?.in_use || 0, icon: Play, color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-l-success' },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {cards.map((card) => (
-        <Card key={card.title} className={`border-l-4 ${card.borderColor} ${card.bgColor.replace('/10', '/5')}`}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${card.bgColor}`}>
-                <card.icon className={`h-5 w-5 ${card.color}`} />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{card.title}</p>
-                <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <StatsCardGrid columns={3}>
+      {cards.map(card => <StatsCard key={card.title} {...card} />)}
+    </StatsCardGrid>
   );
 }

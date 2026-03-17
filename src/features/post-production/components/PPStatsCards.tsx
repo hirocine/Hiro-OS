@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Film, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { StatsCard, StatsCardGrid } from '@/components/ui/stats-card';
 import { PostProductionItem } from '../types';
 
 interface PPStatsCardsProps {
@@ -31,25 +31,17 @@ export function PPStatsCards({ items }: PPStatsCardsProps) {
   }, [items]);
 
   const cards = [
-    { label: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-primary' },
-    { label: 'Em Produção', value: stats.inProgress, icon: Clock, color: 'text-blue-600 dark:text-blue-400' },
-    { label: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive' },
-    { label: 'Entregues (mês)', value: stats.delivered, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400' },
+    { title: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary' },
+    { title: 'Em Produção', value: stats.inProgress, icon: Clock, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', borderColor: 'border-l-blue-500' },
+    { title: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive', bgColor: 'bg-destructive/10', borderColor: 'border-l-destructive' },
+    { title: 'Entregues (mês)', value: stats.delivered, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-l-green-500' },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <StatsCardGrid columns={4}>
       {cards.map(card => (
-        <Card key={card.label}>
-          <CardContent className="p-4 flex items-center gap-3">
-            <card.icon className={`h-5 w-5 ${card.color} shrink-0`} />
-            <div className="min-w-0">
-              <p className="text-2xl font-bold">{card.value}</p>
-              <p className="text-xs text-muted-foreground truncate">{card.label}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard key={card.title} {...card} />
       ))}
-    </div>
+    </StatsCardGrid>
   );
 }
