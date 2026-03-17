@@ -12,46 +12,13 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  {
-    name: 'Home',
-    href: '/',
-    icon: Home,
-  },
-  {
-    name: 'Tarefas',
-    href: '/tarefas',
-    icon: CheckSquare,
-  },
-  {
-    name: 'Retiradas',
-    href: '/retiradas',
-    icon: Camera,
-  },
-  {
-    name: 'Inventário',
-    href: '/inventario',
-    icon: Package,
-  },
-  {
-    name: 'Financeiro',
-    href: '/financeiro',
-    icon: LayoutDashboard,
-  },
-  {
-    name: 'SSDs',
-    href: '/ssds',
-    icon: HardDrive,
-  },
-  {
-    name: 'Políticas',
-    href: '/politicas',
-    icon: FileText,
-  },
-  {
-    name: 'Plataformas',
-    href: '/plataformas',
-    icon: Key,
-  },
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: CheckSquare },
+  { name: 'Retiradas', href: '/retiradas', icon: Camera },
+  { name: 'Inventário', href: '/inventario', icon: Package },
+  { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
+  { name: 'Políticas', href: '/politicas', icon: FileText },
+  { name: 'Plataformas', href: '/plataformas', icon: Key },
 ];
 
 const producaoNavigation: NavigationItem[] = [
