@@ -1,26 +1,86 @@
 
 
-# Automação: net_profit_value e net_profit_pct
+# Esteira de Pós-Produção
 
-## Situação Atual
+Nova ferramenta para controle da fila de pós-produção, onde cada vídeo é uma linha na tabela. Três visualizações: tabela (padrão), kanban por etapa, e calendário por prazo.
 
-Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+## 1. Banco de Dados
 
-- **`net_profit_value`** = `revenue - costs`
-- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
+Nova tabela `post_production_queue`:
 
-## Alteração
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| id | uuid PK | |
+| title | text NOT NULL | Nome do vídeo |
+| project_id | uuid nullable FK → audiovisual_projects | Vínculo opcional |
+| project_name | text nullable | Cache do nome do projeto/cliente |
+| client_name | text nullable | Nome do cliente (quando sem projeto) |
+| editor_id | uuid nullable | Usuário editor responsável |
+| editor_name | text nullable | Cache do nome do editor |
+| status | text NOT NULL default 'fila' | Etapa atual (fila, edicao, color_grading, finalizacao, revisao, entregue) |
+| priority | text NOT NULL default 'media' | baixa, media, alta, urgente |
+| due_date | date nullable | Prazo de entrega |
+| start_date | date nullable | Quando começou a edição |
+| delivered_date | date nullable | Data real de entrega |
+| notes | text nullable | Observações |
+| created_by | uuid | Quem criou |
+| created_at / updated_at | timestamptz | |
 
-Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
+RLS: autenticados podem ler; admin e producao podem inserir/atualizar/deletar.
 
-1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
-2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+## 2. Estrutura de Arquivos (feature-based, seguindo padrão existente)
 
-A migration também faz um UPDATE em massa para recalcular os valores existentes.
+```
+src/features/post-production/
+  types/index.ts          — tipos, configs de status/prioridade
+  hooks/
+    usePostProduction.ts  — query com filtros
+    usePostProductionMutations.ts — create/update/delete
+  components/
+    PostProductionTable.ts     — tabela inline-edit (padrão Tasks)
+    PostProductionKanban.ts    — kanban por status/etapa
+    PostProductionCalendar.ts  — calendário por prazo
+    PostProductionStatsCards.ts
+    PostProductionDialog.ts    — dialog de criação/edição
+    StatusBadge.ts / PriorityBadge.ts — reutiliza padrão visual das Tasks
+  index.ts
 
-| Recurso | Alteração |
-|---|---|
-| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
+src/pages/PostProduction.tsx  — página principal com tabs (Tabela/Kanban/Calendário)
+```
 
-Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
+## 3. Página Principal
+
+- Rota: `/esteira-de-pos`
+- Layout: `ResponsiveContainer` + `PageHeader` (padrão do projeto)
+- Stats cards no topo (total, em edição, atrasados, entregues este mês)
+- Tabs: **Tabela** | **Kanban** | **Calendário**
+- Botão "Novo Vídeo" no PageHeader
+- Busca e filtros (por editor, status, prioridade, projeto)
+
+### Tabela
+- Mesmo padrão inline-edit da página de Tarefas (InlineEditCell, InlineSelectCell, InlineDateCell)
+- Colunas: Título, Projeto/Cliente, Editor, Etapa, Prioridade, Prazo
+- Linha de criação rápida no topo
+- Clique na linha abre detalhes
+
+### Kanban
+- Colunas por etapa: Fila → Edição → Color Grading → Finalização → Revisão → Entregue
+- Cards com título, editor, prazo, badge de prioridade (similar ao SSD Kanban)
+
+### Calendário
+- Reutiliza componente de calendário existente para mostrar vídeos por prazo de entrega
+
+## 4. Sidebar
+
+Novo item no bloco MENU principal (visível para todos):
+- Ícone: `Clapperboard` (lucide)
+- Posição: após "Plataformas" (último do menu principal)
+- Label: "Esteira de Pós"
+
+## 5. Etapas de Implementação
+
+Dado o tamanho, sugiro dividir em 3 etapas:
+1. **Etapa 1**: Criação da tabela no Supabase + tipos + hook de leitura/mutations + página com visão Tabela funcional + sidebar
+2. **Etapa 2**: Visão Kanban + Dialog de detalhes
+3. **Etapa 3**: Visão Calendário + Stats cards + filtros avançados
 
