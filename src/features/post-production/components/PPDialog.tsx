@@ -5,10 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { PostProductionItem, PPStatus, PPPriority, PP_STATUS_CONFIG, PP_PRIORITY_CONFIG } from '../types';
+import { PPStatusBadge } from './PPStatusBadge';
+import { PPPriorityBadge } from './PPPriorityBadge';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -29,6 +32,15 @@ const defaultForm = {
   start_date: '',
   notes: '',
 };
+
+function getUserAvatarUrl(user: { avatar_url?: string | null; user_metadata?: { avatar_url?: string; picture?: string } }): string | undefined {
+  return user.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return '?';
+  return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+}
 
 export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   const { updateItem, deleteItem, createItem } = usePostProductionMutations();
@@ -55,6 +67,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
       setForm(defaultForm);
     }
   }, [item, open]);
+
+  const selectedEditor = users.find(u => u.id === form.editor_id);
 
   const handleSave = async () => {
     if (!form.title.trim()) return;
@@ -108,48 +122,74 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isCreating ? 'Novo Vídeo' : 'Detalhes do Vídeo'}</DialogTitle>
+          <DialogTitle>{isCreating ? 'Novo Vídeo' : 'Editar Vídeo'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label>Título</Label>
-            <Input value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
+            <Label htmlFor="pp-title">Título</Label>
+            <Input id="pp-title" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Projeto</Label>
-              <Input value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Nome do projeto" />
+              <Label htmlFor="pp-project">Projeto</Label>
+              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Nome do projeto" />
             </div>
             <div>
-              <Label>Cliente</Label>
-              <Input value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Nome do cliente" />
+              <Label htmlFor="pp-client">Cliente</Label>
+              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Nome do cliente" />
             </div>
           </div>
 
+          {/* Editor com Avatar */}
           <div>
             <Label>Editor</Label>
             <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-              <SelectTrigger><SelectValue placeholder="Selecionar editor" /></SelectTrigger>
+              <SelectTrigger>
+                {selectedEditor ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                      <AvatarFallback className="text-[10px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{selectedEditor.display_name || selectedEditor.email}</span>
+                  </div>
+                ) : (
+                  <SelectValue placeholder="Selecionar editor" />
+                )}
+              </SelectTrigger>
               <SelectContent>
                 {users.map(u => (
-                  <SelectItem key={u.id} value={u.id}>{u.display_name || u.email}</SelectItem>
+                  <SelectItem key={u.id} value={u.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={getUserAvatarUrl(u)} />
+                        <AvatarFallback className="text-[10px]">{getInitials(u.display_name)}</AvatarFallback>
+                      </Avatar>
+                      <span>{u.display_name || u.email}</span>
+                    </div>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Etapa e Prioridade com Badges */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Etapa</Label>
               <Select value={form.status} onValueChange={v => setForm(prev => ({ ...prev, status: v as PPStatus }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <PPStatusBadge status={form.status} />
+                </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PP_STATUS_CONFIG).map(([v, c]) => (
-                    <SelectItem key={v} value={v}>{c.label}</SelectItem>
+                  {Object.keys(PP_STATUS_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}>
+                      <PPStatusBadge status={v as PPStatus} />
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -157,10 +197,14 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
             <div>
               <Label>Prioridade</Label>
               <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <PPPriorityBadge priority={form.priority} />
+                </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => (
-                    <SelectItem key={v} value={v}>{c.label}</SelectItem>
+                  {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}>
+                      <PPPriorityBadge priority={v as PPPriority} />
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -169,18 +213,18 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Prazo</Label>
-              <Input type="date" value={form.due_date} onChange={e => setForm(prev => ({ ...prev, due_date: e.target.value }))} />
+              <Label htmlFor="pp-due">Prazo</Label>
+              <Input id="pp-due" type="date" value={form.due_date} onChange={e => setForm(prev => ({ ...prev, due_date: e.target.value }))} />
             </div>
             <div>
-              <Label>Início</Label>
-              <Input type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} />
+              <Label htmlFor="pp-start">Início</Label>
+              <Input id="pp-start" type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} />
             </div>
           </div>
 
           <div>
-            <Label>Observações</Label>
-            <Textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
+            <Label htmlFor="pp-notes">Observações</Label>
+            <Textarea id="pp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
           </div>
         </div>
 
