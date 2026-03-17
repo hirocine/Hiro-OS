@@ -7,8 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
 import { useUsers } from '@/hooks/useUsers';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { PostProductionItem, PPStatus, PPPriority, PP_STATUS_CONFIG, PP_PRIORITY_CONFIG } from '../types';
 import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PPDialogProps {
   item: PostProductionItem | null;
@@ -16,21 +18,25 @@ interface PPDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
-  const { updateItem, deleteItem } = usePostProductionMutations();
-  const { users } = useUsers();
+const defaultForm = {
+  title: '',
+  project_name: '',
+  client_name: '',
+  editor_id: '',
+  status: 'fila' as PPStatus,
+  priority: 'media' as PPPriority,
+  due_date: '',
+  start_date: '',
+  notes: '',
+};
 
-  const [form, setForm] = useState({
-    title: '',
-    project_name: '',
-    client_name: '',
-    editor_id: '',
-    status: 'fila' as PPStatus,
-    priority: 'media' as PPPriority,
-    due_date: '',
-    start_date: '',
-    notes: '',
-  });
+export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
+  const { updateItem, deleteItem, createItem } = usePostProductionMutations();
+  const { users } = useUsers();
+  const { user } = useAuthContext();
+  const isCreating = !item;
+
+  const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
     if (item) {
@@ -45,29 +51,53 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
         start_date: item.start_date || '',
         notes: item.notes || '',
       });
+    } else {
+      setForm(defaultForm);
     }
-  }, [item]);
+  }, [item, open]);
 
-  const handleSave = () => {
-    if (!item) return;
+  const handleSave = async () => {
+    if (!form.title.trim()) return;
     const editorUser = users.find(u => u.id === form.editor_id);
-    updateItem.mutate({
-      id: item.id,
-      updates: {
-        title: form.title,
-        project_name: form.project_name || null,
-        client_name: form.client_name || null,
-        editor_id: form.editor_id || null,
-        editor_name: editorUser?.display_name || null,
-        status: form.status,
-        priority: form.priority,
-        due_date: form.due_date || null,
-        start_date: form.start_date || null,
-        notes: form.notes || null,
-        ...(form.status === 'entregue' && !item.delivered_date ? { delivered_date: new Date().toISOString().split('T')[0] } : {}),
-      },
-    });
-    onOpenChange(false);
+
+    if (isCreating) {
+      if (!user) return;
+      try {
+        await createItem.mutateAsync({
+          title: form.title,
+          project_name: form.project_name || null,
+          client_name: form.client_name || null,
+          editor_id: form.editor_id || null,
+          editor_name: editorUser?.display_name || null,
+          status: form.status,
+          priority: form.priority,
+          due_date: form.due_date || null,
+          start_date: form.start_date || null,
+          notes: form.notes || null,
+        });
+        onOpenChange(false);
+      } catch {
+        toast.error('Erro ao criar vídeo');
+      }
+    } else {
+      updateItem.mutate({
+        id: item.id,
+        updates: {
+          title: form.title,
+          project_name: form.project_name || null,
+          client_name: form.client_name || null,
+          editor_id: form.editor_id || null,
+          editor_name: editorUser?.display_name || null,
+          status: form.status,
+          priority: form.priority,
+          due_date: form.due_date || null,
+          start_date: form.start_date || null,
+          notes: form.notes || null,
+          ...(form.status === 'entregue' && !item.delivered_date ? { delivered_date: new Date().toISOString().split('T')[0] } : {}),
+        },
+      });
+      onOpenChange(false);
+    }
   };
 
   const handleDelete = () => {
@@ -80,7 +110,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Detalhes do Vídeo</DialogTitle>
+          <DialogTitle>{isCreating ? 'Novo Vídeo' : 'Detalhes do Vídeo'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -155,12 +185,16 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
         </div>
 
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-1" /> Excluir
-          </Button>
+          {!isCreating ? (
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
+              <Trash2 className="h-4 w-4 mr-1" /> Excluir
+            </Button>
+          ) : <div />}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.title.trim()}>Salvar</Button>
+            <Button onClick={handleSave} disabled={!form.title.trim()}>
+              {isCreating ? 'Criar' : 'Salvar'}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>
