@@ -3,7 +3,8 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Plus } from 'lucide-react';
 import { usePostProduction } from '@/features/post-production/hooks/usePostProduction';
 import { PPTable, PPKanban, PPCalendar, PPStatsCards, PPDialog } from '@/features/post-production/components';
 import { PostProductionItem } from '@/features/post-production/types';
@@ -30,11 +31,21 @@ export default function PostProduction() {
     setDialogOpen(true);
   };
 
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setDialogOpen(true);
+  };
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Esteira de Pós"
         subtitle="Controle da fila de pós-produção"
+        actions={
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-2" /> Novo Vídeo
+          </Button>
+        }
       />
 
       <PPStatsCards items={items} />
@@ -60,7 +71,7 @@ export default function PostProduction() {
           </TabsList>
 
           <TabsContent value="tabela">
-            <PPTable items={filteredItems} isLoading={isLoading} onItemClick={handleItemClick} />
+            <PPTable items={filteredItems} isLoading={isLoading} onItemClick={handleItemClick} onEditClick={handleItemClick} />
           </TabsContent>
 
           <TabsContent value="kanban">
