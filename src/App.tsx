@@ -92,6 +92,7 @@ const App = () => (
                 <Route path="projetos-av/:id" element={<AVProjectDetails />} />
                 <Route path="orcamentos" element={<Proposals />} />
                 <Route path="orcamentos/novo" element={<NewProposal />} />
+                <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<Admin />} />

@@ -34,6 +34,7 @@ const navigation: NavigationItem[] = [
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
 ];
 
 const producaoNavigation: NavigationItem[] = [
