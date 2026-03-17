@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -34,6 +34,7 @@ const navigation: NavigationItem[] = [
   { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
 ];
 
 const producaoNavigation: NavigationItem[] = [

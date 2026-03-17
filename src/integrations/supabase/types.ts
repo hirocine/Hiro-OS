@@ -882,6 +882,71 @@ export type Database = {
           },
         ]
       }
+      post_production_queue: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          created_by: string
+          delivered_date: string | null
+          due_date: string | null
+          editor_id: string | null
+          editor_name: string | null
+          id: string
+          notes: string | null
+          priority: string
+          project_id: string | null
+          project_name: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          created_by: string
+          delivered_date?: string | null
+          due_date?: string | null
+          editor_id?: string | null
+          editor_name?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          project_id?: string | null
+          project_name?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          created_by?: string
+          delivered_date?: string | null
+          due_date?: string | null
+          editor_id?: string | null
+          editor_name?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          project_id?: string | null
+          project_name?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_production_queue_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "audiovisual_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
