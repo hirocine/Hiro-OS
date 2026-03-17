@@ -257,7 +257,7 @@ export default function TaskDetails() {
                 <InlineAssigneeCell
                   value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
                   users={users}
-                  onSave={(newAssignees) => handleUpdateTask({ assignee_ids: newAssignees })}
+                  onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
                 />
               </div>
             </div>
