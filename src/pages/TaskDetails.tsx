@@ -255,9 +255,9 @@ export default function TaskDetails() {
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Responsável</span>
                 <InlineAssigneeCell
-                  value={task.assigned_to}
+                  value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
                   users={users}
-                  onSave={(newAssignee) => handleUpdateTask({ assigned_to: newAssignee })}
+                  onSave={(newAssignees) => handleUpdateTask({ assignee_ids: newAssignees })}
                 />
               </div>
             </div>

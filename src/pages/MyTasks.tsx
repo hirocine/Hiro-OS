@@ -30,7 +30,7 @@ export default function MyTasks() {
   const { user } = useAuthContext();
   const { users } = useUsers();
   const { departments } = useDepartments();
-  const { tasks: allTasks, isLoading } = useTasks({ assigned_to_me: true, is_private: false });
+  const { tasks: allTasks, isLoading } = useTasks({ assigned_to_me: true });
   const { createTask, updateTask } = useTaskMutations();
 
   // Filter out completed/archived
