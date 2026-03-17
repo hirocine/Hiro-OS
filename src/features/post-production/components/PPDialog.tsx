@@ -78,10 +78,11 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
   useEffect(() => {
     if (item) {
+      const parsed = parseTitle(item.title);
       setForm({
-        title: item.title,
-        project_name: item.project_name || '',
-        client_name: item.client_name || '',
+        client_name: item.client_name || parsed.client_name,
+        project_name: item.project_name || parsed.project_name,
+        suffix: parsed.suffix,
         editor_id: item.editor_id || '',
         status: item.status,
         priority: item.priority,
@@ -93,6 +94,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
       setForm(defaultForm);
     }
   }, [item, open]);
+
+  const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
 
   const selectedEditor = users.find(u => u.id === form.editor_id);
 
