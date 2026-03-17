@@ -343,7 +343,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
           ) : <div />}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.title.trim()}>
+            <Button onClick={handleSave} disabled={!form.client_name.trim()}>
               {isCreating ? 'Criar' : 'Salvar'}
             </Button>
           </div>
