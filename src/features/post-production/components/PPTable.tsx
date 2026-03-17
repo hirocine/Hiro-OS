@@ -131,22 +131,22 @@ export function PPTable({ items, isLoading, onItemClick }: PPTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead className="w-[25%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="project_name" label="Projeto/Cliente" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="project_name" label="Projeto/Cliente" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[15%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="status" label="Etapa" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="status" label="Etapa" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -169,7 +169,7 @@ export function PPTable({ items, isLoading, onItemClick }: PPTableProps) {
             <InlineEditCell
               value={newItem.project_name || ''}
               onSave={value => setNewItem(prev => ({ ...prev, project_name: value || null }))}
-              placeholder="Projeto/Cliente"
+             
             />
           </TableCell>
           <TableCell style={{ textAlign: 'left' }}>
@@ -224,7 +224,7 @@ export function PPTable({ items, isLoading, onItemClick }: PPTableProps) {
               <InlineEditCell
                 value={item.project_name || item.client_name || ''}
                 onSave={value => updateItem.mutate({ id: item.id, updates: { project_name: value || null } })}
-                placeholder="—"
+               
               />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
