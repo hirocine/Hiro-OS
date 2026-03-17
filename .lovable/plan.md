@@ -1,15 +1,26 @@
 
 
-# Trocar inputs de data nativos por Datepicker Shadcn no PPDialog
+# Automação: net_profit_value e net_profit_pct
 
-## Problema
-O dialog usa `<Input type="date">` nativo (feio, inconsistente entre browsers). O projeto já tem o componente `Calendar` do Shadcn com `Popover` usado em outros lugares (ex: `EditProjectDialog`).
+## Situação Atual
 
-## Alteração em `src/features/post-production/components/PPDialog.tsx`
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
 
-- Importar `Calendar`, `Popover`, `PopoverContent`, `PopoverTrigger`, `CalendarIcon`, `format` (date-fns), `cn`
-- Substituir os dois `<Input type="date">` (Prazo e Início, linhas ~215-222) por Popovers com Calendar
-- Cada campo: botão trigger mostrando data formatada `dd/MM/yyyy` ou placeholder, popover com `Calendar mode="single"` e `pointer-events-auto`
-- Adicionar botão "Limpar" opcional dentro do popover para permitir remover a data
-- Converter entre string ISO (`form.due_date`) e `Date` object para o Calendar
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
+
+## Alteração
+
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
+
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
+
+| Recurso | Alteração |
+|---|---|
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
+
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 
