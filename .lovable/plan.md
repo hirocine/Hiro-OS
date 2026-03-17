@@ -1,26 +1,24 @@
 
+# Ajustes na Esteira de Pós
 
-# Automação: net_profit_value e net_profit_pct
+## Alterações
 
-## Situação Atual
+### 1. `src/pages/PostProduction.tsx`
+- Adicionar botão "Novo Vídeo" na prop `actions` do `PageHeader` (padrão da plataforma)
+- Adicionar estado `createDialogOpen` para controlar o dialog de criação
+- Renderizar o `PPDialog` tanto para criação (item=null) quanto edição
 
-Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+### 2. `src/features/post-production/components/PPDialog.tsx`
+- Suportar modo criação (quando `item` é null): título "Novo Vídeo", botão "Criar" em vez de "Salvar", sem botão Excluir
+- Chamar `createItem` do mutations quando em modo criação
 
-- **`net_profit_value`** = `revenue - costs`
-- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
+### 3. `src/features/post-production/components/PPTable.tsx`
+- **Remover** toda a creation row (linhas 154-212)
+- **Remover** imports não mais necessários (`defaultNewItem`, estado `newItem`, `handleCreate`, `isActive`)
+- Título e Projeto/Cliente: trocar `InlineEditCell` por texto estático (span simples)
+- **Adicionar coluna "Ações"** no final com um botão de edição (ícone `Pencil`) que abre o dialog de edição
+- Receber callback `onEditClick` via props para abrir o dialog de edição
+- Ajustar larguras das colunas para acomodar a nova coluna de ações
 
-## Alteração
-
-Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
-
-1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
-2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
-
-A migration também faz um UPDATE em massa para recalcular os valores existentes.
-
-| Recurso | Alteração |
-|---|---|
-| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
-
-Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
-
+### 4. `src/pages/PostProduction.tsx` (complemento)
+- Passar `onEditClick` para `PPTable` que abre o dialog em modo edição
