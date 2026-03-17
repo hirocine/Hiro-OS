@@ -183,7 +183,6 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
               placeholder="Preencha os campos acima..."
             />
           </div>
-          </div>
 
           {/* Editor com Avatar */}
           <div>
