@@ -28,13 +28,7 @@ const navigation: NavigationItem[] = [
   { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
-  {
-    name: 'Tarefas', href: '/tarefas', icon: CheckSquare,
-    children: [
-      { name: 'Gerais', href: '/tarefas/gerais', icon: Users },
-      { name: 'Privadas', href: '/tarefas/privadas', icon: Lock },
-    ],
-  },
+  { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
