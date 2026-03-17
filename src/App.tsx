@@ -79,9 +79,7 @@ const App = () => (
                 <Route path="plataformas" element={<PlatformAccesses />} />
                 <Route path="politicas" element={<Policies />} />
                 <Route path="politicas/:id" element={<PolicyView />} />
-                <Route path="tarefas" element={<Navigate to="/tarefas/gerais" replace />} />
-                <Route path="tarefas/gerais" element={<Tasks />} />
-                <Route path="tarefas/privadas" element={<Tasks />} />
+                <Route path="tarefas" element={<Tasks />} />
                 <Route path="tarefas/:id" element={<TaskDetails />} />
                 <Route path="fornecedores" element={<Navigate to="/fornecedores/freelancers" replace />} />
                 <Route path="fornecedores/freelancers" element={<Suppliers />} />
