@@ -158,20 +158,31 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="pp-title">Título</Label>
-            <Input id="pp-title" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="pp-client">Empresa</Label>
+              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" />
+            </div>
             <div>
               <Label htmlFor="pp-project">Projeto</Label>
-              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Nome do projeto" />
+              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" />
             </div>
             <div>
-              <Label htmlFor="pp-client">Cliente</Label>
-              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Nome do cliente" />
+              <Label htmlFor="pp-suffix">Sufixo</Label>
+              <Input id="pp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" />
             </div>
+          </div>
+
+          <div>
+            <Label>Título do Vídeo</Label>
+            <Input
+              value={composedTitle}
+              readOnly
+              disabled
+              className="bg-muted text-muted-foreground cursor-not-allowed"
+              placeholder="Preencha os campos acima..."
+            />
+          </div>
           </div>
 
           {/* Editor com Avatar */}
