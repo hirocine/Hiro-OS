@@ -73,7 +73,7 @@ export default function TaskDetails() {
   const [newLinkTitle, setNewLinkTitle] = useState('');
 
   const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment, addLink, deleteLink } = useTaskDetails(id!);
-  const { deleteTask, updateTask } = useTaskMutations();
+  const { deleteTask, updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
   const { departments } = useDepartments();
 
