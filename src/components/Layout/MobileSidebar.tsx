@@ -25,19 +25,12 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  {
-    name: 'Tarefas', href: '/tarefas', icon: CheckSquare,
-    children: [
-      { name: 'Gerais', href: '/tarefas/gerais', icon: Users },
-      { name: 'Privadas', href: '/tarefas/privadas', icon: Lock },
-    ],
-  },
+  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Inventário', href: '/inventario', icon: Package },
-  { name: 'Controle de SSDs e HDs', href: '/ssds', icon: HardDrive },
+  { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
-  { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
 ];
 
 const producaoNavigation: NavigationItem[] = [
