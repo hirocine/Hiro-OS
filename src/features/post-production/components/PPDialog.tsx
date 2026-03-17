@@ -219,12 +219,78 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="pp-due">Prazo</Label>
-              <Input id="pp-due" type="date" value={form.due_date} onChange={e => setForm(prev => ({ ...prev, due_date: e.target.value }))} />
+              <Label>Prazo</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !form.due_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.due_date
+                      ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
+                      : 'Selecionar data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
+                    onSelect={(date) => {
+                      setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {form.due_date && (
+                    <div className="p-2 border-t">
+                      <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
+                        <X className="w-4 h-4 mr-2" /> Limpar
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
-              <Label htmlFor="pp-start">Início</Label>
-              <Input id="pp-start" type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} />
+              <Label>Início</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !form.start_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.start_date
+                      ? format(new Date(form.start_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
+                      : 'Selecionar data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
+                    onSelect={(date) => {
+                      setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {form.start_date && (
+                    <div className="p-2 border-t">
+                      <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
+                        <X className="w-4 h-4 mr-2" /> Limpar
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
