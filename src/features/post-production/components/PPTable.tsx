@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PPSortableHeader } from './PPSortableHeader';
 import { TaskSortableHeader } from '@/features/tasks/components/TaskSortableHeader';
 import { InlineEditCell } from '@/features/tasks/components/InlineEditCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
