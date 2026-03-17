@@ -28,9 +28,9 @@ interface PPDialogProps {
 }
 
 const defaultForm = {
-  title: '',
-  project_name: '',
   client_name: '',
+  project_name: '',
+  suffix: '',
   editor_id: '',
   status: 'fila' as PPStatus,
   priority: 'media' as PPPriority,
@@ -38,6 +38,26 @@ const defaultForm = {
   start_date: '',
   notes: '',
 };
+
+function parseTitle(title: string): { client_name: string; project_name: string; suffix: string } {
+  // Try to parse "Empresa: Projeto - Sufixo"
+  const colonIdx = title.indexOf(':');
+  if (colonIdx === -1) return { client_name: title, project_name: '', suffix: '' };
+
+  const client_name = title.slice(0, colonIdx).trim();
+  const rest = title.slice(colonIdx + 1).trim();
+  const dashIdx = rest.indexOf(' - ');
+  if (dashIdx === -1) return { client_name, project_name: rest, suffix: '' };
+
+  return { client_name, project_name: rest.slice(0, dashIdx).trim(), suffix: rest.slice(dashIdx + 3).trim() };
+}
+
+function composeTitle(client: string, project: string, suffix: string): string {
+  let title = client.trim();
+  if (project.trim()) title += `: ${project.trim()}`;
+  if (suffix.trim()) title += ` - ${suffix.trim()}`;
+  return title;
+}
 
 function getUserAvatarUrl(user: { avatar_url?: string | null; user_metadata?: { avatar_url?: string; picture?: string } }): string | undefined {
   return user.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
@@ -58,10 +78,11 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
   useEffect(() => {
     if (item) {
+      const parsed = parseTitle(item.title);
       setForm({
-        title: item.title,
-        project_name: item.project_name || '',
-        client_name: item.client_name || '',
+        client_name: item.client_name || parsed.client_name,
+        project_name: item.project_name || parsed.project_name,
+        suffix: parsed.suffix,
         editor_id: item.editor_id || '',
         status: item.status,
         priority: item.priority,
@@ -74,17 +95,20 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
     }
   }, [item, open]);
 
+  const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
+
   const selectedEditor = users.find(u => u.id === form.editor_id);
 
   const handleSave = async () => {
-    if (!form.title.trim()) return;
+    if (!form.client_name.trim()) return;
+    const title = composedTitle;
     const editorUser = users.find(u => u.id === form.editor_id);
 
     if (isCreating) {
       if (!user) return;
       try {
         await createItem.mutateAsync({
-          title: form.title,
+           title,
           project_name: form.project_name || null,
           client_name: form.client_name || null,
           editor_id: form.editor_id || null,
@@ -103,7 +127,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
       updateItem.mutate({
         id: item.id,
         updates: {
-          title: form.title,
+          title,
           project_name: form.project_name || null,
           client_name: form.client_name || null,
           editor_id: form.editor_id || null,
@@ -134,20 +158,30 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="pp-title">Título</Label>
-            <Input id="pp-title" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="pp-client">Empresa</Label>
+              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" />
+            </div>
             <div>
               <Label htmlFor="pp-project">Projeto</Label>
-              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Nome do projeto" />
+              <Input id="pp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" />
             </div>
             <div>
-              <Label htmlFor="pp-client">Cliente</Label>
-              <Input id="pp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Nome do cliente" />
+              <Label htmlFor="pp-suffix">Sufixo</Label>
+              <Input id="pp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" />
             </div>
+          </div>
+
+          <div>
+            <Label>Título do Vídeo</Label>
+            <Input
+              value={composedTitle}
+              readOnly
+              disabled
+              className="bg-muted text-muted-foreground cursor-not-allowed"
+              placeholder="Preencha os campos acima..."
+            />
           </div>
 
           {/* Editor com Avatar */}
@@ -308,7 +342,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
           ) : <div />}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.title.trim()}>
+            <Button onClick={handleSave} disabled={!form.client_name.trim()}>
               {isCreating ? 'Criar' : 'Salvar'}
             </Button>
           </div>
