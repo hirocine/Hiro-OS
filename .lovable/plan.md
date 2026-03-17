@@ -1,26 +1,50 @@
 
 
-# Automação: net_profit_value e net_profit_pct
+# Padronização dos Stats Cards
 
-## Situação Atual
+## Problema
+Existem 6 implementações diferentes de stats cards:
 
-Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+| Página | Layout | border-l | bg tint | Ícone |
+|--------|--------|----------|---------|-------|
+| Esteira de Pós | horizontal simples | ❌ | ❌ | inline |
+| Retiradas | border-l + tint | ✅ | ✅ | em bg rounded |
+| Projetos AV | border-l + tint | ✅ | ✅ | em bg rounded |
+| Inventário | CardHeader/Content | ❌ | ✅ | top-right em bg |
+| Armazenamento | CardHeader/Content | ❌ | ❌ | top-right simples |
+| Tarefas | border-l + CardHeader | ✅ | ✅ | top-right em bg |
 
-- **`net_profit_value`** = `revenue - costs`
-- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
+## Solução
+Criar um componente reutilizável `StatsCard` e refatorar todas as páginas para usá-lo.
 
-## Alteração
+### Estilo unificado (baseado no padrão mais comum: Retiradas/Projetos AV/Tarefas)
+- `border-l-4` com cor temática
+- Background tint sutil (`bg-[cor]/5`)
+- Ícone dentro de um `div` com `bg-[cor]/10 rounded-lg`
+- Layout: título muted em cima, valor grande embaixo
+- Descrição opcional abaixo do valor
 
-Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
+### Novo componente: `src/components/ui/stats-card.tsx`
+```typescript
+interface StatsCardProps {
+  title: string;
+  value: number | string;
+  icon: LucideIcon;
+  color: string;        // ex: 'text-primary'
+  bgColor: string;      // ex: 'bg-primary/10'
+  borderColor: string;  // ex: 'border-l-primary'
+  description?: string;
+}
+```
 
-1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
-2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+### Arquivos editados
+1. **`src/components/ui/stats-card.tsx`** — Novo componente reutilizável (card + skeleton loader)
+2. **`src/features/post-production/components/PPStatsCards.tsx`** — Usar novo componente
+3. **`src/components/Projects/ProjectStatsCards.tsx`** — Usar novo componente
+4. **`src/features/audiovisual-projects/components/AVProjectStatsCards.tsx`** — Usar novo componente
+5. **`src/components/Equipment/EquipmentStatsCards.tsx`** — Usar novo componente
+6. **`src/features/tasks/components/TaskStatsCards.tsx`** — Usar novo componente
+7. **`src/pages/SSDs.tsx`** — Extrair stats cards inline para usar novo componente
 
-A migration também faz um UPDATE em massa para recalcular os valores existentes.
-
-| Recurso | Alteração |
-|---|---|
-| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
-
-Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
+Todas as páginas manterão seus dados/lógica próprios, apenas delegando a renderização ao componente padronizado.
 
