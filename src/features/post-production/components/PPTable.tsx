@@ -129,11 +129,12 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <InlineAssigneeCell
-                value={item.editor_id}
+                value={item.editor_id ? [item.editor_id] : []}
                 users={users}
-                onSave={value => {
-                  const editorUser = users.find(u => u.id === value);
-                  updateItem.mutate({ id: item.id, updates: { editor_id: value, editor_name: editorUser?.display_name || null } });
+                onSave={values => {
+                  const newId = values[0] || null;
+                  const editorUser = users.find(u => u.id === newId);
+                  updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
                 }}
               />
             </TableCell>

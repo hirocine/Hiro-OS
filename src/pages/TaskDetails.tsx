@@ -73,7 +73,7 @@ export default function TaskDetails() {
   const [newLinkTitle, setNewLinkTitle] = useState('');
 
   const { task, isLoading, addSubtask, updateSubtask, deleteSubtask, addComment, deleteComment, addLink, deleteLink } = useTaskDetails(id!);
-  const { deleteTask, updateTask } = useTaskMutations();
+  const { deleteTask, updateTask, updateAssignees } = useTaskMutations();
   const { users } = useUsers();
   const { departments } = useDepartments();
 
@@ -255,9 +255,9 @@ export default function TaskDetails() {
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Responsável</span>
                 <InlineAssigneeCell
-                  value={task.assigned_to}
+                  value={task.assignees?.map(a => a.user_id) || (task.assigned_to ? [task.assigned_to] : [])}
                   users={users}
-                  onSave={(newAssignee) => handleUpdateTask({ assigned_to: newAssignee })}
+                  onSave={(newAssignees) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newAssignees })}
                 />
               </div>
             </div>
