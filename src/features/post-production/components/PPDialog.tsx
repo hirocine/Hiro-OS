@@ -100,7 +100,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   const selectedEditor = users.find(u => u.id === form.editor_id);
 
   const handleSave = async () => {
-    if (!form.title.trim()) return;
+    if (!form.client_name.trim()) return;
+    const title = composedTitle;
     const editorUser = users.find(u => u.id === form.editor_id);
 
     if (isCreating) {
