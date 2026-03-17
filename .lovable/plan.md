@@ -1,25 +1,26 @@
 
 
-# Ajuste: contribution_margin_value incluir refund_projects
+# Automação: net_profit_value e net_profit_pct
 
 ## Situação Atual
-O trigger `auto_fill_contribution_margin_value` calcula:
-```
-revenue - costs_projects = contribution_margin_value
-```
+
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
 
 ## Alteração
-Uma migration que atualiza a função para:
-```
-revenue - costs_projects + refund_projects = contribution_margin_value
-```
 
-E adiciona `refund_projects` à lista de colunas monitoradas pelo trigger.
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
 
-### Migration SQL
-1. `CREATE OR REPLACE FUNCTION auto_fill_contribution_margin_value()` com a nova equação usando `COALESCE(NEW.refund_projects, 0)`
-2. `DROP TRIGGER` + `CREATE TRIGGER` para incluir `refund_projects` na cláusula `UPDATE OF`
-3. `UPDATE` em massa para recalcular valores existentes
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
 
-Nenhum arquivo frontend precisa mudar.
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
+
+| Recurso | Alteração |
+|---|---|
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
+
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 

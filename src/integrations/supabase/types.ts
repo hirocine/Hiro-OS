@@ -551,6 +551,8 @@ export type Database = {
           realized_expenses: number | null
           realized_income: number | null
           receivables_30d: number | null
+          refund: number | null
+          refund_projects: number | null
           revenue: number | null
           revenue_goal: number | null
           updated_at: string | null
@@ -577,6 +579,8 @@ export type Database = {
           realized_expenses?: number | null
           realized_income?: number | null
           receivables_30d?: number | null
+          refund?: number | null
+          refund_projects?: number | null
           revenue?: number | null
           revenue_goal?: number | null
           updated_at?: string | null
@@ -603,6 +607,8 @@ export type Database = {
           realized_expenses?: number | null
           realized_income?: number | null
           receivables_30d?: number | null
+          refund?: number | null
+          refund_projects?: number | null
           revenue?: number | null
           revenue_goal?: number | null
           updated_at?: string | null
