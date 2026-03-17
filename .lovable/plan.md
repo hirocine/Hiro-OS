@@ -1,25 +1,26 @@
 
 
-# Calendário Full-Page para Esteira de Pós
+# Automação: net_profit_value e net_profit_pct
 
-## Problema
-O calendário atual usa o componente date-picker pequeno com uma lista lateral. A referência mostra um calendário mensal full-page estilo Google Calendar, onde cada dia é uma célula grande que exibe os vídeos diretamente dentro dela.
+## Situação Atual
+
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
 
 ## Alteração
 
-### `src/features/post-production/components/PPCalendar.tsx` — reescrever completamente
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
 
-Substituir o componente atual por um calendário mensal customizado (grid):
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
 
-- **Header**: navegação mês anterior/próximo + nome do mês/ano
-- **Grid 7 colunas**: seg, ter, qua, qui, sex (+ sáb, dom opcionais) — dias da semana como cabeçalho
-- **Células de dia**: cada célula ocupa espaço proporcional (min-height ~120px), mostra o número do dia e lista os vídeos daquele dia como chips/pills truncados
-- **Chips de vídeo**: mostram título truncado, clicáveis (`onItemClick`), com cor/estilo baseado no status ou prioridade
-- **Dia atual**: highlight visual (borda ou badge colorido no número)
-- **Dias fora do mês**: exibidos em tom mais claro (padding do grid)
-- **Responsivo**: em mobile, células menores mostrando apenas contagem ou pontos indicadores
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
 
-Não usa mais o componente `Calendar` do shadcn — é um grid customizado com `div`s.
+| Recurso | Alteração |
+|---|---|
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
 
-Nenhum outro arquivo precisa mudar (a interface `PPCalendarProps` permanece igual).
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 
