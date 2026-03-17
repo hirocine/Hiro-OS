@@ -1,26 +1,26 @@
 
 
-# Melhorar visualmente o PPDialog
+# Automação: net_profit_value e net_profit_pct
 
-O dialog atual usa selects com texto simples para Status, Prioridade e Editor. Precisa mostrar badges coloridas e avatares com foto, seguindo o padrão do TaskDialog.
+## Situação Atual
 
-## Alterações em `src/features/post-production/components/PPDialog.tsx`
+Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
 
-### 1. Selects de Etapa e Prioridade com Badges
-- Importar `PPStatusBadge` e `PPPriorityBadge`
-- No `SelectTrigger`, renderizar o badge correspondente via `<SelectValue>` customizado
-- Nos `SelectItem`, renderizar os badges em vez de texto puro
+- **`net_profit_value`** = `revenue - costs`
+- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
 
-### 2. Select de Editor com Avatar + Foto
-- Importar `Avatar`, `AvatarImage`, `AvatarFallback`
-- Cada `SelectItem` mostra avatar com foto (`u.avatar_url`) + nome
-- O trigger também mostra o avatar do editor selecionado
+## Alteração
 
-### 3. Pequenos ajustes visuais
-- Dialog um pouco mais largo (`max-w-2xl` em vez de `max-w-lg`) para dar respiro
-- Scroll se necessário (`max-h-[90vh] overflow-y-auto`)
-- Labels com `htmlFor` para acessibilidade
-- Botão Excluir com confirmação visual mais clara (ícone + texto)
+Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
 
-Apenas um arquivo alterado: `PPDialog.tsx`.
+1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
+2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+
+A migration também faz um UPDATE em massa para recalcular os valores existentes.
+
+| Recurso | Alteração |
+|---|---|
+| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
+
+Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
 
