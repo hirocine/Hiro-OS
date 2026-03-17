@@ -28,9 +28,9 @@ interface PPDialogProps {
 }
 
 const defaultForm = {
-  title: '',
-  project_name: '',
   client_name: '',
+  project_name: '',
+  suffix: '',
   editor_id: '',
   status: 'fila' as PPStatus,
   priority: 'media' as PPPriority,
@@ -38,6 +38,26 @@ const defaultForm = {
   start_date: '',
   notes: '',
 };
+
+function parseTitle(title: string): { client_name: string; project_name: string; suffix: string } {
+  // Try to parse "Empresa: Projeto - Sufixo"
+  const colonIdx = title.indexOf(':');
+  if (colonIdx === -1) return { client_name: title, project_name: '', suffix: '' };
+
+  const client_name = title.slice(0, colonIdx).trim();
+  const rest = title.slice(colonIdx + 1).trim();
+  const dashIdx = rest.indexOf(' - ');
+  if (dashIdx === -1) return { client_name, project_name: rest, suffix: '' };
+
+  return { client_name, project_name: rest.slice(0, dashIdx).trim(), suffix: rest.slice(dashIdx + 3).trim() };
+}
+
+function composeTitle(client: string, project: string, suffix: string): string {
+  let title = client.trim();
+  if (project.trim()) title += `: ${project.trim()}`;
+  if (suffix.trim()) title += ` - ${suffix.trim()}`;
+  return title;
+}
 
 function getUserAvatarUrl(user: { avatar_url?: string | null; user_metadata?: { avatar_url?: string; picture?: string } }): string | undefined {
   return user.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
