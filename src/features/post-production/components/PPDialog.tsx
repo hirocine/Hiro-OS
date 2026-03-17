@@ -127,7 +127,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
       updateItem.mutate({
         id: item.id,
         updates: {
-          title: form.title,
+          title,
           project_name: form.project_name || null,
           client_name: form.client_name || null,
           editor_id: form.editor_id || null,
