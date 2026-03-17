@@ -1497,6 +1497,35 @@ export type Database = {
         }
         Relationships: []
       }
+      task_assignees: {
+        Row: {
+          created_at: string | null
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignees_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_attachments: {
         Row: {
           created_at: string
@@ -1895,6 +1924,10 @@ export type Database = {
         }[]
       }
       can_access_task: { Args: { _task_id: string }; Returns: boolean }
+      can_see_task: {
+        Args: { _task_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_login_rate_limit: {
         Args: { _ip_address: unknown; _user_email?: string }
         Returns: Json

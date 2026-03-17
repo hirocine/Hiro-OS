@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Users, Lock, Plus, User, CheckCircle, Archive } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Plus, User, CheckCircle, Archive, CheckSquare } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,25 +13,15 @@ import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useFilteredTaskStats } from '@/features/tasks/hooks/useFilteredTaskStats';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
 
 export default function Tasks() {
   const { user } = useAuthContext();
-  const location = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Derive section from URL
-  const isPrivate = location.pathname.includes('/tarefas/privadas');
-  const activeSection = isPrivate ? 'private' : 'general';
+  // Fetch all tasks (RLS ensures user only sees their own)
+  const { tasks, isLoading } = useTasks();
 
-  // Fetch tasks based on active section
-  const { tasks: generalTasks, isLoading: loadingGeneral } = useTasks({ is_private: false });
-  const { tasks: privateTasks, isLoading: loadingPrivate } = useTasks({ is_private: true });
-
-  const tasks = activeSection === 'general' ? generalTasks : privateTasks;
-  const isLoading = activeSection === 'general' ? loadingGeneral : loadingPrivate;
-
-  // Calculate stats for active section
+  // Calculate stats
   const stats = useFilteredTaskStats(tasks);
 
   // Filter tasks by category
@@ -42,7 +31,9 @@ export default function Tasks() {
   );
 
   const myTasks = useMemo(() => 
-    activeTasks.filter(t => t.assigned_to === user?.id),
+    activeTasks.filter(t => 
+      t.assignees?.some(a => a.user_id === user?.id)
+    ),
     [activeTasks, user?.id]
   );
 
@@ -59,8 +50,8 @@ export default function Tasks() {
   return (
     <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
-        title={isPrivate ? "Tarefas Privadas" : "Tarefas Gerais"}
-        subtitle={isPrivate ? "Suas tarefas pessoais, visíveis apenas para você" : "Gerencie as tarefas do time e acompanhe o progresso"}
+        title="Tarefas"
+        subtitle="Gerencie suas tarefas e acompanhe o progresso"
         actions={
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
@@ -70,163 +61,67 @@ export default function Tasks() {
       />
 
       <div className="space-y-6">
-
         {/* Calendar Widget */}
-        <TaskCalendarWidget tasks={tasks} isPrivate={isPrivate} />
+        <TaskCalendarWidget tasks={tasks} />
 
         {/* Summary Bar */}
-        <TaskSummaryBar 
-          stats={stats} 
-          isLoading={isLoading}
-          variant={activeSection}
-        />
+        <TaskSummaryBar stats={stats} isLoading={isLoading} />
 
         {/* Tasks Content */}
-        {activeSection === 'general' ? (
-          <Card className="border-l-4 border-l-primary">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <CardTitle>Tarefas do Time</CardTitle>
+        <Card className="border-l-4 border-l-primary">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckSquare className="w-5 h-5 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="active">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="active">
-                    Ativas 
-                    <Badge variant="secondary" className="ml-2">{activeTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="mine">
-                    <User className="w-3 h-3 mr-1" />
-                    Minhas 
-                    <Badge variant="secondary" className="ml-2">{myTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="completed">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Concluídas 
-                    <Badge variant="secondary" className="ml-2">{completedTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="archived">
-                    <Archive className="w-3 h-3 mr-1" />
-                    Arquivadas 
-                    <Badge variant="secondary" className="ml-2">{archivedTasks.length}</Badge>
-                  </TabsTrigger>
-                </TabsList>
+              <CardTitle>Tarefas</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="active">
+              <TabsList className="mb-4">
+                <TabsTrigger value="active">
+                  Ativas 
+                  <Badge variant="secondary" className="ml-2">{activeTasks.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="mine">
+                  <User className="w-3 h-3 mr-1" />
+                  Minhas 
+                  <Badge variant="secondary" className="ml-2">{myTasks.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Concluídas 
+                  <Badge variant="secondary" className="ml-2">{completedTasks.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="archived">
+                  <Archive className="w-3 h-3 mr-1" />
+                  Arquivadas 
+                  <Badge variant="secondary" className="ml-2">{archivedTasks.length}</Badge>
+                </TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="active">
-                  <TasksTable 
-                    tasks={activeTasks} 
-                    isLoading={isLoading}
-                    showCreationRow={true}
-                    showAssignee={true}
-                    isPrivate={false}
-                  />
-                </TabsContent>
+              <TabsContent value="active">
+                <TasksTable tasks={activeTasks} isLoading={isLoading} showCreationRow={true} showAssignee={true} />
+              </TabsContent>
 
-                <TabsContent value="mine">
-                  <TasksTable 
-                    tasks={myTasks} 
-                    isLoading={isLoading}
-                    showAssignee={true}
-                    isPrivate={false}
-                  />
-                </TabsContent>
+              <TabsContent value="mine">
+                <TasksTable tasks={myTasks} isLoading={isLoading} showAssignee={true} />
+              </TabsContent>
 
-                <TabsContent value="completed">
-                  <TasksTable 
-                    tasks={completedTasks} 
-                    isLoading={isLoading}
-                    showAssignee={true}
-                    isPrivate={false}
-                  />
-                </TabsContent>
+              <TabsContent value="completed">
+                <TasksTable tasks={completedTasks} isLoading={isLoading} showAssignee={true} />
+              </TabsContent>
 
-                <TabsContent value="archived">
-                  <TasksTable 
-                    tasks={archivedTasks} 
-                    isLoading={isLoading}
-                    showAssignee={true}
-                    isPrivate={false}
-                  />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-l-4 border-l-purple-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Lock className="w-5 h-5 text-purple-500" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <CardTitle>Tarefas Privadas</CardTitle>
-                  <span className="text-xs text-muted-foreground">
-                    (Visíveis apenas para você)
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="active">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="active">
-                    Ativas 
-                    <Badge variant="secondary" className="ml-2">{activeTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="completed">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Concluídas 
-                    <Badge variant="secondary" className="ml-2">{completedTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="archived">
-                    <Archive className="w-3 h-3 mr-1" />
-                    Arquivadas 
-                    <Badge variant="secondary" className="ml-2">{archivedTasks.length}</Badge>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="active">
-                  <TasksTable 
-                    tasks={activeTasks} 
-                    isLoading={isLoading}
-                    showCreationRow={true}
-                    showAssignee={false}
-                    isPrivate={true}
-                  />
-                </TabsContent>
-
-                <TabsContent value="completed">
-                  <TasksTable 
-                    tasks={completedTasks} 
-                    isLoading={isLoading}
-                    showAssignee={false}
-                    isPrivate={true}
-                  />
-                </TabsContent>
-
-                <TabsContent value="archived">
-                  <TasksTable 
-                    tasks={archivedTasks} 
-                    isLoading={isLoading}
-                    showAssignee={false}
-                    isPrivate={true}
-                  />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        )}
+              <TabsContent value="archived">
+                <TasksTable tasks={archivedTasks} isLoading={isLoading} showAssignee={true} />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
 
-      <TaskDialog 
-        open={dialogOpen} 
-        onOpenChange={setDialogOpen}
-        defaultValues={{ is_private: isPrivate }}
-      />
+      <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </ResponsiveContainer>
   );
 }

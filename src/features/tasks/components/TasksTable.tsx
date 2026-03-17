@@ -35,14 +35,13 @@ interface TasksTableProps {
   isLoading?: boolean;
   showCreationRow?: boolean;
   showAssignee?: boolean;
-  isPrivate?: boolean;
 }
 
 const defaultTaskState = {
   title: '',
   priority: 'standby' as TaskPriority,
   status: 'pendente' as TaskStatus,
-  assigned_to: null as string | null,
+  assignee_ids: [] as string[],
   due_date: null as string | null,
   department: null as string | null,
 };
@@ -52,11 +51,10 @@ export function TasksTable({
   isLoading, 
   showCreationRow = false,
   showAssignee = true,
-  isPrivate = false,
 }: TasksTableProps) {
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { updateTask, createTask } = useTaskMutations();
+  const { updateTask, updateAssignees, createTask } = useTaskMutations();
   const { departments } = useDepartments();
   const { users } = useUsers();
 
@@ -80,30 +78,24 @@ export function TasksTable({
           comparison = (a.title || '').localeCompare(b.title || '', 'pt-BR');
           break;
         case 'priority':
-          const priorityA = PRIORITY_ORDER[a.priority as TaskPriority] ?? -1;
-          const priorityB = PRIORITY_ORDER[b.priority as TaskPriority] ?? -1;
-          comparison = priorityA - priorityB;
+          comparison = (PRIORITY_ORDER[a.priority as TaskPriority] ?? -1) - (PRIORITY_ORDER[b.priority as TaskPriority] ?? -1);
           break;
         case 'status':
-          const statusA = STATUS_ORDER[a.status as TaskStatus] ?? -1;
-          const statusB = STATUS_ORDER[b.status as TaskStatus] ?? -1;
-          comparison = statusA - statusB;
+          comparison = (STATUS_ORDER[a.status as TaskStatus] ?? -1) - (STATUS_ORDER[b.status as TaskStatus] ?? -1);
           break;
         case 'assignee_name':
-          if (!a.assignee_name && !b.assignee_name) comparison = 0;
-          else if (!a.assignee_name) comparison = 1;
-          else if (!b.assignee_name) comparison = -1;
-          else comparison = a.assignee_name.localeCompare(b.assignee_name, 'pt-BR');
+          const nameA = a.assignees?.[0]?.display_name || '';
+          const nameB = b.assignees?.[0]?.display_name || '';
+          if (!nameA && !nameB) comparison = 0;
+          else if (!nameA) comparison = 1;
+          else if (!nameB) comparison = -1;
+          else comparison = nameA.localeCompare(nameB, 'pt-BR');
           break;
         case 'due_date':
           if (!a.due_date && !b.due_date) comparison = 0;
           else if (!a.due_date) comparison = 1;
           else if (!b.due_date) comparison = -1;
-          else {
-            const dateA = parseLocalDate(a.due_date);
-            const dateB = parseLocalDate(b.due_date);
-            comparison = dateA.getTime() - dateB.getTime();
-          }
+          else comparison = parseLocalDate(a.due_date).getTime() - parseLocalDate(b.due_date).getTime();
           break;
         case 'department':
           if (!a.department && !b.department) comparison = 0;
@@ -127,7 +119,7 @@ export function TasksTable({
       newTask.title !== defaultTaskState.title ||
       newTask.priority !== defaultTaskState.priority ||
       newTask.status !== defaultTaskState.status ||
-      newTask.assigned_to !== defaultTaskState.assigned_to ||
+      newTask.assignee_ids.length > 0 ||
       newTask.due_date !== defaultTaskState.due_date ||
       newTask.department !== defaultTaskState.department
     );
@@ -141,10 +133,9 @@ export function TasksTable({
         title: newTask.title,
         priority: newTask.priority,
         status: newTask.status,
-        assigned_to: isPrivate ? user.id : newTask.assigned_to,
         due_date: newTask.due_date,
         department: newTask.department,
-        is_private: isPrivate,
+        assignee_ids: newTask.assignee_ids,
       });
       setNewTask(defaultTaskState);
       toast.success('Tarefa criada com sucesso');
@@ -166,60 +157,24 @@ export function TasksTable({
       <TableHeader>
         <TableRow>
           <TableHead className={showAssignee ? "w-[25%]" : "w-[30%]"} style={{ textAlign: 'left' }}>
-            <TaskSortableHeader 
-              field="title" 
-              label="Título" 
-              currentSortBy={sortBy}
-              currentSortOrder={sortOrder}
-              onSort={handleSort}
-            />
+            <TaskSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
           </TableHead>
           <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader 
-              field="priority" 
-              label="Prioridade" 
-              currentSortBy={sortBy}
-              currentSortOrder={sortOrder}
-              onSort={handleSort}
-            />
+            <TaskSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
           </TableHead>
           <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader 
-              field="status" 
-              label="Status" 
-              currentSortBy={sortBy}
-              currentSortOrder={sortOrder}
-              onSort={handleSort}
-            />
+            <TaskSortableHeader field="status" label="Status" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
           </TableHead>
           {showAssignee && (
             <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-              <TaskSortableHeader 
-                field="assignee_name" 
-                label="Responsável" 
-                currentSortBy={sortBy}
-                currentSortOrder={sortOrder}
-                onSort={handleSort}
-              />
+              <TaskSortableHeader field="assignee_name" label="Responsáveis" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
             </TableHead>
           )}
           <TableHead className="w-[18%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader 
-              field="due_date" 
-              label="Prazo" 
-              currentSortBy={sortBy}
-              currentSortOrder={sortOrder}
-              onSort={handleSort}
-            />
+            <TaskSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
           </TableHead>
           <TableHead className="w-[15%]" style={{ textAlign: 'left' }}>
-            <TaskSortableHeader 
-              field="department" 
-              label="Departamento" 
-              currentSortBy={sortBy}
-              currentSortOrder={sortOrder}
-              onSort={handleSort}
-            />
+            <TaskSortableHeader field="department" label="Departamento" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort} />
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -231,7 +186,7 @@ export function TasksTable({
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder={isPrivate ? "+ Nova tarefa privada..." : "+ Adicionar nova tarefa..."}
+                  placeholder="+ Adicionar nova tarefa..."
                   value={newTask.title}
                   onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
@@ -242,19 +197,10 @@ export function TasksTable({
             <TableCell style={{ textAlign: 'left' }}>
               <InlineSelectCell
                 value={newTask.priority}
-                options={Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({
-                  value,
-                  label: config.label,
-                }))}
+                options={Object.entries(PRIORITY_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
                 onSave={(value) => setNewTask(prev => ({ ...prev, priority: value as TaskPriority }))}
                 renderValue={(val) => 
-                  isTaskActive() ? (
-                    <PriorityBadge priority={val as TaskPriority} />
-                  ) : (
-                    <span className="text-muted-foreground text-sm flex items-center gap-1">
-                      Selecionar <ChevronDown className="w-3 h-3" />
-                    </span>
-                  )
+                  isTaskActive() ? <PriorityBadge priority={val as TaskPriority} /> : <span className="text-muted-foreground text-sm flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
                 }
                 renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
               />
@@ -262,19 +208,10 @@ export function TasksTable({
             <TableCell style={{ textAlign: 'left' }}>
               <InlineSelectCell
                 value={newTask.status}
-                options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({
-                  value,
-                  label: config.label,
-                }))}
+                options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({ value, label: config.label }))}
                 onSave={(value) => setNewTask(prev => ({ ...prev, status: value as TaskStatus }))}
                 renderValue={(val) => 
-                  isTaskActive() ? (
-                    <StatusBadge status={val as TaskStatus} />
-                  ) : (
-                    <span className="text-muted-foreground text-sm flex items-center gap-1">
-                      Selecionar <ChevronDown className="w-3 h-3" />
-                    </span>
-                  )
+                  isTaskActive() ? <StatusBadge status={val as TaskStatus} /> : <span className="text-muted-foreground text-sm flex items-center gap-1">Selecionar <ChevronDown className="w-3 h-3" /></span>
                 }
                 renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
               />
@@ -282,33 +219,20 @@ export function TasksTable({
             {showAssignee && (
               <TableCell style={{ textAlign: 'left' }}>
                 <InlineAssigneeCell
-                  value={newTask.assigned_to}
+                  value={newTask.assignee_ids}
                   users={users}
-                  onSave={(value) => setNewTask(prev => ({ ...prev, assigned_to: value }))}
+                  onSave={(value) => setNewTask(prev => ({ ...prev, assignee_ids: value }))}
                   isActive={isTaskActive()}
                 />
               </TableCell>
             )}
             <TableCell style={{ textAlign: 'left' }}>
-              <InlineDateCell
-                value={newTask.due_date}
-                onSave={(value) => setNewTask(prev => ({ ...prev, due_date: value }))}
-              />
+              <InlineDateCell value={newTask.due_date} onSave={(value) => setNewTask(prev => ({ ...prev, due_date: value }))} />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <div className="flex items-center gap-2">
-                <InlineDepartmentCell
-                  value={newTask.department}
-                  departments={departments}
-                  onSave={(value) => setNewTask(prev => ({ ...prev, department: value }))}
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCreateTask}
-                  disabled={!newTask.title.trim()}
-                  className="h-6 w-6 p-0"
-                >
+                <InlineDepartmentCell value={newTask.department} departments={departments} onSave={(value) => setNewTask(prev => ({ ...prev, department: value }))} />
+                <Button size="sm" variant="ghost" onClick={handleCreateTask} disabled={!newTask.title.trim()} className="h-6 w-6 p-0">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -326,25 +250,14 @@ export function TasksTable({
             <TableCell style={{ textAlign: 'left' }}>
               <InlineEditCell
                 value={task.title}
-                onSave={(value) => updateTask.mutate({ 
-                  id: task.id, 
-                  updates: { title: value },
-                  oldTask: task 
-                })}
+                onSave={(value) => updateTask.mutate({ id: task.id, updates: { title: value }, oldTask: task })}
               />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <InlineSelectCell
                 value={task.priority}
-                options={Object.entries(PRIORITY_CONFIG).map(([val, config]) => ({
-                  value: val,
-                  label: config.label,
-                }))}
-                onSave={(val) => updateTask.mutate({ 
-                  id: task.id, 
-                  updates: { priority: val as TaskPriority },
-                  oldTask: task 
-                })}
+                options={Object.entries(PRIORITY_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
+                onSave={(val) => updateTask.mutate({ id: task.id, updates: { priority: val as TaskPriority }, oldTask: task })}
                 renderValue={(val) => <PriorityBadge priority={val as TaskPriority} />}
                 renderOption={(optVal) => <PriorityBadge priority={optVal as TaskPriority} />}
               />
@@ -352,15 +265,8 @@ export function TasksTable({
             <TableCell style={{ textAlign: 'left' }}>
               <InlineSelectCell
                 value={task.status}
-                options={Object.entries(STATUS_CONFIG).map(([val, config]) => ({
-                  value: val,
-                  label: config.label,
-                }))}
-                onSave={(val) => updateTask.mutate({ 
-                  id: task.id, 
-                  updates: { status: val as TaskStatus },
-                  oldTask: task 
-                })}
+                options={Object.entries(STATUS_CONFIG).map(([val, config]) => ({ value: val, label: config.label }))}
+                onSave={(val) => updateTask.mutate({ id: task.id, updates: { status: val as TaskStatus }, oldTask: task })}
                 renderValue={(val) => <StatusBadge status={val as TaskStatus} />}
                 renderOption={(optVal) => <StatusBadge status={optVal as TaskStatus} />}
               />
@@ -368,35 +274,23 @@ export function TasksTable({
             {showAssignee && (
               <TableCell style={{ textAlign: 'left' }}>
                 <InlineAssigneeCell
-                  value={task.assigned_to}
+                  value={task.assignees?.map(a => a.user_id) || []}
                   users={users}
-                  onSave={(value) => updateTask.mutate({ 
-                    id: task.id, 
-                    updates: { assigned_to: value },
-                    oldTask: task 
-                  })}
+                  onSave={(newIds) => updateAssignees.mutate({ taskId: task.id, assigneeIds: newIds })}
                 />
               </TableCell>
             )}
             <TableCell style={{ textAlign: 'left' }}>
               <InlineDateCell
                 value={task.due_date}
-                onSave={(val) => updateTask.mutate({ 
-                  id: task.id, 
-                  updates: { due_date: val },
-                  oldTask: task 
-                })}
+                onSave={(val) => updateTask.mutate({ id: task.id, updates: { due_date: val }, oldTask: task })}
               />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <InlineDepartmentCell
                 value={task.department}
                 departments={departments}
-                onSave={(value) => updateTask.mutate({ 
-                  id: task.id, 
-                  updates: { department: value },
-                  oldTask: task 
-                })}
+                onSave={(value) => updateTask.mutate({ id: task.id, updates: { department: value }, oldTask: task })}
               />
             </TableCell>
           </TableRow>

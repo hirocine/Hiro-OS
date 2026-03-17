@@ -1,54 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryClient';
-import { TaskWithDetails, TaskSubtask, TaskComment, TaskAttachment, TaskLink, TaskLinkType } from '../types';
+import { TaskWithDetails, TaskSubtask, TaskComment, TaskAttachment, TaskLink, TaskLinkType, TaskAssignee } from '../types';
 import { logger } from '@/lib/logger';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 // Helper to detect link type from URL
 function detectLinkType(url: string): TaskLinkType {
   const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes('drive.google.com') || lowerUrl.includes('docs.google.com')) {
-    return 'google_drive';
-  }
-  if (lowerUrl.includes('dropbox.com')) {
-    return 'dropbox';
-  }
-  if (lowerUrl.includes('notion.so') || lowerUrl.includes('notion.site')) {
-    return 'notion';
-  }
-  if (lowerUrl.includes('onedrive.live.com') || lowerUrl.includes('sharepoint.com')) {
-    return 'onedrive';
-  }
+  if (lowerUrl.includes('drive.google.com') || lowerUrl.includes('docs.google.com')) return 'google_drive';
+  if (lowerUrl.includes('dropbox.com')) return 'dropbox';
+  if (lowerUrl.includes('notion.so') || lowerUrl.includes('notion.site')) return 'notion';
+  if (lowerUrl.includes('onedrive.live.com') || lowerUrl.includes('sharepoint.com')) return 'onedrive';
   return 'other';
 }
 
 // Helper to add history entry
-async function addTaskHistoryEntry(
-  taskId: string,
-  action: string,
-  fieldChanged?: string,
-  oldValue?: string,
-  newValue?: string
-) {
+async function addTaskHistoryEntry(taskId: string, action: string, fieldChanged?: string, oldValue?: string, newValue?: string) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('display_name')
-      .eq('user_id', user.id)
-      .single();
-
+    const { data: profile } = await supabase.from('profiles').select('display_name').eq('user_id', user.id).single();
     await supabase.from('task_history').insert([{
-      task_id: taskId,
-      user_id: user.id,
+      task_id: taskId, user_id: user.id,
       user_name: profile?.display_name || user.email || 'Usuário',
-      action,
-      field_changed: fieldChanged || null,
-      old_value: oldValue || null,
-      new_value: newValue || null,
+      action, field_changed: fieldChanged || null, old_value: oldValue || null, new_value: newValue || null,
     }]);
   } catch (error) {
     logger.error('Failed to add history entry', { module: 'tasks', data: { error } });
@@ -58,7 +34,6 @@ async function addTaskHistoryEntry(
 export function useTaskDetails(taskId: string) {
   const queryClient = useQueryClient();
 
-  // Fetch task with all related data
   const { data: task, isLoading, error } = useQuery({
     queryKey: queryKeys.tasks.detail(taskId),
     queryFn: async (): Promise<TaskWithDetails> => {
@@ -67,62 +42,47 @@ export function useTaskDetails(taskId: string) {
       // Fetch task
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          profiles:assigned_to (
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('id', taskId)
         .single();
 
       if (taskError) throw taskError;
 
-      // Fetch subtasks
-      const { data: subtasks, error: subtasksError } = await supabase
-        .from('task_subtasks')
-        .select('*')
-        .eq('task_id', taskId)
-        .order('display_order', { ascending: true });
+      // Fetch assignees with profiles
+      const { data: assigneesData } = await supabase
+        .from('task_assignees')
+        .select(`
+          user_id,
+          profiles:user_id (
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('task_id', taskId);
 
-      if (subtasksError) throw subtasksError;
+      const assignees: TaskAssignee[] = (assigneesData || []).map((a: any) => ({
+        user_id: a.user_id,
+        display_name: a.profiles?.display_name || null,
+        avatar_url: a.profiles?.avatar_url || null,
+      }));
 
-      // Fetch comments
-      const { data: comments, error: commentsError } = await supabase
-        .from('task_comments')
-        .select('*')
-        .eq('task_id', taskId)
-        .order('created_at', { ascending: true });
-
-      if (commentsError) throw commentsError;
-
-      // Fetch attachments
-      const { data: attachments, error: attachmentsError } = await supabase
-        .from('task_attachments')
-        .select('*')
-        .eq('task_id', taskId)
-        .order('created_at', { ascending: false });
-
-      if (attachmentsError) throw attachmentsError;
-
-      // Fetch links
-      const { data: links, error: linksError } = await supabase
-        .from('task_links')
-        .select('*')
-        .eq('task_id', taskId)
-        .order('created_at', { ascending: false });
-
-      if (linksError) throw linksError;
+      // Fetch subtasks, comments, attachments, links in parallel
+      const [subtasksRes, commentsRes, attachmentsRes, linksRes] = await Promise.all([
+        supabase.from('task_subtasks').select('*').eq('task_id', taskId).order('display_order', { ascending: true }),
+        supabase.from('task_comments').select('*').eq('task_id', taskId).order('created_at', { ascending: true }),
+        supabase.from('task_attachments').select('*').eq('task_id', taskId).order('created_at', { ascending: false }),
+        supabase.from('task_links').select('*').eq('task_id', taskId).order('created_at', { ascending: false }),
+      ]);
 
       return {
         ...taskData,
-        assignee_name: taskData.profiles?.display_name || null,
-        assignee_avatar: taskData.profiles?.avatar_url || null,
-        subtasks: (subtasks || []) as TaskSubtask[],
-        comments: (comments || []) as TaskComment[],
-        attachments: (attachments || []) as TaskAttachment[],
-        links: (links || []) as TaskLink[],
+        assignees,
+        assignee_name: assignees[0]?.display_name || null,
+        assignee_avatar: assignees[0]?.avatar_url || null,
+        subtasks: (subtasksRes.data || []) as TaskSubtask[],
+        comments: (commentsRes.data || []) as TaskComment[],
+        attachments: (attachmentsRes.data || []) as TaskAttachment[],
+        links: (linksRes.data || []) as TaskLink[],
       } as TaskWithDetails;
     },
     enabled: !!taskId,
@@ -134,9 +94,7 @@ export function useTaskDetails(taskId: string) {
       const { data, error } = await supabase
         .from('task_subtasks')
         .insert([{ task_id: taskId, title, display_order: (task?.subtasks.length || 0) }])
-        .select()
-        .single();
-
+        .select().single();
       if (error) throw error;
       return data;
     },
@@ -149,13 +107,7 @@ export function useTaskDetails(taskId: string) {
   // Update subtask
   const updateSubtask = useMutation({
     mutationFn: async ({ id, updates, subtaskTitle }: { id: string; updates: Partial<TaskSubtask>; subtaskTitle?: string }) => {
-      const { data, error } = await supabase
-        .from('task_subtasks')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from('task_subtasks').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return { data, updates, subtaskTitle };
     },
@@ -163,9 +115,7 @@ export function useTaskDetails(taskId: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
       if (updates.is_completed !== undefined) {
         const title = subtaskTitle || data.title;
-        const action = updates.is_completed 
-          ? `Subtarefa "${title}" marcada como concluída`
-          : `Subtarefa "${title}" desmarcada`;
+        const action = updates.is_completed ? `Subtarefa "${title}" marcada como concluída` : `Subtarefa "${title}" desmarcada`;
         addTaskHistoryEntry(taskId, action, 'subtasks');
       }
     },
@@ -174,11 +124,7 @@ export function useTaskDetails(taskId: string) {
   // Delete subtask
   const deleteSubtask = useMutation({
     mutationFn: async ({ id, title }: { id: string; title: string }) => {
-      const { error } = await supabase
-        .from('task_subtasks')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('task_subtasks').delete().eq('id', id);
       if (error) throw error;
       return title;
     },
@@ -193,25 +139,11 @@ export function useTaskDetails(taskId: string) {
     mutationFn: async (content: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
-
-      // Get user name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('user_id', user.id)
-        .single();
-
+      const { data: profile } = await supabase.from('profiles').select('display_name').eq('user_id', user.id).single();
       const { data, error } = await supabase
         .from('task_comments')
-        .insert([{
-          task_id: taskId,
-          user_id: user.id,
-          user_name: profile?.display_name || user.email,
-          content,
-        }])
-        .select()
-        .single();
-
+        .insert([{ task_id: taskId, user_id: user.id, user_name: profile?.display_name || user.email, content }])
+        .select().single();
       if (error) throw error;
       return data;
     },
@@ -225,11 +157,7 @@ export function useTaskDetails(taskId: string) {
   // Delete comment
   const deleteComment = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('task_comments')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('task_comments').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -241,11 +169,7 @@ export function useTaskDetails(taskId: string) {
   // Delete attachment
   const deleteAttachment = useMutation({
     mutationFn: async ({ id, fileName }: { id: string; fileName: string }) => {
-      const { error } = await supabase
-        .from('task_attachments')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('task_attachments').delete().eq('id', id);
       if (error) throw error;
       return fileName;
     },
@@ -260,21 +184,11 @@ export function useTaskDetails(taskId: string) {
     mutationFn: async ({ url, title }: { url: string; title: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
-
       const linkType = detectLinkType(url);
-
       const { data, error } = await supabase
         .from('task_links')
-        .insert([{
-          task_id: taskId,
-          url,
-          title,
-          link_type: linkType,
-          created_by: user.id,
-        }])
-        .select()
-        .single();
-
+        .insert([{ task_id: taskId, url, title, link_type: linkType, created_by: user.id }])
+        .select().single();
       if (error) throw error;
       return data;
     },
@@ -288,11 +202,7 @@ export function useTaskDetails(taskId: string) {
   // Delete link
   const deleteLink = useMutation({
     mutationFn: async ({ id, title }: { id: string; title: string }) => {
-      const { error } = await supabase
-        .from('task_links')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('task_links').delete().eq('id', id);
       if (error) throw error;
       return title;
     },
@@ -303,16 +213,9 @@ export function useTaskDetails(taskId: string) {
   });
 
   return {
-    task,
-    isLoading,
-    error,
-    addSubtask,
-    updateSubtask,
-    deleteSubtask,
-    addComment,
-    deleteComment,
-    deleteAttachment,
-    addLink,
-    deleteLink,
+    task, isLoading, error,
+    addSubtask, updateSubtask, deleteSubtask,
+    addComment, deleteComment, deleteAttachment,
+    addLink, deleteLink,
   };
 }

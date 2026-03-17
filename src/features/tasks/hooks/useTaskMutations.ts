@@ -99,24 +99,24 @@ function formatFieldValue(field: string, value: any, users?: any[]): string {
 }
 
 /**
- * Hook separado para mutations de tasks sem subscription real-time
- * Usado em componentes que apenas precisam criar/atualizar/deletar tasks
- * sem necessidade de escutar mudanças em tempo real
+ * Hook para mutations de tasks com suporte a multi-assignee
  */
 export function useTaskMutations() {
   const queryClient = useQueryClient();
   
   // Create task
   const createTask = useMutation({
-    mutationFn: async (newTask: Omit<Partial<Task>, 'created_by' | 'created_at' | 'updated_at'> & { title: string }) => {
+    mutationFn: async (newTask: Omit<Partial<Task>, 'created_by' | 'created_at' | 'updated_at'> & { title: string; assignee_ids?: string[] }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) throw new Error('User not authenticated');
 
+      const { assignee_ids, assignees, ...taskFields } = newTask as any;
+
       const taskData = {
-        ...newTask,
+        ...taskFields,
         created_by: user.id,
-        assigned_to: newTask.assigned_to || null,
+        assigned_to: null, // Keep for backward compat but use task_assignees
       };
 
       const { data, error } = await supabase
@@ -126,6 +126,19 @@ export function useTaskMutations() {
         .single();
 
       if (error) throw error;
+
+      // Insert assignees if provided
+      const idsToInsert = assignee_ids || [];
+      if (idsToInsert.length > 0) {
+        const { error: assigneeError } = await supabase
+          .from('task_assignees')
+          .insert(idsToInsert.map((uid: string) => ({ task_id: data.id, user_id: uid })));
+        
+        if (assigneeError) {
+          logger.error('Error inserting task assignees', { module: 'tasks', error: assigneeError });
+        }
+      }
+
       return data;
     },
     onSuccess: (data) => {
@@ -134,15 +147,12 @@ export function useTaskMutations() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa criada com sucesso!' });
       
-      // Add history entry for task creation
       addTaskHistoryEntry(data.id, 'Tarefa criada');
       
-      // Log audit entry
       logAuditEntry('create_task', 'tasks', data.id, undefined, {
         title: data.title,
         status: data.status,
         priority: data.priority,
-        assigned_to: data.assigned_to,
         department: data.department,
       });
     },
@@ -155,19 +165,35 @@ export function useTaskMutations() {
   // Update task
   const updateTask = useMutation({
     mutationFn: async ({ id, updates, oldTask }: { id: string; updates: Partial<Task>; oldTask?: Partial<Task> }) => {
+      const { assignees, ...dbUpdates } = updates as any;
+      
       const sanitizedUpdates = {
-        ...updates,
-        assigned_to: updates.assigned_to === '' ? null : updates.assigned_to,
+        ...dbUpdates,
+        assigned_to: undefined, // Don't update assigned_to directly anymore
       };
+      // Remove undefined keys
+      Object.keys(sanitizedUpdates).forEach(key => {
+        if (sanitizedUpdates[key] === undefined) delete sanitizedUpdates[key];
+      });
 
-      const { data, error } = await supabase
-        .from('tasks')
-        .update(sanitizedUpdates)
-        .eq('id', id)
-        .select()
-        .single();
+      // Only update tasks table if there are actual updates
+      let data;
+      if (Object.keys(sanitizedUpdates).length > 0) {
+        const result = await supabase
+          .from('tasks')
+          .update(sanitizedUpdates)
+          .eq('id', id)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (result.error) throw result.error;
+        data = result.data;
+      } else {
+        const result = await supabase.from('tasks').select().eq('id', id).single();
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+
       return { data, updates, oldTask };
     },
     onSuccess: ({ data, updates, oldTask }) => {
@@ -179,14 +205,13 @@ export function useTaskMutations() {
       enhancedToast.success({ title: 'Tarefa atualizada!' });
       
       // Add history entries for each changed field
-      const trackableFields = ['title', 'status', 'priority', 'due_date', 'department', 'assigned_to', 'description'];
+      const trackableFields = ['title', 'status', 'priority', 'due_date', 'department', 'description'];
       
       for (const field of trackableFields) {
         if (updates[field as keyof typeof updates] !== undefined) {
           const oldValue = oldTask?.[field as keyof typeof oldTask];
           const newValue = updates[field as keyof typeof updates];
           
-          // Skip if values are the same
           if (oldValue === newValue) continue;
           
           const fieldLabel = getFieldLabel(field);
@@ -194,16 +219,7 @@ export function useTaskMutations() {
           const newFormatted = formatFieldValue(field, newValue);
           
           let action: string;
-          if (field === 'assigned_to') {
-            // For assignee, we need special handling as it's a user_id
-            if (!newValue) {
-              action = 'Responsável removido';
-            } else if (!oldValue) {
-              action = 'Responsável definido';
-            } else {
-              action = 'Responsável alterado';
-            }
-          } else if (field === 'description') {
+          if (field === 'description') {
             action = 'Descrição alterada';
           } else if (field === 'title') {
             action = 'Título alterado';
@@ -231,6 +247,37 @@ export function useTaskMutations() {
     },
   });
 
+  // Update task assignees
+  const updateAssignees = useMutation({
+    mutationFn: async ({ taskId, assigneeIds }: { taskId: string; assigneeIds: string[] }) => {
+      // Delete all current assignees
+      await supabase.from('task_assignees').delete().eq('task_id', taskId);
+
+      // Insert new assignees
+      if (assigneeIds.length > 0) {
+        const { error } = await supabase
+          .from('task_assignees')
+          .insert(assigneeIds.map(uid => ({ task_id: taskId, user_id: uid })));
+        if (error) throw error;
+      }
+
+      return { taskId, assigneeIds };
+    },
+    onSuccess: ({ taskId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
+      enhancedToast.success({ title: 'Responsáveis atualizados!' });
+      
+      addTaskHistoryEntry(taskId, 'Responsáveis alterados');
+    },
+    onError: (error: Error) => {
+      logger.error('Error updating assignees', { module: 'tasks', error });
+      enhancedToast.error({ title: 'Erro ao atualizar responsáveis', description: error.message });
+    },
+  });
+
   // Delete task
   const deleteTask = useMutation({
     mutationFn: async (taskId: string) => {
@@ -247,7 +294,6 @@ export function useTaskMutations() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.stats });
       enhancedToast.success({ title: 'Tarefa excluída com sucesso!' });
       
-      // Log audit entry
       logAuditEntry('delete_task', 'tasks', taskId);
     },
     onError: (error: Error) => {
@@ -259,6 +305,7 @@ export function useTaskMutations() {
   return {
     createTask,
     updateTask,
+    updateAssignees,
     deleteTask,
   };
 }

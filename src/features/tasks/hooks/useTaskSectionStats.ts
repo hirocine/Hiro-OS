@@ -9,8 +9,7 @@ interface SectionStats {
 }
 
 interface TaskSectionStats {
-  team: SectionStats;
-  private: SectionStats;
+  stats: SectionStats;
   isLoading: boolean;
 }
 
@@ -22,42 +21,28 @@ export function useTaskSectionStats(): TaskSectionStats {
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
 
-      // Fetch all non-completed/archived tasks
       const { data: tasks, error } = await supabase
         .from('tasks')
-        .select('id, priority, due_date, is_private, status, created_by')
+        .select('id, priority, due_date, status')
         .not('status', 'in', '("concluida","arquivada")');
 
       if (error) throw error;
 
-      const teamStats: SectionStats = { active: 0, overdue: 0, urgent: 0 };
-      const privateStats: SectionStats = { active: 0, overdue: 0, urgent: 0 };
+      const stats: SectionStats = { active: 0, overdue: 0, urgent: 0 };
 
       tasks?.forEach(task => {
-        const isPrivate = task.is_private && task.created_by === user?.id;
-        const isTeam = !task.is_private;
-        
-        if (!isPrivate && !isTeam) return;
-
-        const stats = isPrivate ? privateStats : teamStats;
-
-        // Count active (pendente or em_progresso)
         if (task.status === 'pendente' || task.status === 'em_progresso') {
           stats.active++;
         }
-
-        // Count overdue
-        if (task.due_date && task.due_date < today && task.status !== 'concluida') {
+        if (task.due_date && task.due_date < today) {
           stats.overdue++;
         }
-
-        // Count urgent
         if (task.priority === 'urgente') {
           stats.urgent++;
         }
       });
 
-      return { team: teamStats, private: privateStats };
+      return stats;
     },
     enabled: !!user?.id,
     staleTime: 30000,
@@ -65,8 +50,7 @@ export function useTaskSectionStats(): TaskSectionStats {
   });
 
   return {
-    team: data?.team ?? { active: 0, overdue: 0, urgent: 0 },
-    private: data?.private ?? { active: 0, overdue: 0, urgent: 0 },
+    stats: data ?? { active: 0, overdue: 0, urgent: 0 },
     isLoading,
   };
 }

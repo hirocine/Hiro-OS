@@ -22,6 +22,12 @@ export const STATUS_ORDER: Record<TaskStatus, number> = {
   arquivada: 3,
 };
 
+export interface TaskAssignee {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -40,6 +46,9 @@ export interface Task {
   assignee_name?: string;
   assignee_avatar?: string;
   creator_name?: string;
+  
+  // Multi-assignee data
+  assignees?: TaskAssignee[];
 }
 
 export interface TaskSubtask {
@@ -96,7 +105,6 @@ export interface TaskStats {
   active: number;
   urgent: number;
   overdue: number;
-  private: number;
 }
 
 // Configurações visuais

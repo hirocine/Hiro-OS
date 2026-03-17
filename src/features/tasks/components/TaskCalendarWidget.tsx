@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, isSameDay, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, Lock, Users } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { PriorityBadge, StatusBadge } from './index';
 import type { Task } from '../types';
 
-// Parse date string to local timezone (prevents UTC rollback issue)
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day);
@@ -21,41 +20,31 @@ const parseLocalDate = (dateString: string): Date => {
 
 interface TaskCalendarWidgetProps {
   tasks: Task[];
-  isPrivate?: boolean;
 }
 
-export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps) {
+export function TaskCalendarWidget({ tasks }: TaskCalendarWidgetProps) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [month, setMonth] = useState<Date>(new Date());
 
-  // Group active tasks by date (exclude completed and archived)
   const tasksByDate = useMemo(() => {
     const map = new Map<string, typeof tasks>();
-    
-    // Filter out completed and archived tasks
-    const activeTasks = tasks?.filter(t => 
-      t.status !== 'concluida' && t.status !== 'arquivada'
-    ) || [];
-    
+    const activeTasks = tasks?.filter(t => t.status !== 'concluida' && t.status !== 'arquivada') || [];
     activeTasks.forEach(task => {
       if (task.due_date) {
-        const dateKey = task.due_date.split('T')[0]; // Use date string directly
+        const dateKey = task.due_date.split('T')[0];
         const existing = map.get(dateKey) || [];
         map.set(dateKey, [...existing, task]);
       }
     });
-    
     return map;
   }, [tasks]);
 
-  // Tasks for selected date
   const selectedDateTasks = useMemo(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     return tasksByDate.get(dateKey) || [];
   }, [selectedDate, tasksByDate]);
 
-  // Modifier for days with tasks
   const modifiers = useMemo(() => {
     const urgent: Date[] = [];
     const overdue: Date[] = [];
@@ -70,13 +59,9 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
         return dueDate < today && t.status !== 'concluida';
       });
       
-      if (hasOverdue) {
-        overdue.push(date);
-      } else if (hasUrgent) {
-        urgent.push(date);
-      } else if (dayTasks.some(t => t.status !== 'concluida')) {
-        normal.push(date);
-      }
+      if (hasOverdue) overdue.push(date);
+      else if (hasUrgent) urgent.push(date);
+      else if (dayTasks.some(t => t.status !== 'concluida')) normal.push(date);
     });
 
     return { urgent, overdue, normal };
@@ -100,7 +85,6 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
       </CardHeader>
       <CardContent className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Calendar */}
           <div className="flex flex-col">
             <div className="bg-card rounded-xl border shadow-sm p-5">
               <Calendar
@@ -173,10 +157,8 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
                 }}
               />
             </div>
-            
           </div>
 
-          {/* Task list for selected date */}
           <div className="flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -185,13 +167,10 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
                   {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
                 </h4>
               </div>
-              <Badge 
-                variant="secondary" 
-                className={cn(
-                  "text-xs font-semibold px-3 py-1",
-                  selectedDateTasks.length > 0 && "bg-primary/10 text-primary border-primary/20"
-                )}
-              >
+              <Badge variant="secondary" className={cn(
+                "text-xs font-semibold px-3 py-1",
+                selectedDateTasks.length > 0 && "bg-primary/10 text-primary border-primary/20"
+              )}>
                 {selectedDateTasks.length} {selectedDateTasks.length === 1 ? 'tarefa' : 'tarefas'}
               </Badge>
             </div>
@@ -208,7 +187,6 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
               ) : (
                 <div className="space-y-3">
                   {selectedDateTasks.map((task, index) => {
-                    // Calculate due date label
                     const getDueDateLabel = () => {
                       if (!task.due_date) return null;
                       const due = parseLocalDate(task.due_date.split('T')[0]);
@@ -237,33 +215,27 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
                         )}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
-                        {/* Row 1: Icon + Title + Assignee | Due Date Badge */}
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            {task.is_private ? (
-                              <Lock className="w-4 h-4 text-purple-500 shrink-0" />
-                            ) : (
-                              <Users className="w-4 h-4 text-primary shrink-0" />
-                            )}
-                            <p className="font-medium text-sm md:text-base truncate">
-                              {task.title}
-                            </p>
-                            {task.assignee_name && (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                                <Avatar className="w-5 h-5">
-                                  {task.assignee_avatar ? (
-                                    <AvatarImage src={task.assignee_avatar} />
-                                  ) : null}
-                                  <AvatarFallback className="text-[8px] bg-muted">
-                                    {task.assignee_name.slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="truncate max-w-[80px]">{task.assignee_name.split(' ')[0]}</span>
+                            <p className="font-medium text-sm md:text-base truncate">{task.title}</p>
+                            {/* Show assignee avatars */}
+                            {task.assignees && task.assignees.length > 0 && (
+                              <div className="flex -space-x-1.5 shrink-0">
+                                {task.assignees.slice(0, 2).map(a => (
+                                  <Avatar key={a.user_id} className="w-5 h-5 border border-background">
+                                    {a.avatar_url && <AvatarImage src={a.avatar_url} />}
+                                    <AvatarFallback className="text-[8px] bg-muted">
+                                      {(a.display_name || '?').slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ))}
+                                {task.assignees.length > 2 && (
+                                  <span className="text-[10px] text-muted-foreground ml-1">+{task.assignees.length - 2}</span>
+                                )}
                               </div>
                             )}
                           </div>
                           
-                          {/* Due date badge - top right */}
                           {dueDateInfo && (
                             <Badge 
                               variant="outline"
@@ -279,7 +251,6 @@ export function TaskCalendarWidget({ tasks, isPrivate }: TaskCalendarWidgetProps
                           )}
                         </div>
                         
-                        {/* Row 2: Priority + Status Badges | Ver Button */}
                         <div className="flex items-center justify-between mt-2.5">
                           <div className="flex items-center gap-2 flex-wrap">
                             <PriorityBadge priority={task.priority} />

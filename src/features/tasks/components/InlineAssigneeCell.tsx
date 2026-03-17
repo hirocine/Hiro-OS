@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Check, Users } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { getAvatarData } from '@/lib/avatarUtils';
 
 interface InlineAssigneeCellProps {
-  value: string | null; // user_id or null
+  value: string[]; // array of user_ids
   users: Array<{
     id: string;
     email: string;
@@ -16,13 +16,13 @@ interface InlineAssigneeCellProps {
     avatar_url: string | null;
     user_metadata?: any;
   }>;
-  onSave: (newValue: string | null) => void;
+  onSave: (newValue: string[]) => void;
   className?: string;
   isActive?: boolean;
 }
 
 export function InlineAssigneeCell({ 
-  value, 
+  value = [], 
   users,
   onSave, 
   className = '',
@@ -30,19 +30,18 @@ export function InlineAssigneeCell({
 }: InlineAssigneeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedUser = users.find(u => u.id === value);
-  const avatarData = selectedUser ? getAvatarData(
-    { id: selectedUser.id, email: selectedUser.email, user_metadata: selectedUser.user_metadata } as any,
-    selectedUser.avatar_url,
-    selectedUser.display_name
-  ) : null;
+  const selectedUsers = users.filter(u => value.includes(u.id));
 
-  const handleValueChange = (newValue: string) => {
-    if (newValue === 'none') {
-      onSave(null);
-    } else if (newValue !== value) {
-      onSave(newValue);
+  const handleToggle = (userId: string) => {
+    if (value.includes(userId)) {
+      onSave(value.filter(id => id !== userId));
+    } else {
+      onSave([...value, userId]);
     }
+  };
+
+  const handleClear = () => {
+    onSave([]);
     setIsOpen(false);
   };
 
@@ -62,20 +61,39 @@ export function InlineAssigneeCell({
             }}
           >
             <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer">
-              {!isActive ? (
-                <span className="text-sm text-muted-foreground/60 italic">Selecionar</span>
-              ) : avatarData ? (
-                <>
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={avatarData.url || undefined} />
-                    <AvatarFallback className="text-xs">{avatarData.initials}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{avatarData.displayName?.split(' ')[0] || selectedUser?.email}</span>
-                </>
+              {!isActive || selectedUsers.length === 0 ? (
+                <span className="text-sm text-muted-foreground">
+                  {isActive ? 'Sem responsável' : 'Selecionar'}
+                </span>
               ) : (
-                <span className="text-sm text-muted-foreground">Sem responsável</span>
+                <div className="flex items-center">
+                  {/* Stacked avatars */}
+                  <div className="flex -space-x-2">
+                    {selectedUsers.slice(0, 3).map((user) => {
+                      const avatarData = getAvatarData(
+                        { id: user.id, email: user.email, user_metadata: user.user_metadata } as any,
+                        user.avatar_url,
+                        user.display_name
+                      );
+                      return (
+                        <Avatar key={user.id} className="w-6 h-6 border-2 border-background">
+                          <AvatarImage src={avatarData.url || undefined} />
+                          <AvatarFallback className="text-[10px]">{avatarData.initials}</AvatarFallback>
+                        </Avatar>
+                      );
+                    })}
+                  </div>
+                  {selectedUsers.length > 3 && (
+                    <span className="text-xs text-muted-foreground ml-1">+{selectedUsers.length - 3}</span>
+                  )}
+                  {selectedUsers.length <= 2 && (
+                    <span className="text-sm ml-1.5">
+                      {selectedUsers.map(u => u.display_name?.split(' ')[0] || u.email.split('@')[0]).join(', ')}
+                    </span>
+                  )}
+                </div>
               )}
-              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+              <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
             </div>
           </Button>
         </PopoverTrigger>
@@ -88,13 +106,14 @@ export function InlineAssigneeCell({
             <CommandList>
               <CommandGroup>
                 <CommandItem 
-                  onSelect={() => handleValueChange('none')}
+                  onSelect={handleClear}
                   className="cursor-pointer"
                 >
-                  <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
+                  <Check className={cn("mr-2 h-4 w-4", value.length === 0 ? "opacity-100" : "opacity-0")} />
                   Nenhum
                 </CommandItem>
                 {users.map((user) => {
+                  const isSelected = value.includes(user.id);
                   const userData = getAvatarData(
                     { id: user.id, email: user.email, user_metadata: user.user_metadata } as any,
                     user.avatar_url,
@@ -103,10 +122,10 @@ export function InlineAssigneeCell({
                   return (
                     <CommandItem 
                       key={user.id} 
-                      onSelect={() => handleValueChange(user.id)}
+                      onSelect={() => handleToggle(user.id)}
                       className="cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", value === user.id ? "opacity-100" : "opacity-0")} />
+                      <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
                       <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
                           <AvatarImage src={userData.url || undefined} />
