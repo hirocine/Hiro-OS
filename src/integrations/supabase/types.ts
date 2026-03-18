@@ -290,7 +290,7 @@ export type Database = {
         Row: {
           created_at: string | null
           expenses_30d: number | null
-          id: string
+          id: number
           income_30d: number | null
           net_cash_flow_30d: number | null
           updated_at: string | null
@@ -298,7 +298,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           expenses_30d?: number | null
-          id?: string
+          id: number
           income_30d?: number | null
           net_cash_flow_30d?: number | null
           updated_at?: string | null
@@ -306,7 +306,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           expenses_30d?: number | null
-          id?: string
+          id?: number
           income_30d?: number | null
           net_cash_flow_30d?: number | null
           updated_at?: string | null
