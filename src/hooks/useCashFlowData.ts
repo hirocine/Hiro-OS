@@ -24,6 +24,7 @@ export function useCashFlowData(): CashFlowResult {
           .from('financial_snapshots')
           .select('*')
           .eq('year', currentYear)
+          .lte('month', currentMonth)
           .order('month', { ascending: true }),
         supabase
           .from('financial_snapshots')
