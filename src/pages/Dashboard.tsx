@@ -390,10 +390,10 @@ export default function Dashboard() {
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
                 />
                 <CashFlowDashCard
-                  title="Contas a Pagar"
+                  title="Contas a Pagar (Próx. 30d)"
                   value={cashFlow.payables_30d}
                   icon={ArrowUpRight}
-                  subtitle="Saídas (Próx. 30d)"
+                  subtitle="Total a pagar em até 30 dias"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_30d)}
