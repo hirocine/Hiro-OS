@@ -18,18 +18,25 @@ export function useCashFlowData(): CashFlowResult {
   const { data, isLoading } = useQuery({
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
-      const { data: snapshots, error } = await supabase
-        .from('financial_snapshots')
-        .select('*')
-        .eq('year', currentYear)
-        .order('month', { ascending: true });
+      // Fetch current year snapshots AND all snapshots for total balance in parallel
+      const [currentYearRes, allSnapshotsRes] = await Promise.all([
+        supabase
+          .from('financial_snapshots')
+          .select('*')
+          .eq('year', currentYear)
+          .order('month', { ascending: true }),
+        supabase
+          .from('financial_snapshots')
+          .select('net_cash_flow')
+      ]);
 
-      if (error) {
-        console.error('Cash flow fetch error:', error);
+      if (currentYearRes.error) {
+        console.error('Cash flow fetch error:', currentYearRes.error);
         return null;
       }
 
-      if (!snapshots || snapshots.length === 0) return null;
+      const snapshots = currentYearRes.data ?? [];
+      if (snapshots.length === 0) return null;
 
       // Current month snapshot (or latest available)
       const currentSnap = snapshots.find(s => s.month === currentMonth)
@@ -41,8 +48,9 @@ export function useCashFlowData(): CashFlowResult {
       const receivables = Number(currentSnap.receivables_30d ?? 0);
       const payables = Number(currentSnap.payables_30d ?? 0);
 
-      // Saldo Atual = soma de todos os net_cash_flow
-      const totalBalance = snapshots.reduce(
+      // Saldo Atual = soma de TODOS os net_cash_flow (todos os anos)
+      const allSnapshots = allSnapshotsRes.data ?? [];
+      const totalBalance = allSnapshots.reduce(
         (sum, s) => sum + Number(s.net_cash_flow ?? 0), 0
       );
 
