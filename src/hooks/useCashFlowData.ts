@@ -18,8 +18,8 @@ export function useCashFlowData(): CashFlowResult {
   const { data, isLoading } = useQuery({
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
-      // Fetch current year snapshots AND all snapshots for cumulative balance in parallel
-      const [currentYearRes, allSnapshotsRes] = await Promise.all([
+      // Fetch current year snapshots, all snapshots for cumulative balance, and 30d projections in parallel
+      const [currentYearRes, allSnapshotsRes, projectionsRes] = await Promise.all([
         supabase
           .from('financial_snapshots')
           .select('*')
@@ -30,7 +30,12 @@ export function useCashFlowData(): CashFlowResult {
           .from('financial_snapshots')
           .select('year, month, net_cash_flow')
           .order('year', { ascending: true })
-          .order('month', { ascending: true })
+          .order('month', { ascending: true }),
+        supabase
+          .from('cash_flow_projections')
+          .select('income_30d, expenses_30d, net_cash_flow_30d')
+          .limit(1)
+          .single()
       ]);
 
       if (currentYearRes.error) {
@@ -47,9 +52,11 @@ export function useCashFlowData(): CashFlowResult {
 
       const realizedIncome = Number(currentSnap.realized_income ?? 0);
       const realizedExpenses = Number(currentSnap.realized_expenses ?? 0);
-      const cashBalance = Number(currentSnap.cash_balance ?? 0);
-      const receivables = Number(currentSnap.receivables_30d ?? 0);
-      const payables = Number(currentSnap.payables_30d ?? 0);
+
+      // 30d projections from dedicated table
+      const proj = projectionsRes.data;
+      const receivables = Number(proj?.income_30d ?? 0);
+      const payables = Number(proj?.expenses_30d ?? 0);
 
       // Saldo Atual = soma de TODOS os net_cash_flow (todos os anos)
       const allSnapshots = allSnapshotsRes.data ?? [];
@@ -66,16 +73,14 @@ export function useCashFlowData(): CashFlowResult {
         net_flow: Number(currentSnap.net_cash_flow ?? (realizedIncome - realizedExpenses)),
         receivables_30d: receivables,
         payables_30d: payables,
-        projected_balance: cashBalance + receivables - payables,
+        projected_balance: totalBalance + receivables - payables,
       };
 
-      // Build cumulative evolution: each month = sum of ALL net_cash_flow up to that month
-      // First, compute cumulative sum of all snapshots up to (but not including) current year
+      // Build cumulative evolution
       const priorYearTotal = allSnapshots
         .filter(s => s.year < currentYear)
         .reduce((sum, s) => sum + Number(s.net_cash_flow ?? 0), 0);
 
-      // Then build cumulative for each month of the current year
       let runningTotal = priorYearTotal;
       const evolution: MonthlyCashEvolution[] = snapshots.map(s => {
         runningTotal += Number(s.net_cash_flow ?? 0);
