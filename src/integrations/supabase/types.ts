@@ -290,28 +290,28 @@ export type Database = {
         Row: {
           created_at: string | null
           current_balance: number | null
-          expenses_30d: number | null
+          expenses: number | null
           id: number
-          income_30d: number | null
-          net_cash_flow_30d: number | null
+          income: number | null
+          net_cash_flow: number | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           current_balance?: number | null
-          expenses_30d?: number | null
+          expenses?: number | null
           id: number
-          income_30d?: number | null
-          net_cash_flow_30d?: number | null
+          income?: number | null
+          net_cash_flow?: number | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           current_balance?: number | null
-          expenses_30d?: number | null
+          expenses?: number | null
           id?: number
-          income_30d?: number | null
-          net_cash_flow_30d?: number | null
+          income?: number | null
+          net_cash_flow?: number | null
           updated_at?: string | null
         }
         Relationships: []
