@@ -359,10 +359,10 @@ export default function Dashboard() {
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_income)}
                 />
                 <CashFlowDashCard
-                  title="Despesas Realizado"
+                  title="Despesas Realizadas"
                   value={cashFlow.realized_expenses}
                   icon={ArrowUpRight}
-                  subtitle="Dinheiro que já saiu no mês"
+                  subtitle="Total de saídas do mês atual"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_expenses)}
