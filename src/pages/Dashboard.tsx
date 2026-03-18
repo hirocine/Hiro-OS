@@ -350,19 +350,19 @@ export default function Dashboard() {
               {/* Linha 2: Realizado do Mês */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <CashFlowDashCard
-                  title="Receitas Realizado"
+                  title="Receitas Realizadas"
                   value={cashFlow.realized_income}
                   icon={ArrowDownLeft}
-                  subtitle="Dinheiro que já entrou no mês"
+                  subtitle="Total de entradas do mês atual"
                   iconClassName="text-success"
                   valueClassName="text-success"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_income)}
                 />
                 <CashFlowDashCard
-                  title="Despesas Realizado"
+                  title="Despesas Realizadas"
                   value={cashFlow.realized_expenses}
                   icon={ArrowUpRight}
-                  subtitle="Dinheiro que já saiu no mês"
+                  subtitle="Total de saídas do mês atual"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_expenses)}
@@ -381,19 +381,19 @@ export default function Dashboard() {
               {/* Linha 3: Projeção / Não Realizado */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <CashFlowDashCard
-                  title="Contas a Receber"
+                  title="Contas a Receber (Próx. 30d)"
                   value={cashFlow.receivables_30d}
                   icon={ArrowDownLeft}
-                  subtitle="Entradas (Próx. 30d)"
+                  subtitle="Total a receber em até 30 dias"
                   iconClassName="text-success"
                   valueClassName="text-success"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
                 />
                 <CashFlowDashCard
-                  title="Contas a Pagar"
+                  title="Contas a Pagar (Próx. 30d)"
                   value={cashFlow.payables_30d}
                   icon={ArrowUpRight}
-                  subtitle="Saídas (Próx. 30d)"
+                  subtitle="Total a pagar em até 30 dias"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_30d)}
