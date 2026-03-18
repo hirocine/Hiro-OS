@@ -28,6 +28,9 @@ export const mockCashFlowData: CashFlowData = {
   receivables_30d: 95_000,
   payables_30d: 72_000,
   projected_balance: 343_000,
+  receivables_90d: 250_000,
+  payables_90d: 190_000,
+  projected_balance_90d: 380_000,
 };
 
 export const mockCashEvolution: MonthlyCashEvolution[] = [

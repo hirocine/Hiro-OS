@@ -78,6 +78,9 @@ export function useCashFlowData(): CashFlowResult {
         receivables_30d: receivables,
         payables_30d: payables,
         projected_balance: projectedBalance,
+        receivables_90d: receivables90,
+        payables_90d: payables90,
+        projected_balance_90d: projectedBalance90,
       };
 
       // Build cumulative evolution using cumulative_cash_flow column

@@ -412,6 +412,41 @@ export default function Dashboard() {
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance)}
                 />
               </div>
+
+              {/* Linha 4: Projeção 90 dias */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <CashFlowDashCard
+                  title="Contas a Receber (Próx. 90d)"
+                  value={cashFlow.receivables_90d}
+                  icon={ArrowDownLeft}
+                  subtitle="Total a receber em até 90 dias"
+                  iconClassName="text-success"
+                  valueClassName="text-success"
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_90d)}
+                />
+                <CashFlowDashCard
+                  title="Contas a Pagar (Próx. 90d)"
+                  value={cashFlow.payables_90d}
+                  icon={ArrowUpRight}
+                  subtitle="Total a pagar em até 90 dias"
+                  iconClassName="text-destructive"
+                  valueClassName="text-destructive"
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_90d)}
+                />
+                <CashFlowDashCard
+                  title="Saldo Projetado (Próx. 90d)"
+                  value={cashFlow.projected_balance_90d}
+                  icon={Target}
+                  subtitle="Estimativa de caixa em 90 dias"
+                  cardClassName={cn(
+                    'border-primary/40 bg-primary/5',
+                    cashFlow.projected_balance_90d < 0 && 'border-destructive/40 bg-destructive/5'
+                  )}
+                  iconClassName={cashFlow.projected_balance_90d < 0 ? 'text-destructive' : 'text-primary'}
+                  valueClassName={cashFlow.projected_balance_90d < 0 ? 'text-destructive' : 'text-primary'}
+                  displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance_90d)}
+                />
+              </div>
             </div>
           )}
         </section>
