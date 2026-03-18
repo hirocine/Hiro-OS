@@ -350,10 +350,10 @@ export default function Dashboard() {
               {/* Linha 2: Realizado do Mês */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <CashFlowDashCard
-                  title="Receitas Realizado"
+                  title="Receitas Realizadas"
                   value={cashFlow.realized_income}
                   icon={ArrowDownLeft}
-                  subtitle="Dinheiro que já entrou no mês"
+                  subtitle="Total de entradas do mês atual"
                   iconClassName="text-success"
                   valueClassName="text-success"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.realized_income)}
