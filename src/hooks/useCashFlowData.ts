@@ -29,7 +29,7 @@ export function useCashFlowData(): CashFlowResult {
         supabase
           .from('cash_flow_projections')
           .select('income, expenses, net_cash_flow')
-          .limit(1)
+          .eq('id', 30)
           .single()
       ]);
 
