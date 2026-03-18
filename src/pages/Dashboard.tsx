@@ -384,7 +384,7 @@ export default function Dashboard() {
                   title="Contas a Receber"
                   value={cashFlow.receivables_30d}
                   icon={ArrowDownLeft}
-                  subtitle="Previsto para entrar (não realizado)"
+                  subtitle="Entradas (Próx. 30d)"
                   iconClassName="text-success"
                   valueClassName="text-success"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
@@ -393,13 +393,13 @@ export default function Dashboard() {
                   title="Contas a Pagar"
                   value={cashFlow.payables_30d}
                   icon={ArrowUpRight}
-                  subtitle="Compromissos pendentes (não realizado)"
+                  subtitle="Saídas (Próx. 30d)"
                   iconClassName="text-destructive"
                   valueClassName="text-destructive"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.payables_30d)}
                 />
                 <CashFlowDashCard
-                  title="Saldo Projetado (Fim do Mês)"
+                  title="Saldo Projetado (Próx. 30d)"
                   value={cashFlow.projected_balance}
                   icon={Target}
                   subtitle="Saldo + Receber − Pagar"
