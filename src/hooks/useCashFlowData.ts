@@ -19,17 +19,12 @@ export function useCashFlowData(): CashFlowResult {
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
       // Fetch current year snapshots, all snapshots for cumulative balance, and 30d projections in parallel
-      const [currentYearRes, allSnapshotsRes, projectionsRes] = await Promise.all([
+      const [currentYearRes, projectionsRes] = await Promise.all([
         supabase
           .from('financial_snapshots')
           .select('*')
           .eq('year', currentYear)
           .lte('month', currentMonth)
-          .order('month', { ascending: true }),
-        supabase
-          .from('financial_snapshots')
-          .select('year, month, net_cash_flow')
-          .order('year', { ascending: true })
           .order('month', { ascending: true }),
         supabase
           .from('cash_flow_projections')
@@ -58,11 +53,8 @@ export function useCashFlowData(): CashFlowResult {
       const receivables = Number(proj?.income_30d ?? 0);
       const payables = Number(proj?.expenses_30d ?? 0);
 
-      // Saldo Atual = soma de TODOS os net_cash_flow (todos os anos)
-      const allSnapshots = allSnapshotsRes.data ?? [];
-      const totalBalance = allSnapshots.reduce(
-        (sum, s) => sum + Number(s.net_cash_flow ?? 0), 0
-      );
+      // Saldo Atual = cumulative_cash_flow do snapshot do mês atual
+      const totalBalance = Number(currentSnap.cumulative_cash_flow ?? 0);
 
       const cashFlow: CashFlowData = {
         total_balance: totalBalance,
@@ -76,19 +68,11 @@ export function useCashFlowData(): CashFlowResult {
         projected_balance: totalBalance + receivables - payables,
       };
 
-      // Build cumulative evolution
-      const priorYearTotal = allSnapshots
-        .filter(s => s.year < currentYear)
-        .reduce((sum, s) => sum + Number(s.net_cash_flow ?? 0), 0);
-
-      let runningTotal = priorYearTotal;
-      const evolution: MonthlyCashEvolution[] = snapshots.map(s => {
-        runningTotal += Number(s.net_cash_flow ?? 0);
-        return {
-          month: MONTH_LABELS[s.month - 1],
-          balance: runningTotal,
-        };
-      });
+      // Build cumulative evolution using cumulative_cash_flow column
+      const evolution: MonthlyCashEvolution[] = snapshots.map(s => ({
+        month: MONTH_LABELS[s.month - 1],
+        balance: Number(s.cumulative_cash_flow ?? 0),
+      }));
 
       const latestSnapshot = snapshots[snapshots.length - 1];
       const lastSyncedAt = latestSnapshot?.updated_at
