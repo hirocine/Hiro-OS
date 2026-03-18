@@ -19,7 +19,7 @@ export function useCashFlowData(): CashFlowResult {
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
       // Fetch current year snapshots, all snapshots for cumulative balance, and 30d projections in parallel
-      const [currentYearRes, projectionsRes] = await Promise.all([
+      const [currentYearRes, projectionsRes30, projectionsRes90] = await Promise.all([
         supabase
           .from('financial_snapshots')
           .select('*')
@@ -30,6 +30,11 @@ export function useCashFlowData(): CashFlowResult {
           .from('cash_flow_projections')
           .select('income, expenses, net_cash_flow')
           .eq('id', 30)
+          .single(),
+        supabase
+          .from('cash_flow_projections')
+          .select('income, expenses, net_cash_flow')
+          .eq('id', 90)
           .single()
       ]);
 
