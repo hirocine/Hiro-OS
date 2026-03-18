@@ -289,6 +289,7 @@ export type Database = {
       cash_flow_projections: {
         Row: {
           created_at: string | null
+          current_balance: number | null
           expenses_30d: number | null
           id: number
           income_30d: number | null
@@ -297,6 +298,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          current_balance?: number | null
           expenses_30d?: number | null
           id: number
           income_30d?: number | null
@@ -305,6 +307,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          current_balance?: number | null
           expenses_30d?: number | null
           id?: number
           income_30d?: number | null
