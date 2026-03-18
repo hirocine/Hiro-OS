@@ -411,6 +411,7 @@ export default function Dashboard() {
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance)}
+                  largeValue
                 />
               </div>
             </div>
