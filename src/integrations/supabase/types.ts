@@ -575,10 +575,8 @@ export type Database = {
           net_profit_pct: number | null
           net_profit_value: number | null
           nps: number | null
-          payables_30d: number | null
           realized_expenses: number | null
           realized_income: number | null
-          receivables_30d: number | null
           refund: number | null
           refund_projects: number | null
           revenue: number | null
@@ -604,10 +602,8 @@ export type Database = {
           net_profit_pct?: number | null
           net_profit_value?: number | null
           nps?: number | null
-          payables_30d?: number | null
           realized_expenses?: number | null
           realized_income?: number | null
-          receivables_30d?: number | null
           refund?: number | null
           refund_projects?: number | null
           revenue?: number | null
@@ -633,10 +629,8 @@ export type Database = {
           net_profit_pct?: number | null
           net_profit_value?: number | null
           nps?: number | null
-          payables_30d?: number | null
           realized_expenses?: number | null
           realized_income?: number | null
-          receivables_30d?: number | null
           refund?: number | null
           refund_projects?: number | null
           revenue?: number | null
