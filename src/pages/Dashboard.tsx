@@ -375,6 +375,7 @@ export default function Dashboard() {
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
+                  largeValue
                 />
               </div>
 
