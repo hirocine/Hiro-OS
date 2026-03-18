@@ -544,6 +544,7 @@ export type Database = {
           id: string
           ltv: number | null
           month: number
+          net_cash_flow: number | null
           net_profit_pct: number | null
           net_profit_value: number | null
           nps: number | null
@@ -572,6 +573,7 @@ export type Database = {
           id: string
           ltv?: number | null
           month: number
+          net_cash_flow?: number | null
           net_profit_pct?: number | null
           net_profit_value?: number | null
           nps?: number | null
@@ -600,6 +602,7 @@ export type Database = {
           id?: string
           ltv?: number | null
           month?: number
+          net_cash_flow?: number | null
           net_profit_pct?: number | null
           net_profit_value?: number | null
           nps?: number | null
