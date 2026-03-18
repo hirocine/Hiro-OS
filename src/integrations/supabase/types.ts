@@ -568,6 +568,7 @@ export type Database = {
           costs: number | null
           costs_projects: number | null
           created_at: string | null
+          cumulative_cash_flow: number | null
           id: string
           ltv: number | null
           month: number
@@ -595,6 +596,7 @@ export type Database = {
           costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
+          cumulative_cash_flow?: number | null
           id: string
           ltv?: number | null
           month: number
@@ -622,6 +624,7 @@ export type Database = {
           costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
+          cumulative_cash_flow?: number | null
           id?: string
           ltv?: number | null
           month?: number
