@@ -28,7 +28,7 @@ export function useCashFlowData(): CashFlowResult {
           .order('month', { ascending: true }),
         supabase
           .from('cash_flow_projections')
-          .select('income_30d, expenses_30d, net_cash_flow_30d')
+          .select('income, expenses, net_cash_flow')
           .limit(1)
           .single()
       ]);
