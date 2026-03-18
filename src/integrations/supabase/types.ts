@@ -286,6 +286,33 @@ export type Database = {
           },
         ]
       }
+      cash_flow_projections: {
+        Row: {
+          created_at: string | null
+          expenses_30d: number | null
+          id: string
+          income_30d: number | null
+          net_cash_flow_30d: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expenses_30d?: number | null
+          id?: string
+          income_30d?: number | null
+          net_cash_flow_30d?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expenses_30d?: number | null
+          id?: string
+          income_30d?: number | null
+          net_cash_flow_30d?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       company_policies: {
         Row: {
           category: string | null
