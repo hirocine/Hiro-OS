@@ -371,11 +371,10 @@ export default function Dashboard() {
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  
+                  subtitle={valuesHidden ? 'R$ •••••• − R$ ••••••' : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
-                  largeValue
                 />
               </div>
 
@@ -403,7 +402,7 @@ export default function Dashboard() {
                   title="Saldo Projetado (Próx. 30d)"
                   value={cashFlow.projected_balance}
                   icon={Target}
-                  
+                  subtitle="Saldo + Receber − Pagar"
                   cardClassName={cn(
                     'border-primary/40 bg-primary/5',
                     cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
@@ -411,7 +410,6 @@ export default function Dashboard() {
                   iconClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   valueClassName={cashFlow.projected_balance < 0 ? 'text-destructive' : 'text-primary'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.projected_balance)}
-                  largeValue
                 />
               </div>
             </div>
@@ -589,7 +587,7 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue, largeValue }: {
+function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
   title: string;
   value?: number;
   icon: React.ComponentType<{ className?: string }>;
@@ -598,7 +596,6 @@ function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueCla
   valueClassName?: string;
   cardClassName?: string;
   displayValue: string;
-  largeValue?: boolean;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -609,11 +606,7 @@ function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueCla
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn(
-          'font-bold truncate',
-          largeValue ? 'text-lg sm:text-xl lg:text-2xl' : 'text-base sm:text-lg lg:text-xl',
-          valueClassName
-        )}>
+        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
           {displayValue}
         </div>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
