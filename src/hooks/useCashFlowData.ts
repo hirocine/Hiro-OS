@@ -54,10 +54,16 @@ export function useCashFlowData(): CashFlowResult {
       const realizedExpenses = Number(currentSnap.realized_expenses ?? 0);
 
       // 30d projections from dedicated table
-      const proj = projectionsRes.data;
+      const proj = projectionsRes30.data;
       const receivables = Number(proj?.income ?? 0);
       const payables = Number(proj?.expenses ?? 0);
       const projectedBalance = Number(proj?.net_cash_flow ?? 0);
+
+      // 90d projections
+      const proj90 = projectionsRes90.data;
+      const receivables90 = Number(proj90?.income ?? 0);
+      const payables90 = Number(proj90?.expenses ?? 0);
+      const projectedBalance90 = Number(proj90?.net_cash_flow ?? 0);
 
       // Saldo Atual = cumulative_cash_flow do snapshot do mês atual
       const totalBalance = Number(currentSnap.cumulative_cash_flow ?? 0);
