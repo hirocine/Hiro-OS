@@ -47,7 +47,7 @@ export function useCashFlowData(): CashFlowResult {
         realized_expenses: realizedExpenses,
         monthly_income: realizedIncome,
         monthly_expenses: realizedExpenses,
-        net_flow: realizedIncome - realizedExpenses,
+        net_flow: Number(currentSnap.net_cash_flow ?? (realizedIncome - realizedExpenses)),
         receivables_30d: receivables,
         payables_30d: payables,
         projected_balance: cashBalance + receivables - payables,
