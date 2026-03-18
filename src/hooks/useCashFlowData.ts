@@ -19,7 +19,7 @@ export function useCashFlowData(): CashFlowResult {
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
       // Fetch current year snapshots, all snapshots for cumulative balance, and 30d projections in parallel
-      const [currentYearRes, projectionsRes] = await Promise.all([
+      const [currentYearRes, projectionsRes30, projectionsRes90] = await Promise.all([
         supabase
           .from('financial_snapshots')
           .select('*')
@@ -30,6 +30,11 @@ export function useCashFlowData(): CashFlowResult {
           .from('cash_flow_projections')
           .select('income, expenses, net_cash_flow')
           .eq('id', 30)
+          .single(),
+        supabase
+          .from('cash_flow_projections')
+          .select('income, expenses, net_cash_flow')
+          .eq('id', 90)
           .single()
       ]);
 
@@ -49,10 +54,16 @@ export function useCashFlowData(): CashFlowResult {
       const realizedExpenses = Number(currentSnap.realized_expenses ?? 0);
 
       // 30d projections from dedicated table
-      const proj = projectionsRes.data;
+      const proj = projectionsRes30.data;
       const receivables = Number(proj?.income ?? 0);
       const payables = Number(proj?.expenses ?? 0);
       const projectedBalance = Number(proj?.net_cash_flow ?? 0);
+
+      // 90d projections
+      const proj90 = projectionsRes90.data;
+      const receivables90 = Number(proj90?.income ?? 0);
+      const payables90 = Number(proj90?.expenses ?? 0);
+      const projectedBalance90 = Number(proj90?.net_cash_flow ?? 0);
 
       // Saldo Atual = cumulative_cash_flow do snapshot do mês atual
       const totalBalance = Number(currentSnap.cumulative_cash_flow ?? 0);
@@ -67,6 +78,9 @@ export function useCashFlowData(): CashFlowResult {
         receivables_30d: receivables,
         payables_30d: payables,
         projected_balance: projectedBalance,
+        receivables_90d: receivables90,
+        payables_90d: payables90,
+        projected_balance_90d: projectedBalance90,
       };
 
       // Build cumulative evolution using cumulative_cash_flow column
