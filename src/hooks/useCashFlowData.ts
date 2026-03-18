@@ -18,7 +18,7 @@ export function useCashFlowData(): CashFlowResult {
   const { data, isLoading } = useQuery({
     queryKey: ['financial', 'cash-flow', currentYear],
     queryFn: async () => {
-      // Fetch current year snapshots AND all snapshots for total balance in parallel
+      // Fetch current year snapshots AND all snapshots for cumulative balance in parallel
       const [currentYearRes, allSnapshotsRes] = await Promise.all([
         supabase
           .from('financial_snapshots')
@@ -27,7 +27,9 @@ export function useCashFlowData(): CashFlowResult {
           .order('month', { ascending: true }),
         supabase
           .from('financial_snapshots')
-          .select('net_cash_flow')
+          .select('year, month, net_cash_flow')
+          .order('year', { ascending: true })
+          .order('month', { ascending: true })
       ]);
 
       if (currentYearRes.error) {
@@ -66,11 +68,21 @@ export function useCashFlowData(): CashFlowResult {
         projected_balance: cashBalance + receivables - payables,
       };
 
-      // Build evolution from all snapshots
-      const evolution: MonthlyCashEvolution[] = snapshots.map(s => ({
-        month: MONTH_LABELS[s.month - 1],
-        balance: Number(s.cash_balance ?? 0),
-      }));
+      // Build cumulative evolution: each month = sum of ALL net_cash_flow up to that month
+      // First, compute cumulative sum of all snapshots up to (but not including) current year
+      const priorYearTotal = allSnapshots
+        .filter(s => s.year < currentYear)
+        .reduce((sum, s) => sum + Number(s.net_cash_flow ?? 0), 0);
+
+      // Then build cumulative for each month of the current year
+      let runningTotal = priorYearTotal;
+      const evolution: MonthlyCashEvolution[] = snapshots.map(s => {
+        runningTotal += Number(s.net_cash_flow ?? 0);
+        return {
+          month: MONTH_LABELS[s.month - 1],
+          balance: runningTotal,
+        };
+      });
 
       const latestSnapshot = snapshots[snapshots.length - 1];
       const lastSyncedAt = latestSnapshot?.updated_at
