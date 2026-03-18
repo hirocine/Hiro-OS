@@ -587,7 +587,7 @@ export default function Dashboard() {
   );
 }
 
-function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue }: {
+function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueClassName, cardClassName, displayValue, largeValue }: {
   title: string;
   value?: number;
   icon: React.ComponentType<{ className?: string }>;
@@ -596,6 +596,7 @@ function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueCla
   valueClassName?: string;
   cardClassName?: string;
   displayValue: string;
+  largeValue?: boolean;
 }) {
   return (
     <Card className={cn('shadow-card hover:shadow-elegant transition-all duration-200 hover:scale-[1.02]', cardClassName)}>
@@ -606,7 +607,11 @@ function CashFlowDashCard({ title, icon: Icon, subtitle, iconClassName, valueCla
         <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} />
       </CardHeader>
       <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
-        <div className={cn('text-base sm:text-lg lg:text-xl font-bold truncate', valueClassName)}>
+        <div className={cn(
+          'font-bold truncate',
+          largeValue ? 'text-lg sm:text-xl lg:text-2xl' : 'text-base sm:text-lg lg:text-xl',
+          valueClassName
+        )}>
           {displayValue}
         </div>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
