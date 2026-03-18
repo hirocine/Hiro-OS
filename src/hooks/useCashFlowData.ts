@@ -52,6 +52,7 @@ export function useCashFlowData(): CashFlowResult {
       const proj = projectionsRes.data;
       const receivables = Number(proj?.income ?? 0);
       const payables = Number(proj?.expenses ?? 0);
+      const projectedBalance = Number(proj?.net_cash_flow ?? 0);
 
       // Saldo Atual = cumulative_cash_flow do snapshot do mês atual
       const totalBalance = Number(currentSnap.cumulative_cash_flow ?? 0);
@@ -65,7 +66,7 @@ export function useCashFlowData(): CashFlowResult {
         net_flow: Number(currentSnap.net_cash_flow ?? (realizedIncome - realizedExpenses)),
         receivables_30d: receivables,
         payables_30d: payables,
-        projected_balance: totalBalance + receivables - payables,
+        projected_balance: projectedBalance,
       };
 
       // Build cumulative evolution using cumulative_cash_flow column
