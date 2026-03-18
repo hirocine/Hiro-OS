@@ -41,8 +41,13 @@ export function useCashFlowData(): CashFlowResult {
       const receivables = Number(currentSnap.receivables_30d ?? 0);
       const payables = Number(currentSnap.payables_30d ?? 0);
 
+      // Saldo Atual = soma de todos os net_cash_flow
+      const totalBalance = snapshots.reduce(
+        (sum, s) => sum + Number(s.net_cash_flow ?? 0), 0
+      );
+
       const cashFlow: CashFlowData = {
-        total_balance: cashBalance,
+        total_balance: totalBalance,
         realized_income: realizedIncome,
         realized_expenses: realizedExpenses,
         monthly_income: realizedIncome,
