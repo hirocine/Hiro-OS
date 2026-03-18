@@ -402,7 +402,7 @@ export default function Dashboard() {
                   title="Saldo Projetado (Próx. 30d)"
                   value={cashFlow.projected_balance}
                   icon={Target}
-                  subtitle="Saldo + Receber − Pagar"
+                  
                   cardClassName={cn(
                     'border-primary/40 bg-primary/5',
                     cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
