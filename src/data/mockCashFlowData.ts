@@ -8,6 +8,9 @@ export interface CashFlowData {
   receivables_30d: number;
   payables_30d: number;
   projected_balance: number;
+  receivables_90d: number;
+  payables_90d: number;
+  projected_balance_90d: number;
 }
 
 export interface MonthlyCashEvolution {
