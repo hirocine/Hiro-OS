@@ -68,8 +68,6 @@ Deno.serve(async (req) => {
       cash_balance: body.cash_balance ?? 0,
       realized_income: body.realized_income ?? 0,
       realized_expenses: body.realized_expenses ?? 0,
-      receivables_30d: body.receivables_30d ?? 0,
-      payables_30d: body.payables_30d ?? 0,
     };
 
     const { error: snapshotError } = await supabase
