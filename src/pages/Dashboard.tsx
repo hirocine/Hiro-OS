@@ -381,10 +381,10 @@ export default function Dashboard() {
               {/* Linha 3: Projeção / Não Realizado */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <CashFlowDashCard
-                  title="Contas a Receber"
+                  title="Contas a Receber (Próx. 30d)"
                   value={cashFlow.receivables_30d}
                   icon={ArrowDownLeft}
-                  subtitle="Entradas (Próx. 30d)"
+                  subtitle="Total a receber em até 30 dias"
                   iconClassName="text-success"
                   valueClassName="text-success"
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.receivables_30d)}
