@@ -371,7 +371,7 @@ export default function Dashboard() {
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  subtitle={valuesHidden ? 'R$ •••••• − R$ ••••••' : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
@@ -402,7 +402,7 @@ export default function Dashboard() {
                   title="Saldo Projetado (Próx. 30d)"
                   value={cashFlow.projected_balance}
                   icon={Target}
-                  subtitle="Saldo + Receber − Pagar"
+                  
                   cardClassName={cn(
                     'border-primary/40 bg-primary/5',
                     cashFlow.projected_balance < 0 && 'border-destructive/40 bg-destructive/5'
