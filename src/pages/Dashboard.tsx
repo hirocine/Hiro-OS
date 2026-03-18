@@ -371,7 +371,7 @@ export default function Dashboard() {
                   title="Fluxo Líquido Atual"
                   value={cashFlow.net_flow}
                   icon={cashFlow.net_flow < 0 ? TrendingDown : TrendingUp}
-                  subtitle={valuesHidden ? 'R$ •••••• − R$ ••••••' : `${formatCurrency(cashFlow.realized_income)} − ${formatCurrency(cashFlow.realized_expenses)}`}
+                  subtitle="Entradas menos saídas do mês"
                   iconClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   valueClassName={cashFlow.net_flow < 0 ? 'text-destructive' : 'text-success'}
                   displayValue={valuesHidden ? 'R$ ••••••' : formatCurrency(cashFlow.net_flow)}
