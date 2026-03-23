@@ -526,6 +526,54 @@ export type Database = {
           },
         ]
       }
+      financial_computed: {
+        Row: {
+          contribution_margin_pct: number | null
+          contribution_margin_value: number | null
+          created_at: string | null
+          cumulative_cash_flow: number | null
+          id: string
+          month: number
+          net_cash_flow: number | null
+          net_profit_pct: number | null
+          net_profit_value: number | null
+          revenue_goal_monthly: number | null
+          snapshot_id: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          contribution_margin_pct?: number | null
+          contribution_margin_value?: number | null
+          created_at?: string | null
+          cumulative_cash_flow?: number | null
+          id?: string
+          month: number
+          net_cash_flow?: number | null
+          net_profit_pct?: number | null
+          net_profit_value?: number | null
+          revenue_goal_monthly?: number | null
+          snapshot_id: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          contribution_margin_pct?: number | null
+          contribution_margin_value?: number | null
+          created_at?: string | null
+          cumulative_cash_flow?: number | null
+          id?: string
+          month?: number
+          net_cash_flow?: number | null
+          net_profit_pct?: number | null
+          net_profit_value?: number | null
+          revenue_goal_monthly?: number | null
+          snapshot_id?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       financial_goals: {
         Row: {
           cac_goal: number | null
