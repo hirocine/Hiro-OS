@@ -132,10 +132,7 @@ export function useFinancialData(): FinancialData {
 
   return {
     goals: data?.goals ?? mockGoals,
-        contribution_margin_actual: Number(latestComputed?.contribution_margin_pct ?? 0),
-        contribution_margin_value: Number(latestComputed?.contribution_margin_value ?? 0),
-        net_profit_actual: Number(latestComputed?.net_profit_pct ?? 0),
-        net_profit_value: Number(latestComputed?.net_profit_value ?? 0),
+    metrics: data?.metrics ?? mockMetrics,
     monthlyData: data?.monthlyData ?? mockMonthlyData,
     loading: isLoading,
     lastSyncedAt: data?.lastSyncedAt ?? null,
