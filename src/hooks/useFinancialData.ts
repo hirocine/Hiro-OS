@@ -34,7 +34,7 @@ export function useFinancialData(): FinancialData {
           .maybeSingle(),
         supabase
           .from('financial_snapshots')
-          .select('*')
+          .select('id, year, month, revenue, avg_ticket, cac, ltv, churn_rate, burn_rate, cash_balance, nps, costs, costs_projects, refund, refund_projects, realized_income, realized_expenses, updated_at')
           .eq('year', currentYear)
           .order('month', { ascending: true }),
         supabase
@@ -93,10 +93,10 @@ export function useFinancialData(): FinancialData {
         ltv: Number(latestSnapshot?.ltv ?? 0),
         churn_rate: Number(latestSnapshot?.churn_rate ?? 0),
         burn_rate: burnRate,
-        contribution_margin_actual: Number(latestComputed?.contribution_margin_pct ?? latestSnapshot?.contribution_margin_pct ?? 0),
-        contribution_margin_value: Number(latestComputed?.contribution_margin_value ?? latestSnapshot?.contribution_margin_value ?? 0),
-        net_profit_actual: Number(latestComputed?.net_profit_pct ?? latestSnapshot?.net_profit_pct ?? 0),
-        net_profit_value: Number(latestComputed?.net_profit_value ?? latestSnapshot?.net_profit_value ?? 0),
+        contribution_margin_actual: Number(latestComputed?.contribution_margin_pct ?? 0),
+        contribution_margin_value: Number(latestComputed?.contribution_margin_value ?? 0),
+        net_profit_actual: Number(latestComputed?.net_profit_pct ?? 0),
+        net_profit_value: Number(latestComputed?.net_profit_value ?? 0),
         nps: Number(latestSnapshot?.nps ?? 0),
         cash_runway_months,
       };
@@ -110,7 +110,7 @@ export function useFinancialData(): FinancialData {
         const monthNum = i + 1;
         const snap = snapshotByMonth.get(monthNum);
         const comp = computedByMonth.get(monthNum) as any;
-        const revenueGoal = comp ? Number(comp.revenue_goal_monthly ?? 0) : (snap ? Number(snap.revenue_goal ?? 0) : 0);
+        const revenueGoal = comp ? Number(comp.revenue_goal_monthly ?? 0) : 0;
         const isFutureMonth = monthNum > currentMonth;
         return {
           month: label,
