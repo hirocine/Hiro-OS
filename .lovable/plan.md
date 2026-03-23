@@ -1,26 +1,27 @@
 
 
-# Automação: net_profit_value e net_profit_pct
+# Arquitetura: financial_snapshots + financial_computed
 
 ## Situação Atual
 
-Já existem triggers automáticos para `contribution_margin_value` e `contribution_margin_pct`. O pedido é criar a mesma lógica para:
+A tabela `financial_snapshots` recebe dados brutos do Make (via PATCH direto no PostgREST). **Nenhum trigger modifica a própria tabela**, eliminando conflitos com PostgREST.
 
-- **`net_profit_value`** = `revenue - costs`
-- **`net_profit_pct`** = `(net_profit_value / revenue) * 100`
+Uma tabela separada `financial_computed` armazena os valores calculados:
+- `revenue_goal_monthly` (meta anual / 12)
+- `contribution_margin_value` (revenue - costs_projects + refund_projects)
+- `contribution_margin_pct` (margem / revenue * 100)
+- `net_profit_value` (revenue - costs + refund)
+- `net_profit_pct` (lucro / revenue * 100)
+- `net_cash_flow` (realized_income - realized_expenses)
+- `cumulative_cash_flow` (soma acumulada histórica)
 
-## Alteração
+## Fluxo
 
-Uma única migration SQL que cria (ou substitui) duas funções trigger + seus triggers na tabela `financial_snapshots`:
+1. Make envia PATCH para `financial_snapshots` → dados brutos salvos sem conflito
+2. Trigger AFTER INSERT/UPDATE em `financial_snapshots` → calcula e grava em `financial_computed` (tabela diferente, sem problema de self-referential update)
+3. O mesmo trigger recalcula `cumulative_cash_flow` em `financial_computed` e sincroniza `current_balance` em `cash_flow_projections`
 
-1. **`auto_fill_net_profit_value()`** — calcula `NEW.net_profit_value := COALESCE(NEW.revenue, 0) - COALESCE(NEW.costs, 0)` antes de INSERT/UPDATE
-2. **`auto_fill_net_profit_pct()`** — calcula `NEW.net_profit_pct := ROUND((net_profit_value / revenue) * 100, 2)` com proteção contra divisão por zero, executado APÓS o trigger de value
+## Frontend
 
-A migration também faz um UPDATE em massa para recalcular os valores existentes.
-
-| Recurso | Alteração |
-|---|---|
-| Migration SQL | Criar 2 funções + 2 triggers + bulk update |
-
-Nenhum arquivo de código precisa mudar — o hook `useFinancialData.ts` já lê esses campos do banco.
-
+- `useFinancialData.ts` busca dados brutos de `financial_snapshots` + métricas de `financial_computed`
+- `useCashFlowData.ts` busca `realized_income/expenses` de `financial_snapshots` + `net_cash_flow/cumulative_cash_flow` de `financial_computed`
