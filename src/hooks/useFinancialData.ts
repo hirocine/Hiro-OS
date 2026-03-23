@@ -110,7 +110,7 @@ export function useFinancialData(): FinancialData {
         const monthNum = i + 1;
         const snap = snapshotByMonth.get(monthNum);
         const comp = computedByMonth.get(monthNum) as any;
-        const revenueGoal = comp ? Number(comp.revenue_goal_monthly ?? 0) : (snap ? Number(snap.revenue_goal ?? 0) : 0);
+        const revenueGoal = comp ? Number(comp.revenue_goal_monthly ?? 0) : 0;
         const isFutureMonth = monthNum > currentMonth;
         return {
           month: label,
