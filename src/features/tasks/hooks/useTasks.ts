@@ -32,11 +32,7 @@ export function useTasks(filters?: TaskFilters) {
         .select(`
           *,
           task_assignees (
-            user_id,
-            profiles:user_id (
-              display_name,
-              avatar_url
-            )
+            user_id
           )
         `)
         .order('created_at', { ascending: false });
