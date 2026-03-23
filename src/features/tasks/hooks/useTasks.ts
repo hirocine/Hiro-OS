@@ -82,19 +82,35 @@ export function useTasks(filters?: TaskFilters) {
         throw error;
       }
 
+      // Fetch profile info for assignees
+      const allUserIds = new Set<string>();
+      (data || []).forEach((task: any) => {
+        (task.task_assignees || []).forEach((ta: any) => allUserIds.add(ta.user_id));
+      });
+
+      let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      if (allUserIds.size > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .in('user_id', Array.from(allUserIds));
+        (profiles || []).forEach(p => {
+          profilesMap[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url };
+        });
+      }
+
       // Transform data with joined assignees info
       const transformedTasks: Task[] = (data || []).map((task: any) => {
         const assignees: TaskAssignee[] = (task.task_assignees || []).map((ta: any) => ({
           user_id: ta.user_id,
-          display_name: ta.profiles?.display_name || null,
-          avatar_url: ta.profiles?.avatar_url || null,
+          display_name: profilesMap[ta.user_id]?.display_name || null,
+          avatar_url: profilesMap[ta.user_id]?.avatar_url || null,
         }));
 
         return {
           ...task,
           task_assignees: undefined,
           assignees,
-          // Keep backward compat: first assignee as assignee_name/avatar
           assignee_name: assignees[0]?.display_name || null,
           assignee_avatar: assignees[0]?.avatar_url || null,
         };
