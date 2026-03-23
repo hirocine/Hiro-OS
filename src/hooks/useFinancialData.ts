@@ -34,7 +34,7 @@ export function useFinancialData(): FinancialData {
           .maybeSingle(),
         supabase
           .from('financial_snapshots')
-          .select('*')
+          .select('id, year, month, revenue, avg_ticket, cac, ltv, churn_rate, burn_rate, cash_balance, nps, costs, costs_projects, refund, refund_projects, realized_income, realized_expenses, updated_at')
           .eq('year', currentYear)
           .order('month', { ascending: true }),
         supabase
