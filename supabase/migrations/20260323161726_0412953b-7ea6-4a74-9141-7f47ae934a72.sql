@@ -1,0 +1,2 @@
+ALTER TABLE public.notifications DROP CONSTRAINT notifications_related_entity_check;
+ALTER TABLE public.notifications ADD CONSTRAINT notifications_related_entity_check CHECK (related_entity = ANY (ARRAY['projects'::text, 'equipments'::text, 'loans'::text, 'tasks'::text, 'audiovisual_projects'::text]));
