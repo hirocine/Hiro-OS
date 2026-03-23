@@ -50,15 +50,10 @@ Deno.serve(async (req) => {
     }
 
     // UPSERT financial snapshot
-    const snapshotData = {
+    const snapshotData: Record<string, unknown> = {
       year,
       month,
       revenue: body.revenue ?? 0,
-      revenue_goal: body.revenue_goal ?? 0,
-      contribution_margin_pct: body.contribution_margin_pct ?? 0,
-      
-      net_profit_pct: body.net_profit_pct ?? 0,
-      net_profit_value: body.net_profit_value ?? 0,
       avg_ticket: body.avg_ticket ?? 0,
       cac: body.cac ?? 0,
       ltv: body.ltv ?? 0,
@@ -69,6 +64,12 @@ Deno.serve(async (req) => {
       realized_income: body.realized_income ?? 0,
       realized_expenses: body.realized_expenses ?? 0,
     };
+
+    // Optional raw cost fields (used by trigger to compute metrics)
+    if (body.costs !== undefined) snapshotData.costs = body.costs;
+    if (body.costs_projects !== undefined) snapshotData.costs_projects = body.costs_projects;
+    if (body.refund !== undefined) snapshotData.refund = body.refund;
+    if (body.refund_projects !== undefined) snapshotData.refund_projects = body.refund_projects;
 
     const { error: snapshotError } = await supabase
       .from("financial_snapshots")
