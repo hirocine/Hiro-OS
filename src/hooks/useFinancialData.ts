@@ -25,8 +25,8 @@ export function useFinancialData(): FinancialData {
   const { data, isLoading } = useQuery({
     queryKey: ['financial', 'dashboard', currentYear],
     queryFn: async () => {
-      // Fetch goals and snapshots in parallel
-      const [goalsRes, snapshotsRes] = await Promise.all([
+      // Fetch goals, raw snapshots, and computed metrics in parallel
+      const [goalsRes, snapshotsRes, computedRes] = await Promise.all([
         supabase
           .from('financial_goals')
           .select('*')
@@ -37,6 +37,11 @@ export function useFinancialData(): FinancialData {
           .select('*')
           .eq('year', currentYear)
           .order('month', { ascending: true }),
+        supabase
+          .from('financial_computed' as any)
+          .select('snapshot_id, revenue_goal_monthly, contribution_margin_value, contribution_margin_pct, net_profit_value, net_profit_pct')
+          .eq('year', currentYear)
+          .order('month', { ascending: true }),
       ]);
 
       if (goalsRes.error) console.error('Goals fetch error:', goalsRes.error);
@@ -44,9 +49,15 @@ export function useFinancialData(): FinancialData {
 
       const goalsRow = goalsRes.data;
       const snapshots = snapshotsRes.data ?? [];
+      const computedRows = (computedRes.data as any[]) ?? [];
 
       // If no data in DB, return null to trigger fallback
       if (!goalsRow && snapshots.length === 0) return null;
+
+      // Build computed lookup by snapshot_id
+      const computedBySnapshot = new Map(
+        computedRows.map((c: any) => [c.snapshot_id, c])
+      );
 
       // Build goals
       const goals: FinancialGoals = {
@@ -57,9 +68,10 @@ export function useFinancialData(): FinancialData {
       };
 
       // Current month snapshot (based on actual calendar month)
-      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const currentMonth = new Date().getMonth() + 1;
       const currentMonthSnapshot = snapshots.find(s => s.month === currentMonth);
       const latestSnapshot = currentMonthSnapshot ?? snapshots[snapshots.length - 1];
+      const latestComputed = latestSnapshot ? computedBySnapshot.get(latestSnapshot.id) as any : null;
 
       // Accumulated YTD (only months up to current)
       const accumulated_revenue_ytd = snapshots
@@ -81,10 +93,10 @@ export function useFinancialData(): FinancialData {
         ltv: Number(latestSnapshot?.ltv ?? 0),
         churn_rate: Number(latestSnapshot?.churn_rate ?? 0),
         burn_rate: burnRate,
-        contribution_margin_actual: Number(latestSnapshot?.contribution_margin_pct ?? 0),
-        contribution_margin_value: Number(latestSnapshot?.contribution_margin_value ?? 0),
-        net_profit_actual: Number(latestSnapshot?.net_profit_pct ?? 0),
-        net_profit_value: Number(latestSnapshot?.net_profit_value ?? 0),
+        contribution_margin_actual: Number(latestComputed?.contribution_margin_pct ?? latestSnapshot?.contribution_margin_pct ?? 0),
+        contribution_margin_value: Number(latestComputed?.contribution_margin_value ?? latestSnapshot?.contribution_margin_value ?? 0),
+        net_profit_actual: Number(latestComputed?.net_profit_pct ?? latestSnapshot?.net_profit_pct ?? 0),
+        net_profit_value: Number(latestComputed?.net_profit_value ?? latestSnapshot?.net_profit_value ?? 0),
         nps: Number(latestSnapshot?.nps ?? 0),
         cash_runway_months,
       };
@@ -92,11 +104,13 @@ export function useFinancialData(): FinancialData {
       // Build 12-month chart data
       const monthlyGoal = goals.revenue_goal > 0 ? Math.round(goals.revenue_goal / 12) : 0;
       const snapshotByMonth = new Map(snapshots.map(s => [s.month, s]));
+      const computedByMonth = new Map(computedRows.map((c: any) => [c.month ?? 0, c]));
 
       const monthlyData: MonthlyData[] = MONTH_LABELS.map((label, i) => {
         const monthNum = i + 1;
         const snap = snapshotByMonth.get(monthNum);
-        const revenueGoal = snap ? Number(snap.revenue_goal ?? 0) : 0;
+        const comp = computedByMonth.get(monthNum) as any;
+        const revenueGoal = comp ? Number(comp.revenue_goal_monthly ?? 0) : (snap ? Number(snap.revenue_goal ?? 0) : 0);
         const isFutureMonth = monthNum > currentMonth;
         return {
           month: label,
