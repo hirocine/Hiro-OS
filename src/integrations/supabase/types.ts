@@ -614,25 +614,18 @@ export type Database = {
           cac: number | null
           cash_balance: number | null
           churn_rate: number | null
-          contribution_margin_pct: number | null
-          contribution_margin_value: number | null
           costs: number | null
           costs_projects: number | null
           created_at: string | null
-          cumulative_cash_flow: number | null
           id: string
           ltv: number | null
           month: number
-          net_cash_flow: number | null
-          net_profit_pct: number | null
-          net_profit_value: number | null
           nps: number | null
           realized_expenses: number | null
           realized_income: number | null
           refund: number | null
           refund_projects: number | null
           revenue: number | null
-          revenue_goal: number | null
           updated_at: string | null
           year: number
         }
@@ -642,25 +635,18 @@ export type Database = {
           cac?: number | null
           cash_balance?: number | null
           churn_rate?: number | null
-          contribution_margin_pct?: number | null
-          contribution_margin_value?: number | null
           costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
-          cumulative_cash_flow?: number | null
           id: string
           ltv?: number | null
           month: number
-          net_cash_flow?: number | null
-          net_profit_pct?: number | null
-          net_profit_value?: number | null
           nps?: number | null
           realized_expenses?: number | null
           realized_income?: number | null
           refund?: number | null
           refund_projects?: number | null
           revenue?: number | null
-          revenue_goal?: number | null
           updated_at?: string | null
           year: number
         }
@@ -670,25 +656,18 @@ export type Database = {
           cac?: number | null
           cash_balance?: number | null
           churn_rate?: number | null
-          contribution_margin_pct?: number | null
-          contribution_margin_value?: number | null
           costs?: number | null
           costs_projects?: number | null
           created_at?: string | null
-          cumulative_cash_flow?: number | null
           id?: string
           ltv?: number | null
           month?: number
-          net_cash_flow?: number | null
-          net_profit_pct?: number | null
-          net_profit_value?: number | null
           nps?: number | null
           realized_expenses?: number | null
           realized_income?: number | null
           refund?: number | null
           refund_projects?: number | null
           revenue?: number | null
-          revenue_goal?: number | null
           updated_at?: string | null
           year?: number
         }
