@@ -83,7 +83,7 @@ export default function Auth() {
         } else {
           toast({
             title: "Login realizado com sucesso!",
-            description: "Bem-vindo ao sistema de inventário.",
+            description: "Bem-vindo ao Hiro OS®.",
           });
         }
       } else {
@@ -157,7 +157,7 @@ export default function Auth() {
             className="h-16 w-auto mx-auto"
           />
           <h1 className="text-xl font-semibold text-foreground">
-            Sistema de Inventário - Produtora Audiovisual
+            Hiro OS®
           </h1>
         </div>
 
@@ -168,7 +168,7 @@ export default function Auth() {
           </CardTitle>
           <CardDescription className="text-center">
             {mode === 'login' 
-              ? 'Acesse o sistema de inventário' 
+              ? 'Acesse o Hiro OS®' 
               : 'Crie sua conta para começar'}
           </CardDescription>
         </CardHeader>

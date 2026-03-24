@@ -1,7 +1,7 @@
 {
-  "name": "Hiro® - Inventario",
-  "short_name": "Hiro Inventario",
-  "description": "Sistema profissional para controle de inventário de equipamentos audiovisuais",
+  "name": "Hiro OS®",
+  "short_name": "Hiro OS",
+  "description": "Hiro OS® — Sistema de gestão para produtoras audiovisuais",
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
   "display": "standalone",

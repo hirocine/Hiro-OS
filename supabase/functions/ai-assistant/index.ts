@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `Você é o Assistente Hiro, o assistente virtual inteligente do sistema de inventário e gestão da Hiro Film.
+const SYSTEM_PROMPT = `Você é o Assistente Hiro, o assistente virtual inteligente do Hiro OS®, o sistema de gestão da Hiro Film.
 
 Você tem acesso aos dados de:
 - Equipamentos (câmeras, lentes, áudio, iluminação, etc.) - incluindo nome, marca, status, data de compra, valor
