@@ -283,7 +283,7 @@ export function DesktopSidebar() {
       )}>
         <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
           <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
-          <span className="text-base font-bold text-foreground truncate">Hiro Hub</span>
+          <span className="text-base font-bold text-foreground truncate">Hiro OS®</span>
         </div>
         <div className="px-3 py-3">
           <div className="relative">

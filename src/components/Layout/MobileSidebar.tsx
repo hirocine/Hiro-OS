@@ -246,7 +246,7 @@ export function MobileSidebar() {
         )}>
           <div className="flex items-center gap-3">
             <img src={hiroLogo} alt="HIRO Logo" className="h-8 w-8 rounded-lg object-cover" />
-            <span className="text-base font-bold text-foreground">Hiro Hub</span>
+            <span className="text-base font-bold text-foreground">Hiro OS®</span>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="h-8 w-8">
             <X className="h-5 w-5" />
