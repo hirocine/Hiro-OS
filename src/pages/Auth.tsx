@@ -168,7 +168,7 @@ export default function Auth() {
           </CardTitle>
           <CardDescription className="text-center">
             {mode === 'login' 
-              ? 'Acesse o sistema de inventário' 
+              ? 'Acesse o Hiro OS®' 
               : 'Crie sua conta para começar'}
           </CardDescription>
         </CardHeader>

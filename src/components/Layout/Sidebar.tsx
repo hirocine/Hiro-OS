@@ -72,7 +72,7 @@ export function Sidebar() {
             className="h-8 w-auto"
           />
           <span className="text-lg font-semibold text-foreground">
-            Inventário
+            Hiro OS®
           </span>
         </div>
       </div>
