@@ -157,7 +157,7 @@ export default function Auth() {
             className="h-16 w-auto mx-auto"
           />
           <h1 className="text-xl font-semibold text-foreground">
-            Sistema de Inventário - Produtora Audiovisual
+            Hiro OS®
           </h1>
         </div>
 
