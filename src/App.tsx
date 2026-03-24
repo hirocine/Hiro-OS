@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
@@ -58,7 +59,9 @@ const App = () => (
             } />
             <Route path="/" element={
               <ProtectedRoute>
-                <Layout />
+                <ErrorBoundary>
+                  <Layout />
+                </ErrorBoundary>
               </ProtectedRoute>
             }>
               <Route index element={<Home />} />
