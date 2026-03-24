@@ -83,7 +83,7 @@ export default function Auth() {
         } else {
           toast({
             title: "Login realizado com sucesso!",
-            description: "Bem-vindo ao sistema de inventário.",
+            description: "Bem-vindo ao Hiro OS®.",
           });
         }
       } else {
