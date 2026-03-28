@@ -28,8 +28,9 @@ export interface RentalStats {
   totalEquipment: number;
   totalInvested: number;
   totalRevenue: number;
-  roi: number; // percentage
-  avgOccupancy: number; // percentage
+  totalDepreciation: number;
+  roi: number;
+  avgOccupancy: number;
   activeRentals: number;
   overdueRentals: number;
 }

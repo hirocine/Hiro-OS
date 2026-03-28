@@ -16,10 +16,13 @@ const totalRevenue = mockRentalEquipment.reduce((s, e) => s + e.totalRevenue, 0)
 const totalDaysPossible = mockRentalEquipment.length * 90; // last 90 days
 const totalDaysRented = mockRentalEquipment.reduce((s, e) => s + e.totalDaysRented, 0);
 
+const totalDepreciation = Math.round(totalInvested * 0.22); // ~22% depreciation
+
 export const mockRentalStats: RentalStats = {
   totalEquipment: mockRentalEquipment.length,
   totalInvested,
   totalRevenue,
+  totalDepreciation,
   roi: Math.round((totalRevenue / totalInvested) * 100),
   avgOccupancy: Math.round((totalDaysRented / totalDaysPossible) * 100),
   activeRentals: mockRentalEquipment.filter(e => e.status === 'rented').length,
