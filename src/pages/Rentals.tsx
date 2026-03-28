@@ -15,7 +15,7 @@ export default function Rentals() {
     <div className="space-y-6">
       <PageHeader
         title="Locação de Equipamentos"
-        description="Controle de entradas, saídas e rentabilidade dos seus equipamentos"
+        subtitle="Controle de entradas, saídas e rentabilidade dos seus equipamentos"
       />
 
       <RentalStatsCards stats={mockRentalStats} />
