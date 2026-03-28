@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, Percent, ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { DollarSign, TrendingUp, Percent, TrendingDown } from 'lucide-react';
 import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
 import type { RentalStats } from '@/features/rentals/types';
 
