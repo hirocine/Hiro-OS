@@ -23,8 +23,10 @@ export default function Rentals() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RentalRevenueChart data={mockMonthlyRentalRevenue} />
-        <TopEarnersList data={mockTopEarners} />
+        <RentalCapexChart />
       </div>
+
+      <TopEarnersList data={mockTopEarners} />
 
       <RentalTable rentals={mockRentals} />
     </div>
