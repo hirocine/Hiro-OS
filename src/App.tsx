@@ -38,6 +38,7 @@ const Proposals = lazy(() => import("./pages/Proposals"));
 const NewProposal = lazy(() => import("./pages/NewProposal"));
 const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
+const Rentals = lazy(() => import("./pages/Rentals"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
