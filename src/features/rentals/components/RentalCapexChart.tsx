@@ -32,8 +32,8 @@ export function RentalCapexChart() {
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="currentGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -65,7 +65,7 @@ export function RentalCapexChart() {
               <Area
                 type="monotone"
                 dataKey="currentValue"
-                stroke="hsl(var(--success))"
+                stroke="hsl(var(--destructive))"
                 fill="url(#currentGrad)"
                 strokeWidth={2}
               />
@@ -78,7 +78,7 @@ export function RentalCapexChart() {
             Total Investido
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-success" />
+            <div className="h-2.5 w-2.5 rounded-full bg-destructive" />
             Valor Atual (após depreciação)
           </div>
         </div>
