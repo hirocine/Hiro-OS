@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, Percent, ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { DollarSign, TrendingUp, Percent, TrendingDown } from 'lucide-react';
 import { StatsCard, StatsCardGrid, StatsCardSkeleton } from '@/components/ui/stats-card';
 import type { RentalStats } from '@/features/rentals/types';
 
@@ -45,13 +45,13 @@ export function RentalStatsCards({ stats, isLoading }: RentalStatsCardsProps) {
       description: `${stats.activeRentals} locações ativas`,
     },
     {
-      title: 'Locações Ativas',
-      value: stats.activeRentals,
-      icon: ArrowUpDown,
-      color: stats.overdueRentals > 0 ? 'text-destructive' : 'text-success',
-      bgColor: stats.overdueRentals > 0 ? 'bg-destructive/10' : 'bg-success/10',
-      borderColor: stats.overdueRentals > 0 ? 'border-l-destructive' : 'border-l-success',
-      description: stats.overdueRentals > 0 ? `${stats.overdueRentals} em atraso` : 'Nenhum atraso',
+      title: 'Depreciação Acumulada',
+      value: `R$ ${(stats.totalDepreciation / 1000).toFixed(0)}k`,
+      icon: TrendingDown,
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
+      borderColor: 'border-l-destructive',
+      description: `Valor atual: R$ ${((stats.totalInvested - stats.totalDepreciation) / 1000).toFixed(0)}k`,
     },
   ];
 
