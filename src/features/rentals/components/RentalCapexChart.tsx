@@ -65,7 +65,7 @@ export function RentalCapexChart() {
               <Area
                 type="monotone"
                 dataKey="currentValue"
-                stroke="hsl(var(--success))"
+                stroke="hsl(var(--destructive))"
                 fill="url(#currentGrad)"
                 strokeWidth={2}
               />
