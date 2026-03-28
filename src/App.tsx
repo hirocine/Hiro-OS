@@ -95,6 +95,7 @@ const App = () => (
                 <Route path="orcamentos" element={<Proposals />} />
                 <Route path="orcamentos/novo" element={<NewProposal />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
+                <Route path="locacoes" element={<Rentals />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<Admin />} />
