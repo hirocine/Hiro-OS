@@ -78,7 +78,7 @@ export function RentalCapexChart() {
             Total Investido
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-success" />
+            <div className="h-2.5 w-2.5 rounded-full bg-destructive" />
             Valor Atual (após depreciação)
           </div>
         </div>
