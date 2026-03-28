@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/ui/page-header';
 import { RentalStatsCards } from '@/features/rentals/components/RentalStatsCards';
 import { RentalRevenueChart } from '@/features/rentals/components/RentalRevenueChart';
+import { RentalCapexChart } from '@/features/rentals/components/RentalCapexChart';
 import { TopEarnersList } from '@/features/rentals/components/TopEarnersList';
 import { RentalTable } from '@/features/rentals/components/RentalTable';
 import {
@@ -22,8 +23,10 @@ export default function Rentals() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RentalRevenueChart data={mockMonthlyRentalRevenue} />
-        <TopEarnersList data={mockTopEarners} />
+        <RentalCapexChart />
       </div>
+
+      <TopEarnersList data={mockTopEarners} />
 
       <RentalTable rentals={mockRentals} />
     </div>
