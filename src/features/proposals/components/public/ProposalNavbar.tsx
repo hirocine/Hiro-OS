@@ -25,13 +25,18 @@ export function ProposalNavbar({ validityDate }: Props) {
     return () => clearInterval(timer)
   }, [validityDate])
 
+  const fadeIn = (delay: number): React.CSSProperties => ({
+    opacity: 0,
+    animation: `proposal-fade-up 0.6s ease-out ${delay}ms forwards`,
+  })
+
   return (
-    <nav className='no-print fixed top-0 w-full proposal-content-px py-6 flex justify-between items-center z-50 bg-black/80 backdrop-blur-xl border-b border-[#4CFF5C]/10'>
-      <a href='https://hiro.film/' target='_blank' rel='noopener noreferrer'>
+    <nav className='no-print fixed top-0 w-full proposal-content-px py-6 flex justify-between items-center z-50 bg-black/80 backdrop-blur-xl border-b border-[#4CFF5C]/10' style={{ opacity: 0, animation: 'proposal-fade-in 0.5s ease-out 0ms forwards' }}>
+      <a href='https://hiro.film/' target='_blank' rel='noopener noreferrer' style={fadeIn(100)}>
         <img src="/proposal-assets/Asset10.svg" alt="Hiro Films" className='h-4' />
       </a>
 
-      <div className='flex items-center gap-4'>
+      <div className='flex items-center gap-4' style={fadeIn(250)}>
         <div className='hidden md:flex items-center gap-2.5'>
           <Clock className='text-[#4CFF5C]' size={13} strokeWidth={2} />
           <span className='text-[11px] uppercase tracking-[1.5px] text-gray-400'>
