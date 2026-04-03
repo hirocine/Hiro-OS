@@ -353,7 +353,7 @@ export default function ProposalDetails() {
                 <div className="grid grid-cols-2 gap-4">
                   <InfoRow label="Valor de Tabela" value={proposal.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.list_price) : null} />
                   <InfoRow label="Desconto" value={proposal.discount_pct ? `${proposal.discount_pct}%` : '0%'} />
-                  <InfoRow label="Valor Final" value={formattedValue} />
+                  <InfoRow label="Valor Final" value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value)} />
                   <div className="col-span-2">
                     <InfoRow label="Condições de Pagamento" value={proposal.payment_terms} />
                   </div>
