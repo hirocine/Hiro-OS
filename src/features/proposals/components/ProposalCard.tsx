@@ -26,7 +26,6 @@ interface Props {
 export function ProposalCard({ proposal, onDelete }: Props) {
   const navigate = useNavigate();
   const status = statusMap[proposal.status] || statusMap.draft;
-  const { differenceInDays } = require('date-fns');
   const daysLeft = differenceInDays(new Date(proposal.validity_date), new Date());
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
   const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
