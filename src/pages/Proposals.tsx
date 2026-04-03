@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, FileText, Loader2, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, FileText, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
