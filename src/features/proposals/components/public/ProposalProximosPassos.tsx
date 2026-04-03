@@ -76,7 +76,7 @@ export function ProposalProximosPassos({ validityDate }: Props) {
               {i < steps.length - 1 && (
                 <div
                   className={`hidden md:block absolute top-[25px] left-[95px] h-px origin-left ${
-                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-[#374151]'
+                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-600'
                   }`}
                   style={{
                     width: 'calc(140px + 48px - 50px)',
