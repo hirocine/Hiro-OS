@@ -531,7 +531,7 @@ html:has(.proposal-page) {
   scrollbar-gutter: auto !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  background-color: #000 !important;
+  background-color: hsl(0 0% 0%) !important;
   color-scheme: dark !important;
 }
 
@@ -541,7 +541,7 @@ body:has(.proposal-page),
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
-  background-color: #000 !important;
+  background-color: hsl(0 0% 0%) !important;
 }
 
 .proposal-page [data-radix-scroll-area-scrollbar] {
@@ -549,6 +549,7 @@ body:has(.proposal-page),
 }
 
 .proposal-page {
+  overflow: visible !important;
   font-family: 'Helvetica Now Display', 'Inter', sans-serif;
   line-height: 1.6;
   --tw-gray-800: #2a2a2a;

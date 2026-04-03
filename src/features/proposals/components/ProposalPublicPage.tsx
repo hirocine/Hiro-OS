@@ -42,7 +42,7 @@ export function ProposalPublicPage() {
   }
 
   return (
-    <div className="proposal-page min-h-screen bg-black text-[#f5f5f5] relative overflow-x-hidden">
+    <div className="proposal-page min-h-screen bg-black text-[#f5f5f5] relative">
       <GlowSpot className='right-[-200px] top-[1800px]' />
       <GlowSpot className='left-[-200px] top-[3200px]' />
       <GlowSpot className='right-[-100px] top-[4800px]' />
