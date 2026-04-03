@@ -64,7 +64,7 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
       {/* Background image */}
       <div className='absolute inset-0 pointer-events-none overflow-hidden'>
         <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-10' />
-        <div ref={maskRef} className='absolute inset-0' style={{ maskImage: 'none', WebkitMaskImage: 'none' }}>
+        <div ref={maskRef} className='absolute inset-0' style={{ maskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)', WebkitMaskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)' }}>
           <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-50' />
         </div>
         <div className='absolute inset-0 bg-gradient-to-r from-black/80 to-transparent' />
