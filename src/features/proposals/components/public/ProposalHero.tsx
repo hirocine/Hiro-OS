@@ -62,9 +62,9 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
     <section ref={sectionRef} className='relative min-h-[92vh] flex flex-col justify-center items-start text-left proposal-content-px pt-40 pb-20'>
       {/* Background image */}
       <div className='absolute inset-0 pointer-events-none overflow-hidden'>
-        <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-h-full min-w-full object-contain opacity-10' />
+        <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-10' />
         <div ref={maskRef} className='absolute inset-0' style={{ maskImage: 'none', WebkitMaskImage: 'none' }}>
-          <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-h-full min-w-full object-contain opacity-50' />
+          <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-50' />
         </div>
         <div className='absolute inset-0 bg-gradient-to-r from-black/80 to-transparent' />
       </div>
