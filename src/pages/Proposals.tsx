@@ -7,21 +7,16 @@ import { Plus, FileText, Clock, CheckCircle, Archive, ChevronDown, ChevronRight 
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
-import { ProposalsPageSkeleton } from '@/features/proposals/components/ProposalsSkeleton';
 
 export default function Proposals() {
   const navigate = useNavigate();
-  const { data: proposals, isLoading, deleteProposal } = useProposals();
+  const { data: proposals, deleteProposal } = useProposals();
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
   const activeProposals = (proposals || []).filter(p => p.status === 'draft' || p.status === 'sent');
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
-
-  if (isLoading) {
-    return <ProposalsPageSkeleton />;
-  }
 
   return (
     <ResponsiveContainer maxWidth="7xl">
