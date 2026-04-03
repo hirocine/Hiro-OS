@@ -34,6 +34,7 @@ export interface Proposal {
   entregaveis: any[];
   cases: CaseItem[];
   whatsapp_number: string | null;
+  company_description: string | null;
 }
 
 export interface ScopeItem {
