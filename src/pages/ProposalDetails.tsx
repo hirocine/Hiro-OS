@@ -27,6 +27,8 @@ import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDe
 import { useProposals } from '@/features/proposals/hooks/useProposals';
 import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/types';
+import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
