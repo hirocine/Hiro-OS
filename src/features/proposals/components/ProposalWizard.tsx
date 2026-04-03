@@ -396,24 +396,34 @@ export function ProposalWizard() {
               <div className="grid grid-cols-1 gap-3">
                 {casesBank.map(c => {
                   const isSelected = form.selected_case_ids.includes(c.id);
+                  const tags = Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : (c.tipo ? [c.tipo] : []);
                   return (
                     <div
                       key={c.id}
                       onClick={() => toggleCase(c.id)}
                       className={cn(
-                        "rounded-lg border p-4 cursor-pointer transition-all",
+                        "rounded-lg border p-3 cursor-pointer transition-all",
                         isSelected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <Checkbox checked={isSelected} className="shrink-0" />
+                        {c.vimeo_id && (
+                          <img
+                            src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                            alt={c.campaign_name}
+                            className="w-24 h-14 object-cover rounded shrink-0 bg-muted"
+                          />
+                        )}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
-                              {c.tipo}
-                            </span>
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            {tags.map((tag, i) => (
+                              <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                {tag}
+                              </span>
+                            ))}
                             {c.destaque && (
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30 px-2 py-0.5 rounded">
                                 Destaque
                               </span>
                             )}
@@ -421,7 +431,6 @@ export function ProposalWizard() {
                           <p className="text-sm font-semibold text-foreground">{c.client_name}</p>
                           <p className="text-xs text-muted-foreground">{c.campaign_name}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground font-mono shrink-0">{c.vimeo_id}</span>
                       </div>
                     </div>
                   );
@@ -439,9 +448,14 @@ export function ProposalWizard() {
               ) : (
                 <div className="rounded-lg border border-dashed border-primary/50 p-4 space-y-3 bg-primary/5">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Tipo de Projeto</Label>
-                      <Input value={newCase.tipo} onChange={e => setNewCase(p => ({ ...p, tipo: e.target.value }))} placeholder="Campanha Publicitária" className="h-9" />
+                    <div className="space-y-1 col-span-2">
+                      <Label className="text-xs text-muted-foreground">Tags do Projeto</Label>
+                      <MultiSelect
+                        options={CASE_TAG_OPTIONS.map(t => ({ value: t, label: t }))}
+                        value={newCase.tags}
+                        onValueChange={v => setNewCase(p => ({ ...p, tags: v }))}
+                        placeholder="Selecione as categorias..."
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Nome do Cliente</Label>
@@ -467,8 +481,8 @@ export function ProposalWizard() {
                       onClick={async () => {
                         const { id: vimeoId, hash: vimeoHash } = parseVimeoUrl(newCase.vimeo_url);
                         if (vimeoId.trim()) {
-                          await createCase.mutateAsync({ tipo: newCase.tipo, client_name: newCase.client_name, campaign_name: newCase.campaign_name, vimeo_id: vimeoId, vimeo_hash: vimeoHash, destaque: newCase.destaque });
-                          setNewCase({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+                          await createCase.mutateAsync({ tags: newCase.tags, client_name: newCase.client_name, campaign_name: newCase.campaign_name, vimeo_id: vimeoId, vimeo_hash: vimeoHash, destaque: newCase.destaque });
+                          setNewCase({ tags: [], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
                           setShowNewCase(false);
                         }
                       }}
