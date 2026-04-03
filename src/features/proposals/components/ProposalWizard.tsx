@@ -56,7 +56,17 @@ export function ProposalWizard() {
 
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
-  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', destaque: false });
+  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+
+  const parseVimeoUrl = (url: string): { id: string; hash: string } => {
+    // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
+    const match = url.match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
+    const hashMatch = url.match(/[?&]h=([a-zA-Z0-9]+)/);
+    return {
+      id: match?.[1] || '',
+      hash: hashMatch?.[1] || match?.[2] || '',
+    };
+  };
 
   const updateField = <K extends keyof ProposalFormData>(key: K, value: ProposalFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
