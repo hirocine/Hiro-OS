@@ -528,6 +528,21 @@ html, body {
   line-height: 1.6;
   scrollbar-gutter: auto !important;
   overflow-y: auto !important;
+  --tw-gray-800: #2a2a2a;
+  --tw-gray-700: #3a3a3a;
+  --tw-gray-400: #888888;
+}
+
+.proposal-page .border-gray-800 {
+  border-color: #2a2a2a;
+}
+
+.proposal-page .text-gray-400 {
+  color: #888888;
+}
+
+.proposal-page .text-gray-500 {
+  color: #6a6a6a;
 }
 
 .proposal-page,
