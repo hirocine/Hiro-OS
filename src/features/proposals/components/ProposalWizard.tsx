@@ -70,13 +70,35 @@ export function ProposalWizard() {
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
 
+  const compressImage = (file: File, maxSize = 800): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Compression failed')), 'image/webp', 0.85);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleLogoUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
     setUploadingLogo(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error } = await supabase.storage.from('proposal-moodboard').upload(path, file);
+      const compressed = await compressImage(file);
+      const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+      const { error } = await supabase.storage.from('proposal-moodboard').upload(path, compressed, { contentType: 'image/webp' });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('proposal-moodboard').getPublicUrl(path);
       updateField('client_logo', urlData.publicUrl);
