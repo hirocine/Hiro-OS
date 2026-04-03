@@ -557,6 +557,14 @@ html, body {
   border-color: #3a3a3a;
 }
 
+.proposal-page .bg-gray-800 {
+  background-color: #2a2a2a;
+}
+
+.proposal-page .text-gray-600 {
+  color: #555555;
+}
+
 .proposal-page,
 .proposal-page * {
   --removed-body-scroll-bar-size: 0 !important;
