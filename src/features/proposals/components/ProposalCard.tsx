@@ -1,11 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import type { Proposal } from '../types';
@@ -20,15 +21,14 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
 interface Props {
   proposal: Proposal;
   onDelete?: (id: string) => void;
-  onEdit?: (proposal: Proposal) => void;
 }
 
-export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
+export function ProposalCard({ proposal, onDelete }: Props) {
+  const navigate = useNavigate();
   const status = statusMap[proposal.status] || statusMap.draft;
   const daysLeft = differenceInDays(new Date(proposal.validity_date), new Date());
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
   const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
-
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl).then(() => toast.success('Link copiado!'));
@@ -41,7 +41,6 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <CardContent className="p-4">
-        {/* Header: Logo + Info + Menu */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <Avatar className="h-10 w-10 shrink-0">
@@ -76,12 +75,10 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
                 <Eye className="mr-2 h-4 w-4" />
                 Ver Proposta
               </DropdownMenuItem>
-              {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(proposal)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Editar
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem onClick={() => navigate(`/orcamentos/${proposal.id}`)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCopyLink}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copiar Link
@@ -99,7 +96,6 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
           </DropdownMenu>
         </div>
 
-        {/* Badges */}
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
           <Badge variant={status.variant} className="text-xs px-2 py-0.5">
             {status.label}
@@ -115,7 +111,6 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
           )}
         </div>
 
-        {/* Compact Info */}
         <div className="space-y-1.5 text-xs mb-3">
           {proposal.client_responsible && (
             <div className="flex items-center gap-2">
@@ -135,15 +130,14 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
           </div>
         </div>
 
-        {/* Action Button */}
         <Button
           variant="outline"
           size="sm"
-          onClick={handleOpenProposal}
+          onClick={() => navigate(`/orcamentos/${proposal.id}`)}
           className="w-full h-8 text-xs group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
         >
           <ExternalLink className="mr-1.5 h-3 w-3" />
-          Ver Proposta
+          Ver Detalhes
         </Button>
       </CardContent>
     </Card>
