@@ -306,7 +306,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Cliente e Projeto</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0 space-y-3">
+            <CardContent className="pt-2 space-y-4">
               <div><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
               <div><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
               <div><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
