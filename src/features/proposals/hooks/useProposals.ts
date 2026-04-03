@@ -32,21 +32,6 @@ export function useProposals() {
 
   const createProposal = useMutation({
     mutationFn: async (form: ProposalFormData) => {
-      // Upload client logo
-      let clientLogoUrl: string | null = null;
-      if (form.client_logo_file) {
-        const ext = form.client_logo_file.name.split('.').pop();
-        const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: logoError } = await supabase.storage
-          .from('proposal-moodboard')
-          .upload(path, form.client_logo_file);
-        if (logoError) throw logoError;
-        const { data: logoUrlData } = supabase.storage
-          .from('proposal-moodboard')
-          .getPublicUrl(path);
-        clientLogoUrl = logoUrlData.publicUrl;
-      }
-
       // Generate slug with uniqueness check
       let slug = generateSlug(form.client_name, form.project_name);
       const { data: existing } = await supabase
@@ -77,7 +62,7 @@ export function useProposals() {
           client_name: form.client_name.trim(),
           project_name: form.project_name.trim(),
           client_responsible: form.client_responsible.trim() || null,
-          client_logo: clientLogoUrl,
+          
           validity_date: form.validity_date?.toISOString().split('T')[0],
           base_value: baseValue,
           discount_pct: discountPct,
