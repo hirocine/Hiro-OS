@@ -128,6 +128,7 @@ export interface ProposalFormData {
   project_name: string;
   client_responsible: string;
   whatsapp_number: string;
+  company_description: string;
   sent_date: Date;
   validity_date: Date | undefined;
   objetivo: string;
