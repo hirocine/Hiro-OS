@@ -61,7 +61,7 @@ export default function ProposalDetails() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  const [clientForm, setClientForm] = useState({ client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
+  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
