@@ -105,7 +105,7 @@ export function ProposalPublicPage() {
       </div>
 
       <div className='relative overflow-hidden rounded-t-[40px] border-t border-gray-800'>
-        <div className='hidden md:block absolute inset-0 pointer-events-none overflow-hidden' style={{ zIndex: 0 }}>
+        <div className='absolute inset-0 pointer-events-none overflow-hidden' style={{ zIndex: 0 }}>
           <div className='absolute inset-[-25%] w-[150%] h-[150%]'>
             <iframe
               src='https://player.vimeo.com/video/1068269996?h=bad24e450f&title=0&byline=0&portrait=0&background=1&muted=1'

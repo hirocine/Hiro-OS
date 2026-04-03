@@ -67,7 +67,7 @@ export function ProposalInvestimento({
               )}
             </div>
 
-            <div className='flex-1 flex items-center -mt-8'>
+            <div className='flex-1 flex items-center md:-mt-8'>
               <p className='proposal-font-display text-5xl md:text-7xl font-bold text-[#4CFF5C]'>
                 {valorFinal}
               </p>
