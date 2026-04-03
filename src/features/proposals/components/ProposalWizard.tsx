@@ -685,28 +685,21 @@ export function ProposalWizard() {
                 <p className="text-sm text-muted-foreground">Valores e condições de pagamento.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor do Projeto (R$) *</Label>
-                  <Input type="number" min={0} step={0.01} value={form.base_value || ''} onChange={e => updateField('base_value', parseFloat(e.target.value) || 0)} placeholder="20000" className="h-10" />
-                  <p className="text-xs text-muted-foreground">Valor cheio antes do desconto</p>
+                  <Label className="text-xs font-medium">Valor de Tabela (R$) *</Label>
+                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="20000" className="h-10" />
+                  <p className="text-xs text-muted-foreground">Valor cheio — aparece riscado na proposta</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Desconto (%)</Label>
                   <Input type="number" min={0} max={100} value={form.discount_pct || ''} onChange={e => updateField('discount_pct', parseFloat(e.target.value) || 0)} placeholder="50" className="h-10" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor de Tabela (R$)</Label>
-                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="Opcional — riscado" className="h-10" />
-                  <p className="text-xs text-muted-foreground">Aparece riscado na proposta</p>
-                </div>
               </div>
 
-              {form.base_value > 0 && (
-                <div className="bg-muted rounded-lg p-4 space-y-1">
-                  {form.list_price > 0 && (
-                    <p className="text-sm text-muted-foreground line-through">Tabela: {fmt(form.list_price)}</p>
-                  )}
+              {listPrice > 0 && (
+                <div className="bg-muted rounded-lg p-4 space-y-2">
+                  <p className="text-sm text-muted-foreground line-through">Tabela: {fmt(listPrice)}</p>
                   {form.discount_pct > 0 && (
                     <p className="text-sm text-success font-medium">Desconto: {form.discount_pct}%</p>
                   )}
