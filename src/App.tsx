@@ -53,7 +53,7 @@ const App = () => (
               </Suspense>
             } />
             <Route path="/orcamento/:slug" element={
-              <Suspense fallback={<LoadingScreenSkeleton />}>
+              <Suspense fallback={null}>
                 <ProposalPublic />
               </Suspense>
             } />
