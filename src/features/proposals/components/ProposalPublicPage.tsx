@@ -23,11 +23,7 @@ export function ProposalPublicPage() {
   const { data: proposal, isLoading, error } = useProposalDetails(slug);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white/50" />
-      </div>
-    );
+    return null;
   }
 
   if (error || !proposal) {
