@@ -306,7 +306,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Cliente e Projeto</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0 space-y-3">
+            <CardContent className="pt-2 space-y-4">
               <div><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
               <div><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
               <div><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
@@ -331,7 +331,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Investimento</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0 space-y-3">
+            <CardContent className="pt-2 space-y-4">
               <div><Label className="text-xs">Valor de Tabela (R$)</Label><Input type="number" value={investForm.list_price} onChange={e => setInvestForm(p => ({ ...p, list_price: Number(e.target.value) }))} /></div>
               <div><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               <div className="p-3 rounded-lg bg-muted/50">
@@ -357,7 +357,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Objetivo</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-2">
               <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={6} />
             </CardContent>
             {diagDirty && (
@@ -377,8 +377,8 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Depoimento</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CardContent className="pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label className="text-xs">Nome</Label><Input value={testimonialForm.testimonial_name} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_name: e.target.value }))} /></div>
                 <div><Label className="text-xs">Cargo</Label><Input value={testimonialForm.testimonial_role} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_role: e.target.value }))} /></div>
                 <div className="md:col-span-2"><Label className="text-xs">Texto</Label><Textarea value={testimonialForm.testimonial_text} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_text: e.target.value }))} rows={3} /></div>
