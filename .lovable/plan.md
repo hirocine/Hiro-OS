@@ -1,27 +1,20 @@
 
 
-# Corrigir reflow de texto na proposta pública (font swap)
+# Remover skeleton e carregar a página diretamente
 
 ## Problema
-
-A fonte "Helvetica Now Display" carrega de forma assíncrona com `font-display: swap`. Isso faz o browser renderizar primeiro com a fallback (Inter/sans-serif), e quando a fonte custom carrega, o texto "pula" porque as métricas são diferentes. Esse é o efeito que você vê — textos se ajustando/diminuindo após o carregamento.
+Os itens da página de Orçamentos aparecem "dessincronizados" — provavelmente porque o skeleton aparece brevemente e depois a transição para o conteúdo real acontece de forma abrupta, com cards e imagens carregando em tempos diferentes.
 
 ## Solução
+Remover o skeleton da página de Orçamentos e renderizar o conteúdo diretamente. O ProtectedRoute já tem seu próprio spinner enquanto a autenticação carrega, e os dados do Supabase retornam rápido o suficiente para não precisar de um estado intermediário.
 
-Duas ações complementares:
+### Mudanças
 
-### 1. Preload das fontes no `index.html`
-Adicionar `<link rel="preload">` para os arquivos .otf mais usados (Bold e Medium) no `<head>`. Isso faz o browser baixar as fontes **antes** de renderizar, eliminando o swap visível na maioria dos casos.
+**`src/pages/Proposals.tsx`**:
+- Remover o import do `ProposalsPageSkeleton`
+- Remover o bloco `if (isLoading) return <ProposalsPageSkeleton />`
+- Deixar a página renderizar diretamente (com listas vazias enquanto carrega, já que `proposals || []` já trata isso)
 
-```html
-<link rel="preload" href="/fonts/HelveticaNowDisplay-Bold.otf" as="font" type="font/otf" crossorigin>
-<link rel="preload" href="/fonts/HelveticaNowDisplay-Medium.otf" as="font" type="font/otf" crossorigin>
-```
-
-### 2. Trocar `font-display: swap` por `font-display: block` nas @font-face
-Em `src/index.css`, mudar as 4 declarações de `font-display: swap` para `font-display: block`. Isso faz o browser esperar pela fonte (até ~3s) em vez de mostrar a fallback e depois trocar. Como as fontes serão preloaded, o bloqueio será imperceptível.
-
-### Arquivos
-- `index.html` — adicionar 2 linhas de preload no head
-- `src/index.css` — trocar `swap` por `block` nas 4 @font-face
+**`src/features/proposals/components/ProposalsSkeleton.tsx`**:
+- Deletar o arquivo (não será mais usado)
 
