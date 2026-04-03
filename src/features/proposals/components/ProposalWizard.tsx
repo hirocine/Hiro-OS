@@ -89,8 +89,8 @@ export function ProposalWizard() {
     return true;
   };
 
-  const finalValue = form.base_value * (1 - (form.discount_pct || 0) / 100);
-  const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const listPrice = form.list_price || 0;
+  const finalValue = listPrice * (1 - (form.discount_pct || 0) / 100);
 
   // Pain point selection helpers
   const selectedDores = form.diagnostico_dores;
