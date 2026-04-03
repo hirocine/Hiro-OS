@@ -15,7 +15,7 @@ export default function Proposals() {
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
-  const activeProposals = (proposals || []).filter(p => p.status === 'draft' || p.status === 'sent');
+  const activeProposals = (proposals || []).filter(p => p.status === 'draft' || p.status === 'sent' || p.status === 'opened' || p.status === 'new_version');
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
 
