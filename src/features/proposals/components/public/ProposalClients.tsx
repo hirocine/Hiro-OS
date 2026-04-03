@@ -20,7 +20,7 @@ export function ProposalClients() {
       <div className='relative h-[100px] w-full overflow-hidden mb-14'>
         <InfiniteSlider
           className='flex h-full w-full items-center'
-          duration={240}
+          duration={30}
           gap={64}
         >
           {[...clientLogos, ...clientLogos].map((cliente, i) => (
