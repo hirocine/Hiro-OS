@@ -359,43 +359,6 @@ export default function ProposalDetails() {
     setShowExclusiveDor(false);
   };
 
-  // Group bank by category
-  const painPointsByCategory = useMemo(() => {
-    const groups: Record<string, typeof painPointsBank> = {};
-    painPointsBank.forEach(pp => {
-      const cat = (pp as any).category || 'Sem categoria';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(pp);
-    });
-    return groups;
-  }, [painPointsBank]);
-
-  const categoryOrder = [
-    'Qualidade & padrão visual',
-    'Prazo & velocidade de entrega',
-    'Experiência com fornecedores anteriores',
-    'Diferencial criativo & estratégico',
-    'Performance & resultado de negócio',
-    'Orçamento & justificativa de investimento',
-    'Operacional & estrutura de produção',
-    'Escala & recorrência',
-  ];
-
-  const filteredCategories = useMemo(() => {
-    const search = doresBankSearch.toLowerCase();
-    if (!search) return categoryOrder.filter(c => painPointsByCategory[c]?.length > 0);
-    return categoryOrder.filter(c => {
-      const pps = painPointsByCategory[c];
-      if (!pps) return false;
-      return pps.some(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
-    });
-  }, [doresBankSearch, painPointsByCategory]);
-
-  const filterPainPoints = (pps: typeof painPointsBank) => {
-    const search = doresBankSearch.toLowerCase();
-    if (!search) return pps;
-    return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
-  };
 
   // Cases helpers
   const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
