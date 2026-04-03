@@ -405,11 +405,63 @@ export default function ProposalDetails() {
   };
 
 
-  // Cases helpers
-  const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
+  // Cases bank helpers
+  const openCasesBank = () => {
+    setCasesBankSelection([...casesForm]);
+    setCasesBankSearch('');
+    setShowNewCase(false);
+    setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+    setShowCasesBank(true);
+  };
+
+  const toggleBankCase = (bc: ProposalCase) => {
+    setCasesBankSelection(prev => {
+      const exists = prev.some(c => c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name);
+      if (exists) return prev.filter(c => !(c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name));
+      return [...prev, { tipo: bc.tipo, titulo: bc.campaign_name, descricao: bc.client_name, vimeoId: bc.vimeo_id, vimeoHash: bc.vimeo_hash, destaque: bc.destaque }];
+    });
+  };
+
+  const isBankCaseSelected = (bc: ProposalCase) => casesBankSelection.some(c => c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name);
+
+  const confirmCasesBank = () => {
+    setCasesForm(casesBankSelection);
+    setShowCasesBank(false);
+  };
+
+  const handleCreateCase = async () => {
+    if (!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim()) return;
+    try {
+      const created = await createCase.mutateAsync(newCaseForm);
+      // Also add to selection
+      setCasesBankSelection(prev => [...prev, {
+        tipo: created.tipo,
+        titulo: created.campaign_name,
+        descricao: created.client_name,
+        vimeoId: created.vimeo_id,
+        vimeoHash: created.vimeo_hash,
+        destaque: created.destaque,
+      }]);
+      setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+      setShowNewCase(false);
+      toast.success('Case criado e adicionado!');
+    } catch {
+      toast.error('Erro ao criar case');
+    }
+  };
+
   const removeCase = (i: number) => setCasesForm(prev => prev.filter((_, idx) => idx !== i));
-  const updateCase = (i: number, field: keyof CaseItem, value: any) =>
-    setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: value } : c));
+  const toggleCaseDestaque = (i: number) => setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, destaque: !c.destaque } : c));
+
+  const filteredCasesBank = useMemo(() => {
+    const search = casesBankSearch.toLowerCase();
+    if (!search) return casesBank;
+    return casesBank.filter(c =>
+      c.client_name.toLowerCase().includes(search) ||
+      c.campaign_name.toLowerCase().includes(search) ||
+      (c.tags || []).some(t => t.toLowerCase().includes(search))
+    );
+  }, [casesBankSearch, casesBank]);
 
   // Entregaveis helpers
   const addEntregavel = () => setEntregaveisForm(prev => ({
