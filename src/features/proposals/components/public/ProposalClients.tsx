@@ -7,7 +7,7 @@ const clientLogos = Array.from({ length: 13 }, (_, i) => ({
 
 export function ProposalClients() {
   return (
-    <section className='py-14 md:py-20'>
+    <section className='py-14 md:py-20 rounded-t-[40px] border-t border-gray-800'>
       <div className='proposal-content-px'>
         <p className='text-[11px] uppercase tracking-[4px] text-[#4CFF5C] font-bold mb-5'>
           Quem confia na Hiro Films
