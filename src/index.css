@@ -6,16 +6,16 @@
 All colors MUST be HSL.
 */
 
-/* === CRITICAL: Prevent ALL scrollbar shifts - CONSOLIDATED === */
+/* === Scroll strategy: html owns vertical scroll, nothing else === */
 html {
-  scrollbar-gutter: stable !important;
-  overflow-y: scroll !important;
-  overflow-x: hidden !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 body {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow: visible;
+  overflow-x: hidden;
 }
 
 /* Override ALL Radix UI scroll lock mechanisms - MAXIMUM SPECIFICITY */
@@ -523,19 +523,16 @@ html, body {
   font-display: swap;
 }
 
+/* Proposal public page — dark background, no gutter shift */
 html:has(.proposal-page) {
-  scrollbar-gutter: auto !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  background-color: hsl(0 0% 0%) !important;
-  color-scheme: dark !important;
+  scrollbar-gutter: auto;
+  background-color: hsl(0 0% 0%);
+  color-scheme: dark;
 }
 
 body:has(.proposal-page),
 #root:has(.proposal-page) {
-  overflow-y: visible !important;
-  overflow-x: hidden !important;
-  background-color: hsl(0 0% 0%) !important;
+  background-color: hsl(0 0% 0%);
 }
 
 .proposal-page {

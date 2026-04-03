@@ -1,4 +1,3 @@
-import { useLayoutEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { Loader2 } from 'lucide-react';
@@ -22,63 +21,6 @@ function GlowSpot({ className }: { className: string }) {
 export function ProposalPublicPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: proposal, isLoading, error } = useProposalDetails(slug);
-
-  useLayoutEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const root = document.getElementById('root');
-
-    const previousStyles = [
-      [html, 'scrollbar-gutter', html.style.getPropertyValue('scrollbar-gutter')],
-      [html, 'overflow-y', html.style.getPropertyValue('overflow-y')],
-      [html, 'overflow-x', html.style.getPropertyValue('overflow-x')],
-      [html, 'background-color', html.style.getPropertyValue('background-color')],
-      [html, 'color-scheme', html.style.getPropertyValue('color-scheme')],
-      [body, 'overflow', body.style.getPropertyValue('overflow')],
-      [body, 'overflow-y', body.style.getPropertyValue('overflow-y')],
-      [body, 'overflow-x', body.style.getPropertyValue('overflow-x')],
-      [body, 'background-color', body.style.getPropertyValue('background-color')],
-      [root, 'overflow', root?.style.getPropertyValue('overflow') ?? ''],
-      [root, 'overflow-y', root?.style.getPropertyValue('overflow-y') ?? ''],
-      [root, 'overflow-x', root?.style.getPropertyValue('overflow-x') ?? ''],
-      [root, 'min-height', root?.style.getPropertyValue('min-height') ?? ''],
-      [root, 'background-color', root?.style.getPropertyValue('background-color') ?? ''],
-    ] as const;
-
-    const setImportant = (element: HTMLElement | null, property: string, value: string) => {
-      element?.style.setProperty(property, value, 'important');
-    };
-
-    const restoreProperty = (element: HTMLElement | null, property: string, value: string) => {
-      if (!element) return;
-      if (value) {
-        element.style.setProperty(property, value);
-      } else {
-        element.style.removeProperty(property);
-      }
-    };
-
-    setImportant(html, 'scrollbar-gutter', 'auto');
-    setImportant(html, 'overflow-y', 'auto');
-    setImportant(html, 'overflow-x', 'hidden');
-    setImportant(html, 'background-color', 'hsl(0 0% 0%)');
-    setImportant(html, 'color-scheme', 'dark');
-    setImportant(body, 'overflow', 'visible');
-    setImportant(body, 'overflow-y', 'visible');
-    setImportant(body, 'overflow-x', 'hidden');
-    setImportant(body, 'background-color', 'hsl(0 0% 0%)');
-    setImportant(root, 'overflow', 'visible');
-    setImportant(root, 'overflow-y', 'visible');
-    setImportant(root, 'overflow-x', 'hidden');
-    setImportant(root, 'min-height', '100%');
-    setImportant(root, 'background-color', 'hsl(0 0% 0%)');
-
-    return () => {
-      previousStyles.forEach(([element, property, value]) => {
-        restoreProperty(element, property, value);
-      });
-    };
-  }, []);
 
   if (isLoading) {
     return (
