@@ -1,37 +1,80 @@
 
-
-# Remover loading intermediário da página de Orçamentos
-
-## Problema
-Ao navegar para `/orcamentos`, o usuário vê brevemente o spinner do `ProtectedRoute` (Loader2 circular) e/ou o skeleton fallback do `Suspense` no `Layout.tsx` (blocos cinza pulsantes). Como `Proposals` já NÃO é lazy-loaded (importado diretamente no App.tsx), o Suspense do Layout não deveria disparar — mas o spinner do ProtectedRoute aparece brevemente toda vez que o auth state está sendo verificado.
+# Corrigir skeleton + loading da proposta pública
 
 ## Diagnóstico
-- `ProtectedRoute` mostra `Loader2` spinner enquanto `loading` é `true` (verificação de auth)
-- `Layout.tsx` tem `Suspense` com skeleton pulse como fallback — dispara para rotas lazy
-- Proposals **não é lazy** (linha 37-38 do App.tsx), mas compartilha o mesmo ProtectedRoute/Layout
+O skeleton que você vê na proposta pública não vem da própria `ProposalPublicPage`. Ele vem de dois pontos diferentes:
 
-## Solução
-O ProtectedRoute já é necessário para proteger rotas, e o `loading` do auth geralmente resolve muito rápido. Os "skeletons" que o usuário vê são provavelmente o fallback do Suspense no Layout.tsx disparando para **outras rotas lazy vizinhas** durante navegação, ou um flash do ProtectedRoute.
+1. `src/App.tsx`
+   - a rota pública `/orcamento/:slug` está lazy-loaded com:
+   ```tsx
+   <Suspense fallback={<LoadingScreenSkeleton />}>
+     <ProposalPublic />
+   </Suspense>
+   ```
+   - esse é exatamente o skeleton genérico que aparece antes da página abrir
 
-A abordagem mais limpa: remover o skeleton pesado do `Suspense` no Layout e usar um fallback mínimo (div vazia ou null), já que cada página já gerencia seu próprio loading state.
+2. `src/features/proposals/components/ProposalPublicPage.tsx`
+   - depois que o chunk carrega, ainda existe:
+   ```tsx
+   if (isLoading) {
+     return <Loader2 ... />
+   }
+   ```
+   - então o usuário vê o skeleton primeiro e, logo depois, o spinner no meio
 
-### Mudança
+## O que vou mudar
 
-**`src/components/Layout/Layout.tsx`**:
-- Trocar o fallback do Suspense de skeleton pulse (header + grid de 3 cards) por `null` — elimina completamente o flash de skeleton entre navegações de páginas lazy
+### 1. Remover o skeleton da rota pública
+**Arquivo:** `src/App.tsx`
 
+Para a rota `/orcamento/:slug`, trocar o fallback do `Suspense`:
+- de `LoadingScreenSkeleton`
+- para `null`
+
+Isso elimina o skeleton genérico na entrada da proposta pública.
+
+### 2. Remover o spinner central da proposta pública
+**Arquivo:** `src/features/proposals/components/ProposalPublicPage.tsx`
+
+Substituir o estado:
 ```tsx
-// De:
-<Suspense fallback={
-  <div className="p-6 lg:p-8 space-y-6 animate-pulse">
-    <div className="h-8 bg-muted rounded-lg w-1/3" />
-    ...
-  </div>
-}>
+if (isLoading) { ...Loader2... }
+```
+por uma renderização silenciosa, para não aparecer loading no meio da tela.
 
-// Para:
-<Suspense fallback={null}>
+A opção mais limpa aqui é:
+```tsx
+if (isLoading) return null;
 ```
 
-1 arquivo, 1 mudança simples.
+## Resultado esperado
+Ao abrir a URL pública da proposta:
+- não aparece mais o skeleton genérico
+- não aparece mais o spinner central
+- a página entra direto quando os dados estiverem prontos
 
+## Detalhe técnico
+Hoje o fluxo está assim:
+
+```text
+Acessa /orcamento/:slug
+  -> Suspense mostra LoadingScreenSkeleton
+  -> chunk da página carrega
+  -> ProposalPublicPage monta
+  -> React Query ainda busca os dados
+  -> Loader2 aparece no centro
+  -> conteúdo final renderiza
+```
+
+Depois do ajuste:
+
+```text
+Acessa /orcamento/:slug
+  -> sem skeleton genérico
+  -> sem spinner intermediário
+  -> conteúdo aparece direto quando estiver disponível
+```
+
+## Arquivos
+- `src/App.tsx`
+- `src/features/proposals/components/ProposalPublicPage.tsx`
