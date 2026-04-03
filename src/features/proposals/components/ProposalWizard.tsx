@@ -16,7 +16,7 @@ import {
   CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
   Building2, Target, Video, DollarSign, Package, ListChecks,
   Phone, Sparkles, Smartphone, Camera, ClipboardList, Clapperboard,
-  Palette, Image, Music, Monitor, Mic
+  Palette, Image, Music, Monitor, Mic, Upload, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
