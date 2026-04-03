@@ -128,6 +128,10 @@ export function ProposalPublicPage() {
         </div>
       </div>
 
+      <div className='proposal-content-px'>
+        <div className='h-px bg-[#3A3A3A]' />
+      </div>
+
       <ProposalFooter />
     </div>
   );
