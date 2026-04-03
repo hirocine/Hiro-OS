@@ -571,7 +571,7 @@ export default function ProposalDetails() {
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
               )}
               {doresForm.map((dor, i) => {
-                const DorIcon = DOR_ICON_MAP[dor.label] || Star;
+                const emoji = dor.label || '⭐';
                 return (
                   <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
                     <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
@@ -581,28 +581,25 @@ export default function ProposalDetails() {
                       <div className="flex items-end gap-3">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0">
-                              <DorIcon className="h-4 w-4" />
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0 text-lg">
+                              {emoji}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-2" align="start">
                             <div className="grid grid-cols-5 gap-1">
-                              {DOR_ICON_OPTIONS.map(opt => {
-                                const Icon = opt.icon;
-                                return (
-                                  <button
-                                    key={opt.value}
-                                    type="button"
-                                    onClick={() => updateDor(i, 'label', opt.value)}
-                                    className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
-                                      dor.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-                                    }`}
-                                    title={opt.label}
-                                  >
-                                    <Icon className="h-4 w-4" />
-                                  </button>
-                                );
-                              })}
+                              {DOR_EMOJI_OPTIONS.map(opt => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => updateDor(i, 'label', opt.value)}
+                                  className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
+                                    dor.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                                  }`}
+                                  title={opt.label}
+                                >
+                                  {opt.value}
+                                </button>
+                              ))}
                             </div>
                           </PopoverContent>
                         </Popover>
