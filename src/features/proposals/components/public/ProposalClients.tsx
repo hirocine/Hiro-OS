@@ -7,7 +7,7 @@ const clientLogos = Array.from({ length: 13 }, (_, i) => ({
 
 export function ProposalClients() {
   return (
-    <section className='py-14 md:py-20 rounded-t-[40px] border-t border-gray-800'>
+    <div className='bg-black py-16 md:py-20 rounded-t-[40px] border-t border-gray-800'>
       <div className='proposal-content-px'>
         <p className='text-[11px] uppercase tracking-[4px] text-[#4CFF5C] font-bold mb-5'>
           Quem confia na Hiro Films
@@ -17,13 +17,28 @@ export function ProposalClients() {
         </h2>
       </div>
 
-      <InfiniteSlider gap={40} duration={30} className='py-4'>
-        {[...clientLogos, ...clientLogos].map((cliente, i) => (
-          <div key={`${cliente.id}-${i}`} className='flex-shrink-0 h-8 w-auto opacity-40 hover:opacity-80 transition-opacity duration-300'>
-            <img src={cliente.logo} alt={cliente.id} className='h-full w-auto object-contain invert' />
-          </div>
-        ))}
-      </InfiniteSlider>
-    </section>
+      <div className='relative h-[100px] w-full overflow-hidden mb-14'>
+        <InfiniteSlider
+          className='flex h-full w-full items-center'
+          duration={240}
+          gap={64}
+        >
+          {[...clientLogos, ...clientLogos].map((cliente, i) => (
+            <div
+              key={`${cliente.id}-${i}`}
+              className='flex-shrink-0 w-[150px] h-[70px] flex items-center justify-center'
+            >
+              <img
+                src={cliente.logo}
+                alt={cliente.id}
+                className='max-h-[55px] max-w-[130px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300'
+              />
+            </div>
+          ))}
+        </InfiniteSlider>
+        <div className='pointer-events-none absolute inset-0 left-0 w-[600px] bg-gradient-to-r from-black to-transparent' />
+        <div className='pointer-events-none absolute inset-0 left-auto w-[600px] bg-gradient-to-l from-black to-transparent' />
+      </div>
+    </div>
   )
 }
