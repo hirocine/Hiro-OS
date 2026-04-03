@@ -453,15 +453,6 @@ export default function ProposalDetails() {
   const removeCase = (i: number) => setCasesForm(prev => prev.filter((_, idx) => idx !== i));
   const toggleCaseDestaque = (i: number) => setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, destaque: !c.destaque } : c));
 
-  const filteredCasesBankMemo = useMemo(() => {
-    const search = casesBankSearch.toLowerCase();
-    if (!search) return casesBank;
-    return casesBank.filter(c =>
-      c.client_name.toLowerCase().includes(search) ||
-      c.campaign_name.toLowerCase().includes(search) ||
-      (c.tags || []).some(t => t.toLowerCase().includes(search))
-    );
-  }, [casesBankSearch, casesBank]);
 
   // Entregaveis helpers
   const addEntregavel = () => setEntregaveisForm(prev => ({
