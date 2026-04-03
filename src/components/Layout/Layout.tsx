@@ -35,17 +35,7 @@ export function Layout() {
             : "pl-64"
         )}
       >
-        <Suspense fallback={
-          <div className="p-6 lg:p-8 space-y-6 animate-pulse">
-            <div className="h-8 bg-muted rounded-lg w-1/3" />
-            <div className="h-4 bg-muted rounded w-1/2" />
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div className="h-40 bg-muted rounded-lg" />
-              <div className="h-40 bg-muted rounded-lg" />
-              <div className="h-40 bg-muted rounded-lg" />
-            </div>
-          </div>
-        }>
+        <Suspense fallback={null}>
           <Outlet />
         </Suspense>
       </main>
