@@ -18,11 +18,12 @@ export function useProposalCases() {
   });
 
   const createCase = useMutation({
-    mutationFn: async (c: { tipo: string; client_name: string; campaign_name: string; vimeo_id: string; vimeo_hash: string; destaque: boolean }) => {
+    mutationFn: async (c: { tags: string[]; client_name: string; campaign_name: string; vimeo_id: string; vimeo_hash: string; destaque: boolean }) => {
       const { data: userData } = await supabase.auth.getUser();
+      const tipo = c.tags[0] || '';
       const { data, error } = await supabase
         .from('proposal_cases' as any)
-        .insert({ ...c, created_by: userData?.user?.id || null } as any)
+        .insert({ ...c, tipo, created_by: userData?.user?.id || null } as any)
         .select()
         .single();
       if (error) throw error;

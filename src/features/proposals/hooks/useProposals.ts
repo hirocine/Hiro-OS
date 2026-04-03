@@ -43,9 +43,9 @@ export function useProposals() {
         slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
       }
 
-      const baseValue = form.base_value || 0;
+      const listPrice = form.list_price || 0;
       const discountPct = form.discount_pct || 0;
-      const finalValue = baseValue * (1 - discountPct / 100);
+      const finalValue = listPrice * (1 - discountPct / 100);
 
       const { data: userData } = await supabase.auth.getUser();
 
