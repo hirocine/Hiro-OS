@@ -234,7 +234,7 @@ export default function ProposalDetails() {
             <BreadcrumbNav items={[
               { label: 'Orçamentos', href: '/orcamentos' },
               { label: proposal.project_name },
-            ]} />
+            ]} className="mb-0" />
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}>
