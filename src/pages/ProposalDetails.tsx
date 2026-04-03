@@ -282,18 +282,16 @@ export default function ProposalDetails() {
   const selectPainPointFromBank = (ppId: string) => {
     const pp = painPointsBank.find(p => p.id === ppId);
     if (!pp) return;
-    // Check if already added (by matching label+title)
-    const alreadyExists = doresForm.some(d => d.label === pp.label && d.title === pp.title);
+    const alreadyExists = doresForm.some(d => d.title === pp.title);
     if (alreadyExists) {
-      // Remove it
-      setDoresForm(prev => prev.filter(d => !(d.label === pp.label && d.title === pp.title)));
+      setDoresForm(prev => prev.filter(d => d.title !== pp.title));
     } else {
       setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
     }
   };
 
-  const isPainPointSelected = (pp: { label: string; title: string }) =>
-    doresForm.some(d => d.label === pp.label && d.title === pp.title);
+  const isPainPointSelected = (pp: { title: string }) =>
+    doresForm.some(d => d.title === pp.title);
 
   const handleCreateNewDor = async () => {
     if (!newDorForm.label.trim() || !newDorForm.title.trim()) return;
