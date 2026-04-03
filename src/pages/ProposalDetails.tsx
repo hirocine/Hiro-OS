@@ -61,7 +61,7 @@ export default function ProposalDetails() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  const [clientForm, setClientForm] = useState({ client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
+  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
@@ -70,6 +70,7 @@ export default function ProposalDetails() {
   useEffect(() => {
     if (!proposal) return;
     setClientForm({
+      project_number: proposal.project_number || '',
       client_name: proposal.client_name,
       project_name: proposal.project_name,
       client_responsible: proposal.client_responsible || '',
@@ -92,7 +93,8 @@ export default function ProposalDetails() {
   // Dirty checks
   const clientDirty = useMemo(() => {
     if (!proposal) return false;
-    return clientForm.client_name !== proposal.client_name ||
+    return clientForm.project_number !== (proposal.project_number || '') ||
+      clientForm.client_name !== proposal.client_name ||
       clientForm.project_name !== proposal.project_name ||
       clientForm.client_responsible !== (proposal.client_responsible || '') ||
       clientForm.whatsapp_number !== (proposal.whatsapp_number || '') ||
@@ -145,6 +147,7 @@ export default function ProposalDetails() {
       let data: Record<string, any> = {};
       if (section === 'client') {
         data = {
+          project_number: clientForm.project_number.trim() || null,
           client_name: clientForm.client_name.trim(),
           project_name: clientForm.project_name.trim(),
           client_responsible: clientForm.client_responsible.trim() || null,
@@ -304,6 +307,7 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
+              <div><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
               <div><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
               <div><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
               <div><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
