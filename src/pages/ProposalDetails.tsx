@@ -123,6 +123,7 @@ export default function ProposalDetails() {
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
+  const { data: casesBank = [], createCase } = useProposalCases();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showDoresBank, setShowDoresBank] = useState(false);
@@ -130,6 +131,11 @@ export default function ProposalDetails() {
   const [doresBankSelection, setDoresBankSelection] = useState<DiagnosticoDor[]>([]);
   const [showExclusiveDor, setShowExclusiveDor] = useState(false);
   const [exclusiveDorForm, setExclusiveDorForm] = useState({ label: '⭐', title: '', desc: '' });
+  const [showCasesBank, setShowCasesBank] = useState(false);
+  const [casesBankSearch, setCasesBankSearch] = useState('');
+  const [casesBankSelection, setCasesBankSelection] = useState<CaseItem[]>([]);
+  const [showNewCase, setShowNewCase] = useState(false);
+  const [newCaseForm, setNewCaseForm] = useState({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [] as string[], destaque: false });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
