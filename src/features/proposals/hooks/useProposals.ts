@@ -47,21 +47,6 @@ export function useProposals() {
         clientLogoUrl = logoUrlData.publicUrl;
       }
 
-      // Upload moodboard images
-      const imageUrls: string[] = [];
-      for (const file of form.moodboard_files) {
-        const ext = file.name.split('.').pop();
-        const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('proposal-moodboard')
-          .upload(path, file);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage
-          .from('proposal-moodboard')
-          .getPublicUrl(path);
-        imageUrls.push(urlData.publicUrl);
-      }
-
       // Generate slug with uniqueness check
       let slug = generateSlug(form.client_name, form.project_name);
       const { data: existing } = await supabase
@@ -79,11 +64,6 @@ export function useProposals() {
 
       const { data: userData } = await supabase.auth.getUser();
 
-      const scopePre = form.scope_pre_production.filter(s => s.item.trim());
-      const scopeProd = form.scope_production.filter(s => s.item.trim());
-      const scopePost = form.scope_post_production.filter(s => s.item.trim());
-      const timeline = form.timeline.filter(t => t.week.trim() || t.description.trim());
-
       // Filter V2 data
       const diagnosticoDores = form.diagnostico_dores.filter(d => d.title.trim() || d.desc.trim());
       const entregaveis = form.entregaveis.filter((e: any) => e.output?.trim());
@@ -96,24 +76,15 @@ export function useProposals() {
           slug,
           client_name: form.client_name.trim(),
           project_name: form.project_name.trim(),
-          project_number: form.project_number.trim() || null,
           client_responsible: form.client_responsible.trim() || null,
           client_logo: clientLogoUrl,
           validity_date: form.validity_date?.toISOString().split('T')[0],
-          briefing: form.briefing.trim() || null,
-          video_url: form.video_url.trim() || null,
-          moodboard_images: imageUrls as any,
-          scope_pre_production: scopePre as any,
-          scope_production: scopeProd as any,
-          scope_post_production: scopePost as any,
-          timeline: timeline as any,
           base_value: baseValue,
           discount_pct: discountPct,
           final_value: finalValue,
           payment_terms: form.payment_terms.trim(),
           created_by: userData?.user?.id || null,
           status: 'draft',
-          // V2 fields
           objetivo: form.objetivo.trim() || null,
           diagnostico_dores: diagnosticoDores as any,
           list_price: form.list_price || null,
