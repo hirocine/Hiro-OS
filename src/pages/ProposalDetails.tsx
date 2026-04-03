@@ -70,6 +70,7 @@ export default function ProposalDetails() {
   useEffect(() => {
     if (!proposal) return;
     setClientForm({
+      project_number: proposal.project_number || '',
       client_name: proposal.client_name,
       project_name: proposal.project_name,
       client_responsible: proposal.client_responsible || '',
