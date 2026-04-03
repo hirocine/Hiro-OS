@@ -1,76 +1,24 @@
 
 
-# Diagnóstico do Duplo Scroll na Proposta Pública
+# Ajustes no Hero da Proposta Pública
 
-## O que encontrei
+## Mudanças
 
-1. **Estou mexendo no componente correto**: A rota `/orcamento/:slug` renderiza `ProposalPublicPage` em `src/features/proposals/components/ProposalPublicPage.tsx`. Esse é o componente V2 com a estética cinematográfica (fundo preto, verde neon, Helvetica Now Display). Não existe um "modelo antigo" — só existe esse.
+### 1. Hero: trocar "HIRO FILMS" pelo nome do projeto
+Onde hoje está hardcoded `HIRO FILMS`, exibir `projectName` em caixa alta. O subtítulo fixo ("Produtora audiovisual especializada...") será substituído pelo novo campo `company_description`.
 
-2. **O preview pode estar com cache**: Como o preview do Lovable usa um iframe, mudanças em CSS global (`index.css`) podem não refletir imediatamente. Você pode estar vendo uma versão cacheada.
+### 2. Novo campo "Descrição da Empresa" no formulário (Step 0)
+Adicionar um campo `Textarea` na primeira etapa do wizard para o usuário preencher uma descrição curta da empresa (ex: "Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público."). Valor default = o texto atual hardcoded.
 
-3. **Pista do rodapé**: Depois do `<ProposalFooter />`, existe um spacer invisível `<div className="h-24 no-print" />` (96px de altura) na linha 136. Esse spacer empurra o conteúdo para além do viewport, o que pode contribuir para a área scrollável extra.
+### 3. Persistir no banco
+Adicionar coluna `company_description` (text, nullable) na tabela `orcamentos` via migration. Salvar e ler esse campo no `useProposals`.
 
-4. **Regra CSS perigosa encontrada**: Em `src/index.css` linha 255-258:
-   ```css
-   *, *::before, *::after {
-     box-sizing: border-box;
-     max-width: 100%;
-   }
-   ```
-   O `max-width: 100%` em TODOS os elementos pode quebrar os elementos absolute-positioned (GlowSpots, gradientes, iframe do Vimeo) e causar comportamentos inesperados de layout.
+## Arquivos afetados
 
-5. **Conflito persistente**: Mesmo com os `!important` adicionados, o `scrollbar-gutter: stable` no `html` global (linha 13) pode ainda estar vencendo em alguma condição de race do CSS, porque `:has()` pode não ser avaliado no momento certo.
-
-## Plano de correção definitiva
-
-### 1. Remover o spacer desnecessário após o footer
-**Arquivo**: `src/features/proposals/components/ProposalPublicPage.tsx`
-- Remover `<div className="h-24 no-print" />` (linha 136) — ele adiciona 96px de espaço vazio após o footer que não serve para nada na proposta pública e contribui para scroll extra.
-
-### 2. Excluir a proposta da regra wildcard `max-width: 100%`
-**Arquivo**: `src/index.css`
-- Alterar a regra `*, *::before, *::after` para excluir elementos dentro de `.proposal-page`:
-  ```css
-  *:not(.proposal-page *), *::before, *::after {
-    box-sizing: border-box;
-    max-width: 100%;
-  }
-  .proposal-page *, .proposal-page *::before, .proposal-page *::after {
-    box-sizing: border-box;
-  }
-  ```
-
-### 3. Forçar scroll único via abordagem nuclear
-**Arquivo**: `src/index.css`
-- Adicionar `height: auto` e `min-height: 100vh` explicitamente para `body` e `#root` quando a proposta está ativa, garantindo que nenhum deles crie um scroll container:
-  ```css
-  html:has(.proposal-page) {
-    scrollbar-gutter: auto !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    background-color: #000 !important;
-    color-scheme: dark !important;
-  }
-  body:has(.proposal-page),
-  #root:has(.proposal-page) {
-    overflow: visible !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    background-color: #000 !important;
-  }
-  ```
-
-### 4. Esconder qualquer ScrollBar Radix residual na proposta
-**Arquivo**: `src/index.css`
-- Como segurança extra, esconder qualquer ScrollBar do Radix que possa vazar para a proposta:
-  ```css
-  .proposal-page [data-radix-scroll-area-scrollbar] {
-    display: none !important;
-  }
-  ```
-
-### Resumo dos arquivos
-- `src/index.css` — corrigir wildcard `max-width`, fortalecer overrides da proposta, esconder ScrollBar Radix
-- `src/features/proposals/components/ProposalPublicPage.tsx` — remover spacer `h-24` após footer
+- **Migration**: nova coluna `company_description` na tabela `orcamentos`
+- **`src/features/proposals/types/index.ts`**: adicionar `company_description` no tipo `Proposal` e `ProposalFormData`, e no `defaultFormData`
+- **`src/features/proposals/components/ProposalWizard.tsx`**: adicionar campo Textarea no Step 0
+- **`src/features/proposals/hooks/useProposals.ts`**: incluir `company_description` no insert e no mapProposal
+- **`src/features/proposals/components/public/ProposalHero.tsx`**: receber `companyDescription` como prop; trocar h1 para `projectName.toUpperCase()` e subtítulo para `companyDescription`
+- **`src/features/proposals/components/ProposalPublicPage.tsx`**: passar `companyDescription` ao `ProposalHero`
 
