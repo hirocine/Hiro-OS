@@ -8,6 +8,7 @@ interface Props {
   validityDate: string
   createdAt: string
   clientResponsible: string | null
+  companyDescription: string | null
 }
 
 export function ProposalHero({ clientName, projectName, validityDate, createdAt, clientResponsible }: Props) {
