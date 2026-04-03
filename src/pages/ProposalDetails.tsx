@@ -975,7 +975,7 @@ export default function ProposalDetails() {
                       >
                         {bc.vimeo_id && (
                           <div className="aspect-video relative">
-                            <VimeoThumbnail videoId={bc.vimeo_id} alt={bc.campaign_name} className="w-full h-full" />
+                            <VimeoThumbnail videoId={bc.vimeo_id} videoHash={bc.vimeo_hash || undefined} alt={bc.campaign_name} className="w-full h-full" />
                             {selected && (
                               <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
                                 <Check className="h-3 w-3" />
