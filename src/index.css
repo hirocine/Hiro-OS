@@ -617,6 +617,11 @@ body:has(.proposal-page),
   }
 }
 
+@keyframes proposal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes proposal-fade-up {
   from {
     opacity: 0;

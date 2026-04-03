@@ -64,10 +64,16 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
     animation: `proposal-fade-up 0.8s ease-out ${delay}ms forwards`,
   })
 
+  const fadeIn = (delay: number, finalOpacity: number = 1): React.CSSProperties => ({
+    opacity: 0,
+    animation: `proposal-fade-in 1s ease-out ${delay}ms forwards`,
+    ...(finalOpacity < 1 && { '--fade-final-opacity': finalOpacity } as React.CSSProperties),
+  })
+
   return (
     <section ref={sectionRef} className='relative min-h-[92vh] flex flex-col justify-center items-start text-left proposal-content-px pt-40 pb-20'>
       {/* Background image */}
-      <div className='absolute inset-0 pointer-events-none overflow-hidden'>
+      <div style={fadeIn(200)} className='absolute inset-0 pointer-events-none overflow-hidden'>
         <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-10' />
         <div ref={maskRef} className='absolute inset-0' style={{ maskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)', WebkitMaskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)' }}>
           <img src='/proposal-assets/bg.png' alt='' className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95%] max-w-[95%] object-contain opacity-50' />
@@ -75,7 +81,7 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
         <div className='absolute inset-0 bg-gradient-to-r from-black/80 to-transparent' />
       </div>
       {/* Animated gradient */}
-      <div className='absolute inset-0 pointer-events-none overflow-hidden'>
+      <div style={fadeIn(400)} className='absolute inset-0 pointer-events-none overflow-hidden'>
         <div className='absolute inset-[-10%] w-[120%] h-[120%] proposal-gradient-1' />
         <div className='absolute inset-[-10%] w-[120%] h-[120%] proposal-gradient-2' />
       </div>
