@@ -549,7 +549,7 @@ body:has(.proposal-page),
 }
 
 .proposal-page {
-  overflow: visible !important;
+  overflow: clip !important;
   font-family: 'Helvetica Now Display', 'Inter', sans-serif;
   line-height: 1.6;
   --tw-gray-800: #2a2a2a;
