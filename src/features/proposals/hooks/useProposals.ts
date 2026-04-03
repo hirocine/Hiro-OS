@@ -60,14 +60,17 @@ export function useProposals() {
           .select('*')
           .in('id', form.selected_case_ids);
         if (casesData) {
-          casesJsonb = (casesData as unknown as ProposalCase[]).map(c => ({
-            tipo: c.tipo,
-            titulo: c.client_name,
-            descricao: c.campaign_name,
-            vimeoId: c.vimeo_id,
-            vimeoHash: c.vimeo_hash,
-            destaque: c.destaque,
-          }));
+          casesJsonb = (casesData as unknown as ProposalCase[]).map(c => {
+            const tags = Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : (c.tipo ? [c.tipo] : []);
+            return {
+              tipo: tags[0] || '',
+              titulo: c.client_name,
+              descricao: c.campaign_name,
+              vimeoId: c.vimeo_id,
+              vimeoHash: c.vimeo_hash,
+              destaque: c.destaque,
+            };
+          });
         }
       }
 
