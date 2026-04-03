@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, FileText, Loader2, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, FileText, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
+import { ProposalsPageSkeleton } from '@/features/proposals/components/ProposalsSkeleton';
 
 export default function Proposals() {
   const navigate = useNavigate();
@@ -31,9 +32,7 @@ export default function Proposals() {
       />
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <ProposalsPageSkeleton />
       ) : (
         <div className="space-y-6">
           {/* Active Proposals */}
