@@ -819,6 +819,7 @@ export type Database = {
           client_logo: string | null
           client_name: string
           client_responsible: string | null
+          company_description: string | null
           created_at: string
           created_by: string | null
           diagnostico_dores: Json | null
@@ -856,6 +857,7 @@ export type Database = {
           client_logo?: string | null
           client_name: string
           client_responsible?: string | null
+          company_description?: string | null
           created_at?: string
           created_by?: string | null
           diagnostico_dores?: Json | null
@@ -893,6 +895,7 @@ export type Database = {
           client_logo?: string | null
           client_name?: string
           client_responsible?: string | null
+          company_description?: string | null
           created_at?: string
           created_by?: string | null
           diagnostico_dores?: Json | null

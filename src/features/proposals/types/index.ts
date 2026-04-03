@@ -231,6 +231,7 @@ export const defaultFormData: ProposalFormData = {
   project_name: '',
   client_responsible: '',
   whatsapp_number: '',
+  company_description: 'Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.',
   sent_date: new Date(),
   validity_date: undefined,
   objetivo: DIAGNOSTICO_TEMPLATE,
