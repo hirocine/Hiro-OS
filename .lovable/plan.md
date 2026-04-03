@@ -1,28 +1,40 @@
 
 
-# Campos sempre editáveis na página de detalhes da proposta
+# Adicionar seções faltantes na página de detalhes da proposta
 
-## O que muda
-Remover o padrão de click-to-edit (botão de lápis / SectionHeader com toggle). Todos os campos ficam permanentemente como inputs/textareas, com auto-save por seção ao sair do campo (onBlur) ou com botão "Salvar" discreto.
+## Contexto
+A página `ProposalDetails.tsx` atualmente só tem: Cliente/Projeto, Investimento, Objetivo e Depoimento. Faltam 3 seções que existem no modelo de dados: **Dores do Cliente** (`diagnostico_dores`), **Cases/Portfólio** (`cases`), e **Entregas e Serviços** (`entregaveis`).
 
 ## Plano
 
-### 1. Remover lógica de `editingSection`
-- Remover estado `editingSection`, função `startEdit`, componente `SectionHeader` com botão de edição
-- Remover componente `InfoRow` (não será mais usado)
+### 1. Seção "Dores do Cliente" (diagnostico_dores)
+- Card com lista editável de dores (label, title, desc)
+- Cada dor tem 3 campos inline (Label, Título, Descrição)
+- Botão "Adicionar Dor" para inserir novas
+- Botão "X" para remover individualmente
+- Salva como array JSONB no campo `diagnostico_dores`
 
-### 2. Inicializar forms a partir dos dados da proposta
-- Usar `useEffect` para popular `clientForm`, `investForm`, `diagForm`, `testimonialForm` quando `proposal` carregar (em vez de popular apenas ao clicar em editar)
+### 2. Seção "Cases / Portfólio" (cases)
+- Card com lista dos cases selecionados (tipo, titulo, descricao, vimeoId, vimeoHash, destaque)
+- Cada case editável inline com campos: Tipo, Título, Descrição, Vimeo ID, Vimeo Hash, Destaque (switch)
+- Botão para adicionar/remover cases
+- Salva como array JSONB no campo `cases`
 
-### 3. Cada seção mostra sempre os inputs
-- Remover todos os ternários `editingSection === 'x' ? (...inputs...) : (...InfoRow...)` 
-- Manter apenas o bloco de inputs, sempre visível
-- Cabeçalhos simplificados: ícone + título, sem botões de editar/cancelar/confirmar
+### 3. Seção "Entregas e Serviços" (entregaveis)
+- O campo `entregaveis` é um JSONB com blocos: "Output" (entregas) e "Serviços" (incluso)
+- **Bloco Output**: lista de itens com titulo, descricao, quantidade, icone — editável inline
+- **Bloco Serviços**: cards de categorias com itens toggle (ativo/inativo) — editável com checkboxes
+- Botões para adicionar/remover itens em cada bloco
+- Salva tudo junto no campo `entregaveis`
 
-### 4. Botão "Salvar" por seção
-- Cada Card terá um botão "Salvar" discreto no rodapé, que chama `saveSection`
-- O botão só fica habilitado quando há mudanças (comparar form atual vs dados da proposta)
+### 4. Estado e salvamento
+- Novos estados: `doresForm`, `casesForm`, `entregaveisForm`
+- Dirty checks para cada seção
+- Botão "Salvar" por seção, chamando `saveSection` com o campo correspondente
+- População dos forms no `useEffect` existente
 
-### Resultado
-A página fica como um formulário contínuo, pronto para edição imediata, sem necessidade de clique extra.
+### Detalhes técnicos
+- Arquivo editado: `src/pages/ProposalDetails.tsx`
+- Todos os dados já existem no modelo `Proposal` e são retornados pelo hook `useProposalDetailsById`
+- Nenhuma mudança de banco de dados necessária
 
