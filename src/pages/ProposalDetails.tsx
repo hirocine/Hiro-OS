@@ -25,11 +25,13 @@ import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDe
 import { useProposals } from '@/features/proposals/hooks/useProposals';
 import type { Proposal } from '@/features/proposals/types';
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { label: 'Rascunho', variant: 'secondary' },
-  sent: { label: 'Enviada', variant: 'default' },
-  approved: { label: 'Aprovada', variant: 'default' },
-  expired: { label: 'Expirada', variant: 'destructive' },
+const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
+  draft: { label: 'Rascunho', variant: 'neutral' },
+  sent: { label: 'Enviada', variant: 'info' },
+  opened: { label: 'Aberta', variant: 'warning' },
+  new_version: { label: 'Nova Versão', variant: 'info' },
+  approved: { label: 'Aprovada', variant: 'success' },
+  expired: { label: 'Arquivada', variant: 'destructive' },
 };
 
 async function compressImage(file: File): Promise<Blob> {
@@ -90,7 +92,7 @@ export default function ProposalDetails() {
 
   const status = statusMap[proposal.status] || statusMap.draft;
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
-  const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
+  
 
   const startEdit = (section: string) => {
     if (section === 'client') {
@@ -284,22 +286,21 @@ export default function ProposalDetails() {
                 <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="text-right">
-                  <p className="text-lg font-bold">{formattedValue}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Validade: {format(new Date(proposal.validity_date), 'dd/MM/yyyy')}
-                  </p>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-muted-foreground">Status</span>
                 <Select value={proposal.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-[130px] h-8">
-                    <SelectValue />
+                  <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
+                    <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
+                      {(statusMap[proposal.status] || statusMap.draft).label}
+                    </Badge>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Rascunho</SelectItem>
                     <SelectItem value="sent">Enviada</SelectItem>
+                    <SelectItem value="opened">Aberta</SelectItem>
+                    <SelectItem value="new_version">Nova Versão</SelectItem>
                     <SelectItem value="approved">Aprovada</SelectItem>
-                    <SelectItem value="expired">Expirada</SelectItem>
+                    <SelectItem value="expired">Arquivada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -352,7 +353,7 @@ export default function ProposalDetails() {
                 <div className="grid grid-cols-2 gap-4">
                   <InfoRow label="Valor de Tabela" value={proposal.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.list_price) : null} />
                   <InfoRow label="Desconto" value={proposal.discount_pct ? `${proposal.discount_pct}%` : '0%'} />
-                  <InfoRow label="Valor Final" value={formattedValue} />
+                  <InfoRow label="Valor Final" value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value)} />
                   <div className="col-span-2">
                     <InfoRow label="Condições de Pagamento" value={proposal.payment_terms} />
                   </div>

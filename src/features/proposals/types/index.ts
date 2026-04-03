@@ -19,7 +19,7 @@ export interface Proposal {
   discount_pct: number;
   final_value: number;
   payment_terms: string;
-  status: 'draft' | 'sent' | 'approved' | 'expired';
+  status: 'draft' | 'sent' | 'opened' | 'new_version' | 'approved' | 'expired';
   created_by: string | null;
   created_at: string;
   updated_at: string;
