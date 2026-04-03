@@ -93,7 +93,8 @@ export default function ProposalDetails() {
   // Dirty checks
   const clientDirty = useMemo(() => {
     if (!proposal) return false;
-    return clientForm.client_name !== proposal.client_name ||
+    return clientForm.project_number !== (proposal.project_number || '') ||
+      clientForm.client_name !== proposal.client_name ||
       clientForm.project_name !== proposal.project_name ||
       clientForm.client_responsible !== (proposal.client_responsible || '') ||
       clientForm.whatsapp_number !== (proposal.whatsapp_number || '') ||
