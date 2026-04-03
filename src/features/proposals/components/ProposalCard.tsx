@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil } from 'lucide-react';
+import { differenceInDays } from 'date-fns';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
