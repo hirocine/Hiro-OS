@@ -7,6 +7,7 @@ export interface Proposal {
   client_responsible: string | null;
   client_logo: string | null;
   validity_date: string;
+  sent_date: string | null;
   briefing: string | null;
   video_url: string | null;
   moodboard_images: string[];
@@ -68,20 +69,63 @@ export interface CaseItem {
   destaque?: boolean;
 }
 
+export interface EntregavelItem {
+  titulo: string;
+  descricao: string;
+  quantidade: string;
+  icone: string;
+}
+
+export interface InclusoItem {
+  nome: string;
+  ativo: boolean;
+  quantidade?: string;
+  custom?: boolean;
+}
+
+export interface InclusoCategory {
+  categoria: string;
+  icone: string;
+  subcategorias?: { nome: string; itens: InclusoItem[] }[];
+  itens?: InclusoItem[];
+}
+
+export interface PainPoint {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface ProposalCase {
+  id: string;
+  tipo: string;
+  client_name: string;
+  campaign_name: string;
+  vimeo_id: string;
+  vimeo_hash: string;
+  destaque: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
 export interface ProposalFormData {
   client_name: string;
   project_name: string;
   client_responsible: string;
-  validity_date: Date | undefined;
   whatsapp_number: string;
+  sent_date: Date;
+  validity_date: Date | undefined;
   objetivo: string;
   diagnostico_dores: DiagnosticoDor[];
-  cases: CaseItem[];
-  entregaveis: any[];
-  list_price: number;
+  selected_case_ids: string[];
+  entregaveis: EntregavelItem[];
+  incluso_categories: InclusoCategory[];
   base_value: number;
   discount_pct: number;
-  payment_options: PaymentOption[];
+  list_price: number;
   payment_terms: string;
   testimonial_name: string;
   testimonial_role: string;
@@ -89,27 +133,104 @@ export interface ProposalFormData {
   testimonial_image: string;
 }
 
+export const ICON_OPTIONS = [
+  { value: 'Video', label: 'Vídeo' },
+  { value: 'Smartphone', label: 'Smartphone' },
+  { value: 'Camera', label: 'Câmera' },
+  { value: 'ClipboardList', label: 'Checklist' },
+  { value: 'Clapperboard', label: 'Claquete' },
+  { value: 'Palette', label: 'Paleta' },
+  { value: 'Image', label: 'Imagem' },
+  { value: 'Music', label: 'Música' },
+  { value: 'Monitor', label: 'Monitor' },
+  { value: 'Mic', label: 'Microfone' },
+];
+
+export const DEFAULT_INCLUSO_CATEGORIES: InclusoCategory[] = [
+  {
+    categoria: 'Pré-produção',
+    icone: 'ClipboardList',
+    itens: [
+      { nome: 'Roteiro', ativo: false },
+      { nome: 'Storyboard', ativo: false },
+      { nome: 'Cenário', ativo: false },
+    ],
+  },
+  {
+    categoria: 'Gravação',
+    icone: 'Clapperboard',
+    subcategorias: [
+      {
+        nome: 'Equipe',
+        itens: [
+          { nome: 'Diretor', ativo: false },
+          { nome: 'Filmmaker', ativo: false },
+          { nome: 'Fotógrafo', ativo: false },
+          { nome: 'Making Of', ativo: false },
+          { nome: 'Produtor', ativo: false },
+          { nome: 'Operador de Som', ativo: false },
+          { nome: 'Operador de TP', ativo: false },
+          { nome: 'Make e Cabeleireiro', ativo: false },
+          { nome: 'Figurino', ativo: false },
+        ],
+      },
+      {
+        nome: 'Equipamentos',
+        itens: [
+          { nome: 'Câmeras', ativo: false, quantidade: '' },
+          { nome: 'Iluminação', ativo: false },
+          { nome: 'Áudio', ativo: false },
+          { nome: 'Drone', ativo: false },
+          { nome: 'Teleprompter', ativo: false },
+        ],
+      },
+      {
+        nome: 'Produção',
+        itens: [
+          { nome: 'Estúdio', ativo: false },
+          { nome: 'Catering', ativo: false },
+          { nome: 'Gerador', ativo: false },
+        ],
+      },
+    ],
+  },
+  {
+    categoria: 'Pós-produção',
+    icone: 'Palette',
+    itens: [
+      { nome: 'Edição', ativo: false },
+      { nome: 'Motion Graphics', ativo: false },
+      { nome: 'VFX', ativo: false },
+      { nome: 'Color Grading', ativo: false },
+      { nome: 'Trilha de Banco', ativo: false },
+      { nome: 'Banco de Imagens', ativo: false },
+      { nome: 'Geração de Cenas com AI', ativo: false },
+    ],
+  },
+];
+
+const DIAGNOSTICO_TEMPLATE = `O objetivo deste projeto é desenvolver [tipo de conteúdo — ex: uma campanha audiovisual completa / um vídeo institucional / uma série de conteúdo digital] para Nome da Empresa Cliente, com foco em [objetivo principal — ex: fortalecer o posicionamento da marca no digital / lançar um novo produto / gerar conteúdo para a campanha de Dia das Mães 2026].
+
+Durante nossa conversa, identificamos os pontos abaixo como prioridades centrais para que o resultado final atenda às expectativas da Nome da Empresa Cliente.`;
+
 export const defaultFormData: ProposalFormData = {
   client_name: '',
   project_name: '',
   client_responsible: '',
-  validity_date: undefined,
   whatsapp_number: '',
-  objetivo: '',
-  diagnostico_dores: [
-    { label: 'Prioridade', title: '', desc: '' },
-    { label: 'Desafio', title: '', desc: '' },
-    { label: 'Contexto', title: '', desc: '' },
-  ],
-  cases: [],
+  sent_date: new Date(),
+  validity_date: undefined,
+  objetivo: DIAGNOSTICO_TEMPLATE,
+  diagnostico_dores: [],
+  selected_case_ids: [],
   entregaveis: [],
+  incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
   list_price: 0,
   base_value: 0,
   discount_pct: 0,
-  payment_options: [],
   payment_terms: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final',
-  testimonial_name: '',
-  testimonial_role: '',
-  testimonial_text: '',
+  testimonial_name: 'Thiago Nigro',
+  testimonial_role: 'CEO, Grupo Primo',
+  testimonial_text: 'A Hiro elevou a qualidade do nosso conteúdo a outro patamar. O profissionalismo e a atenção aos detalhes fizeram toda a diferença no resultado final.',
   testimonial_image: '',
 };

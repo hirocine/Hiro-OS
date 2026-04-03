@@ -836,6 +836,7 @@ export type Database = {
           scope_post_production: Json | null
           scope_pre_production: Json | null
           scope_production: Json | null
+          sent_date: string | null
           slug: string
           status: string
           testimonial_image: string | null
@@ -872,6 +873,7 @@ export type Database = {
           scope_post_production?: Json | null
           scope_pre_production?: Json | null
           scope_production?: Json | null
+          sent_date?: string | null
           slug: string
           status?: string
           testimonial_image?: string | null
@@ -908,6 +910,7 @@ export type Database = {
           scope_post_production?: Json | null
           scope_pre_production?: Json | null
           scope_production?: Json | null
+          sent_date?: string | null
           slug?: string
           status?: string
           testimonial_image?: string | null
@@ -1214,6 +1217,69 @@ export type Database = {
           withdrawal_time?: string | null
           withdrawal_user_id?: string | null
           withdrawal_user_name?: string | null
+        }
+        Relationships: []
+      }
+      proposal_cases: {
+        Row: {
+          campaign_name: string
+          client_name: string
+          created_at: string
+          created_by: string | null
+          destaque: boolean
+          id: string
+          tipo: string
+          vimeo_hash: string | null
+          vimeo_id: string
+        }
+        Insert: {
+          campaign_name?: string
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          destaque?: boolean
+          id?: string
+          tipo?: string
+          vimeo_hash?: string | null
+          vimeo_id?: string
+        }
+        Update: {
+          campaign_name?: string
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          destaque?: boolean
+          id?: string
+          tipo?: string
+          vimeo_hash?: string | null
+          vimeo_id?: string
+        }
+        Relationships: []
+      }
+      proposal_pain_points: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          label: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          label?: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          label?: string
+          title?: string
         }
         Relationships: []
       }

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { Proposal, ProposalFormData } from '../types';
+import type { Proposal, ProposalFormData, ProposalCase } from '../types';
 
 function generateSlug(clientName: string, projectName: string): string {
   const year = new Date().getFullYear();
@@ -49,11 +49,100 @@ export function useProposals() {
 
       const { data: userData } = await supabase.auth.getUser();
 
-      // Filter V2 data
+      // Build diagnostico_dores
       const diagnosticoDores = form.diagnostico_dores.filter(d => d.title.trim() || d.desc.trim());
-      const entregaveis = form.entregaveis.filter((e: any) => e.output?.trim());
-      const cases = form.cases.filter(c => c.vimeoId?.trim() || c.titulo?.trim());
-      const paymentOptions = form.payment_options.filter(p => p.titulo.trim());
+
+      // Fetch selected cases from bank and build cases JSONB
+      let casesJsonb: any[] = [];
+      if (form.selected_case_ids.length > 0) {
+        const { data: casesData } = await supabase
+          .from('proposal_cases' as any)
+          .select('*')
+          .in('id', form.selected_case_ids);
+        if (casesData) {
+          casesJsonb = (casesData as unknown as ProposalCase[]).map(c => ({
+            tipo: c.tipo,
+            titulo: c.client_name,
+            descricao: c.campaign_name,
+            vimeoId: c.vimeo_id,
+            vimeoHash: c.vimeo_hash,
+            destaque: c.destaque,
+          }));
+        }
+      }
+
+      // Build entregaveis JSONB matching ProposalEntregaveis format
+      const entregaveisJsonb: any[] = [];
+
+      // Block 1: Output items (deliverables)
+      if (form.entregaveis.length > 0) {
+        entregaveisJsonb.push({
+          label: 'Output',
+          titulo: 'Entregas do Projeto',
+          itens: form.entregaveis.map(e => ({
+            titulo: e.titulo,
+            descricao: e.descricao,
+            quantidade: e.quantidade,
+            icone: e.icone,
+          })),
+        });
+      }
+
+      // Block 2-4: Incluso categories → service cards
+      for (const cat of form.incluso_categories) {
+        if (cat.subcategorias) {
+          // Category with subcategories (e.g. Gravação)
+          entregaveisJsonb.push({
+            label: 'Serviços',
+            titulo: cat.categoria,
+            cards: [{
+              icone: cat.icone,
+              titulo: cat.categoria,
+              subcategorias: cat.subcategorias.map(sub => ({
+                nome: sub.nome,
+                itens: sub.itens.map(item => ({
+                  nome: item.nome,
+                  ativo: item.ativo,
+                  quantidade: item.quantidade || undefined,
+                })),
+              })),
+            }],
+          });
+        } else if (cat.itens) {
+          // Simple category (e.g. Pré-produção, Pós-produção)
+          entregaveisJsonb.push({
+            label: 'Serviços',
+            titulo: cat.categoria,
+            cards: [{
+              icone: cat.icone,
+              titulo: cat.categoria,
+              itens: cat.itens.map(item => ({
+                nome: item.nome,
+                ativo: item.ativo,
+                quantidade: item.quantidade || undefined,
+              })),
+            }],
+          });
+        }
+      }
+
+      // Build payment options (hardcoded)
+      const paymentOptions = [
+        {
+          titulo: 'À Vista',
+          valor: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue * 0.95),
+          descricao: '5% de desconto para pagamento único',
+          destaque: 'Melhor custo',
+          recomendado: false,
+        },
+        {
+          titulo: '2x sem juros',
+          valor: `2x ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue / 2)}`,
+          descricao: '50% no fechamento + 50% na entrega',
+          destaque: '',
+          recomendado: true,
+        },
+      ];
 
       const { data, error } = await supabase
         .from('orcamentos')
@@ -62,24 +151,24 @@ export function useProposals() {
           client_name: form.client_name.trim(),
           project_name: form.project_name.trim(),
           client_responsible: form.client_responsible.trim() || null,
-          
           validity_date: form.validity_date?.toISOString().split('T')[0],
+          sent_date: form.sent_date.toISOString().split('T')[0],
           base_value: baseValue,
           discount_pct: discountPct,
           final_value: finalValue,
+          list_price: form.list_price || null,
           payment_terms: form.payment_terms.trim(),
           created_by: userData?.user?.id || null,
           status: 'draft',
           objetivo: form.objetivo.trim() || null,
           diagnostico_dores: diagnosticoDores as any,
-          list_price: form.list_price || null,
           payment_options: paymentOptions as any,
           testimonial_name: form.testimonial_name.trim() || null,
           testimonial_role: form.testimonial_role.trim() || null,
           testimonial_text: form.testimonial_text.trim() || null,
           testimonial_image: form.testimonial_image.trim() || null,
-          entregaveis: entregaveis as any,
-          cases: cases as any,
+          entregaveis: entregaveisJsonb as any,
+          cases: casesJsonb as any,
           whatsapp_number: form.whatsapp_number.trim() || null,
         } as any)
         .select()
