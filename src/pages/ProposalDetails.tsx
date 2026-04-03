@@ -453,7 +453,7 @@ export default function ProposalDetails() {
   const removeCase = (i: number) => setCasesForm(prev => prev.filter((_, idx) => idx !== i));
   const toggleCaseDestaque = (i: number) => setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, destaque: !c.destaque } : c));
 
-  const filteredCasesBank = useMemo(() => {
+  const filteredCasesBankMemo = useMemo(() => {
     const search = casesBankSearch.toLowerCase();
     if (!search) return casesBank;
     return casesBank.filter(c =>
