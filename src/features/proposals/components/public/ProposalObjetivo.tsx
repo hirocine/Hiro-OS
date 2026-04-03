@@ -1,4 +1,4 @@
-import { Star, Clock, Layers } from 'lucide-react'
+import { Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart, AlertTriangle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface DorItem {
@@ -13,34 +13,38 @@ interface Props {
   diagnosticoDores: DorItem[]
 }
 
+const ICON_MAP: Record<string, LucideIcon> = {
+  Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart, AlertTriangle,
+}
+
 const defaultDores: (DorItem & { icon: LucideIcon })[] = [
   {
-    label: 'Prioridade',
+    label: 'Star',
     title: 'Qualidade visual premium',
     desc: 'O padrão estético do conteúdo precisa refletir o posicionamento da marca. Não há espaço para entregas medianas.',
     icon: Star,
   },
   {
-    label: 'Desafio',
+    label: 'Clock',
     title: 'Prazo e previsibilidade',
     desc: 'O projeto tem uma data de veiculação definida. Cada etapa precisa ser cumprida sem comprometer o resultado final.',
     icon: Clock,
   },
   {
-    label: 'Contexto',
+    label: 'Layers',
     title: 'Conteúdo multiplataforma',
     desc: 'O material precisa funcionar em diferentes formatos e canais, mantendo coesão visual e narrativa em todos eles.',
     icon: Layers,
   },
 ]
 
-const iconForIndex = [Star, Clock, Layers]
+const fallbackIcons = [Star, Clock, Layers]
 
 export function ProposalObjetivo({ objetivo, clientName, diagnosticoDores }: Props) {
   if (!objetivo && diagnosticoDores.length === 0) return null
 
   const dores = diagnosticoDores.length > 0
-    ? diagnosticoDores.map((d, i) => ({ ...d, icon: iconForIndex[i % iconForIndex.length] }))
+    ? diagnosticoDores.map((d, i) => ({ ...d, icon: (d.label && ICON_MAP[d.label]) || fallbackIcons[i % fallbackIcons.length] }))
     : defaultDores
 
   const textoObjetivo = objetivo

@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check
+  AlertTriangle, Briefcase, Package, Plus, X, Check,
+  Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart,
+  type LucideIcon
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -29,6 +32,23 @@ import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory } from '
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
+const DOR_ICON_OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
+  { value: 'Star', label: 'Estrela', icon: Star },
+  { value: 'Clock', label: 'Relógio', icon: Clock },
+  { value: 'Layers', label: 'Camadas', icon: Layers },
+  { value: 'Target', label: 'Alvo', icon: Target },
+  { value: 'TrendingUp', label: 'Tendência', icon: TrendingUp },
+  { value: 'Zap', label: 'Raio', icon: Zap },
+  { value: 'Shield', label: 'Escudo', icon: Shield },
+  { value: 'Eye', label: 'Olho', icon: Eye },
+  { value: 'Heart', label: 'Coração', icon: Heart },
+  { value: 'AlertTriangle', label: 'Alerta', icon: AlertTriangle },
+];
+
+const DOR_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
+  DOR_ICON_OPTIONS.map(o => [o.value, o.icon])
+);
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -74,7 +94,7 @@ export default function ProposalDetails() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showNewDorDialog, setShowNewDorDialog] = useState(false);
-  const [newDorForm, setNewDorForm] = useState({ label: '', title: '', description: '' });
+  const [newDorForm, setNewDorForm] = useState({ label: 'Star', title: '', description: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -280,21 +300,19 @@ export default function ProposalDetails() {
   const selectPainPointFromBank = (ppId: string) => {
     const pp = painPointsBank.find(p => p.id === ppId);
     if (!pp) return;
-    // Check if already added (by matching label+title)
-    const alreadyExists = doresForm.some(d => d.label === pp.label && d.title === pp.title);
+    const alreadyExists = doresForm.some(d => d.title === pp.title);
     if (alreadyExists) {
-      // Remove it
-      setDoresForm(prev => prev.filter(d => !(d.label === pp.label && d.title === pp.title)));
+      setDoresForm(prev => prev.filter(d => d.title !== pp.title));
     } else {
       setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
     }
   };
 
-  const isPainPointSelected = (pp: { label: string; title: string }) =>
-    doresForm.some(d => d.label === pp.label && d.title === pp.title);
+  const isPainPointSelected = (pp: { title: string }) =>
+    doresForm.some(d => d.title === pp.title);
 
   const handleCreateNewDor = async () => {
-    if (!newDorForm.label.trim() || !newDorForm.title.trim()) return;
+    if (!newDorForm.title.trim()) return;
     try {
       const created = await createPainPoint.mutateAsync({
         label: newDorForm.label.trim(),
@@ -303,7 +321,7 @@ export default function ProposalDetails() {
       });
       // Also add to current proposal
       setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
-      setNewDorForm({ label: '', title: '', description: '' });
+      setNewDorForm({ label: 'Star', title: '', description: '' });
       setShowNewDorDialog(false);
       toast.success('Dor criada e adicionada!');
     } catch {
@@ -540,7 +558,7 @@ export default function ProposalDetails() {
                         }`}
                       >
                         {isPainPointSelected(pp) && <Check className="h-3 w-3" />}
-                        {pp.label}: {pp.title}
+                        {pp.title}
                       </button>
                     ))}
                   </div>
@@ -551,27 +569,59 @@ export default function ProposalDetails() {
               {doresForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
               )}
-              {doresForm.map((dor, i) => (
-                <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
-                  <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
-                    <X className="h-4 w-4" />
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Label</Label>
-                      <Input value={dor.label} onChange={e => updateDor(i, 'label', e.target.value)} placeholder="Ex: Dor 01" />
-                    </div>
-                    <div className="md:col-span-2 space-y-1.5">
-                      <Label className="text-xs">Título</Label>
-                      <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
+              {doresForm.map((dor, i) => {
+                const DorIcon = DOR_ICON_MAP[dor.label] || Star;
+                return (
+                  <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
+                    <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
+                    <div className="flex items-start gap-3">
+                      {/* Icon selector */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Ícone</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                              <DorIcon className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" align="start">
+                            <div className="grid grid-cols-5 gap-1">
+                              {DOR_ICON_OPTIONS.map(opt => {
+                                const Icon = opt.icon;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => updateDor(i, 'label', opt.value)}
+                                    className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
+                                      dor.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+                                    }`}
+                                    title={opt.label}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Dor</Label>
+                          <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Descrição</Label>
+                          <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Descrição</Label>
-                    <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
             {doresDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
@@ -590,11 +640,28 @@ export default function ProposalDetails() {
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Label</Label>
-                  <Input value={newDorForm.label} onChange={e => setNewDorForm(p => ({ ...p, label: e.target.value }))} placeholder="Ex: Dor 01" />
+                  <Label className="text-xs">Ícone</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {DOR_ICON_OPTIONS.map(opt => {
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
+                          className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
+                            newDorForm.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted border border-border'
+                          }`}
+                          title={opt.label}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Título</Label>
+                  <Label className="text-xs">Dor</Label>
                   <Input value={newDorForm.title} onChange={e => setNewDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
                 </div>
                 <div className="space-y-1.5">
@@ -604,7 +671,7 @@ export default function ProposalDetails() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowNewDorDialog(false)}>Cancelar</Button>
-                <Button onClick={handleCreateNewDor} disabled={!newDorForm.label.trim() || !newDorForm.title.trim() || createPainPoint.isPending}>
+                <Button onClick={handleCreateNewDor} disabled={!newDorForm.title.trim() || createPainPoint.isPending}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
                 </Button>
               </DialogFooter>
