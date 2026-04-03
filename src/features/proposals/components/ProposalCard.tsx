@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User } from 'lucide-react';
+import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
