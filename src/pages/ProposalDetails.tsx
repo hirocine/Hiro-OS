@@ -47,6 +47,38 @@ const DOR_EMOJI_OPTIONS = [
   { value: '📱', label: 'Celular' },
   { value: '🏆', label: 'Troféu' },
   { value: '⚠️', label: 'Alerta' },
+  { value: '🚫', label: 'Proibido' },
+  { value: '📐', label: 'Régua' },
+  { value: '🔍', label: 'Lupa' },
+  { value: '⚖', label: 'Balança' },
+  { value: '📅', label: 'Calendário' },
+  { value: '🔄', label: 'Ciclo' },
+  { value: '📦', label: 'Pacote' },
+  { value: '🚨', label: 'Sirene' },
+  { value: '😤', label: 'Frustração' },
+  { value: '🤷', label: 'Dúvida' },
+  { value: '💸', label: 'Dinheiro' },
+  { value: '🧩', label: 'Puzzle' },
+  { value: '📉', label: 'Queda' },
+  { value: '📵', label: 'Bloqueio' },
+  { value: '🎨', label: 'Arte' },
+  { value: '🧠', label: 'Cérebro' },
+  { value: '⚔️', label: 'Espadas' },
+  { value: '🧭', label: 'Bússola' },
+  { value: '😴', label: 'Sono' },
+  { value: '📈', label: 'Crescimento' },
+  { value: '🧮', label: 'Ábaco' },
+  { value: '🏷', label: 'Etiqueta' },
+  { value: '💰', label: 'Saco' },
+  { value: '🏛', label: 'Governo' },
+  { value: '📋', label: 'Clipboard' },
+  { value: '🔮', label: 'Bola' },
+  { value: '🏢', label: 'Prédio' },
+  { value: '🏗', label: 'Construção' },
+  { value: '🔐', label: 'Cadeado' },
+  { value: '📆', label: 'Agenda' },
+  { value: '🤝', label: 'Aperto' },
+  { value: '🌐', label: 'Globo' },
 ];
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
@@ -92,8 +124,11 @@ export default function ProposalDetails() {
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const [showNewDorDialog, setShowNewDorDialog] = useState(false);
-  const [newDorForm, setNewDorForm] = useState({ label: '⭐', title: '', description: '' });
+  const [showDoresBank, setShowDoresBank] = useState(false);
+  const [doresBankSearch, setDoresBankSearch] = useState('');
+  const [doresBankSelection, setDoresBankSelection] = useState<DiagnosticoDor[]>([]);
+  const [showExclusiveDor, setShowExclusiveDor] = useState(false);
+  const [exclusiveDorForm, setExclusiveDorForm] = useState({ label: '⭐', title: '', desc: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -191,7 +226,44 @@ export default function ProposalDetails() {
     return true; // Always allow save for complex nested structure
   }, [entregaveisForm, proposal]);
 
-  if (isLoading) {
+  // Group bank by category
+  const categoryOrder = [
+    'Qualidade & padrão visual',
+    'Prazo & velocidade de entrega',
+    'Experiência com fornecedores anteriores',
+    'Diferencial criativo & estratégico',
+    'Performance & resultado de negócio',
+    'Orçamento & justificativa de investimento',
+    'Operacional & estrutura de produção',
+    'Escala & recorrência',
+  ];
+
+  const painPointsByCategory = useMemo(() => {
+    const groups: Record<string, typeof painPointsBank> = {};
+    painPointsBank.forEach(pp => {
+      const cat = (pp as any).category || 'Sem categoria';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(pp);
+    });
+    return groups;
+  }, [painPointsBank]);
+
+  const filteredCategories = useMemo(() => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return categoryOrder.filter(c => painPointsByCategory[c]?.length > 0);
+    return categoryOrder.filter(c => {
+      const pps = painPointsByCategory[c];
+      if (!pps) return false;
+      return pps.some(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
+    });
+  }, [doresBankSearch, painPointsByCategory]);
+
+  const filterPainPoints = (pps: typeof painPointsBank) => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return pps;
+    return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
+  };
+
     return (
       <ResponsiveContainer maxWidth="7xl">
         <div className="space-y-6">
@@ -293,40 +365,37 @@ export default function ProposalDetails() {
 
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
-  const updateDor = (i: number, field: keyof DiagnosticoDor, value: string) =>
-    setDoresForm(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d));
 
-  const selectPainPointFromBank = (ppId: string) => {
-    const pp = painPointsBank.find(p => p.id === ppId);
-    if (!pp) return;
-    const alreadyExists = doresForm.some(d => d.title === pp.title);
-    if (alreadyExists) {
-      setDoresForm(prev => prev.filter(d => d.title !== pp.title));
-    } else {
-      setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
-    }
+  const openDoresBank = () => {
+    setDoresBankSelection([...doresForm]);
+    setDoresBankSearch('');
+    setShowExclusiveDor(false);
+    setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
+    setShowDoresBank(true);
   };
 
-  const isPainPointSelected = (pp: { title: string }) =>
-    doresForm.some(d => d.title === pp.title);
-
-  const handleCreateNewDor = async () => {
-    if (!newDorForm.title.trim()) return;
-    try {
-      const created = await createPainPoint.mutateAsync({
-        label: newDorForm.label.trim(),
-        title: newDorForm.title.trim(),
-        description: newDorForm.description.trim(),
-      });
-      // Also add to current proposal
-      setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
-      setNewDorForm({ label: '⭐', title: '', description: '' });
-      setShowNewDorDialog(false);
-      toast.success('Dor criada e adicionada!');
-    } catch {
-      toast.error('Erro ao criar dor');
-    }
+  const toggleBankDor = (pp: { label: string; title: string; description: string }) => {
+    setDoresBankSelection(prev => {
+      const exists = prev.some(d => d.title === pp.title);
+      if (exists) return prev.filter(d => d.title !== pp.title);
+      return [...prev, { label: pp.label, title: pp.title, desc: pp.description }];
+    });
   };
+
+  const isBankDorSelected = (title: string) => doresBankSelection.some(d => d.title === title);
+
+  const confirmDoresBank = () => {
+    setDoresForm(doresBankSelection);
+    setShowDoresBank(false);
+  };
+
+  const addExclusiveDor = () => {
+    if (!exclusiveDorForm.title.trim()) return;
+    setDoresBankSelection(prev => [...prev, { ...exclusiveDorForm }]);
+    setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
+    setShowExclusiveDor(false);
+  };
+
 
   // Cases helpers
   const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
@@ -534,86 +603,43 @@ export default function ProposalDetails() {
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-base">Dores do Cliente</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setShowNewDorDialog(true)}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Nova Dor
+                <Button variant="outline" size="sm" onClick={openDoresBank}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-2 space-y-4">
-              {/* Bank selector */}
-              {painPointsBank.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Selecionar do banco de dores</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {painPointsBank.map(pp => (
-                      <button
-                        key={pp.id}
-                        type="button"
-                        onClick={() => selectPainPointFromBank(pp.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          isPainPointSelected(pp)
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'
-                        }`}
-                      >
-                        {isPainPointSelected(pp) && <Check className="h-3 w-3" />}
-                        {pp.title}
-                      </button>
-                    ))}
-                  </div>
+            <CardContent className="pt-2">
+              {doresForm.length === 0 ? (
+                <div className="text-center py-8">
+                  <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhuma dor selecionada.</p>
+                  <Button variant="link" size="sm" onClick={openDoresBank} className="mt-1">
+                    Selecionar do banco de dores
+                  </Button>
                 </div>
-              )}
-
-              {/* Selected & editable dores */}
-              {doresForm.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
-              )}
-              {doresForm.map((dor, i) => {
-                const emoji = dor.label || '⭐';
-                return (
-                  <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
-                    <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
-                      <X className="h-4 w-4" />
-                    </button>
-                    <div className="space-y-3">
-                      <div className="flex items-end gap-3">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0 text-lg">
-                              {emoji}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-2" align="start">
-                            <div className="grid grid-cols-5 gap-1">
-                              {DOR_EMOJI_OPTIONS.map(opt => (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  onClick={() => updateDor(i, 'label', opt.value)}
-                                  className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
-                                    dor.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
-                                  }`}
-                                  title={opt.label}
-                                >
-                                  {opt.value}
-                                </button>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <div className="flex-1 space-y-1.5">
-                          <Label className="text-xs">Dor</Label>
-                          <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {doresForm.map((dor, i) => (
+                    <div key={i} className="group relative border border-border rounded-lg p-4 hover:border-primary/30 transition-colors">
+                      <button
+                        onClick={() => removeDor(i)}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
+                          {dor.label || '⭐'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium leading-tight">{dor.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{dor.desc}</p>
                         </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Descrição</Label>
-                        <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
-                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  ))}
+                </div>
+              )}
             </CardContent>
             {doresDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
@@ -624,46 +650,127 @@ export default function ProposalDetails() {
             )}
           </Card>
 
-          {/* New Dor Dialog */}
-          <Dialog open={showNewDorDialog} onOpenChange={setShowNewDorDialog}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Nova Dor</DialogTitle>
+          {/* Dores Bank Dialog */}
+          <Dialog open={showDoresBank} onOpenChange={setShowDoresBank}>
+            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle>Banco de Dores</DialogTitle>
+                <div className="pt-3">
+                  <Input
+                    value={doresBankSearch}
+                    onChange={e => setDoresBankSearch(e.target.value)}
+                    placeholder="Buscar dores..."
+                    className="h-9"
+                  />
+                </div>
               </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Emoji</Label>
-                  <div className="flex flex-wrap gap-1">
-                    {DOR_EMOJI_OPTIONS.map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
-                        className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
-                          newDorForm.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted border border-border'
-                        }`}
-                        title={opt.label}
-                      >
-                        {opt.value}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Dor</Label>
-                  <Input value={newDorForm.title} onChange={e => setNewDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Descrição</Label>
-                  <Textarea value={newDorForm.description} onChange={e => setNewDorForm(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Descreva a dor..." />
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                {filteredCategories.map((cat, catIdx) => {
+                  const pps = filterPainPoints(painPointsByCategory[cat] || []);
+                  if (pps.length === 0) return null;
+                  return (
+                    <div key={cat}>
+                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-mono">{String(catIdx + 1).padStart(2, '0')}</span>
+                        {cat}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {pps.map(pp => {
+                          const selected = isBankDorSelected(pp.title);
+                          return (
+                            <button
+                              key={pp.id}
+                              type="button"
+                              onClick={() => toggleBankDor(pp)}
+                              className={`text-left p-3 rounded-lg border transition-all ${
+                                selected
+                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                                  : 'border-border hover:border-primary/30'
+                              }`}
+                            >
+                              <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-md bg-muted/50 flex items-center justify-center text-base shrink-0">
+                                  {pp.label}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium leading-tight flex-1">{pp.title}</p>
+                                    {selected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{pp.description}</p>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Exclusive pain point section */}
+                <div className="border-t border-border pt-4">
+                  {!showExclusiveDor ? (
+                    <Button variant="ghost" size="sm" onClick={() => setShowExclusiveDor(true)} className="w-full">
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Criar dor exclusiva para este projeto
+                    </Button>
+                  ) : (
+                    <div className="space-y-3 p-4 border border-dashed border-border rounded-lg">
+                      <h4 className="text-sm font-medium">Dor exclusiva (não salva no banco)</h4>
+                      <div className="flex items-end gap-3">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0 text-lg">
+                              {exclusiveDorForm.label}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" align="start">
+                            <div className="grid grid-cols-8 gap-1">
+                              {DOR_EMOJI_OPTIONS.map(opt => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => setExclusiveDorForm(p => ({ ...p, label: opt.value }))}
+                                  className={`h-8 w-8 rounded-md flex items-center justify-center text-base transition-colors ${
+                                    exclusiveDorForm.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                                  }`}
+                                >
+                                  {opt.value}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <div className="flex-1 space-y-1.5">
+                          <Label className="text-xs">Título</Label>
+                          <Input value={exclusiveDorForm.title} onChange={e => setExclusiveDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Descrição</Label>
+                        <Textarea value={exclusiveDorForm.desc} onChange={e => setExclusiveDorForm(p => ({ ...p, desc: e.target.value }))} rows={2} placeholder="Descreva a dor..." />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={addExclusiveDor} disabled={!exclusiveDorForm.title.trim()}>
+                          <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowExclusiveDor(false)}>Cancelar</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowNewDorDialog(false)}>Cancelar</Button>
-                <Button onClick={handleCreateNewDor} disabled={!newDorForm.title.trim() || createPainPoint.isPending}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
-                </Button>
-              </DialogFooter>
+
+              <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {doresBankSelection.length} dore{doresBankSelection.length !== 1 ? 's' : ''} selecionada{doresBankSelection.length !== 1 ? 's' : ''}
+                </span>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowDoresBank(false)}>Cancelar</Button>
+                  <Button onClick={confirmDoresBank}>Confirmar</Button>
+                </div>
+              </div>
             </DialogContent>
           </Dialog>
 

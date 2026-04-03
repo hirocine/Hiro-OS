@@ -1264,6 +1264,7 @@ export type Database = {
       }
       proposal_pain_points: {
         Row: {
+          category: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -1272,6 +1273,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -1280,6 +1282,7 @@ export type Database = {
           title?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           created_by?: string | null
           description?: string

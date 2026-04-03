@@ -96,6 +96,7 @@ export interface PainPoint {
   label: string;
   title: string;
   description: string;
+  category: string;
   created_by: string | null;
   created_at: string;
 }
