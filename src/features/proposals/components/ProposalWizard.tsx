@@ -463,7 +463,7 @@ export function ProposalWizard() {
               {/* Depoimento */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" /> Depoimento (opcional)
+                  <Sparkles className="h-4 w-4" /> Depoimento (opcional)
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1">Prova social que aparece ao lado do investimento</p>
               </div>
