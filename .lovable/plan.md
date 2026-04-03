@@ -1,41 +1,41 @@
 
 
-# Redesign da seção "Dores do Cliente" -- Cards + Dialog com Banco Categorizado
+# Redesign Cases/Portfólio -- Banco de Cases com Dialog (igual Dores)
 
 ## O que muda
 
-A seção atual (chips de seleção + edição inline) será substituída por:
-1. **Na página**: exibição em **cards** das dores selecionadas (emoji + título + descrição) com botão de remover
-2. **Botão "Adicionar Dores"** abre um **Dialog grande** com o banco completo organizado por categorias (igual ao HTML enviado)
-3. No dialog, o usuário marca/desmarca dores com checkboxes e pode **criar uma dor exclusiva** para o projeto (não salva no banco)
+A seção "Cases / Portfólio" atual (formulários inline) será substituída pelo mesmo padrão da seção de Dores:
 
-## Mudanças necessárias
+1. **Na página**: grid de cards dos cases selecionados (com thumbnail Vimeo + título + descrição + botão X)
+2. **Botão "Adicionar Cases"** abre um Dialog grande com o banco completo (`proposal_cases`)
+3. No dialog, o usuário seleciona cases existentes OU cria um novo -- e o novo **fica salvo** no banco `proposal_cases`
 
-### 1. Migration: adicionar campo `category` na tabela `proposal_pain_points`
-- Novo campo `category TEXT` para agrupar dores (ex: "Qualidade & padrão visual", "Prazo & velocidade de entrega", etc.)
-- Seed das ~40 dores do HTML enviado com suas categorias e emojis
+## Mudanças
 
-### 2. Atualizar tipo `PainPoint` e hook `usePainPoints`
-- Adicionar `category` ao interface `PainPoint`
-- Query já funciona com `select('*')`, então pega automaticamente
+### 1. Importar `useProposalCases` e redesenhar seção em `ProposalDetails.tsx`
 
-### 3. Redesenhar seção em `ProposalDetails.tsx`
+**Cards de cases selecionados**: Grid 2 colunas com cards mostrando:
+- Thumbnail do Vimeo (via `https://vimg.net/video/{vimeoId}`)
+- Tipo (tag), Título, Descrição
+- Toggle destaque (estrela)
+- Botão X para remover
 
-**Cards de dores selecionadas**: Grid 2 colunas com cards estilo do HTML (emoji + título + descrição + botão X para remover)
+**Dialog "Banco de Cases"** (`sm:max-w-4xl`):
+- Lista de todos os cases do banco (`useProposalCases`) como cards clicáveis com checkbox visual
+- Filtro/busca por texto (client_name, campaign_name, tags)
+- Cases já na proposta aparecem marcados
+- Seção "Criar novo case" com campos: client_name, campaign_name, vimeo_id, vimeo_hash, tags, destaque -- ao criar, chama `createCase` do hook e o case fica salvo no banco + adicionado à proposta
+- Rodapé fixo com contador + botão Confirmar
 
-**Dialog "Banco de Dores"** (`sm:max-w-4xl`):
-- Organizado por categorias com headers numerados (01, 02, 03...)
-- Grid 2 colunas de cards clicáveis com checkbox visual
-- Dores já selecionadas aparecem marcadas
-- Barra fixa no rodapé com contador "X dores selecionadas" + botão "Confirmar"
-- Tab ou seção "Dor exclusiva" para criar uma avulsa (emoji + título + desc) que entra direto na proposta sem ir ao banco
-- Busca/filtro por texto no topo do dialog
+### 2. Mapeamento banco → proposta
+- O campo JSONB `cases` da proposta armazena `{ tipo, titulo, descricao, vimeoId, vimeoHash, destaque }`
+- Ao selecionar do banco, copiar os dados relevantes para o array local (sem referência ao ID)
+- Ao criar novo, salvar no banco via mutation E adicionar ao array local
 
-### 4. Remover dialog "Nova Dor" atual
-- O dialog antigo de criar nova dor será substituído pelo campo "Dor exclusiva" dentro do novo dialog do banco
+### 3. Remover lógica inline atual
+- Remover `addCase`, `removeCase`, `updateCase` inline
+- Substituir pelo padrão de seleção do banco + confirmação
 
 ## Arquivos alterados
-- Nova migration: `add_category_to_pain_points.sql`
-- `src/features/proposals/types/index.ts` -- campo `category` em PainPoint
-- `src/pages/ProposalDetails.tsx` -- redesign completo da seção de dores
+- `src/pages/ProposalDetails.tsx` -- redesign completo da seção de cases com dialog do banco
 
