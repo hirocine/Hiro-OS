@@ -815,15 +815,21 @@ export type Database = {
         Row: {
           base_value: number | null
           briefing: string | null
+          cases: Json | null
           client_logo: string | null
           client_name: string
           client_responsible: string | null
           created_at: string
           created_by: string | null
+          diagnostico_dores: Json | null
           discount_pct: number | null
+          entregaveis: Json | null
           final_value: number | null
           id: string
+          list_price: number | null
           moodboard_images: Json | null
+          objetivo: string | null
+          payment_options: Json | null
           payment_terms: string | null
           project_name: string
           project_number: string | null
@@ -832,23 +838,34 @@ export type Database = {
           scope_production: Json | null
           slug: string
           status: string
+          testimonial_image: string | null
+          testimonial_name: string | null
+          testimonial_role: string | null
+          testimonial_text: string | null
           timeline: Json | null
           updated_at: string
           validity_date: string
           video_url: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           base_value?: number | null
           briefing?: string | null
+          cases?: Json | null
           client_logo?: string | null
           client_name: string
           client_responsible?: string | null
           created_at?: string
           created_by?: string | null
+          diagnostico_dores?: Json | null
           discount_pct?: number | null
+          entregaveis?: Json | null
           final_value?: number | null
           id?: string
+          list_price?: number | null
           moodboard_images?: Json | null
+          objetivo?: string | null
+          payment_options?: Json | null
           payment_terms?: string | null
           project_name: string
           project_number?: string | null
@@ -857,23 +874,34 @@ export type Database = {
           scope_production?: Json | null
           slug: string
           status?: string
+          testimonial_image?: string | null
+          testimonial_name?: string | null
+          testimonial_role?: string | null
+          testimonial_text?: string | null
           timeline?: Json | null
           updated_at?: string
           validity_date: string
           video_url?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           base_value?: number | null
           briefing?: string | null
+          cases?: Json | null
           client_logo?: string | null
           client_name?: string
           client_responsible?: string | null
           created_at?: string
           created_by?: string | null
+          diagnostico_dores?: Json | null
           discount_pct?: number | null
+          entregaveis?: Json | null
           final_value?: number | null
           id?: string
+          list_price?: number | null
           moodboard_images?: Json | null
+          objetivo?: string | null
+          payment_options?: Json | null
           payment_terms?: string | null
           project_name?: string
           project_number?: string | null
@@ -882,10 +910,15 @@ export type Database = {
           scope_production?: Json | null
           slug?: string
           status?: string
+          testimonial_image?: string | null
+          testimonial_name?: string | null
+          testimonial_role?: string | null
+          testimonial_text?: string | null
           timeline?: Json | null
           updated_at?: string
           validity_date?: string
           video_url?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
