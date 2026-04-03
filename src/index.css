@@ -527,12 +527,15 @@ html:has(.proposal-page) {
   scrollbar-gutter: auto !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  background-color: hsl(0 0% 0%) !important;
+  color-scheme: dark !important;
 }
 
 body:has(.proposal-page),
 #root:has(.proposal-page) {
   overflow-y: visible !important;
   overflow-x: hidden !important;
+  background-color: hsl(0 0% 0%) !important;
 }
 
 .proposal-page {
