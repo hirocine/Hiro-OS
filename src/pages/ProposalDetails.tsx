@@ -634,24 +634,21 @@ export default function ProposalDetails() {
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Ícone</Label>
+                  <Label className="text-xs">Emoji</Label>
                   <div className="flex flex-wrap gap-1">
-                    {DOR_ICON_OPTIONS.map(opt => {
-                      const Icon = opt.icon;
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
-                          className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
-                            newDorForm.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted border border-border'
-                          }`}
-                          title={opt.label}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      );
-                    })}
+                    {DOR_EMOJI_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
+                        className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
+                          newDorForm.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted border border-border'
+                        }`}
+                        title={opt.label}
+                      >
+                        {opt.value}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="space-y-1.5">
