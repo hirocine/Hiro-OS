@@ -147,6 +147,7 @@ export default function ProposalDetails() {
       let data: Record<string, any> = {};
       if (section === 'client') {
         data = {
+          project_number: clientForm.project_number.trim() || null,
           client_name: clientForm.client_name.trim(),
           project_name: clientForm.project_name.trim(),
           client_responsible: clientForm.client_responsible.trim() || null,
