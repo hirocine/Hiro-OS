@@ -264,6 +264,7 @@ export default function ProposalDetails() {
     return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
   };
 
+  if (isLoading) {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <div className="space-y-6">
