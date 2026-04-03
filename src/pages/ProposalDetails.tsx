@@ -17,9 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check,
-  Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart,
-  type LucideIcon
+  AlertTriangle, Briefcase, Package, Plus, X, Check
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
