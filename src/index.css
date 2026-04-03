@@ -499,7 +499,7 @@ html, body {
   src: url('/fonts/HelveticaNowDisplay-Light.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -507,7 +507,7 @@ html, body {
   src: url('/fonts/HelveticaNowDisplay-Medium.otf') format('opentype');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -515,7 +515,7 @@ html, body {
   src: url('/fonts/HelveticaNowDisplay-Bold.otf') format('opentype');
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -523,7 +523,7 @@ html, body {
   src: url('/fonts/HelveticaNowDisplay-XBold.otf') format('opentype');
   font-weight: 800;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Proposal public page — dark background, no gutter shift */
