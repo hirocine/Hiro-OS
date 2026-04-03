@@ -1,48 +1,28 @@
 
 
-# Página de detalhes da proposta com edição inline
+# Campos sempre editáveis na página de detalhes da proposta
 
-## Contexto
-Atualmente a edição de propostas usa um Dialog grande. O usuário quer editar diretamente na página, como acontece em Retiradas (`/retiradas/:id`).
+## O que muda
+Remover o padrão de click-to-edit (botão de lápis / SectionHeader com toggle). Todos os campos ficam permanentemente como inputs/textareas, com auto-save por seção ao sair do campo (onBlur) ou com botão "Salvar" discreto.
 
 ## Plano
 
-### 1. Criar rota `/orcamentos/:id`
-**Arquivo**: `src/App.tsx`
-- Adicionar `<Route path="orcamentos/:id" element={<ProposalDetails />} />`
+### 1. Remover lógica de `editingSection`
+- Remover estado `editingSection`, função `startEdit`, componente `SectionHeader` com botão de edição
+- Remover componente `InfoRow` (não será mais usado)
 
-### 2. Criar página `src/pages/ProposalDetails.tsx`
-Layout similar ao ProjectDetails:
-- **Breadcrumb**: `Orçamentos > Nome do Projeto`
-- **Botões no header**: "Ver Proposta" (abre pública), "Excluir" no menu "..."
-- **Card de cabeçalho**: Logo, nome do cliente, projeto, status (editável inline via Select), valor, datas
-- **Seções editáveis inline** (cada uma com ícone de edição que ativa modo de edição):
-  - **Cliente e Projeto**: nome, responsável, logo, WhatsApp, descrição
-  - **Investimento**: valor de tabela, desconto, condições de pagamento
-  - **Objetivo e Diagnóstico**: objetivo, dores
-  - **Depoimento**: nome, cargo, texto, imagem
-- Cada seção alterna entre modo visualização e modo edição com botões Salvar/Cancelar
-- Usa `useProposalDetails` (por ID) + `updateProposal` do `useProposals`
+### 2. Inicializar forms a partir dos dados da proposta
+- Usar `useEffect` para popular `clientForm`, `investForm`, `diagForm`, `testimonialForm` quando `proposal` carregar (em vez de popular apenas ao clicar em editar)
 
-### 3. Criar hook `useProposalDetailsById`
-**Arquivo**: `src/features/proposals/hooks/useProposalDetailsById.ts`
-- Query por ID em vez de slug (para uso interno)
+### 3. Cada seção mostra sempre os inputs
+- Remover todos os ternários `editingSection === 'x' ? (...inputs...) : (...InfoRow...)` 
+- Manter apenas o bloco de inputs, sempre visível
+- Cabeçalhos simplificados: ícone + título, sem botões de editar/cancelar/confirmar
 
-### 4. Atualizar navegação no ProposalCard
-**Arquivo**: `src/features/proposals/components/ProposalCard.tsx`
-- O botão "Editar" no dropdown navega para `/orcamentos/${proposal.id}` em vez de abrir o dialog
-- Remover `onEdit` prop
+### 4. Botão "Salvar" por seção
+- Cada Card terá um botão "Salvar" discreto no rodapé, que chama `saveSection`
+- O botão só fica habilitado quando há mudanças (comparar form atual vs dados da proposta)
 
-### 5. Limpar EditProposalDialog
-**Arquivo**: `src/pages/Proposals.tsx`
-- Remover estado `editingProposal` e o `EditProposalDialog`
-
-### 6. Remover `EditProposalDialog.tsx`
-- Arquivo não será mais necessário
-
-## Detalhes técnicos
-- Cada seção terá estado `editingSection` para controlar qual seção está em modo edição
-- Salvamento individual por seção (não precisa salvar tudo de uma vez)
-- Reutiliza `compressImage` para upload de logo
-- Padrão visual: Card com título da seção + botão ghost de edição no canto direito
+### Resultado
+A página fica como um formulário contínuo, pronto para edição imediata, sem necessidade de clique extra.
 
