@@ -33,22 +33,23 @@ import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/t
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
-const DOR_ICON_OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
-  { value: 'Star', label: 'Estrela', icon: Star },
-  { value: 'Clock', label: 'Relógio', icon: Clock },
-  { value: 'Layers', label: 'Camadas', icon: Layers },
-  { value: 'Target', label: 'Alvo', icon: Target },
-  { value: 'TrendingUp', label: 'Tendência', icon: TrendingUp },
-  { value: 'Zap', label: 'Raio', icon: Zap },
-  { value: 'Shield', label: 'Escudo', icon: Shield },
-  { value: 'Eye', label: 'Olho', icon: Eye },
-  { value: 'Heart', label: 'Coração', icon: Heart },
-  { value: 'AlertTriangle', label: 'Alerta', icon: AlertTriangle },
+const DOR_EMOJI_OPTIONS = [
+  { value: '⭐', label: 'Estrela' },
+  { value: '🎯', label: 'Alvo' },
+  { value: '⚡', label: 'Raio' },
+  { value: '🔥', label: 'Fogo' },
+  { value: '💡', label: 'Ideia' },
+  { value: '🚀', label: 'Foguete' },
+  { value: '⏰', label: 'Relógio' },
+  { value: '🛡️', label: 'Escudo' },
+  { value: '👁️', label: 'Olho' },
+  { value: '❤️', label: 'Coração' },
+  { value: '📊', label: 'Gráfico' },
+  { value: '🎬', label: 'Cinema' },
+  { value: '📱', label: 'Celular' },
+  { value: '🏆', label: 'Troféu' },
+  { value: '⚠️', label: 'Alerta' },
 ];
-
-const DOR_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
-  DOR_ICON_OPTIONS.map(o => [o.value, o.icon])
-);
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
