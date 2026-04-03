@@ -7,6 +7,7 @@ import { Plus, FileText, Clock, CheckCircle, Archive, ChevronDown, ChevronRight 
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
+import { ProposalsPageSkeleton } from '@/features/proposals/components/ProposalsSkeleton';
 
 export default function Proposals() {
   const navigate = useNavigate();
