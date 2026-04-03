@@ -294,7 +294,7 @@ export default function ProposalDetails() {
     doresForm.some(d => d.title === pp.title);
 
   const handleCreateNewDor = async () => {
-    if (!newDorForm.label.trim() || !newDorForm.title.trim()) return;
+    if (!newDorForm.title.trim()) return;
     try {
       const created = await createPainPoint.mutateAsync({
         label: newDorForm.label.trim(),
