@@ -328,39 +328,73 @@ export default function ProposalDetails() {
 
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
-  const updateDor = (i: number, field: keyof DiagnosticoDor, value: string) =>
-    setDoresForm(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d));
 
-  const selectPainPointFromBank = (ppId: string) => {
-    const pp = painPointsBank.find(p => p.id === ppId);
-    if (!pp) return;
-    const alreadyExists = doresForm.some(d => d.title === pp.title);
-    if (alreadyExists) {
-      setDoresForm(prev => prev.filter(d => d.title !== pp.title));
-    } else {
-      setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
-    }
+  const openDoresBank = () => {
+    setDoresBankSelection([...doresForm]);
+    setDoresBankSearch('');
+    setShowExclusiveDor(false);
+    setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
+    setShowDoresBank(true);
   };
 
-  const isPainPointSelected = (pp: { title: string }) =>
-    doresForm.some(d => d.title === pp.title);
+  const toggleBankDor = (pp: { label: string; title: string; description: string }) => {
+    setDoresBankSelection(prev => {
+      const exists = prev.some(d => d.title === pp.title);
+      if (exists) return prev.filter(d => d.title !== pp.title);
+      return [...prev, { label: pp.label, title: pp.title, desc: pp.description }];
+    });
+  };
 
-  const handleCreateNewDor = async () => {
-    if (!newDorForm.title.trim()) return;
-    try {
-      const created = await createPainPoint.mutateAsync({
-        label: newDorForm.label.trim(),
-        title: newDorForm.title.trim(),
-        description: newDorForm.description.trim(),
-      });
-      // Also add to current proposal
-      setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
-      setNewDorForm({ label: '⭐', title: '', description: '' });
-      setShowNewDorDialog(false);
-      toast.success('Dor criada e adicionada!');
-    } catch {
-      toast.error('Erro ao criar dor');
-    }
+  const isBankDorSelected = (title: string) => doresBankSelection.some(d => d.title === title);
+
+  const confirmDoresBank = () => {
+    setDoresForm(doresBankSelection);
+    setShowDoresBank(false);
+  };
+
+  const addExclusiveDor = () => {
+    if (!exclusiveDorForm.title.trim()) return;
+    setDoresBankSelection(prev => [...prev, { ...exclusiveDorForm }]);
+    setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
+    setShowExclusiveDor(false);
+  };
+
+  // Group bank by category
+  const painPointsByCategory = useMemo(() => {
+    const groups: Record<string, typeof painPointsBank> = {};
+    painPointsBank.forEach(pp => {
+      const cat = (pp as any).category || 'Sem categoria';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(pp);
+    });
+    return groups;
+  }, [painPointsBank]);
+
+  const categoryOrder = [
+    'Qualidade & padrão visual',
+    'Prazo & velocidade de entrega',
+    'Experiência com fornecedores anteriores',
+    'Diferencial criativo & estratégico',
+    'Performance & resultado de negócio',
+    'Orçamento & justificativa de investimento',
+    'Operacional & estrutura de produção',
+    'Escala & recorrência',
+  ];
+
+  const filteredCategories = useMemo(() => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return categoryOrder.filter(c => painPointsByCategory[c]?.length > 0);
+    return categoryOrder.filter(c => {
+      const pps = painPointsByCategory[c];
+      if (!pps) return false;
+      return pps.some(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
+    });
+  }, [doresBankSearch, painPointsByCategory]);
+
+  const filterPainPoints = (pps: typeof painPointsBank) => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return pps;
+    return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
   };
 
   // Cases helpers
