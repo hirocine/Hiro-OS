@@ -332,7 +332,17 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
-              <div className="space-y-1.5"><Label className="text-xs">Valor de Tabela (R$)</Label><Input type="number" value={investForm.list_price} onChange={e => setInvestForm(p => ({ ...p, list_price: Number(e.target.value) }))} /></div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Valor sem desconto (R$)</Label>
+                <Input
+                  value={investForm.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investForm.list_price) : ''}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/[^\d]/g, '');
+                    setInvestForm(p => ({ ...p, list_price: Number(raw) / 100 }));
+                  }}
+                  placeholder="R$ 0,00"
+                />
+              </div>
               <div className="space-y-1.5"><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               <div className="p-3 rounded-lg bg-muted/50">
                 <span className="text-xs text-muted-foreground">Valor Final: </span>
