@@ -1,35 +1,30 @@
 
 
-# Corrigir 3 problemas mobile na proposta pública
+# Adicionar upload de logo da empresa no Step 1 do Wizard
 
-## Problema 1 — Logos sumindo (ProposalClients)
-Os gradientes laterais que fazem o fade nas bordas do slider têm `w-[600px]` fixo. Em telas mobile (~375px), eles cobrem praticamente o slider inteiro, escondendo os logos.
+## Contexto
+O campo `client_logo` já existe na tabela `orcamentos` e no tipo `Proposal`, e o `ProposalCard` já exibe a logo quando disponível. Porém, o `ProposalFormData` não inclui esse campo e o wizard não tem o upload.
 
-**Arquivo**: `src/features/proposals/components/public/ProposalClients.tsx`
-- Trocar `w-[600px]` por `w-[100px] md:w-[600px]` nos dois divs de gradiente (linhas 39-40)
+## Plano
 
-## Problema 2 — Preço sobreposto (ProposalInvestimento)
-O valor final tem `-mt-8` que em mobile com card menor causa sobreposição com o badge de desconto.
+### 1. Adicionar `client_logo` ao tipo e default do form
+**Arquivo**: `src/features/proposals/types/index.ts`
+- Adicionar `client_logo: string;` ao `ProposalFormData`
+- Adicionar `client_logo: ''` ao `defaultFormData`
 
-**Arquivo**: `src/features/proposals/components/public/ProposalInvestimento.tsx`
-- Linha 70: trocar `-mt-8` por `md:-mt-8` para só aplicar o negative margin em desktop
+### 2. Adicionar upload de logo no Step 0 do Wizard
+**Arquivo**: `src/features/proposals/components/ProposalWizard.tsx`
+- Adicionar um campo de upload de logo no início do step "Cliente e Projeto"
+- Usar o padrão já existente no projeto (upload para Supabase Storage via `supabase.storage`)
+- Exibir preview circular da logo com fallback de ícone `Building2`
+- Permitir remover a logo
 
-## Problema 3 — Timeline sem linha vertical + vídeo sumiu (ProposalProximosPassos + ProposalPublicPage)
+### 3. Salvar `client_logo` no insert
+**Arquivo**: `src/features/proposals/hooks/useProposals.ts`
+- Adicionar `client_logo: form.client_logo.trim() || null` ao objeto de insert
 
-### 3a — Linha vertical no mobile
-As linhas conectoras têm `hidden md:block` e são horizontais. No mobile (flex-col), precisa de uma linha vertical entre os steps.
-
-**Arquivo**: `src/features/proposals/components/public/ProposalProximosPassos.tsx`
-- Adicionar uma linha vertical entre steps no mobile: `block md:hidden` com `w-px` e altura adequada, posicionada abaixo do círculo
-
-### 3b — Vídeo de fundo sumiu
-O iframe de background na seção Próximos Passos tem `hidden md:block` (linha 108 do ProposalPublicPage). Remover o `hidden md:block` e deixar visível em mobile também, ou pelo menos mostrar uma versão simplificada.
-
-**Arquivo**: `src/features/proposals/components/ProposalPublicPage.tsx`
-- Linha 108: trocar `hidden md:block` por `block` para o vídeo de fundo ficar visível em mobile também
-- Ajustar o gradiente lateral para mobile: em telas pequenas usar gradiente mais opaco para garantir legibilidade do texto
-
-## Resumo
-- 3 arquivos editados
-- Todas as mudanças usam prefixos responsivos (`md:`) para não impactar o desktop
+## Detalhes técnicos
+- O upload será feito para o bucket existente (provavelmente `orcamento-assets` ou similar — verificar buckets disponíveis)
+- A logo aparecerá como um Avatar clicável no topo do Step 0, antes dos campos de texto
+- Layout: avatar grande (80x80) com botão de upload sobreposto, similar ao padrão de avatar upload já usado em outras partes do app
 
