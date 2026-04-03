@@ -622,11 +622,28 @@ export default function ProposalDetails() {
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Label</Label>
-                  <Input value={newDorForm.label} onChange={e => setNewDorForm(p => ({ ...p, label: e.target.value }))} placeholder="Ex: Dor 01" />
+                  <Label className="text-xs">Ícone</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {DOR_ICON_OPTIONS.map(opt => {
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
+                          className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
+                            newDorForm.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted border border-border'
+                          }`}
+                          title={opt.label}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Título</Label>
+                  <Label className="text-xs">Dor</Label>
                   <Input value={newDorForm.title} onChange={e => setNewDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
                 </div>
                 <div className="space-y-1.5">
@@ -636,7 +653,7 @@ export default function ProposalDetails() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowNewDorDialog(false)}>Cancelar</Button>
-                <Button onClick={handleCreateNewDor} disabled={!newDorForm.label.trim() || !newDorForm.title.trim() || createPainPoint.isPending}>
+                <Button onClick={handleCreateNewDor} disabled={!newDorForm.title.trim() || createPainPoint.isPending}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
                 </Button>
               </DialogFooter>
