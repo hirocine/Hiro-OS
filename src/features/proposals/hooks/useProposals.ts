@@ -84,6 +84,12 @@ export function useProposals() {
       const scopePost = form.scope_post_production.filter(s => s.item.trim());
       const timeline = form.timeline.filter(t => t.week.trim() || t.description.trim());
 
+      // Filter V2 data
+      const diagnosticoDores = form.diagnostico_dores.filter(d => d.title.trim() || d.desc.trim());
+      const entregaveis = form.entregaveis.filter((e: any) => e.output?.trim());
+      const cases = form.cases.filter(c => c.vimeoId?.trim() || c.titulo?.trim());
+      const paymentOptions = form.payment_options.filter(p => p.titulo.trim());
+
       const { data, error } = await supabase
         .from('orcamentos')
         .insert({
@@ -107,6 +113,18 @@ export function useProposals() {
           payment_terms: form.payment_terms.trim(),
           created_by: userData?.user?.id || null,
           status: 'draft',
+          // V2 fields
+          objetivo: form.objetivo.trim() || null,
+          diagnostico_dores: diagnosticoDores as any,
+          list_price: form.list_price || null,
+          payment_options: paymentOptions as any,
+          testimonial_name: form.testimonial_name.trim() || null,
+          testimonial_role: form.testimonial_role.trim() || null,
+          testimonial_text: form.testimonial_text.trim() || null,
+          testimonial_image: form.testimonial_image.trim() || null,
+          entregaveis: entregaveis as any,
+          cases: cases as any,
+          whatsapp_number: form.whatsapp_number.trim() || null,
         } as any)
         .select()
         .single();
@@ -146,5 +164,9 @@ function mapProposal(row: any): Proposal {
     scope_production: Array.isArray(row.scope_production) ? row.scope_production : [],
     scope_post_production: Array.isArray(row.scope_post_production) ? row.scope_post_production : [],
     timeline: Array.isArray(row.timeline) ? row.timeline : [],
+    diagnostico_dores: Array.isArray(row.diagnostico_dores) ? row.diagnostico_dores : [],
+    payment_options: Array.isArray(row.payment_options) ? row.payment_options : [],
+    entregaveis: Array.isArray(row.entregaveis) ? row.entregaveis : [],
+    cases: Array.isArray(row.cases) ? row.cases : [],
   };
 }
