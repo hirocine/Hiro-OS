@@ -35,6 +35,22 @@ interface Props {
 export function ProposalEntregaveis({ entregaveis }: Props) {
   if (!entregaveis || entregaveis.length === 0) return null
 
+  // Group all "Serviços" blocks into one, merging their cards
+  const merged: any[] = []
+  let servicosBlock: any | null = null
+  for (const bloco of entregaveis) {
+    if (bloco.label === 'Serviços' && bloco.cards) {
+      if (!servicosBlock) {
+        servicosBlock = { ...bloco, cards: [...bloco.cards] }
+        merged.push(servicosBlock)
+      } else {
+        servicosBlock.cards.push(...bloco.cards)
+      }
+    } else {
+      merged.push(bloco)
+    }
+  }
+
   return (
     <section className='py-14 md:py-20 proposal-content-px'>
       <p className='text-[11px] uppercase tracking-[4px] text-[#4CFF5C] font-bold mb-5'>
@@ -45,7 +61,7 @@ export function ProposalEntregaveis({ entregaveis }: Props) {
       </h2>
 
       <div className='flex flex-col gap-16'>
-        {entregaveis.map((bloco: any, bIdx: number) => (
+        {merged.map((bloco: any, bIdx: number) => (
           <div key={bIdx}>
             <p className='text-[10px] uppercase tracking-[3px] text-[#4CFF5C] mb-2'>
               {bloco.label}
