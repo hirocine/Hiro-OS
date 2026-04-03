@@ -19,6 +19,10 @@ export default function Proposals() {
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
 
+  if (isLoading) {
+    return <ProposalsPageSkeleton />;
+  }
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
@@ -30,10 +34,6 @@ export default function Proposals() {
           </Button>
         }
       />
-
-      {isLoading ? (
-        <ProposalsPageSkeleton />
-      ) : (
         <div className="space-y-6">
           {/* Active Proposals */}
           <Card>
@@ -136,7 +136,6 @@ export default function Proposals() {
             </Card>
           </Collapsible>
         </div>
-      )}
     </ResponsiveContainer>
   );
 }
