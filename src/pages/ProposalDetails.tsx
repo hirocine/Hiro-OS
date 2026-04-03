@@ -270,7 +270,7 @@ export default function ProposalDetails() {
                 <div className="flex items-baseline gap-2">
                   <h1 className="text-xl font-semibold leading-tight">{proposal.project_name}</h1>
                   {proposal.project_number && (
-                    <span className="text-xs text-muted-foreground">Nº {proposal.project_number}</span>
+                    <span className="text-xl text-muted-foreground">Nº {proposal.project_number}</span>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
