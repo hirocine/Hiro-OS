@@ -93,8 +93,6 @@ export const defaultFormData: ProposalFormData = {
   client_name: '',
   project_name: '',
   client_responsible: '',
-  client_logo_file: null,
-  client_logo_preview: '',
   validity_date: undefined,
   whatsapp_number: '',
   objetivo: '',

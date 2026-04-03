@@ -168,47 +168,24 @@ export function ProposalWizard() {
                 <p className="text-sm text-muted-foreground">Informações que aparecem no topo da proposta.</p>
               </div>
 
-              {/* Logo + campos principais lado a lado */}
-              <div className="flex items-start gap-5">
-                <div className="shrink-0 space-y-2">
-                  <div className="relative group">
-                    <Avatar className="h-20 w-20 rounded-xl">
-                      {form.client_logo_preview ? <AvatarImage src={form.client_logo_preview} alt="Logo" className="object-contain" /> : null}
-                      <AvatarFallback className="bg-muted rounded-xl"><Building2 className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                    </Avatar>
-                    {form.client_logo_preview && (
-                      <button onClick={removeLogo} className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                  <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" id="logo-upload" />
-                  <label htmlFor="logo-upload">
-                    <Button variant="outline" size="sm" asChild className="w-full">
-                      <span className="cursor-pointer text-xs"><Upload className="h-3 w-3 mr-1" />{form.client_logo_preview ? 'Trocar' : 'Logo'}</span>
-                    </Button>
-                  </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Nome do Cliente *</Label>
+                  <Input value={form.client_name} onChange={e => updateField('client_name', e.target.value)} placeholder="Ex: Burger King" />
                 </div>
-
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Nome do Cliente *</Label>
-                    <Input value={form.client_name} onChange={e => updateField('client_name', e.target.value)} placeholder="Ex: Burger King" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Nome do Projeto *</Label>
-                    <Input value={form.project_name} onChange={e => updateField('project_name', e.target.value)} placeholder="Ex: Campanha Verão 2026" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Responsável (Cliente)</Label>
-                    <Input value={form.client_responsible} onChange={e => updateField('client_responsible', e.target.value)} placeholder="Nome do contato" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">WhatsApp</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                      <Input value={form.whatsapp_number} onChange={e => updateField('whatsapp_number', e.target.value)} placeholder="5511999999999" className="pl-9" />
-                    </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Nome do Projeto *</Label>
+                  <Input value={form.project_name} onChange={e => updateField('project_name', e.target.value)} placeholder="Ex: Campanha Verão 2026" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Responsável (Cliente)</Label>
+                  <Input value={form.client_responsible} onChange={e => updateField('client_responsible', e.target.value)} placeholder="Nome do contato" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">WhatsApp</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input value={form.whatsapp_number} onChange={e => updateField('whatsapp_number', e.target.value)} placeholder="5511999999999" className="pl-9" />
                   </div>
                 </div>
               </div>

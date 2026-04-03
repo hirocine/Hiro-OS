@@ -77,7 +77,7 @@ export function useProposals() {
           client_name: form.client_name.trim(),
           project_name: form.project_name.trim(),
           client_responsible: form.client_responsible.trim() || null,
-          client_logo: clientLogoUrl,
+          
           validity_date: form.validity_date?.toISOString().split('T')[0],
           base_value: baseValue,
           discount_pct: discountPct,
