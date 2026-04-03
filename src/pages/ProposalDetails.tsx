@@ -540,7 +540,7 @@ export default function ProposalDetails() {
                         }`}
                       >
                         {isPainPointSelected(pp) && <Check className="h-3 w-3" />}
-                        {pp.label}: {pp.title}
+                        {pp.title}
                       </button>
                     ))}
                   </div>
