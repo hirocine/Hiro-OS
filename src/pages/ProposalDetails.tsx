@@ -26,9 +26,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposals } from '@/features/proposals/hooks/useProposals';
-import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory } from '@/features/proposals/types';
-import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/types';
+import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
+import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
+import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const DOR_EMOJI_OPTIONS = [
@@ -122,6 +123,7 @@ export default function ProposalDetails() {
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
+  const { data: casesBank = [], createCase } = useProposalCases();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showDoresBank, setShowDoresBank] = useState(false);
@@ -129,6 +131,11 @@ export default function ProposalDetails() {
   const [doresBankSelection, setDoresBankSelection] = useState<DiagnosticoDor[]>([]);
   const [showExclusiveDor, setShowExclusiveDor] = useState(false);
   const [exclusiveDorForm, setExclusiveDorForm] = useState({ label: '⭐', title: '', desc: '' });
+  const [showCasesBank, setShowCasesBank] = useState(false);
+  const [casesBankSearch, setCasesBankSearch] = useState('');
+  const [casesBankSelection, setCasesBankSelection] = useState<CaseItem[]>([]);
+  const [showNewCase, setShowNewCase] = useState(false);
+  const [newCaseForm, setNewCaseForm] = useState({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [] as string[], destaque: false });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -264,6 +271,16 @@ export default function ProposalDetails() {
     return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
   };
 
+  const filteredCasesBank = useMemo(() => {
+    const search = casesBankSearch.toLowerCase();
+    if (!search) return casesBank;
+    return casesBank.filter(c =>
+      c.client_name.toLowerCase().includes(search) ||
+      c.campaign_name.toLowerCase().includes(search) ||
+      (c.tags || []).some(t => t.toLowerCase().includes(search))
+    );
+  }, [casesBankSearch, casesBank]);
+
   if (isLoading) {
     return (
       <ResponsiveContainer maxWidth="7xl">
@@ -398,11 +415,54 @@ export default function ProposalDetails() {
   };
 
 
-  // Cases helpers
-  const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
+  // Cases bank helpers
+  const openCasesBank = () => {
+    setCasesBankSelection([...casesForm]);
+    setCasesBankSearch('');
+    setShowNewCase(false);
+    setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+    setShowCasesBank(true);
+  };
+
+  const toggleBankCase = (bc: ProposalCase) => {
+    setCasesBankSelection(prev => {
+      const exists = prev.some(c => c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name);
+      if (exists) return prev.filter(c => !(c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name));
+      return [...prev, { tipo: bc.tipo, titulo: bc.campaign_name, descricao: bc.client_name, vimeoId: bc.vimeo_id, vimeoHash: bc.vimeo_hash, destaque: bc.destaque }];
+    });
+  };
+
+  const isBankCaseSelected = (bc: ProposalCase) => casesBankSelection.some(c => c.vimeoId === bc.vimeo_id && c.titulo === bc.campaign_name);
+
+  const confirmCasesBank = () => {
+    setCasesForm(casesBankSelection);
+    setShowCasesBank(false);
+  };
+
+  const handleCreateCase = async () => {
+    if (!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim()) return;
+    try {
+      const created = await createCase.mutateAsync(newCaseForm);
+      // Also add to selection
+      setCasesBankSelection(prev => [...prev, {
+        tipo: created.tipo,
+        titulo: created.campaign_name,
+        descricao: created.client_name,
+        vimeoId: created.vimeo_id,
+        vimeoHash: created.vimeo_hash,
+        destaque: created.destaque,
+      }]);
+      setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+      setShowNewCase(false);
+      toast.success('Case criado e adicionado!');
+    } catch {
+      toast.error('Erro ao criar case');
+    }
+  };
+
   const removeCase = (i: number) => setCasesForm(prev => prev.filter((_, idx) => idx !== i));
-  const updateCase = (i: number, field: keyof CaseItem, value: any) =>
-    setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: value } : c));
+  const toggleCaseDestaque = (i: number) => setCasesForm(prev => prev.map((c, idx) => idx === i ? { ...c, destaque: !c.destaque } : c));
+
 
   // Entregaveis helpers
   const addEntregavel = () => setEntregaveisForm(prev => ({
@@ -783,56 +843,62 @@ export default function ProposalDetails() {
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-base">Cases / Portfólio</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={addCase}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+                <Button variant="outline" size="sm" onClick={openCasesBank}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Cases
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-2 space-y-4">
-              {casesForm.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhum case adicionado.</p>
-              )}
-              {casesForm.map((c, i) => (
-                <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
-                  <button onClick={() => removeCase(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
-                    <X className="h-4 w-4" />
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Tipo</Label>
-                      <Select value={c.tipo || 'video'} onValueChange={v => updateCase(i, 'tipo', v)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="video">Vídeo</SelectItem>
-                          <SelectItem value="foto">Foto</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="md:col-span-2 space-y-1.5">
-                      <Label className="text-xs">Título</Label>
-                      <Input value={c.titulo || ''} onChange={e => updateCase(i, 'titulo', e.target.value)} placeholder="Nome do case" />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Descrição</Label>
-                    <Input value={c.descricao || ''} onChange={e => updateCase(i, 'descricao', e.target.value)} placeholder="Descrição breve" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Vimeo ID</Label>
-                      <Input value={c.vimeoId || ''} onChange={e => updateCase(i, 'vimeoId', e.target.value)} placeholder="123456789" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Vimeo Hash</Label>
-                      <Input value={c.vimeoHash || ''} onChange={e => updateCase(i, 'vimeoHash', e.target.value)} placeholder="abc123def" />
-                    </div>
-                    <div className="flex items-center gap-2 pt-5">
-                      <Switch checked={!!c.destaque} onCheckedChange={v => updateCase(i, 'destaque', v)} />
-                      <Label className="text-xs">Destaque</Label>
-                    </div>
-                  </div>
+            <CardContent className="pt-2">
+              {casesForm.length === 0 ? (
+                <div className="text-center py-8">
+                  <Briefcase className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhum case selecionado.</p>
+                  <Button variant="link" size="sm" onClick={openCasesBank} className="mt-1">
+                    Selecionar do banco de cases
+                  </Button>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {casesForm.map((c, i) => (
+                    <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
+                      {c.vimeoId && (
+                        <div className="aspect-video bg-muted">
+                          <img
+                            src={`https://vumbnail.com/${c.vimeoId}.jpg`}
+                            alt={c.titulo || ''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
+                      <div className="p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            {c.tipo && <Badge variant="secondary" className="text-[10px] mb-1">{c.tipo}</Badge>}
+                            <p className="text-sm font-medium leading-tight">{c.titulo || 'Sem título'}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{c.descricao}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => toggleCaseDestaque(i)}
+                              className={`p-1 rounded transition-colors ${c.destaque ? 'text-yellow-500' : 'text-muted-foreground/40 hover:text-yellow-500'}`}
+                              title="Destaque"
+                            >
+                              ⭐
+                            </button>
+                            <button
+                              onClick={() => removeCase(i)}
+                              className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
             {casesDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
@@ -842,6 +908,145 @@ export default function ProposalDetails() {
               </CardFooter>
             )}
           </Card>
+
+          {/* Cases Bank Dialog */}
+          <Dialog open={showCasesBank} onOpenChange={setShowCasesBank}>
+            <DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle>Banco de Cases</DialogTitle>
+                <div className="pt-3">
+                  <Input
+                    value={casesBankSearch}
+                    onChange={e => setCasesBankSearch(e.target.value)}
+                    placeholder="Buscar cases..."
+                    className="h-9"
+                  />
+                </div>
+              </DialogHeader>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+                {filteredCasesBank.length === 0 && !showNewCase && (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum case encontrado.</p>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {filteredCasesBank.map(bc => {
+                    const selected = isBankCaseSelected(bc);
+                    return (
+                      <button
+                        key={bc.id}
+                        type="button"
+                        onClick={() => toggleBankCase(bc)}
+                        className={`text-left rounded-lg border overflow-hidden transition-all ${
+                          selected
+                            ? 'border-primary ring-1 ring-primary/30'
+                            : 'border-border hover:border-primary/30'
+                        }`}
+                      >
+                        {bc.vimeo_id && (
+                          <div className="aspect-video bg-muted relative">
+                            <img
+                              src={`https://vumbnail.com/${bc.vimeo_id}.jpg`}
+                              alt={bc.campaign_name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                            {selected && (
+                              <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
+                                <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            {(bc.tags || []).map(tag => (
+                              <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
+                            ))}
+                            {bc.destaque && <span className="text-xs">⭐</span>}
+                          </div>
+                          <p className="text-sm font-medium leading-tight">{bc.campaign_name}</p>
+                          <p className="text-xs text-muted-foreground">{bc.client_name}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Create new case section */}
+                <div className="border-t border-border pt-4">
+                  {!showNewCase ? (
+                    <Button variant="ghost" size="sm" onClick={() => setShowNewCase(true)} className="w-full">
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Criar novo case (salva no banco)
+                    </Button>
+                  ) : (
+                    <div className="space-y-3 p-4 border border-dashed border-border rounded-lg">
+                      <h4 className="text-sm font-medium">Novo case</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Cliente</Label>
+                          <Input value={newCaseForm.client_name} onChange={e => setNewCaseForm(p => ({ ...p, client_name: e.target.value }))} placeholder="Nome do cliente" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Campanha</Label>
+                          <Input value={newCaseForm.campaign_name} onChange={e => setNewCaseForm(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Nome da campanha" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Vimeo ID</Label>
+                          <Input value={newCaseForm.vimeo_id} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_id: e.target.value }))} placeholder="123456789" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Vimeo Hash</Label>
+                          <Input value={newCaseForm.vimeo_hash} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_hash: e.target.value }))} placeholder="abc123def" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Tags</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {CASE_TAG_OPTIONS.map(tag => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => setNewCaseForm(p => ({
+                                ...p,
+                                tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
+                              }))}
+                              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                                newCaseForm.tags.includes(tag)
+                                  ? 'bg-primary/10 border-primary text-primary'
+                                  : 'border-border hover:border-primary/30'
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={newCaseForm.destaque} onCheckedChange={v => setNewCaseForm(p => ({ ...p, destaque: v }))} />
+                        <Label className="text-xs">Destaque</Label>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleCreateCase} disabled={!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim() || createCase.isPending}>
+                          <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowNewCase(false)}>Cancelar</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {casesBankSelection.length} case{casesBankSelection.length !== 1 ? 's' : ''} selecionado{casesBankSelection.length !== 1 ? 's' : ''}
+                </span>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowCasesBank(false)}>Cancelar</Button>
+                  <Button onClick={confirmCasesBank}>Confirmar</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Entregas e Serviços Section */}
           <Card className="lg:col-span-2">
