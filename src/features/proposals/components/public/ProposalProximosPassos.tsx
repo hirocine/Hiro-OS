@@ -65,7 +65,7 @@ export function ProposalProximosPassos({ validityDate }: Props) {
           {steps.map((step, i) => (
             <div
               key={step.num}
-              className={`flex flex-row items-center md:flex-col md:items-center relative md:w-[140px] ${i < steps.length - 1 ? 'md:mr-[48px] mb-0' : 'mb-0'}`}
+              className={`flex flex-col md:items-center relative md:w-[140px] ${i < steps.length - 1 ? 'md:mr-[48px]' : ''}`}
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : 'translateY(20px)',
@@ -84,7 +84,8 @@ export function ProposalProximosPassos({ validityDate }: Props) {
                   }}
                 />
               )}
-              <div className='flex flex-col items-center md:contents'>
+              {/* Mobile: circle + title side by side, centered */}
+              <div className='flex flex-row items-center gap-4 md:flex-col md:gap-0'>
                 <div
                   className={`w-[50px] h-[50px] min-w-[50px] rounded-full flex items-center justify-center font-bold text-lg md:mb-4 relative z-10 border-2 ${
                     step.status === 'done'
@@ -103,18 +104,18 @@ export function ProposalProximosPassos({ validityDate }: Props) {
                     step.num
                   )}
                 </div>
-                {/* Mobile vertical line BETWEEN steps (below circle, above next circle) */}
-                {i < steps.length - 1 && (
-                  <div
-                    className={`block md:hidden w-px h-[24px] ${
-                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
-                    }`}
-                  />
-                )}
+                <h4 className={`text-sm font-bold ${
+                  step.status === 'done' ? 'text-[#4CFF5C]' : step.status === 'current' ? 'text-[#f0f0f0]' : 'text-gray-500'
+                }`}>{step.title}</h4>
               </div>
-              <h4 className={`ml-4 md:ml-0 text-sm font-bold ${
-                step.status === 'done' ? 'text-[#4CFF5C]' : step.status === 'current' ? 'text-[#f0f0f0]' : 'text-gray-500'
-              }`}>{step.title}</h4>
+              {/* Mobile vertical line BETWEEN steps */}
+              {i < steps.length - 1 && (
+                <div
+                  className={`block md:hidden w-px h-[24px] ml-[25px] ${
+                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                  }`}
+                />
+              )}
             </div>
           ))}
         </div>
