@@ -279,6 +279,17 @@ export function ProposalWizard() {
                   <p className="text-xs text-muted-foreground">Aparece no countdown da proposta</p>
                 </div>
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Descrição da Empresa</Label>
+                <Textarea
+                  value={form.company_description}
+                  onChange={e => updateField('company_description', e.target.value)}
+                  rows={3}
+                  placeholder="Ex: Produtora audiovisual especializada em criar narrativas visuais..."
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground">Aparece como subtítulo no hero da proposta</p>
+              </div>
             </div>
           )}
 

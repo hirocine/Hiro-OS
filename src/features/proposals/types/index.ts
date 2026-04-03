@@ -34,6 +34,7 @@ export interface Proposal {
   entregaveis: any[];
   cases: CaseItem[];
   whatsapp_number: string | null;
+  company_description: string | null;
 }
 
 export interface ScopeItem {
@@ -127,6 +128,7 @@ export interface ProposalFormData {
   project_name: string;
   client_responsible: string;
   whatsapp_number: string;
+  company_description: string;
   sent_date: Date;
   validity_date: Date | undefined;
   objetivo: string;
@@ -229,6 +231,7 @@ export const defaultFormData: ProposalFormData = {
   project_name: '',
   client_responsible: '',
   whatsapp_number: '',
+  company_description: 'Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.',
   sent_date: new Date(),
   validity_date: undefined,
   objetivo: DIAGNOSTICO_TEMPLATE,

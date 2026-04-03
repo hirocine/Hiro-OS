@@ -64,6 +64,7 @@ export function ProposalPublicPage() {
         validityDate={proposal.validity_date}
         createdAt={proposal.created_at}
         clientResponsible={proposal.client_responsible}
+        companyDescription={proposal.company_description}
       />
 
       <ProposalClients />

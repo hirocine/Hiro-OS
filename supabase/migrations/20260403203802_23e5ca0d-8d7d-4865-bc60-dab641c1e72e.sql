@@ -1,0 +1,1 @@
+ALTER TABLE public.orcamentos ADD COLUMN company_description text;
