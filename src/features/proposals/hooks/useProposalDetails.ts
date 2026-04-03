@@ -20,6 +20,18 @@ export function useProposalDetails(slug: string | undefined) {
         scope_production: Array.isArray(data.scope_production) ? data.scope_production : [],
         scope_post_production: Array.isArray(data.scope_post_production) ? data.scope_post_production : [],
         timeline: Array.isArray(data.timeline) ? data.timeline : [],
+        // V2 fields
+        objetivo: (data as any).objetivo || null,
+        diagnostico_dores: Array.isArray((data as any).diagnostico_dores) ? (data as any).diagnostico_dores : [],
+        list_price: (data as any).list_price || null,
+        payment_options: Array.isArray((data as any).payment_options) ? (data as any).payment_options : [],
+        testimonial_name: (data as any).testimonial_name || null,
+        testimonial_role: (data as any).testimonial_role || null,
+        testimonial_text: (data as any).testimonial_text || null,
+        testimonial_image: (data as any).testimonial_image || null,
+        entregaveis: Array.isArray((data as any).entregaveis) ? (data as any).entregaveis : [],
+        cases: Array.isArray((data as any).cases) ? (data as any).cases : [],
+        whatsapp_number: (data as any).whatsapp_number || null,
       } as unknown as Proposal;
     },
     enabled: !!slug,
