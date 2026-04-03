@@ -91,42 +91,40 @@ export function useProposals() {
         });
       }
 
-      // Block 2-4: Incluso categories → service cards
+      // Block 2: All incluso categories grouped into one "Serviços" block
+      const serviceCards: any[] = [];
       for (const cat of form.incluso_categories) {
         if (cat.subcategorias) {
-          // Category with subcategories (e.g. Gravação)
-          entregaveisJsonb.push({
-            label: 'Serviços',
+          serviceCards.push({
+            icone: cat.icone,
             titulo: cat.categoria,
-            cards: [{
-              icone: cat.icone,
-              titulo: cat.categoria,
-              subcategorias: cat.subcategorias.map(sub => ({
-                nome: sub.nome,
-                itens: sub.itens.map(item => ({
-                  nome: item.nome,
-                  ativo: item.ativo,
-                  quantidade: item.quantidade || undefined,
-                })),
-              })),
-            }],
-          });
-        } else if (cat.itens) {
-          // Simple category (e.g. Pré-produção, Pós-produção)
-          entregaveisJsonb.push({
-            label: 'Serviços',
-            titulo: cat.categoria,
-            cards: [{
-              icone: cat.icone,
-              titulo: cat.categoria,
-              itens: cat.itens.map(item => ({
+            subcategorias: cat.subcategorias.map(sub => ({
+              nome: sub.nome,
+              itens: sub.itens.map(item => ({
                 nome: item.nome,
                 ativo: item.ativo,
                 quantidade: item.quantidade || undefined,
               })),
-            }],
+            })),
+          });
+        } else if (cat.itens) {
+          serviceCards.push({
+            icone: cat.icone,
+            titulo: cat.categoria,
+            itens: cat.itens.map(item => ({
+              nome: item.nome,
+              ativo: item.ativo,
+              quantidade: item.quantidade || undefined,
+            })),
           });
         }
+      }
+      if (serviceCards.length > 0) {
+        entregaveisJsonb.push({
+          label: 'Serviços',
+          titulo: 'O que está incluso no processo',
+          cards: serviceCards,
+        });
       }
 
       // Build payment options (hardcoded)
