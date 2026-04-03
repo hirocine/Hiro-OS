@@ -38,18 +38,6 @@ export function ProposalWizard() {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      updateField('client_logo_file', file);
-      updateField('client_logo_preview', URL.createObjectURL(file));
-    }
-  };
-
-  const removeLogo = () => {
-    updateField('client_logo_file', null);
-    updateField('client_logo_preview', '');
-  };
 
   const handleSubmit = async () => {
     const result = await createProposal.mutateAsync(form);
