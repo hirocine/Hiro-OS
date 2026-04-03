@@ -1134,41 +1134,43 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Serviços Inclusos</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-2 space-y-6">
-              {entregaveisForm.incluso_categories.map((cat, catIdx) => (
-                <div key={catIdx} className="space-y-3">
-                  <h4 className="text-sm font-medium">{cat.categoria}</h4>
-                  {cat.itens && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {cat.itens.map((item, itemIdx) => (
-                        <label key={itemIdx} className="flex items-center gap-2 text-sm cursor-pointer">
-                          <Checkbox
-                            checked={item.ativo}
-                            onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)}
-                          />
-                          <span>{item.nome}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                  {cat.subcategorias?.map((sub, subIdx) => (
-                    <div key={subIdx} className="ml-2 space-y-2">
-                      <h5 className="text-xs font-medium text-muted-foreground">{sub.nome}</h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {sub.itens.map((item, itemIdx) => (
+            <CardContent className="pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {entregaveisForm.incluso_categories.map((cat, catIdx) => (
+                  <div key={catIdx} className="space-y-3">
+                    <h4 className="text-sm font-semibold">{cat.categoria}</h4>
+                    {cat.itens && (
+                      <div className="space-y-1.5">
+                        {cat.itens.map((item, itemIdx) => (
                           <label key={itemIdx} className="flex items-center gap-2 text-sm cursor-pointer">
                             <Checkbox
                               checked={item.ativo}
-                              onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx, subIdx)}
+                              onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)}
                             />
                             <span>{item.nome}</span>
                           </label>
                         ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+                    )}
+                    {cat.subcategorias?.map((sub, subIdx) => (
+                      <div key={subIdx} className="space-y-1.5">
+                        <h5 className="text-xs font-medium text-muted-foreground">{sub.nome}</h5>
+                        <div className="space-y-1.5">
+                          {sub.itens.map((item, itemIdx) => (
+                            <label key={itemIdx} className="flex items-center gap-2 text-sm cursor-pointer">
+                              <Checkbox
+                                checked={item.ativo}
+                                onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx, subIdx)}
+                              />
+                              <span>{item.nome}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </CardContent>
             {entregaveisDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
