@@ -56,7 +56,17 @@ export function ProposalWizard() {
 
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
-  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', destaque: false });
+  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+
+  const parseVimeoUrl = (url: string): { id: string; hash: string } => {
+    // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
+    const match = url.match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
+    const hashMatch = url.match(/[?&]h=([a-zA-Z0-9]+)/);
+    return {
+      id: match?.[1] || '',
+      hash: hashMatch?.[1] || match?.[2] || '',
+    };
+  };
 
   const updateField = <K extends keyof ProposalFormData>(key: K, value: ProposalFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -433,15 +443,12 @@ export function ProposalWizard() {
                       <Label className="text-xs text-muted-foreground">Nome da Campanha</Label>
                       <Input value={newCase.campaign_name} onChange={e => setNewCase(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Whopper Day 2026" className="h-9" />
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Vimeo ID</Label>
-                      <Input value={newCase.vimeo_id} onChange={e => setNewCase(p => ({ ...p, vimeo_id: e.target.value }))} placeholder="1234567890" className="h-9" />
+                    <div className="space-y-1 col-span-2">
+                      <Label className="text-xs text-muted-foreground">Link do Vimeo</Label>
+                      <Input value={newCase.vimeo_url} onChange={e => setNewCase(p => ({ ...p, vimeo_url: e.target.value }))} placeholder="https://vimeo.com/1234567890/abc123def" className="h-9" />
+                      <p className="text-[10px] text-muted-foreground">Cole o link completo do vídeo no Vimeo</p>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Vimeo Hash</Label>
-                      <Input value={newCase.vimeo_hash} onChange={e => setNewCase(p => ({ ...p, vimeo_hash: e.target.value }))} placeholder="abc123def" className="h-9" />
-                    </div>
-                    <div className="flex items-center gap-2 pt-5">
+                    <div className="flex items-center gap-2 pt-2">
                       <Switch checked={newCase.destaque} onCheckedChange={v => setNewCase(p => ({ ...p, destaque: v }))} />
                       <Label className="text-xs">Destaque (showreel)</Label>
                     </div>
@@ -450,13 +457,14 @@ export function ProposalWizard() {
                     <Button
                       size="sm"
                       onClick={async () => {
-                        if (newCase.vimeo_id.trim()) {
-                          await createCase.mutateAsync(newCase);
-                          setNewCase({ tipo: '', client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', destaque: false });
+                        const { id: vimeoId, hash: vimeoHash } = parseVimeoUrl(newCase.vimeo_url);
+                        if (vimeoId.trim()) {
+                          await createCase.mutateAsync({ tipo: newCase.tipo, client_name: newCase.client_name, campaign_name: newCase.campaign_name, vimeo_id: vimeoId, vimeo_hash: vimeoHash, destaque: newCase.destaque });
+                          setNewCase({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
                           setShowNewCase(false);
                         }
                       }}
-                      disabled={!newCase.vimeo_id.trim() || createCase.isPending}
+                      disabled={!newCase.vimeo_url.trim() || createCase.isPending}
                     >
                       <Check className="h-4 w-4 mr-1" /> Salvar no Banco
                     </Button>
