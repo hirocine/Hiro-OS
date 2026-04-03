@@ -6,7 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Plus, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { useProposals, ProposalCard, EditProposalDialog } from '@/features/proposals';
+import { useProposals, ProposalCard } from '@/features/proposals';
 import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
@@ -14,7 +14,6 @@ export default function Proposals() {
   const { data: proposals, deleteProposal } = useProposals();
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [editingProposal, setEditingProposal] = useState<Proposal | null>(null);
 
   const activeProposals = (proposals || []).filter(p => p.status === 'draft' || p.status === 'sent');
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
@@ -27,7 +26,6 @@ export default function Proposals() {
           key={p.id}
           proposal={p}
           onDelete={(id) => deleteProposal.mutate(id)}
-          onEdit={(proposal) => setEditingProposal(proposal)}
         />
       ))}
     </div>
@@ -45,7 +43,6 @@ export default function Proposals() {
         }
       />
       <div className="space-y-6">
-        {/* Active Proposals */}
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
@@ -64,7 +61,6 @@ export default function Proposals() {
           </CardContent>
         </Card>
 
-        {/* Approved Proposals - Collapsible */}
         <Collapsible open={showApproved} onOpenChange={setShowApproved}>
           <Card>
             <CollapsibleTrigger asChild>
@@ -92,7 +88,6 @@ export default function Proposals() {
           </Card>
         </Collapsible>
 
-        {/* Archived Proposals - Collapsible */}
         <Collapsible open={showArchived} onOpenChange={setShowArchived}>
           <Card>
             <CollapsibleTrigger asChild>
@@ -120,13 +115,6 @@ export default function Proposals() {
           </Card>
         </Collapsible>
       </div>
-
-      {/* Edit Dialog */}
-      <EditProposalDialog
-        proposal={editingProposal}
-        open={!!editingProposal}
-        onOpenChange={(open) => { if (!open) setEditingProposal(null); }}
-      />
     </ResponsiveContainer>
   );
 }
