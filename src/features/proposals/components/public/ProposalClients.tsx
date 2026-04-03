@@ -36,8 +36,8 @@ export function ProposalClients() {
             </div>
           ))}
         </InfiniteSlider>
-        <div className='pointer-events-none absolute inset-0 left-0 w-[600px] bg-gradient-to-r from-black to-transparent' />
-        <div className='pointer-events-none absolute inset-0 left-auto w-[600px] bg-gradient-to-l from-black to-transparent' />
+        <div className='pointer-events-none absolute inset-0 left-0 w-[100px] md:w-[600px] bg-gradient-to-r from-black to-transparent' />
+        <div className='pointer-events-none absolute inset-0 left-auto w-[100px] md:w-[600px] bg-gradient-to-l from-black to-transparent' />
       </div>
     </div>
   )

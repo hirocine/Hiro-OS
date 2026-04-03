@@ -75,15 +75,22 @@ export function ProposalProximosPassos({ validityDate }: Props) {
               }}
             >
               {i < steps.length - 1 && (
-                <div
-                  className={`hidden md:block absolute top-[25px] left-[95px] h-px origin-left ${
-                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
-                  }`}
-                  style={{
-                    width: 'calc(100% + 48px - 50px)',
-                    animation: visible ? `lineGrow 0.4s ease ${i * 0.15 + 0.3}s both` : 'none',
-                  }}
-                />
+                <>
+                  <div
+                    className={`hidden md:block absolute top-[25px] left-[95px] h-px origin-left ${
+                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                    }`}
+                    style={{
+                      width: 'calc(100% + 48px - 50px)',
+                      animation: visible ? `lineGrow 0.4s ease ${i * 0.15 + 0.3}s both` : 'none',
+                    }}
+                  />
+                  <div
+                    className={`block md:hidden absolute top-[50px] left-1/2 -translate-x-1/2 w-px h-[32px] ${
+                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                    }`}
+                  />
+                </>
               )}
               <div
                 className={`w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg mb-4 relative z-10 border-2 ${
