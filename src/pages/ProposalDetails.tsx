@@ -899,7 +899,7 @@ export default function ProposalDetails() {
                     <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
                       {c.vimeoId && (
                         <div className="aspect-video">
-                          <VimeoThumbnail videoId={c.vimeoId} alt={c.titulo || ''} className="w-full h-full" />
+                          <VimeoThumbnail videoId={c.vimeoId} videoHash={c.vimeoHash} alt={c.titulo || ''} className="w-full h-full" />
                         </div>
                       )}
                       <div className="p-3">
