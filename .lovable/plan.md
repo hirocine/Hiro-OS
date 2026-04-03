@@ -1,38 +1,27 @@
 
 
-# Fix: Skeleton da página de Orçamentos não aparece corretamente
+# Corrigir reflow de texto na proposta pública (font swap)
 
 ## Problema
-No `Proposals.tsx`, o `PageHeader` real é renderizado **antes** do check `isLoading`, então ele sempre aparece. O skeleton fica abaixo dele — o usuário vê o header real + conteúdo antigo, nunca o skeleton completo.
+
+A fonte "Helvetica Now Display" carrega de forma assíncrona com `font-display: swap`. Isso faz o browser renderizar primeiro com a fallback (Inter/sans-serif), e quando a fonte custom carrega, o texto "pula" porque as métricas são diferentes. Esse é o efeito que você vê — textos se ajustando/diminuindo após o carregamento.
 
 ## Solução
-Mover o `isLoading` check para envolver **tudo** (incluindo o PageHeader), de modo que quando estiver carregando, só apareça o `ProposalsPageSkeleton`.
 
-### Arquivo: `src/pages/Proposals.tsx`
+Duas ações complementares:
 
-Mudar a estrutura de:
-```tsx
-<ResponsiveContainer>
-  <PageHeader ... />        // ← sempre visível
-  {isLoading ? (
-    <ProposalsPageSkeleton />  // ← skeleton redundante abaixo
-  ) : (
-    <div>...</div>
-  )}
-</ResponsiveContainer>
+### 1. Preload das fontes no `index.html`
+Adicionar `<link rel="preload">` para os arquivos .otf mais usados (Bold e Medium) no `<head>`. Isso faz o browser baixar as fontes **antes** de renderizar, eliminando o swap visível na maioria dos casos.
+
+```html
+<link rel="preload" href="/fonts/HelveticaNowDisplay-Bold.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="/fonts/HelveticaNowDisplay-Medium.otf" as="font" type="font/otf" crossorigin>
 ```
 
-Para:
-```tsx
-{isLoading ? (
-  <ProposalsPageSkeleton />    // ← skeleton completo com seu próprio header
-) : (
-  <ResponsiveContainer>
-    <PageHeader ... />
-    <div>...</div>
-  </ResponsiveContainer>
-)}
-```
+### 2. Trocar `font-display: swap` por `font-display: block` nas @font-face
+Em `src/index.css`, mudar as 4 declarações de `font-display: swap` para `font-display: block`. Isso faz o browser esperar pela fonte (até ~3s) em vez de mostrar a fallback e depois trocar. Como as fontes serão preloaded, o bloqueio será imperceptível.
 
-Apenas 1 arquivo editado.
+### Arquivos
+- `index.html` — adicionar 2 linhas de preload no head
+- `src/index.css` — trocar `swap` por `block` nas 4 @font-face
 
