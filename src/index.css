@@ -545,6 +545,18 @@ html, body {
   color: #6a6a6a;
 }
 
+.proposal-page .text-gray-300 {
+  color: #aaaaaa;
+}
+
+.proposal-page .bg-gray-900 {
+  background-color: #1a1a1a;
+}
+
+.proposal-page .border-gray-700 {
+  border-color: #3a3a3a;
+}
+
 .proposal-page,
 .proposal-page * {
   --removed-body-scroll-bar-size: 0 !important;
