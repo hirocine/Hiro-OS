@@ -452,7 +452,7 @@ export function ProposalWizard() {
                     </p>
                   )}
                   {form.discount_pct > 0 && (
-                    <p className="text-sm text-green-600 font-medium">Desconto: {form.discount_pct}%</p>
+                    <p className="text-sm text-success font-medium">Desconto: {form.discount_pct}%</p>
                   )}
                   <p className="text-xl font-bold text-foreground">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue)}
