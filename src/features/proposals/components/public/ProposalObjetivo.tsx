@@ -55,20 +55,29 @@ export function ProposalObjetivo({ objetivo, clientName, diagnosticoDores }: Pro
       <h2 className='proposal-font-display text-3xl md:text-[42px] font-bold mb-5 leading-tight'>
         Diagnóstico
       </h2>
-      <p className='text-gray-400 max-w-[700px] mb-12 whitespace-pre-line'>
-        {textoObjetivo}
-      </p>
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-        {dores.map((h, i) => (
-          <div key={i} className='bg-[#111] rounded-2xl border border-gray-800 p-7 transition-all duration-300 hover:border-[#4CFF5C] hover:-translate-y-1'>
-            <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center mb-5'>
-              <h.icon className='w-5 h-5 text-[#4CFF5C]' />
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16'>
+        <div>
+          <p className='text-gray-400 whitespace-pre-line leading-relaxed'>
+            {textoObjetivo}
+          </p>
+        </div>
+
+        <div className='flex flex-col gap-4'>
+          {dores.map((h, i) => (
+            <div key={i} className='bg-[#111] rounded-2xl border border-gray-800 p-6 transition-all duration-300 hover:border-[#4CFF5C]'>
+              <div className='flex items-start gap-4'>
+                <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center flex-shrink-0'>
+                  <h.icon className='w-5 h-5 text-[#4CFF5C]' />
+                </div>
+                <div>
+                  <h4 className='text-[15px] font-bold mb-1'>{h.title}</h4>
+                  <p className='text-[13px] text-gray-400 leading-relaxed'>{h.desc}</p>
+                </div>
+              </div>
             </div>
-            <h4 className='text-[15px] font-bold mb-2'>{h.title}</h4>
-            <p className='text-[13px] text-gray-400 leading-relaxed'>{h.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )
