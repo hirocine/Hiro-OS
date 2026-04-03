@@ -526,10 +526,13 @@ html, body {
 html:has(.proposal-page) {
   scrollbar-gutter: auto !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
-body:has(.proposal-page) {
+body:has(.proposal-page),
+#root:has(.proposal-page) {
   overflow-y: visible !important;
+  overflow-x: hidden !important;
 }
 
 .proposal-page {
