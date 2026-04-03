@@ -20,6 +20,7 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
 interface Props {
   proposal: Proposal;
   onDelete?: (id: string) => void;
+  onEdit?: (proposal: Proposal) => void;
 }
 
 export function ProposalCard({ proposal, onDelete }: Props) {
