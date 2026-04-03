@@ -62,38 +62,36 @@ export function ProposalProximosPassos({ validityDate }: Props) {
         `}</style>
 
         <div className='flex flex-col md:flex-row my-12 relative md:-ml-[45px]'>
+          {/* Mobile: vertical line connecting all steps */}
+          <div className='block md:hidden absolute left-[25px] top-[25px] w-px bg-gray-700' style={{ height: `calc(100% - 50px)` }} />
+          <div className='block md:hidden absolute left-[25px] top-[25px] w-px bg-[#4CFF5C]/30' style={{ height: '50px' }} />
+
           {steps.map((step, i) => (
             <div
               key={step.num}
-              className='flex flex-col items-center relative mb-8 md:mb-0'
+              className='flex flex-row items-center md:flex-col md:items-center relative mb-6 md:mb-0 gap-4 md:gap-0'
               style={{
-                width: '140px',
-                marginRight: i < steps.length - 1 ? '48px' : '0',
+                width: undefined,
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : 'translateY(20px)',
                 transition: `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`,
               }}
             >
+              {/* Desktop horizontal line */}
               {i < steps.length - 1 && (
-                <>
-                  <div
-                    className={`hidden md:block absolute top-[25px] left-[95px] h-px origin-left ${
-                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
-                    }`}
-                    style={{
-                      width: 'calc(100% + 48px - 50px)',
-                      animation: visible ? `lineGrow 0.4s ease ${i * 0.15 + 0.3}s both` : 'none',
-                    }}
-                  />
-                  <div
-                    className={`block md:hidden absolute top-[50px] left-1/2 -translate-x-1/2 w-px h-[32px] ${
-                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
-                    }`}
-                  />
-                </>
+                <div
+                  className={`hidden md:block absolute top-[25px] left-[95px] h-px origin-left ${
+                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                  }`}
+                  style={{
+                    width: 'calc(140px + 48px - 50px)',
+                    marginRight: '48px',
+                    animation: visible ? `lineGrow 0.4s ease ${i * 0.15 + 0.3}s both` : 'none',
+                  }}
+                />
               )}
               <div
-                className={`w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg mb-4 relative z-10 border-2 ${
+                className={`w-[50px] h-[50px] min-w-[50px] rounded-full flex items-center justify-center font-bold text-lg md:mb-4 relative z-10 border-2 ${
                   step.status === 'done'
                     ? 'bg-[#4CFF5C]/10 border-[#4CFF5C] text-[#4CFF5C]'
                     : step.status === 'current'
