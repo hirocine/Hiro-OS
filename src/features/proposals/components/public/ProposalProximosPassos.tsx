@@ -69,9 +69,8 @@ export function ProposalProximosPassos({ validityDate }: Props) {
           {steps.map((step, i) => (
             <div
               key={step.num}
-              className='flex flex-row items-center md:flex-col md:items-center relative mb-6 md:mb-0 gap-4 md:gap-0'
+              className={`flex flex-row items-center md:flex-col md:items-center relative mb-6 md:mb-0 gap-4 md:gap-0 md:w-[140px] ${i < steps.length - 1 ? 'md:mr-[48px]' : ''}`}
               style={{
-                width: undefined,
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : 'translateY(20px)',
                 transition: `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`,
