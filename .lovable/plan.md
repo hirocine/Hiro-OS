@@ -1,20 +1,28 @@
 
 
-# Remover skeleton e carregar a página diretamente
+# Fix: quadrados do background iniciam com opacidade máxima
 
 ## Problema
-Os itens da página de Orçamentos aparecem "dessincronizados" — provavelmente porque o skeleton aparece brevemente e depois a transição para o conteúdo real acontece de forma abrupta, com cards e imagens carregando em tempos diferentes.
+O `maskRef` div começa com `style={{ maskImage: 'none' }}`. Em CSS, `mask-image: none` significa **sem máscara** — ou seja, o conteúdo aparece 100% visível. O layer com `opacity-50` dos quadrados fica totalmente visível até o mouse passar e definir o gradiente radial.
 
 ## Solução
-Remover o skeleton da página de Orçamentos e renderizar o conteúdo diretamente. O ProtectedRoute já tem seu próprio spinner enquanto a autenticação carrega, e os dados do Supabase retornam rápido o suficiente para não precisar de um estado intermediário.
+Mudar o valor inicial do `maskImage` de `'none'` para um gradiente transparente que esconde tudo:
 
-### Mudanças
+**Arquivo**: `src/features/proposals/components/public/ProposalHero.tsx`
 
-**`src/pages/Proposals.tsx`**:
-- Remover o import do `ProposalsPageSkeleton`
-- Remover o bloco `if (isLoading) return <ProposalsPageSkeleton />`
-- Deixar a página renderizar diretamente (com listas vazias enquanto carrega, já que `proposals || []` já trata isso)
+Linha 67 — trocar:
+```tsx
+style={{ maskImage: 'none', WebkitMaskImage: 'none' }}
+```
+Por:
+```tsx
+style={{
+  maskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)',
+  WebkitMaskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)'
+}}
+```
 
-**`src/features/proposals/components/ProposalsSkeleton.tsx`**:
-- Deletar o arquivo (não será mais usado)
+Isso garante que o layer brilhante dos quadrados comece invisível e só apareça ao mover o mouse — exatamente como o `handleMouseLeave` já faz.
+
+1 arquivo, 1 linha alterada.
 
