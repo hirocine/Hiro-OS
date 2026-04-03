@@ -251,6 +251,44 @@ export function ProposalWizard() {
                 <h3 className="text-lg font-semibold text-foreground">Cliente e Projeto</h3>
                 <p className="text-sm text-muted-foreground">Informações que aparecem no topo da proposta.</p>
               </div>
+              {/* Logo Upload */}
+              <div className="flex items-center gap-4">
+                <div className="relative group cursor-pointer" onClick={() => logoInputRef.current?.click()}>
+                  <Avatar className="h-20 w-20 ring-2 ring-border">
+                    <AvatarImage src={form.client_logo || undefined} />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                      <Building2 className="h-8 w-8" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    {uploadingLogo ? (
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-5 w-5 text-white" />
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">Logo do Cliente</p>
+                  <p className="text-xs text-muted-foreground">Aparece no card de gerenciamento</p>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                      <Upload className="mr-1.5 h-3.5 w-3.5" />
+                      {form.client_logo ? 'Alterar' : 'Enviar'}
+                    </Button>
+                    {form.client_logo && (
+                      <Button type="button" variant="outline" size="sm" onClick={() => updateField('client_logo', '')} disabled={uploadingLogo}>
+                        <X className="mr-1.5 h-3.5 w-3.5" />
+                        Remover
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ''; }} />
+              </div>
+
+              <Separator />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Nome do Cliente *</Label>
