@@ -1,80 +1,33 @@
 
-# Corrigir skeleton + loading da proposta pública
 
-## Diagnóstico
-O skeleton que você vê na proposta pública não vem da própria `ProposalPublicPage`. Ele vem de dois pontos diferentes:
+# Adicionar fade-in escalonado nos elementos do Hero da proposta
 
-1. `src/App.tsx`
-   - a rota pública `/orcamento/:slug` está lazy-loaded com:
-   ```tsx
-   <Suspense fallback={<LoadingScreenSkeleton />}>
-     <ProposalPublic />
-   </Suspense>
-   ```
-   - esse é exatamente o skeleton genérico que aparece antes da página abrir
+## O que muda
 
-2. `src/features/proposals/components/ProposalPublicPage.tsx`
-   - depois que o chunk carrega, ainda existe:
-   ```tsx
-   if (isLoading) {
-     return <Loader2 ... />
-   }
-   ```
-   - então o usuário vê o skeleton primeiro e, logo depois, o spinner no meio
+**`src/features/proposals/components/public/ProposalHero.tsx`**:
 
-## O que vou mudar
+Adicionar animação de fade-in com delay escalonado nos 5 elementos principais do hero:
 
-### 1. Remover o skeleton da rota pública
-**Arquivo:** `src/App.tsx`
+1. Tag "Proposta Comercial 2026" — delay 0ms
+2. Título (h1) — delay 150ms
+3. Descrição (p) — delay 300ms
+4. Linha verde — delay 450ms
+5. Info items (Cliente, Data, Validade) — delay 600ms
 
-Para a rota `/orcamento/:slug`, trocar o fallback do `Suspense`:
-- de `LoadingScreenSkeleton`
-- para `null`
+Cada elemento começa com `opacity: 0` e `translateY(20px)`, e anima para `opacity: 1` e `translateY(0)` usando CSS inline com `animation` + `animation-delay` + `animation-fill-mode: forwards`.
 
-Isso elimina o skeleton genérico na entrada da proposta pública.
+Vou adicionar uma classe CSS utilitária no `index.css` para o keyframe (ou usar inline styles), e aplicar delays incrementais em cada bloco. Abordagem com inline styles para manter tudo no componente sem precisar de classes extras:
 
-### 2. Remover o spinner central da proposta pública
-**Arquivo:** `src/features/proposals/components/ProposalPublicPage.tsx`
-
-Substituir o estado:
 ```tsx
-if (isLoading) { ...Loader2... }
-```
-por uma renderização silenciosa, para não aparecer loading no meio da tela.
-
-A opção mais limpa aqui é:
-```tsx
-if (isLoading) return null;
+const fadeUp = (delay: number) => ({
+  opacity: 0,
+  animation: `proposal-fade-up 0.8s ease-out ${delay}ms forwards`,
+})
 ```
 
-## Resultado esperado
-Ao abrir a URL pública da proposta:
-- não aparece mais o skeleton genérico
-- não aparece mais o spinner central
-- a página entra direto quando os dados estiverem prontos
-
-## Detalhe técnico
-Hoje o fluxo está assim:
-
-```text
-Acessa /orcamento/:slug
-  -> Suspense mostra LoadingScreenSkeleton
-  -> chunk da página carrega
-  -> ProposalPublicPage monta
-  -> React Query ainda busca os dados
-  -> Loader2 aparece no centro
-  -> conteúdo final renderiza
-```
-
-Depois do ajuste:
-
-```text
-Acessa /orcamento/:slug
-  -> sem skeleton genérico
-  -> sem spinner intermediário
-  -> conteúdo aparece direto quando estiver disponível
-```
+E um `@keyframes proposal-fade-up` no CSS das propostas (já existe seção de proposal styles no `index.css`).
 
 ## Arquivos
-- `src/App.tsx`
-- `src/features/proposals/components/ProposalPublicPage.tsx`
+- `src/index.css` — adicionar 1 keyframe `proposal-fade-up`
+- `src/features/proposals/components/public/ProposalHero.tsx` — aplicar styles nos 5 elementos
+
