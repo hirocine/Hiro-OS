@@ -1,32 +1,41 @@
 
 
-# Dores do Cliente como Banco Pré-Configurado
+# Redesign da seção "Dores do Cliente" -- Cards + Dialog com Banco Categorizado
 
 ## O que muda
-A seção "Dores do Cliente" deixa de ser apenas campos livres. Passa a funcionar como um **seletor de banco de dores** (tabela `proposal_pain_points` já existente) onde o usuário:
-1. Seleciona dores do banco existente (multi-select / lista com checkboxes)
-2. Ao selecionar, a dor é copiada para o formulário da proposta e pode ser **editada localmente** (sem alterar o banco)
-3. Pode **adicionar uma nova dor** que vai tanto para o banco quanto para a proposta atual
-4. Pode remover dores selecionadas da proposta
 
-## Plano
+A seção atual (chips de seleção + edição inline) será substituída por:
+1. **Na página**: exibição em **cards** das dores selecionadas (emoji + título + descrição) com botão de remover
+2. **Botão "Adicionar Dores"** abre um **Dialog grande** com o banco completo organizado por categorias (igual ao HTML enviado)
+3. No dialog, o usuário marca/desmarca dores com checkboxes e pode **criar uma dor exclusiva** para o projeto (não salva no banco)
 
-### 1. Buscar dores do banco
-- Importar e usar o hook `usePainPoints()` já existente no `ProposalDetails.tsx`
-- Ele retorna todas as dores cadastradas na tabela `proposal_pain_points`
+## Mudanças necessárias
 
-### 2. UI de seleção + edição
-- No topo da seção, adicionar um **dropdown/combobox multi-select** com as dores do banco
-- Ao selecionar uma dor do banco, ela é adicionada ao `doresForm` com os valores pré-preenchidos (label, title, desc)
-- Dores já selecionadas aparecem marcadas no dropdown
-- Cada dor no formulário continua editável inline (campos Label, Título, Descrição) -- edições são locais à proposta
-- Botão "Adicionar Nova Dor" abre um mini-form para criar uma nova dor, que é salva no banco via `createPainPoint` e automaticamente adicionada à proposta
+### 1. Migration: adicionar campo `category` na tabela `proposal_pain_points`
+- Novo campo `category TEXT` para agrupar dores (ex: "Qualidade & padrão visual", "Prazo & velocidade de entrega", etc.)
+- Seed das ~40 dores do HTML enviado com suas categorias e emojis
 
-### 3. Mapeamento banco → proposta
-- O campo `diagnostico_dores` da proposta armazena `{label, title, desc}` -- sem referência ao ID do banco
-- Ao selecionar do banco, copiar `{label: pp.label, title: pp.title, desc: pp.description}` para o array local
-- Isso permite edição livre sem afetar o banco original
+### 2. Atualizar tipo `PainPoint` e hook `usePainPoints`
+- Adicionar `category` ao interface `PainPoint`
+- Query já funciona com `select('*')`, então pega automaticamente
 
-### 4. Arquivos alterados
-- `src/pages/ProposalDetails.tsx` -- importar `usePainPoints`, redesenhar a seção de dores com seletor + edição inline
+### 3. Redesenhar seção em `ProposalDetails.tsx`
+
+**Cards de dores selecionadas**: Grid 2 colunas com cards estilo do HTML (emoji + título + descrição + botão X para remover)
+
+**Dialog "Banco de Dores"** (`sm:max-w-4xl`):
+- Organizado por categorias com headers numerados (01, 02, 03...)
+- Grid 2 colunas de cards clicáveis com checkbox visual
+- Dores já selecionadas aparecem marcadas
+- Barra fixa no rodapé com contador "X dores selecionadas" + botão "Confirmar"
+- Tab ou seção "Dor exclusiva" para criar uma avulsa (emoji + título + desc) que entra direto na proposta sem ir ao banco
+- Busca/filtro por texto no topo do dialog
+
+### 4. Remover dialog "Nova Dor" atual
+- O dialog antigo de criar nova dor será substituído pelo campo "Dor exclusiva" dentro do novo dialog do banco
+
+## Arquivos alterados
+- Nova migration: `add_category_to_pain_points.sql`
+- `src/features/proposals/types/index.ts` -- campo `category` em PainPoint
+- `src/pages/ProposalDetails.tsx` -- redesign completo da seção de dores
 
