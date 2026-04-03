@@ -259,7 +259,7 @@ export default function ProposalDetails() {
         {/* Summary Card */}
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               {/* Logo */}
               <div className="relative group">
                 <Avatar className="h-16 w-16 shrink-0">
