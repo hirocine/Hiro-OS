@@ -1,33 +1,35 @@
 
 
-# Adicionar fade-in escalonado nos elementos do Hero da proposta
+# Corrigir 3 problemas mobile na proposta pública
 
-## O que muda
+## Problema 1 — Logos sumindo (ProposalClients)
+Os gradientes laterais que fazem o fade nas bordas do slider têm `w-[600px]` fixo. Em telas mobile (~375px), eles cobrem praticamente o slider inteiro, escondendo os logos.
 
-**`src/features/proposals/components/public/ProposalHero.tsx`**:
+**Arquivo**: `src/features/proposals/components/public/ProposalClients.tsx`
+- Trocar `w-[600px]` por `w-[100px] md:w-[600px]` nos dois divs de gradiente (linhas 39-40)
 
-Adicionar animação de fade-in com delay escalonado nos 5 elementos principais do hero:
+## Problema 2 — Preço sobreposto (ProposalInvestimento)
+O valor final tem `-mt-8` que em mobile com card menor causa sobreposição com o badge de desconto.
 
-1. Tag "Proposta Comercial 2026" — delay 0ms
-2. Título (h1) — delay 150ms
-3. Descrição (p) — delay 300ms
-4. Linha verde — delay 450ms
-5. Info items (Cliente, Data, Validade) — delay 600ms
+**Arquivo**: `src/features/proposals/components/public/ProposalInvestimento.tsx`
+- Linha 70: trocar `-mt-8` por `md:-mt-8` para só aplicar o negative margin em desktop
 
-Cada elemento começa com `opacity: 0` e `translateY(20px)`, e anima para `opacity: 1` e `translateY(0)` usando CSS inline com `animation` + `animation-delay` + `animation-fill-mode: forwards`.
+## Problema 3 — Timeline sem linha vertical + vídeo sumiu (ProposalProximosPassos + ProposalPublicPage)
 
-Vou adicionar uma classe CSS utilitária no `index.css` para o keyframe (ou usar inline styles), e aplicar delays incrementais em cada bloco. Abordagem com inline styles para manter tudo no componente sem precisar de classes extras:
+### 3a — Linha vertical no mobile
+As linhas conectoras têm `hidden md:block` e são horizontais. No mobile (flex-col), precisa de uma linha vertical entre os steps.
 
-```tsx
-const fadeUp = (delay: number) => ({
-  opacity: 0,
-  animation: `proposal-fade-up 0.8s ease-out ${delay}ms forwards`,
-})
-```
+**Arquivo**: `src/features/proposals/components/public/ProposalProximosPassos.tsx`
+- Adicionar uma linha vertical entre steps no mobile: `block md:hidden` com `w-px` e altura adequada, posicionada abaixo do círculo
 
-E um `@keyframes proposal-fade-up` no CSS das propostas (já existe seção de proposal styles no `index.css`).
+### 3b — Vídeo de fundo sumiu
+O iframe de background na seção Próximos Passos tem `hidden md:block` (linha 108 do ProposalPublicPage). Remover o `hidden md:block` e deixar visível em mobile também, ou pelo menos mostrar uma versão simplificada.
 
-## Arquivos
-- `src/index.css` — adicionar 1 keyframe `proposal-fade-up`
-- `src/features/proposals/components/public/ProposalHero.tsx` — aplicar styles nos 5 elementos
+**Arquivo**: `src/features/proposals/components/ProposalPublicPage.tsx`
+- Linha 108: trocar `hidden md:block` por `block` para o vídeo de fundo ficar visível em mobile também
+- Ajustar o gradiente lateral para mobile: em telas pequenas usar gradiente mais opaco para garantir legibilidade do texto
+
+## Resumo
+- 3 arquivos editados
+- Todas as mudanças usam prefixos responsivos (`md:`) para não impactar o desktop
 
