@@ -273,10 +273,43 @@ export default function ProposalDetails() {
   const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
 
   // Dores helpers
-  const addDor = () => setDoresForm(prev => [...prev, { label: '', title: '', desc: '' }]);
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
   const updateDor = (i: number, field: keyof DiagnosticoDor, value: string) =>
     setDoresForm(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d));
+
+  const selectPainPointFromBank = (ppId: string) => {
+    const pp = painPointsBank.find(p => p.id === ppId);
+    if (!pp) return;
+    // Check if already added (by matching label+title)
+    const alreadyExists = doresForm.some(d => d.label === pp.label && d.title === pp.title);
+    if (alreadyExists) {
+      // Remove it
+      setDoresForm(prev => prev.filter(d => !(d.label === pp.label && d.title === pp.title)));
+    } else {
+      setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
+    }
+  };
+
+  const isPainPointSelected = (pp: { label: string; title: string }) =>
+    doresForm.some(d => d.label === pp.label && d.title === pp.title);
+
+  const handleCreateNewDor = async () => {
+    if (!newDorForm.label.trim() || !newDorForm.title.trim()) return;
+    try {
+      const created = await createPainPoint.mutateAsync({
+        label: newDorForm.label.trim(),
+        title: newDorForm.title.trim(),
+        description: newDorForm.description.trim(),
+      });
+      // Also add to current proposal
+      setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
+      setNewDorForm({ label: '', title: '', description: '' });
+      setShowNewDorDialog(false);
+      toast.success('Dor criada e adicionada!');
+    } catch {
+      toast.error('Erro ao criar dor');
+    }
+  };
 
   // Cases helpers
   const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
