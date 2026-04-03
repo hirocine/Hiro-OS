@@ -232,16 +232,13 @@ export default function ProposalDetails() {
             { label: proposal.project_name },
           ]} className="mb-0" />
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}>
-              <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
                   <Copy className="mr-2 h-4 w-4" /> Copiar Link
                 </DropdownMenuItem>
@@ -251,6 +248,9 @@ export default function ProposalDetails() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}>
+              <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
+            </Button>
           </div>
         </div>
 
