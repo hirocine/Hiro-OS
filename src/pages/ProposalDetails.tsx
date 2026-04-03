@@ -17,9 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check,
-  Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart,
-  type LucideIcon
+  AlertTriangle, Briefcase, Package, Plus, X, Check
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -33,22 +31,23 @@ import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/t
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
-const DOR_ICON_OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
-  { value: 'Star', label: 'Estrela', icon: Star },
-  { value: 'Clock', label: 'Relógio', icon: Clock },
-  { value: 'Layers', label: 'Camadas', icon: Layers },
-  { value: 'Target', label: 'Alvo', icon: Target },
-  { value: 'TrendingUp', label: 'Tendência', icon: TrendingUp },
-  { value: 'Zap', label: 'Raio', icon: Zap },
-  { value: 'Shield', label: 'Escudo', icon: Shield },
-  { value: 'Eye', label: 'Olho', icon: Eye },
-  { value: 'Heart', label: 'Coração', icon: Heart },
-  { value: 'AlertTriangle', label: 'Alerta', icon: AlertTriangle },
+const DOR_EMOJI_OPTIONS = [
+  { value: '⭐', label: 'Estrela' },
+  { value: '🎯', label: 'Alvo' },
+  { value: '⚡', label: 'Raio' },
+  { value: '🔥', label: 'Fogo' },
+  { value: '💡', label: 'Ideia' },
+  { value: '🚀', label: 'Foguete' },
+  { value: '⏰', label: 'Relógio' },
+  { value: '🛡️', label: 'Escudo' },
+  { value: '👁️', label: 'Olho' },
+  { value: '❤️', label: 'Coração' },
+  { value: '📊', label: 'Gráfico' },
+  { value: '🎬', label: 'Cinema' },
+  { value: '📱', label: 'Celular' },
+  { value: '🏆', label: 'Troféu' },
+  { value: '⚠️', label: 'Alerta' },
 ];
-
-const DOR_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
-  DOR_ICON_OPTIONS.map(o => [o.value, o.icon])
-);
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -94,7 +93,7 @@ export default function ProposalDetails() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showNewDorDialog, setShowNewDorDialog] = useState(false);
-  const [newDorForm, setNewDorForm] = useState({ label: 'Star', title: '', description: '' });
+  const [newDorForm, setNewDorForm] = useState({ label: '⭐', title: '', description: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -321,7 +320,7 @@ export default function ProposalDetails() {
       });
       // Also add to current proposal
       setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
-      setNewDorForm({ label: 'Star', title: '', description: '' });
+      setNewDorForm({ label: '⭐', title: '', description: '' });
       setShowNewDorDialog(false);
       toast.success('Dor criada e adicionada!');
     } catch {
@@ -570,7 +569,7 @@ export default function ProposalDetails() {
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
               )}
               {doresForm.map((dor, i) => {
-                const DorIcon = DOR_ICON_MAP[dor.label] || Star;
+                const emoji = dor.label || '⭐';
                 return (
                   <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
                     <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
@@ -580,28 +579,25 @@ export default function ProposalDetails() {
                       <div className="flex items-end gap-3">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0">
-                              <DorIcon className="h-4 w-4" />
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0 text-lg">
+                              {emoji}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-2" align="start">
                             <div className="grid grid-cols-5 gap-1">
-                              {DOR_ICON_OPTIONS.map(opt => {
-                                const Icon = opt.icon;
-                                return (
-                                  <button
-                                    key={opt.value}
-                                    type="button"
-                                    onClick={() => updateDor(i, 'label', opt.value)}
-                                    className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
-                                      dor.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-                                    }`}
-                                    title={opt.label}
-                                  >
-                                    <Icon className="h-4 w-4" />
-                                  </button>
-                                );
-                              })}
+                              {DOR_EMOJI_OPTIONS.map(opt => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => updateDor(i, 'label', opt.value)}
+                                  className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
+                                    dor.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                                  }`}
+                                  title={opt.label}
+                                >
+                                  {opt.value}
+                                </button>
+                              ))}
                             </div>
                           </PopoverContent>
                         </Popover>
@@ -636,24 +632,21 @@ export default function ProposalDetails() {
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Ícone</Label>
+                  <Label className="text-xs">Emoji</Label>
                   <div className="flex flex-wrap gap-1">
-                    {DOR_ICON_OPTIONS.map(opt => {
-                      const Icon = opt.icon;
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
-                          className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
-                            newDorForm.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted border border-border'
-                          }`}
-                          title={opt.label}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      );
-                    })}
+                    {DOR_EMOJI_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setNewDorForm(p => ({ ...p, label: opt.value }))}
+                        className={`h-9 w-9 rounded-md flex items-center justify-center text-lg transition-colors ${
+                          newDorForm.label === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted border border-border'
+                        }`}
+                        title={opt.label}
+                      >
+                        {opt.value}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="space-y-1.5">

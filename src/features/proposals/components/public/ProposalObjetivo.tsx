@@ -1,6 +1,3 @@
-import { Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart, AlertTriangle } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-
 interface DorItem {
   label?: string
   title?: string
@@ -13,39 +10,28 @@ interface Props {
   diagnosticoDores: DorItem[]
 }
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  Star, Clock, Layers, Target, TrendingUp, Zap, Shield, Eye, Heart, AlertTriangle,
-}
-
-const defaultDores: (DorItem & { icon: LucideIcon })[] = [
+const defaultDores: DorItem[] = [
   {
-    label: 'Star',
+    label: '⭐',
     title: 'Qualidade visual premium',
     desc: 'O padrão estético do conteúdo precisa refletir o posicionamento da marca. Não há espaço para entregas medianas.',
-    icon: Star,
   },
   {
-    label: 'Clock',
+    label: '⏰',
     title: 'Prazo e previsibilidade',
     desc: 'O projeto tem uma data de veiculação definida. Cada etapa precisa ser cumprida sem comprometer o resultado final.',
-    icon: Clock,
   },
   {
-    label: 'Layers',
+    label: '🎬',
     title: 'Conteúdo multiplataforma',
     desc: 'O material precisa funcionar em diferentes formatos e canais, mantendo coesão visual e narrativa em todos eles.',
-    icon: Layers,
   },
 ]
-
-const fallbackIcons = [Star, Clock, Layers]
 
 export function ProposalObjetivo({ objetivo, clientName, diagnosticoDores }: Props) {
   if (!objetivo && diagnosticoDores.length === 0) return null
 
-  const dores = diagnosticoDores.length > 0
-    ? diagnosticoDores.map((d, i) => ({ ...d, icon: (d.label && ICON_MAP[d.label]) || fallbackIcons[i % fallbackIcons.length] }))
-    : defaultDores
+  const dores = diagnosticoDores.length > 0 ? diagnosticoDores : defaultDores
 
   const textoObjetivo = objetivo
     ? objetivo.split('{empresa}').join(clientName)
@@ -71,8 +57,8 @@ export function ProposalObjetivo({ objetivo, clientName, diagnosticoDores }: Pro
           {dores.map((h, i) => (
             <div key={i} className='bg-[#111] rounded-2xl border border-gray-800 p-6 transition-all duration-300 hover:border-[#4CFF5C]'>
               <div className='flex items-start gap-4'>
-                <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center flex-shrink-0'>
-                  <h.icon className='w-5 h-5 text-[#4CFF5C]' />
+                <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center flex-shrink-0 text-xl'>
+                  {h.label || '⭐'}
                 </div>
                 <div>
                   <h4 className='text-[15px] font-bold mb-1'>{h.title}</h4>
