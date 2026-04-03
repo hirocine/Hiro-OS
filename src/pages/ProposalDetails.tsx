@@ -414,15 +414,6 @@ export default function ProposalDetails() {
     setShowExclusiveDor(false);
   };
 
-  const filteredCasesBank = useMemo(() => {
-    const search = casesBankSearch.toLowerCase();
-    if (!search) return casesBank;
-    return casesBank.filter(c =>
-      c.client_name.toLowerCase().includes(search) ||
-      c.campaign_name.toLowerCase().includes(search) ||
-      (c.tags || []).some(t => t.toLowerCase().includes(search))
-    );
-  }, [casesBankSearch, casesBank]);
 
   // Cases bank helpers
   const openCasesBank = () => {
