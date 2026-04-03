@@ -616,8 +616,6 @@ export default function ProposalDetails() {
                       </div>
                     </div>
                   </div>
-                    </div>
-                  </div>
                 );
               })}
             </CardContent>
