@@ -11,7 +11,7 @@ interface Props {
   companyDescription: string | null
 }
 
-export function ProposalHero({ clientName, projectName, validityDate, createdAt, clientResponsible }: Props) {
+export function ProposalHero({ clientName, projectName, validityDate, createdAt, clientResponsible, companyDescription }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
   const maskRef = useRef<HTMLDivElement>(null)
 
