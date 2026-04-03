@@ -22,6 +22,18 @@ export interface Proposal {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // V2 fields
+  objetivo: string | null;
+  diagnostico_dores: DiagnosticoDor[];
+  list_price: number | null;
+  payment_options: PaymentOption[];
+  testimonial_name: string | null;
+  testimonial_role: string | null;
+  testimonial_text: string | null;
+  testimonial_image: string | null;
+  entregaveis: any[];
+  cases: CaseItem[];
+  whatsapp_number: string | null;
 }
 
 export interface ScopeItem {
@@ -31,6 +43,30 @@ export interface ScopeItem {
 export interface TimelineItem {
   week: string;
   description: string;
+}
+
+export interface DiagnosticoDor {
+  label: string;
+  title: string;
+  desc: string;
+}
+
+export interface PaymentOption {
+  titulo: string;
+  valor: string;
+  descricao: string;
+  destaque?: string;
+  recomendado?: boolean;
+}
+
+export interface CaseItem {
+  id?: string;
+  tipo?: string;
+  titulo?: string;
+  descricao?: string;
+  vimeoId?: string;
+  vimeoHash?: string;
+  destaque?: boolean;
 }
 
 export interface ProposalFormData {
@@ -52,6 +88,18 @@ export interface ProposalFormData {
   base_value: number;
   discount_pct: number;
   payment_terms: string;
+  // V2 fields
+  objetivo: string;
+  diagnostico_dores: DiagnosticoDor[];
+  list_price: number;
+  payment_options: PaymentOption[];
+  testimonial_name: string;
+  testimonial_role: string;
+  testimonial_text: string;
+  testimonial_image: string;
+  entregaveis: any[];
+  cases: CaseItem[];
+  whatsapp_number: string;
 }
 
 export const defaultFormData: ProposalFormData = {
@@ -73,4 +121,20 @@ export const defaultFormData: ProposalFormData = {
   base_value: 0,
   discount_pct: 0,
   payment_terms: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final',
+  // V2 defaults
+  objetivo: '',
+  diagnostico_dores: [
+    { label: 'Prioridade', title: '', desc: '' },
+    { label: 'Desafio', title: '', desc: '' },
+    { label: 'Contexto', title: '', desc: '' },
+  ],
+  list_price: 0,
+  payment_options: [],
+  testimonial_name: '',
+  testimonial_role: '',
+  testimonial_text: '',
+  testimonial_image: '',
+  entregaveis: [],
+  cases: [],
+  whatsapp_number: '',
 };

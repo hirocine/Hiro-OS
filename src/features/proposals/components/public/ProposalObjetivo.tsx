@@ -44,7 +44,7 @@ export function ProposalObjetivo({ objetivo, clientName, diagnosticoDores }: Pro
     : defaultDores
 
   const textoObjetivo = objetivo
-    ? objetivo.replaceAll('{empresa}', clientName)
+    ? objetivo.split('{empresa}').join(clientName)
     : `O objetivo deste projeto é desenvolver conteúdo audiovisual para ${clientName}, com foco em fortalecer o posicionamento da marca no digital.`
 
   return (
