@@ -112,7 +112,7 @@ export function ProposalProximosPassos({ validityDate }: Props) {
               {i < steps.length - 1 && (
                 <div
                   className={`block md:hidden w-px h-[24px] ml-[25px] ${
-                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                    step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-[#374151]'
                   }`}
                 />
               )}
