@@ -25,11 +25,13 @@ import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDe
 import { useProposals } from '@/features/proposals/hooks/useProposals';
 import type { Proposal } from '@/features/proposals/types';
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { label: 'Rascunho', variant: 'secondary' },
-  sent: { label: 'Enviada', variant: 'default' },
-  approved: { label: 'Aprovada', variant: 'default' },
-  expired: { label: 'Expirada', variant: 'destructive' },
+const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
+  draft: { label: 'Rascunho', variant: 'neutral' },
+  sent: { label: 'Enviada', variant: 'info' },
+  opened: { label: 'Aberta', variant: 'warning' },
+  new_version: { label: 'Nova Versão', variant: 'info' },
+  approved: { label: 'Aprovada', variant: 'success' },
+  expired: { label: 'Arquivada', variant: 'destructive' },
 };
 
 async function compressImage(file: File): Promise<Blob> {
