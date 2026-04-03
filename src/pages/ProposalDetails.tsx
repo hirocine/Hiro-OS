@@ -267,12 +267,12 @@ export default function ProposalDetails() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name}</h1>
                   {proposal.project_number && (
                     <span className="text-xs text-muted-foreground">Nº {proposal.project_number}</span>
                   )}
                 </div>
-                <h1 className="text-xl font-semibold leading-tight">{proposal.project_name}</h1>
                 <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
               </div>
 
