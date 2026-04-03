@@ -1,25 +1,34 @@
 
 
-# Restaurar Separador Arredondado na Seção de Clientes
+# Fix Double Scroll on Proposal Page
 
-## Problema
+## Problem
 
-No projeto original ([Proposta Hiro Films](/projects/249b22d2-8eb4-4dab-b92c-7e7411639f99)), a seção `Clients` tem a classe `rounded-t-[40px] border-t border-gray-800` no container principal, criando uma borda superior arredondada que funciona como separador visual entre o Hero e os Clientes.
+Two scrollbars appear because:
+1. `html` has `overflow-y: scroll !important` and `scrollbar-gutter: stable` (global rule for the app)
+2. `.proposal-page` CSS adds `overflow-y: auto !important`, creating a second scrollable container
+3. The `.proposal-page` div in JSX has `overflow-hidden` class, which conflicts with the CSS override
 
-Na versão atual (`ProposalClients.tsx`), a `<section>` usa apenas `py-14 md:py-20` — sem borda nem arredondamento.
+## Solution
 
-## Correção
+**File: `src/index.css`**
+- Remove `overflow-y: auto !important` from `.proposal-page` — the div should NOT scroll independently
+- Instead, target `html` when proposal page is active using `:has(.proposal-page)` to disable `scrollbar-gutter: stable` and reset to normal scrolling
 
-**Arquivo**: `src/features/proposals/components/public/ProposalClients.tsx`
+```css
+html:has(.proposal-page) {
+  scrollbar-gutter: auto !important;
+}
 
-Alterar linha 10 de:
-```tsx
-<section className='py-14 md:py-20'>
+.proposal-page {
+  font-family: 'Helvetica Now Display', 'Inter', sans-serif;
+  line-height: 1.6;
+  /* Remove overflow-y: auto !important */
+}
 ```
-Para:
-```tsx
-<section className='py-14 md:py-20 rounded-t-[40px] border-t border-gray-800'>
-```
 
-Uma linha alterada, zero risco.
+**File: `src/features/proposals/components/ProposalPublicPage.tsx`**
+- Keep `overflow-hidden` on the div (prevents horizontal overflow from glow effects) — this is fine since vertical scrolling happens on `html`/`body`, not this div. Actually, change to `overflow-x-hidden` to be explicit and not clip vertical content.
+
+One CSS change, one className tweak.
 
