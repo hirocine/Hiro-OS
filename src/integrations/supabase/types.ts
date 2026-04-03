@@ -1228,6 +1228,7 @@ export type Database = {
           created_by: string | null
           destaque: boolean
           id: string
+          tags: string[] | null
           tipo: string
           vimeo_hash: string | null
           vimeo_id: string
@@ -1239,6 +1240,7 @@ export type Database = {
           created_by?: string | null
           destaque?: boolean
           id?: string
+          tags?: string[] | null
           tipo?: string
           vimeo_hash?: string | null
           vimeo_id?: string
@@ -1250,6 +1252,7 @@ export type Database = {
           created_by?: string | null
           destaque?: boolean
           id?: string
+          tags?: string[] | null
           tipo?: string
           vimeo_hash?: string | null
           vimeo_id?: string
