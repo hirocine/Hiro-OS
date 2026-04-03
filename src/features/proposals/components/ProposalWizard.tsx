@@ -7,37 +7,60 @@ import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
-
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
-  Building2, Target, Video, DollarSign, Phone, Sparkles
+  Building2, Target, Video, DollarSign, Package, ListChecks,
+  Phone, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useProposals } from '../hooks/useProposals';
-import { defaultFormData, type ProposalFormData, type CaseItem } from '../types';
+import { usePainPoints } from '../hooks/usePainPoints';
+import { useProposalCases } from '../hooks/useProposalCases';
+import {
+  defaultFormData,
+  ICON_OPTIONS,
+  type ProposalFormData,
+  type EntregavelItem,
+  type DiagnosticoDor,
+  type InclusoItem,
+} from '../types';
 
 const STEPS = [
   { label: 'Cliente', icon: Building2 },
   { label: 'Diagnóstico', icon: Target },
   { label: 'Portfólio', icon: Video },
+  { label: 'Entregáveis', icon: Package },
+  { label: 'Incluso', icon: ListChecks },
   { label: 'Investimento', icon: DollarSign },
 ];
 
 export function ProposalWizard() {
   const navigate = useNavigate();
   const { createProposal } = useProposals();
+  const { data: painPoints = [], createPainPoint } = usePainPoints();
+  const { data: casesBank = [], createCase } = useProposalCases();
+
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<ProposalFormData>({ ...defaultFormData });
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null);
 
+  // New pain point inline form
+  const [showNewPain, setShowNewPain] = useState(false);
+  const [newPain, setNewPain] = useState<DiagnosticoDor>({ label: '', title: '', desc: '' });
+
+  // New case inline form
+  const [showNewCase, setShowNewCase] = useState(false);
+  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', destaque: false });
+
   const updateField = <K extends keyof ProposalFormData>(key: K, value: ProposalFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
-
 
   const handleSubmit = async () => {
     const result = await createProposal.mutateAsync(form);
@@ -52,35 +75,70 @@ export function ProposalWizard() {
   const finalValue = form.base_value * (1 - (form.discount_pct || 0) / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-  // ── Entregáveis helpers ──
-  const addEntregavel = () => updateField('entregaveis', [...form.entregaveis, { output: '', items: [''] }]);
-  const removeEntregavel = (idx: number) => updateField('entregaveis', form.entregaveis.filter((_: any, i: number) => i !== idx));
-  const updateEntregavelOutput = (idx: number, v: string) => {
-    const u = [...form.entregaveis]; u[idx] = { ...u[idx], output: v }; updateField('entregaveis', u);
-  };
-  const addEntregavelItem = (idx: number) => {
-    const u = [...form.entregaveis]; u[idx] = { ...u[idx], items: [...(u[idx].items || []), ''] }; updateField('entregaveis', u);
-  };
-  const updateEntregavelItem = (eIdx: number, iIdx: number, v: string) => {
-    const u = [...form.entregaveis]; const items = [...(u[eIdx].items || [])]; items[iIdx] = v; u[eIdx] = { ...u[eIdx], items }; updateField('entregaveis', u);
-  };
-  const removeEntregavelItem = (eIdx: number, iIdx: number) => {
-    const u = [...form.entregaveis]; u[eIdx] = { ...u[eIdx], items: u[eIdx].items.filter((_: any, i: number) => i !== iIdx) }; updateField('entregaveis', u);
+  // Pain point selection helpers
+  const selectedDores = form.diagnostico_dores;
+  const togglePainPoint = (pp: { label: string; title: string; description: string }) => {
+    const exists = selectedDores.find(d => d.title === pp.title);
+    if (exists) {
+      updateField('diagnostico_dores', selectedDores.filter(d => d.title !== pp.title));
+    } else if (selectedDores.length < 3) {
+      updateField('diagnostico_dores', [...selectedDores, { label: pp.label, title: pp.title, desc: pp.description }]);
+    }
   };
 
-  // ── Cases helpers ──
-  const addCase = () => updateField('cases', [...form.cases, { tipo: '', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
-  const removeCase = (idx: number) => updateField('cases', form.cases.filter((_: CaseItem, i: number) => i !== idx));
-  const updateCase = (idx: number, field: keyof CaseItem, value: any) => {
-    const u = [...form.cases]; u[idx] = { ...u[idx], [field]: value }; updateField('cases', u);
+  // Case selection helpers
+  const toggleCase = (id: string) => {
+    const ids = form.selected_case_ids;
+    if (ids.includes(id)) {
+      updateField('selected_case_ids', ids.filter(x => x !== id));
+    } else {
+      updateField('selected_case_ids', [...ids, id]);
+    }
   };
 
-  // ── Payment helpers ──
-  const addPaymentOption = () => updateField('payment_options', [...form.payment_options, { titulo: '', valor: '', descricao: '', destaque: '', recomendado: false }]);
-  const removePaymentOption = (idx: number) => updateField('payment_options', form.payment_options.filter((_, i) => i !== idx));
-  const updatePaymentOption = (idx: number, field: string, value: any) => {
-    const u = [...form.payment_options]; u[idx] = { ...u[idx], [field]: value }; updateField('payment_options', u);
+  // Entregavel helpers
+  const addEntregavel = () => updateField('entregaveis', [...form.entregaveis, { titulo: '', descricao: '', quantidade: '1', icone: 'Video' }]);
+  const removeEntregavel = (idx: number) => updateField('entregaveis', form.entregaveis.filter((_, i) => i !== idx));
+  const updateEntregavel = (idx: number, field: keyof EntregavelItem, value: string) => {
+    const u = [...form.entregaveis]; u[idx] = { ...u[idx], [field]: value }; updateField('entregaveis', u);
   };
+
+  // Incluso helpers
+  const toggleInclusoItem = (catIdx: number, itemIdx: number, subIdx?: number) => {
+    const cats = JSON.parse(JSON.stringify(form.incluso_categories));
+    if (subIdx !== undefined) {
+      const item = cats[catIdx].subcategorias![subIdx].itens[itemIdx];
+      item.ativo = !item.ativo;
+    } else {
+      const item = cats[catIdx].itens![itemIdx];
+      item.ativo = !item.ativo;
+    }
+    updateField('incluso_categories', cats);
+  };
+
+  const updateInclusoQuantidade = (catIdx: number, itemIdx: number, value: string, subIdx?: number) => {
+    const cats = JSON.parse(JSON.stringify(form.incluso_categories));
+    if (subIdx !== undefined) {
+      cats[catIdx].subcategorias![subIdx].itens[itemIdx].quantidade = value;
+    } else {
+      cats[catIdx].itens![itemIdx].quantidade = value;
+    }
+    updateField('incluso_categories', cats);
+  };
+
+  const addCustomInclusoItem = (catIdx: number, nome: string, subIdx?: number) => {
+    const cats = JSON.parse(JSON.stringify(form.incluso_categories));
+    const newItem: InclusoItem = { nome, ativo: true, custom: true };
+    if (subIdx !== undefined) {
+      cats[catIdx].subcategorias![subIdx].itens.push(newItem);
+    } else {
+      cats[catIdx].itens!.push(newItem);
+    }
+    updateField('incluso_categories', cats);
+  };
+
+  // Custom item inline state
+  const [customItemInput, setCustomItemInput] = useState<{ catIdx: number; subIdx?: number; value: string } | null>(null);
 
   // ── Success screen ──
   if (generatedSlug) {
@@ -113,8 +171,8 @@ export function ProposalWizard() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 w-full">
-      {/* ── Step indicator ── */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      {/* Step indicator */}
+      <div className="flex items-center gap-1">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -134,7 +192,7 @@ export function ProposalWizard() {
                 {i < step ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
               </div>
               <span className={cn(
-                "text-xs transition-colors hidden sm:block",
+                "text-[10px] transition-colors hidden sm:block",
                 i <= step ? "text-foreground font-medium" : "text-muted-foreground"
               )}>{s.label}</span>
             </button>
@@ -145,17 +203,13 @@ export function ProposalWizard() {
       <Card>
         <CardContent className="pt-6 space-y-6">
 
-          {/* ════════════════════════════════════════════════
-              STEP 0 — CLIENTE E PROJETO
-              Corresponde à seção Hero da proposta
-             ════════════════════════════════════════════════ */}
+          {/* ══ STEP 0 — CLIENTE E PROJETO ══ */}
           {step === 0 && (
             <div className="space-y-5">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Cliente e Projeto</h3>
                 <p className="text-sm text-muted-foreground">Informações que aparecem no topo da proposta.</p>
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Nome do Cliente *</Label>
@@ -166,7 +220,7 @@ export function ProposalWizard() {
                   <Input value={form.project_name} onChange={e => updateField('project_name', e.target.value)} placeholder="Ex: Campanha Verão 2026" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Responsável (Cliente)</Label>
+                  <Label className="text-xs font-medium">Responsável (Nome de quem vai receber)</Label>
                   <Input value={form.client_responsible} onChange={e => updateField('client_responsible', e.target.value)} placeholder="Nome do contato" />
                 </div>
                 <div className="space-y-1.5">
@@ -176,34 +230,45 @@ export function ProposalWizard() {
                     <Input value={form.whatsapp_number} onChange={e => updateField('whatsapp_number', e.target.value)} placeholder="5511999999999" className="pl-9" />
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Data de Validade *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full sm:w-[260px] justify-start text-left font-normal h-10", !form.validity_date && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.validity_date ? format(form.validity_date, "dd 'de' MMMM, yyyy", { locale: ptBR }) : "Selecione a data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={form.validity_date} onSelect={d => updateField('validity_date', d)} disabled={date => date < new Date()} initialFocus className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-                <p className="text-xs text-muted-foreground">Aparece no countdown da proposta</p>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Data de Envio</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(form.sent_date, "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={form.sent_date} onSelect={d => d && updateField('sent_date', d)} initialFocus className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">Data da geração da proposta</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Data de Validade *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-10", !form.validity_date && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {form.validity_date ? format(form.validity_date, "dd 'de' MMMM, yyyy", { locale: ptBR }) : "Selecione a data"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={form.validity_date} onSelect={d => updateField('validity_date', d)} disabled={date => date < new Date()} initialFocus className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">Aparece no countdown da proposta</p>
+                </div>
               </div>
             </div>
           )}
 
-          {/* ════════════════════════════════════════════════
-              STEP 1 — DIAGNÓSTICO
-              Corresponde à seção Objetivo da proposta
-             ════════════════════════════════════════════════ */}
+          {/* ══ STEP 1 — DIAGNÓSTICO ══ */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Diagnóstico do Projeto</h3>
+                <h3 className="text-lg font-semibold text-foreground">Diagnóstico</h3>
                 <p className="text-sm text-muted-foreground">O que o cliente precisa resolver? Esta seção gera a conexão emocional.</p>
               </div>
 
@@ -212,186 +277,388 @@ export function ProposalWizard() {
                 <Textarea
                   value={form.objetivo}
                   onChange={e => updateField('objetivo', e.target.value)}
-                  placeholder="Ex: Posicionar a marca como referência no segmento através de conteúdo audiovisual estratégico que conecte com o público-alvo..."
-                  rows={3}
+                  rows={6}
+                  className="text-sm leading-relaxed"
                 />
-                <p className="text-xs text-muted-foreground">Texto de abertura da seção de diagnóstico na proposta</p>
+                <p className="text-xs text-muted-foreground">Texto de abertura na seção "Sobre" da proposta</p>
               </div>
 
               <Separator />
 
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-semibold">3 Dores do Cliente</Label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">Dores do Cliente</Label>
+                    <span className="text-xs text-muted-foreground">({selectedDores.length}/3)</span>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground -mt-2">Cada card aparece na proposta com destaque visual. Preencha de forma objetiva.</p>
+                <p className="text-xs text-muted-foreground -mt-2">Selecione até 3 dores do banco ou adicione uma personalizada.</p>
 
-                {form.diagnostico_dores.map((dor, i) => (
-                  <div key={i} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
-                        {dor.label || `Dor ${i + 1}`}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
+                  {painPoints.map(pp => {
+                    const isSelected = selectedDores.some(d => d.title === pp.title);
+                    return (
+                      <div
+                        key={pp.id}
+                        onClick={() => togglePainPoint(pp)}
+                        className={cn(
+                          "rounded-lg border p-4 cursor-pointer transition-all",
+                          isSelected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Checkbox checked={isSelected} className="mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                {pp.label}
+                              </span>
+                            </div>
+                            <p className="text-sm font-semibold text-foreground">{pp.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{pp.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Add custom pain point */}
+                {!showNewPain ? (
+                  <Button variant="outline" size="sm" onClick={() => setShowNewPain(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Adicionar Personalizada
+                  </Button>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-primary/50 p-4 space-y-3 bg-primary/5">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Label (tag)</Label>
-                        <Input
-                          value={dor.label}
-                          onChange={e => {
-                            const u = [...form.diagnostico_dores]; u[i] = { ...u[i], label: e.target.value }; updateField('diagnostico_dores', u);
-                          }}
-                          placeholder="Ex: Prioridade"
-                          className="h-9"
-                        />
+                        <Label className="text-xs text-muted-foreground">Label</Label>
+                        <Input value={newPain.label} onChange={e => setNewPain(p => ({ ...p, label: e.target.value }))} placeholder="Ex: Prioridade" className="h-9" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">Título</Label>
-                        <Input
-                          value={dor.title}
-                          onChange={e => {
-                            const u = [...form.diagnostico_dores]; u[i] = { ...u[i], title: e.target.value }; updateField('diagnostico_dores', u);
-                          }}
-                          placeholder="Ex: Ausência de conteúdo estratégico"
-                          className="h-9"
-                        />
+                        <Input value={newPain.title} onChange={e => setNewPain(p => ({ ...p, title: e.target.value }))} placeholder="Ex: Qualidade visual" className="h-9" />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Descrição</Label>
-                      <Textarea
-                        value={dor.desc}
-                        onChange={e => {
-                          const u = [...form.diagnostico_dores]; u[i] = { ...u[i], desc: e.target.value }; updateField('diagnostico_dores', u);
+                      <Textarea value={newPain.desc} onChange={e => setNewPain(p => ({ ...p, desc: e.target.value }))} rows={2} placeholder="Descreva a dor..." />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          if (newPain.title.trim()) {
+                            await createPainPoint.mutateAsync({ label: newPain.label, title: newPain.title, description: newPain.desc });
+                            setNewPain({ label: '', title: '', desc: '' });
+                            setShowNewPain(false);
+                          }
                         }}
-                        placeholder="Descreva brevemente o problema..."
-                        rows={2}
-                      />
+                        disabled={!newPain.title.trim() || createPainPoint.isPending}
+                      >
+                        <Check className="h-4 w-4 mr-1" /> Salvar
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setShowNewPain(false)}>Cancelar</Button>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
 
-          {/* ════════════════════════════════════════════════
-              STEP 2 — PORTFÓLIO (Cases + Entregáveis)
-              Corresponde às seções Cases e Entregáveis
-             ════════════════════════════════════════════════ */}
+          {/* ══ STEP 2 — PORTFÓLIO (CASES) ══ */}
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Cases Similares</h3>
-                <p className="text-sm text-muted-foreground">Projetos relevantes que demonstram capacidade. Usam embed do Vimeo.</p>
+                <h3 className="text-lg font-semibold text-foreground">Portfólio</h3>
+                <p className="text-sm text-muted-foreground">Selecione cases do banco para incluir na proposta.</p>
               </div>
 
-              {form.cases.map((c, idx) => (
-                <div key={idx} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground">Case {idx + 1}</span>
-                    <Button variant="ghost" size="icon" onClick={() => removeCase(idx)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+              <div className="grid grid-cols-1 gap-3">
+                {casesBank.map(c => {
+                  const isSelected = form.selected_case_ids.includes(c.id);
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => toggleCase(c.id)}
+                      className={cn(
+                        "rounded-lg border p-4 cursor-pointer transition-all",
+                        isSelected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox checked={isSelected} className="shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
+                              {c.tipo}
+                            </span>
+                            {c.destaque && (
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                                Destaque
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm font-semibold text-foreground">{c.client_name}</p>
+                          <p className="text-xs text-muted-foreground">{c.campaign_name}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-mono shrink-0">{c.vimeo_id}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {casesBank.length === 0 && !showNewCase && (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum case no banco. Adicione o primeiro abaixo.</p>
+              )}
+
+              {!showNewCase ? (
+                <Button variant="outline" size="sm" onClick={() => setShowNewCase(true)}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar Novo Case
+                </Button>
+              ) : (
+                <div className="rounded-lg border border-dashed border-primary/50 p-4 space-y-3 bg-primary/5">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Tipo</Label>
-                      <Input value={c.tipo || ''} onChange={e => updateCase(idx, 'tipo', e.target.value)} placeholder="Vídeo Institucional" className="h-9" />
+                      <Label className="text-xs text-muted-foreground">Tipo de Projeto</Label>
+                      <Input value={newCase.tipo} onChange={e => setNewCase(p => ({ ...p, tipo: e.target.value }))} placeholder="Campanha Publicitária" className="h-9" />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Título</Label>
-                      <Input value={c.titulo || ''} onChange={e => updateCase(idx, 'titulo', e.target.value)} placeholder="Nome do case" className="h-9" />
+                      <Label className="text-xs text-muted-foreground">Nome do Cliente</Label>
+                      <Input value={newCase.client_name} onChange={e => setNewCase(p => ({ ...p, client_name: e.target.value }))} placeholder="Burger King" className="h-9" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Nome da Campanha</Label>
+                      <Input value={newCase.campaign_name} onChange={e => setNewCase(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Whopper Day 2026" className="h-9" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Vimeo ID</Label>
-                      <Input value={c.vimeoId || ''} onChange={e => updateCase(idx, 'vimeoId', e.target.value)} placeholder="1234567890" className="h-9" />
+                      <Input value={newCase.vimeo_id} onChange={e => setNewCase(p => ({ ...p, vimeo_id: e.target.value }))} placeholder="1234567890" className="h-9" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Vimeo Hash</Label>
-                      <Input value={c.vimeoHash || ''} onChange={e => updateCase(idx, 'vimeoHash', e.target.value)} placeholder="abc123def" className="h-9" />
+                      <Input value={newCase.vimeo_hash} onChange={e => setNewCase(p => ({ ...p, vimeo_hash: e.target.value }))} placeholder="abc123def" className="h-9" />
+                    </div>
+                    <div className="flex items-center gap-2 pt-5">
+                      <Switch checked={newCase.destaque} onCheckedChange={v => setNewCase(p => ({ ...p, destaque: v }))} />
+                      <Label className="text-xs">Destaque (showreel)</Label>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={!!c.destaque} onCheckedChange={v => updateCase(idx, 'destaque', v)} />
-                    <Label className="text-xs text-muted-foreground">Destaque (aparece maior)</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        if (newCase.vimeo_id.trim()) {
+                          await createCase.mutateAsync(newCase);
+                          setNewCase({ tipo: '', client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', destaque: false });
+                          setShowNewCase(false);
+                        }
+                      }}
+                      disabled={!newCase.vimeo_id.trim() || createCase.isPending}
+                    >
+                      <Check className="h-4 w-4 mr-1" /> Salvar no Banco
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowNewCase(false)}>Cancelar</Button>
                   </div>
                 </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addCase}>
-                <Plus className="h-4 w-4 mr-1" /> Adicionar Case
-              </Button>
+              )}
+            </div>
+          )}
 
-              <Separator />
-
-              {/* Entregáveis */}
+          {/* ══ STEP 3 — ENTREGÁVEIS ══ */}
+          {step === 3 && (
+            <div className="space-y-5">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Entregáveis</h3>
-                <p className="text-sm text-muted-foreground">O que o cliente vai receber. Cada entregável tem um output e serviços inclusos.</p>
+                <p className="text-sm text-muted-foreground">O que o cliente vai receber. Cada item vira um card na proposta.</p>
               </div>
 
-              {form.entregaveis.map((ent: any, eIdx: number) => (
-                <div key={eIdx} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
+              {form.entregaveis.map((ent, idx) => (
+                <div key={idx} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Video className="h-4 w-4 text-primary" />
-                      Entregável {eIdx + 1}
-                    </span>
-                    <Button variant="ghost" size="icon" onClick={() => removeEntregavel(eIdx)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                    <span className="text-sm font-semibold text-foreground">Entregável {idx + 1}</span>
+                    <Button variant="ghost" size="icon" onClick={() => removeEntregavel(idx)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Output</Label>
-                    <Input value={ent.output || ''} onChange={e => updateEntregavelOutput(eIdx, e.target.value)} placeholder='Ex: "1 vídeo institucional de 2min"' className="h-9" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Serviços inclusos</Label>
-                    {(ent.items || []).map((item: string, iIdx: number) => (
-                      <div key={iIdx} className="flex gap-2">
-                        <Input value={item} onChange={e => updateEntregavelItem(eIdx, iIdx, e.target.value)} placeholder="Ex: Roteirização" className="h-9" />
-                        <Button variant="ghost" size="icon" onClick={() => removeEntregavelItem(eIdx, iIdx)} disabled={(ent.items || []).length <= 1} className="h-9 w-9 shrink-0 text-muted-foreground">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Título</Label>
+                      <Input value={ent.titulo} onChange={e => updateEntregavel(idx, 'titulo', e.target.value)} placeholder="Vídeo principal" className="h-9" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Quantidade</Label>
+                        <Input value={ent.quantidade} onChange={e => updateEntregavel(idx, 'quantidade', e.target.value)} placeholder="1" className="h-9" />
                       </div>
-                    ))}
-                    <Button variant="ghost" size="sm" onClick={() => addEntregavelItem(eIdx)} className="text-xs">
-                      <Plus className="h-3 w-3 mr-1" /> Serviço
-                    </Button>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Ícone</Label>
+                        <Select value={ent.icone} onValueChange={v => updateEntregavel(idx, 'icone', v)}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ICON_OPTIONS.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Descrição</Label>
+                    <Input value={ent.descricao} onChange={e => updateEntregavel(idx, 'descricao', e.target.value)} placeholder="Peça hero com até 60 segundos, formato 16:9" className="h-9" />
                   </div>
                 </div>
               ))}
+
               <Button variant="outline" size="sm" onClick={addEntregavel}>
                 <Plus className="h-4 w-4 mr-1" /> Adicionar Entregável
               </Button>
             </div>
           )}
 
-          {/* ════════════════════════════════════════════════
-              STEP 3 — INVESTIMENTO
-              Corresponde à seção Investimento da proposta
-             ════════════════════════════════════════════════ */}
-          {step === 3 && (
+          {/* ══ STEP 4 — O QUE ESTÁ INCLUSO ══ */}
+          {step === 4 && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">O que está incluso</h3>
+                <p className="text-sm text-muted-foreground">Marque os serviços inclusos no projeto. Os desmarcados aparecem como "Add-on".</p>
+              </div>
+
+              {form.incluso_categories.map((cat, catIdx) => (
+                <div key={cat.categoria} className="space-y-3">
+                  <h4 className="text-sm font-semibold text-foreground">{cat.categoria}</h4>
+
+                  {cat.itens && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                      {cat.itens.map((item, itemIdx) => (
+                        <div key={item.nome} className={cn(
+                          "flex items-center gap-3 rounded-lg border p-3 transition-colors",
+                          item.ativo ? "border-primary/50 bg-primary/5" : "border-border"
+                        )}>
+                          <Switch checked={item.ativo} onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)} />
+                          <span className="text-sm flex-1">{item.nome}</span>
+                          {item.ativo && item.quantidade !== undefined && (
+                            <Input
+                              value={item.quantidade}
+                              onChange={e => updateInclusoQuantidade(catIdx, itemIdx, e.target.value)}
+                              className="h-7 w-14 text-xs text-center"
+                              placeholder="Qtd"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {cat.subcategorias && cat.subcategorias.map((sub, subIdx) => (
+                    <div key={sub.nome} className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{sub.nome}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {sub.itens.map((item, itemIdx) => (
+                          <div key={item.nome} className={cn(
+                            "flex items-center gap-3 rounded-lg border p-3 transition-colors",
+                            item.ativo ? "border-primary/50 bg-primary/5" : "border-border"
+                          )}>
+                            <Switch checked={item.ativo} onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx, subIdx)} />
+                            <span className="text-sm flex-1">{item.nome}</span>
+                            {item.ativo && item.quantidade !== undefined && (
+                              <Input
+                                value={item.quantidade}
+                                onChange={e => updateInclusoQuantidade(catIdx, itemIdx, e.target.value, subIdx)}
+                                className="h-7 w-14 text-xs text-center"
+                                placeholder="Qtd"
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Add custom to subcategory */}
+                      {customItemInput?.catIdx === catIdx && customItemInput?.subIdx === subIdx ? (
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            value={customItemInput.value}
+                            onChange={e => setCustomItemInput({ ...customItemInput, value: e.target.value })}
+                            placeholder="Nome do item"
+                            className="h-8 text-sm"
+                            autoFocus
+                          />
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => {
+                            if (customItemInput.value.trim()) {
+                              addCustomInclusoItem(catIdx, customItemInput.value.trim(), subIdx);
+                            }
+                            setCustomItemInput(null);
+                          }}>
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setCustomItemInput({ catIdx, subIdx, value: '' })}>
+                          <Plus className="h-3 w-3 mr-1" /> Personalizado
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Add custom to top-level category */}
+                  {cat.itens && !cat.subcategorias && (
+                    customItemInput?.catIdx === catIdx && customItemInput?.subIdx === undefined ? (
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          value={customItemInput.value}
+                          onChange={e => setCustomItemInput({ ...customItemInput, value: e.target.value })}
+                          placeholder="Nome do item"
+                          className="h-8 text-sm"
+                          autoFocus
+                        />
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => {
+                          if (customItemInput.value.trim()) {
+                            addCustomInclusoItem(catIdx, customItemInput.value.trim());
+                          }
+                          setCustomItemInput(null);
+                        }}>
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setCustomItemInput({ catIdx, value: '' })}>
+                        <Plus className="h-3 w-3 mr-1" /> Personalizado
+                      </Button>
+                    )
+                  )}
+
+                  {catIdx < form.incluso_categories.length - 1 && <Separator />}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ══ STEP 5 — INVESTIMENTO ══ */}
+          {step === 5 && (
             <div className="space-y-5">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Investimento</h3>
-                <p className="text-sm text-muted-foreground">Valores, condições de pagamento e prova social.</p>
+                <p className="text-sm text-muted-foreground">Valores e condições de pagamento.</p>
               </div>
 
-              {/* Valores */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor de Tabela (R$)</Label>
-                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="Opcional — riscado" className="h-10" />
-                  <p className="text-xs text-muted-foreground">Aparece riscado</p>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor Final (R$) *</Label>
-                  <Input type="number" min={0} step={0.01} value={form.base_value || ''} onChange={e => updateField('base_value', parseFloat(e.target.value) || 0)} placeholder="0,00" className="h-10" />
+                  <Label className="text-xs font-medium">Valor do Projeto (R$) *</Label>
+                  <Input type="number" min={0} step={0.01} value={form.base_value || ''} onChange={e => updateField('base_value', parseFloat(e.target.value) || 0)} placeholder="20000" className="h-10" />
+                  <p className="text-xs text-muted-foreground">Valor cheio antes do desconto</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Desconto (%)</Label>
-                  <Input type="number" min={0} max={100} value={form.discount_pct || ''} onChange={e => updateField('discount_pct', parseFloat(e.target.value) || 0)} placeholder="0" className="h-10" />
+                  <Input type="number" min={0} max={100} value={form.discount_pct || ''} onChange={e => updateField('discount_pct', parseFloat(e.target.value) || 0)} placeholder="50" className="h-10" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Valor de Tabela (R$)</Label>
+                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="Opcional — riscado" className="h-10" />
+                  <p className="text-xs text-muted-foreground">Aparece riscado na proposta</p>
                 </div>
               </div>
 
@@ -409,81 +676,45 @@ export function ProposalWizard() {
 
               <Separator />
 
-              {/* Opções de pagamento */}
               <div>
                 <Label className="text-sm font-semibold">Opções de Pagamento</Label>
-                <p className="text-xs text-muted-foreground mt-1">Cards de pagamento que aparecem na proposta</p>
+                <p className="text-xs text-muted-foreground mt-1">Geradas automaticamente com base no valor final</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                  <div className="rounded-lg border border-border p-4 bg-muted/30">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Opção 1</p>
+                    <p className="text-sm font-semibold mt-1">À Vista</p>
+                    <p className="text-lg font-bold text-foreground mt-1">{fmt(finalValue * 0.95)}</p>
+                    <p className="text-xs text-success mt-1">5% de desconto para pagamento único</p>
+                  </div>
+                  <div className="rounded-lg border border-primary/50 p-4 bg-primary/5 relative">
+                    <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">Recomendado</span>
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Opção 2</p>
+                    <p className="text-sm font-semibold mt-1">2x sem juros</p>
+                    <p className="text-lg font-bold text-foreground mt-1">2x {fmt(finalValue / 2)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">50% no fechamento + 50% na entrega</p>
+                  </div>
+                </div>
               </div>
+
+              <Separator />
 
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Condições gerais</Label>
                 <Textarea value={form.payment_terms} onChange={e => updateField('payment_terms', e.target.value)} rows={2} className="text-sm" />
               </div>
 
-              {form.payment_options.map((opt, idx) => (
-                <div key={idx} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Opção {idx + 1}</span>
-                    <Button variant="ghost" size="icon" onClick={() => removePaymentOption(idx)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Título</Label>
-                      <Input value={opt.titulo} onChange={e => updatePaymentOption(idx, 'titulo', e.target.value)} placeholder="Ex: À Vista" className="h-9" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Valor</Label>
-                      <Input value={opt.valor} onChange={e => updatePaymentOption(idx, 'valor', e.target.value)} placeholder="Ex: R$ 25.000" className="h-9" />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Descrição</Label>
-                    <Input value={opt.descricao} onChange={e => updatePaymentOption(idx, 'descricao', e.target.value)} placeholder="Ex: Pagamento único com 5% off" className="h-9" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Badge destaque</Label>
-                      <Input value={opt.destaque || ''} onChange={e => updatePaymentOption(idx, 'destaque', e.target.value)} placeholder="Ex: Melhor custo" className="h-9" />
-                    </div>
-                    <div className="flex items-center gap-2 pt-5">
-                      <Switch checked={!!opt.recomendado} onCheckedChange={v => updatePaymentOption(idx, 'recomendado', v)} />
-                      <Label className="text-xs">Recomendado</Label>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addPaymentOption}>
-                <Plus className="h-4 w-4 mr-1" /> Opção de Pagamento
-              </Button>
-
               <Separator />
 
-              {/* Depoimento */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" /> Depoimento (opcional)
+                  <Sparkles className="h-4 w-4" /> Depoimento
                 </h4>
-                <p className="text-xs text-muted-foreground mt-1">Prova social que aparece ao lado do investimento</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Nome</Label>
-                  <Input value={form.testimonial_name} onChange={e => updateField('testimonial_name', e.target.value)} placeholder="João Silva" className="h-9" />
+                <p className="text-xs text-muted-foreground mt-1">Prova social fixa (padrão)</p>
+                <div className="rounded-lg border border-border p-4 bg-muted/30 mt-3">
+                  <p className="text-sm font-semibold">{form.testimonial_name}</p>
+                  <p className="text-xs text-muted-foreground">{form.testimonial_role}</p>
+                  <p className="text-sm text-muted-foreground mt-2 italic">"{form.testimonial_text}"</p>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Cargo</Label>
-                  <Input value={form.testimonial_role} onChange={e => updateField('testimonial_role', e.target.value)} placeholder="CEO, Empresa X" className="h-9" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Texto</Label>
-                <Textarea value={form.testimonial_text} onChange={e => updateField('testimonial_text', e.target.value)} rows={2} placeholder="O que o cliente disse..." />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">URL da Foto</Label>
-                <Input value={form.testimonial_image} onChange={e => updateField('testimonial_image', e.target.value)} placeholder="https://..." className="h-9" />
               </div>
             </div>
           )}
@@ -491,7 +722,7 @@ export function ProposalWizard() {
         </CardContent>
       </Card>
 
-      {/* ── Navigation ── */}
+      {/* Navigation */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => step > 0 ? setStep(step - 1) : navigate('/orcamentos')} disabled={createProposal.isPending}>
           <ArrowLeft className="h-4 w-4 mr-1" />
