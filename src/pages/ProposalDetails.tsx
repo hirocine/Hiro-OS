@@ -95,7 +95,7 @@ export default function ProposalDetails() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showNewDorDialog, setShowNewDorDialog] = useState(false);
-  const [newDorForm, setNewDorForm] = useState({ label: 'Star', title: '', description: '' });
+  const [newDorForm, setNewDorForm] = useState({ label: '⭐', title: '', description: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
