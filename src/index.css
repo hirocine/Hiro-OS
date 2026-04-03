@@ -617,6 +617,17 @@ body:has(.proposal-page),
   }
 }
 
+@keyframes proposal-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .proposal-gradient-1 {
   background:
     radial-gradient(ellipse 70% 70% at 75% 40%, rgba(76, 255, 92, 0.18) 0%, transparent 60%),

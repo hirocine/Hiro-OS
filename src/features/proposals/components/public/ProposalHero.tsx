@@ -59,6 +59,11 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
     }
   })()
 
+  const fadeUp = (delay: number): React.CSSProperties => ({
+    opacity: 0,
+    animation: `proposal-fade-up 0.8s ease-out ${delay}ms forwards`,
+  })
+
   return (
     <section ref={sectionRef} className='relative min-h-[92vh] flex flex-col justify-center items-start text-left proposal-content-px pt-40 pb-20'>
       {/* Background image */}
@@ -75,21 +80,21 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
         <div className='absolute inset-[-10%] w-[120%] h-[120%] proposal-gradient-2' />
       </div>
 
-      <p className='text-[11px] uppercase tracking-[6px] text-[#4CFF5C] font-medium mb-8 relative z-10'>
+      <p style={fadeUp(0)} className='text-[11px] uppercase tracking-[6px] text-[#4CFF5C] font-medium mb-8 relative z-10'>
         Proposta Comercial {new Date(createdAt).getFullYear()}
       </p>
 
-      <h1 className='proposal-font-display text-5xl md:text-7xl font-bold mb-5 leading-[1.1] relative z-10 uppercase'>
+      <h1 style={fadeUp(150)} className='proposal-font-display text-5xl md:text-7xl font-bold mb-5 leading-[1.1] relative z-10 uppercase'>
         {projectName}
       </h1>
 
-      <p className='text-base md:text-lg text-gray-400 font-light mb-16 max-w-[500px] relative z-10'>
+      <p style={fadeUp(300)} className='text-base md:text-lg text-gray-400 font-light mb-16 max-w-[500px] relative z-10'>
         {companyDescription || 'Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.'}
       </p>
 
-      <div className='w-[60px] h-[2px] bg-[#4CFF5C] mb-10 relative z-10' />
+      <div style={fadeUp(450)} className='w-[60px] h-[2px] bg-[#4CFF5C] mb-10 relative z-10' />
 
-      <div className='flex gap-8 md:gap-12 flex-wrap relative z-10 w-full items-center'>
+      <div style={fadeUp(600)} className='flex gap-8 md:gap-12 flex-wrap relative z-10 w-full items-center'>
         <InfoItem label='Cliente' value={clientName} />
         <div className='hidden md:block w-px h-10 bg-gray-700 self-center' />
         {clientResponsible && (
