@@ -92,7 +92,7 @@ export default function ProposalDetails() {
 
   const status = statusMap[proposal.status] || statusMap.draft;
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
-  const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
+  
 
   const startEdit = (section: string) => {
     if (section === 'client') {
