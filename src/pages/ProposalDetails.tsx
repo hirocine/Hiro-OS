@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,18 +12,16 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ArrowLeft, ExternalLink, Building2, Pencil, X, Check, Calendar, DollarSign,
-  User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload
+  ExternalLink, Building2, Calendar, DollarSign,
+  User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposals } from '@/features/proposals/hooks/useProposals';
-import type { Proposal } from '@/features/proposals/types';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -60,15 +58,65 @@ export default function ProposalDetails() {
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
-  const [editingSection, setEditingSection] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  // Section form states
   const [clientForm, setClientForm] = useState({ client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
+
+  // Populate forms when proposal loads
+  useEffect(() => {
+    if (!proposal) return;
+    setClientForm({
+      client_name: proposal.client_name,
+      project_name: proposal.project_name,
+      client_responsible: proposal.client_responsible || '',
+      whatsapp_number: proposal.whatsapp_number || '',
+      company_description: proposal.company_description || '',
+    });
+    setInvestForm({
+      list_price: proposal.list_price || 0,
+      discount_pct: proposal.discount_pct || 0,
+      payment_terms: proposal.payment_terms || '',
+    });
+    setDiagForm({ objetivo: proposal.objetivo || '' });
+    setTestimonialForm({
+      testimonial_name: proposal.testimonial_name || '',
+      testimonial_role: proposal.testimonial_role || '',
+      testimonial_text: proposal.testimonial_text || '',
+    });
+  }, [proposal]);
+
+  // Dirty checks
+  const clientDirty = useMemo(() => {
+    if (!proposal) return false;
+    return clientForm.client_name !== proposal.client_name ||
+      clientForm.project_name !== proposal.project_name ||
+      clientForm.client_responsible !== (proposal.client_responsible || '') ||
+      clientForm.whatsapp_number !== (proposal.whatsapp_number || '') ||
+      clientForm.company_description !== (proposal.company_description || '');
+  }, [clientForm, proposal]);
+
+  const investDirty = useMemo(() => {
+    if (!proposal) return false;
+    return investForm.list_price !== (proposal.list_price || 0) ||
+      investForm.discount_pct !== (proposal.discount_pct || 0) ||
+      investForm.payment_terms !== (proposal.payment_terms || '');
+  }, [investForm, proposal]);
+
+  const diagDirty = useMemo(() => {
+    if (!proposal) return false;
+    return diagForm.objetivo !== (proposal.objetivo || '');
+  }, [diagForm, proposal]);
+
+  const testimonialDirty = useMemo(() => {
+    if (!proposal) return false;
+    return testimonialForm.testimonial_name !== (proposal.testimonial_name || '') ||
+      testimonialForm.testimonial_role !== (proposal.testimonial_role || '') ||
+      testimonialForm.testimonial_text !== (proposal.testimonial_text || '');
+  }, [testimonialForm, proposal]);
 
   if (isLoading) {
     return (
@@ -90,36 +138,7 @@ export default function ProposalDetails() {
     );
   }
 
-  const status = statusMap[proposal.status] || statusMap.draft;
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
-  
-
-  const startEdit = (section: string) => {
-    if (section === 'client') {
-      setClientForm({
-        client_name: proposal.client_name,
-        project_name: proposal.project_name,
-        client_responsible: proposal.client_responsible || '',
-        whatsapp_number: proposal.whatsapp_number || '',
-        company_description: proposal.company_description || '',
-      });
-    } else if (section === 'invest') {
-      setInvestForm({
-        list_price: proposal.list_price || 0,
-        discount_pct: proposal.discount_pct || 0,
-        payment_terms: proposal.payment_terms || '',
-      });
-    } else if (section === 'diag') {
-      setDiagForm({ objetivo: proposal.objetivo || '' });
-    } else if (section === 'testimonial') {
-      setTestimonialForm({
-        testimonial_name: proposal.testimonial_name || '',
-        testimonial_role: proposal.testimonial_role || '',
-        testimonial_text: proposal.testimonial_text || '',
-      });
-    }
-    setEditingSection(section);
-  };
 
   const saveSection = async (section: string) => {
     try {
@@ -152,7 +171,7 @@ export default function ProposalDetails() {
       }
       await updateProposal.mutateAsync({ id: proposal.id, data });
       await refetch();
-      setEditingSection(null);
+      toast.success('Alterações salvas!');
     } catch {
       toast.error('Erro ao salvar alterações');
     }
@@ -189,38 +208,6 @@ export default function ProposalDetails() {
     await deleteProposal.mutateAsync(proposal.id);
     navigate('/orcamentos');
   };
-
-  const SectionHeader = ({ title, section, icon: Icon }: { title: string; section: string; icon: any }) => (
-    <CardHeader className="pb-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-          <CardTitle className="text-base">{title}</CardTitle>
-        </div>
-        {editingSection !== section ? (
-          <Button variant="ghost" size="sm" onClick={() => startEdit(section)} className="h-7 px-2">
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-        ) : (
-          <div className="flex gap-1">
-            <Button variant="ghost" size="sm" onClick={() => setEditingSection(null)} className="h-7 px-2">
-              <X className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="sm" onClick={() => saveSection(section)} className="h-7 px-2" disabled={updateProposal.isPending}>
-              <Check className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </CardHeader>
-  );
-
-  const InfoRow = ({ label, value }: { label: string; value: string | null | undefined }) => (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm">{value || '—'}</span>
-    </div>
-  );
 
   const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
 
@@ -310,91 +297,96 @@ export default function ProposalDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Client Section */}
           <Card>
-            <SectionHeader title="Cliente e Projeto" section="client" icon={Building2} />
-            <CardContent className="pt-0">
-              {editingSection === 'client' ? (
-                <div className="space-y-3">
-                  <div><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
-                  <div><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
-                  <div><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-                  <div><Label className="text-xs">WhatsApp</Label><Input value={clientForm.whatsapp_number} onChange={e => setClientForm(p => ({ ...p, whatsapp_number: e.target.value }))} /></div>
-                  <div><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={3} /></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <InfoRow label="Cliente" value={proposal.client_name} />
-                  <InfoRow label="Projeto" value={proposal.project_name} />
-                  <InfoRow label="Responsável" value={proposal.client_responsible} />
-                  <InfoRow label="WhatsApp" value={proposal.whatsapp_number} />
-                  <div className="col-span-2">
-                    <InfoRow label="Descrição da empresa" value={proposal.company_description} />
-                  </div>
-                </div>
-              )}
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              <div><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
+              <div><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
+              <div><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
+              <div><Label className="text-xs">WhatsApp</Label><Input value={clientForm.whatsapp_number} onChange={e => setClientForm(p => ({ ...p, whatsapp_number: e.target.value }))} /></div>
+              <div><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={3} /></div>
             </CardContent>
+            {clientDirty && (
+              <CardFooter className="pt-0 pb-4 px-6">
+                <Button size="sm" onClick={() => saveSection('client')} disabled={updateProposal.isPending}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* Investment Section */}
           <Card>
-            <SectionHeader title="Investimento" section="invest" icon={DollarSign} />
-            <CardContent className="pt-0">
-              {editingSection === 'invest' ? (
-                <div className="space-y-3">
-                  <div><Label className="text-xs">Valor de Tabela (R$)</Label><Input type="number" value={investForm.list_price} onChange={e => setInvestForm(p => ({ ...p, list_price: Number(e.target.value) }))} /></div>
-                  <div><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <span className="text-xs text-muted-foreground">Valor Final: </span>
-                    <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investFinalValue)}</span>
-                  </div>
-                  <div><Label className="text-xs">Condições de Pagamento</Label><Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={2} /></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <InfoRow label="Valor de Tabela" value={proposal.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.list_price) : null} />
-                  <InfoRow label="Desconto" value={proposal.discount_pct ? `${proposal.discount_pct}%` : '0%'} />
-                  <InfoRow label="Valor Final" value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value)} />
-                  <div className="col-span-2">
-                    <InfoRow label="Condições de Pagamento" value={proposal.payment_terms} />
-                  </div>
-                </div>
-              )}
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Investimento</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              <div><Label className="text-xs">Valor de Tabela (R$)</Label><Input type="number" value={investForm.list_price} onChange={e => setInvestForm(p => ({ ...p, list_price: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
+              <div className="p-3 rounded-lg bg-muted/50">
+                <span className="text-xs text-muted-foreground">Valor Final: </span>
+                <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investFinalValue)}</span>
+              </div>
+              <div><Label className="text-xs">Condições de Pagamento</Label><Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={2} /></div>
             </CardContent>
+            {investDirty && (
+              <CardFooter className="pt-0 pb-4 px-6">
+                <Button size="sm" onClick={() => saveSection('invest')} disabled={updateProposal.isPending}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* Objective Section */}
           <Card className="lg:col-span-2">
-            <SectionHeader title="Objetivo" section="diag" icon={FileText} />
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Objetivo</CardTitle>
+              </div>
+            </CardHeader>
             <CardContent className="pt-0">
-              {editingSection === 'diag' ? (
-                <div className="space-y-3">
-                  <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={6} />
-                </div>
-              ) : (
-                <p className="text-sm whitespace-pre-wrap">{proposal.objetivo || '—'}</p>
-              )}
+              <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={6} />
             </CardContent>
+            {diagDirty && (
+              <CardFooter className="pt-0 pb-4 px-6">
+                <Button size="sm" onClick={() => saveSection('diag')} disabled={updateProposal.isPending}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
-            <SectionHeader title="Depoimento" section="testimonial" icon={MessageSquare} />
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Depoimento</CardTitle>
+              </div>
+            </CardHeader>
             <CardContent className="pt-0">
-              {editingSection === 'testimonial' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div><Label className="text-xs">Nome</Label><Input value={testimonialForm.testimonial_name} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_name: e.target.value }))} /></div>
-                  <div><Label className="text-xs">Cargo</Label><Input value={testimonialForm.testimonial_role} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_role: e.target.value }))} /></div>
-                  <div className="md:col-span-2"><Label className="text-xs">Texto</Label><Textarea value={testimonialForm.testimonial_text} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_text: e.target.value }))} rows={3} /></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <InfoRow label="Nome" value={proposal.testimonial_name} />
-                  <InfoRow label="Cargo" value={proposal.testimonial_role} />
-                  <div className="col-span-2 md:col-span-3">
-                    <InfoRow label="Texto" value={proposal.testimonial_text} />
-                  </div>
-                </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><Label className="text-xs">Nome</Label><Input value={testimonialForm.testimonial_name} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_name: e.target.value }))} /></div>
+                <div><Label className="text-xs">Cargo</Label><Input value={testimonialForm.testimonial_role} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_role: e.target.value }))} /></div>
+                <div className="md:col-span-2"><Label className="text-xs">Texto</Label><Textarea value={testimonialForm.testimonial_text} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_text: e.target.value }))} rows={3} /></div>
+              </div>
             </CardContent>
+            {testimonialDirty && (
+              <CardFooter className="pt-0 pb-4 px-6">
+                <Button size="sm" onClick={() => saveSection('testimonial')} disabled={updateProposal.isPending}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                </Button>
+              </CardFooter>
+            )}
           </Card>
         </div>
       </div>
