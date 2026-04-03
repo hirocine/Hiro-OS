@@ -525,6 +525,11 @@ html, body {
 
 html:has(.proposal-page) {
   scrollbar-gutter: auto !important;
+  overflow-y: auto !important;
+}
+
+body:has(.proposal-page) {
+  overflow-y: visible !important;
 }
 
 .proposal-page {
