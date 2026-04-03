@@ -331,7 +331,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Investimento</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0 space-y-3">
+            <CardContent className="pt-2 space-y-4">
               <div><Label className="text-xs">Valor de Tabela (R$)</Label><Input type="number" value={investForm.list_price} onChange={e => setInvestForm(p => ({ ...p, list_price: Number(e.target.value) }))} /></div>
               <div><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               <div className="p-3 rounded-lg bg-muted/50">
