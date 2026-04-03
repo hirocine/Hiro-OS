@@ -1,44 +1,76 @@
 
 
-# Correção definitiva do duplo scroll na proposta pública
+# Diagnóstico do Duplo Scroll na Proposta Pública
 
 ## O que encontrei
 
-O replay da sessão mostra um **ScrollBar do Radix UI** (componente `scroll-area.tsx`) aparecendo brevemente na tela. A causa raiz é uma combinação de:
+1. **Estou mexendo no componente correto**: A rota `/orcamento/:slug` renderiza `ProposalPublicPage` em `src/features/proposals/components/ProposalPublicPage.tsx`. Esse é o componente V2 com a estética cinematográfica (fundo preto, verde neon, Helvetica Now Display). Não existe um "modelo antigo" — só existe esse.
 
-1. **`scrollbar-gutter: stable`** no `html` — reserva espaço permanente para o scrollbar nativo. Na proposta pública (fundo preto), esse espaço aparece como uma faixa cinza/branca à direita
-2. **O override `html:has(.proposal-page)`** muda para `scrollbar-gutter: auto`, mas **sem `!important`**, então perde para a regra original que está no mesmo nível de especificidade
-3. Falta forçar `color-scheme: dark` no `html` quando a proposta está ativa — isso faz o scrollbar nativo renderizar com visual claro (theme do sistema)
+2. **O preview pode estar com cache**: Como o preview do Lovable usa um iframe, mudanças em CSS global (`index.css`) podem não refletir imediatamente. Você pode estar vendo uma versão cacheada.
 
-## Correção (2 arquivos)
+3. **Pista do rodapé**: Depois do `<ProposalFooter />`, existe um spacer invisível `<div className="h-24 no-print" />` (96px de altura) na linha 136. Esse spacer empurra o conteúdo para além do viewport, o que pode contribuir para a área scrollável extra.
 
-### 1. `src/index.css` — forçar override da proposta com `!important`
+4. **Regra CSS perigosa encontrada**: Em `src/index.css` linha 255-258:
+   ```css
+   *, *::before, *::after {
+     box-sizing: border-box;
+     max-width: 100%;
+   }
+   ```
+   O `max-width: 100%` em TODOS os elementos pode quebrar os elementos absolute-positioned (GlowSpots, gradientes, iframe do Vimeo) e causar comportamentos inesperados de layout.
 
-```css
-html:has(.proposal-page) {
-  scrollbar-gutter: auto !important;
-  overflow-y: auto !important;
-  background-color: hsl(0 0% 0%) !important;
-  color-scheme: dark !important;
-}
+5. **Conflito persistente**: Mesmo com os `!important` adicionados, o `scrollbar-gutter: stable` no `html` global (linha 13) pode ainda estar vencendo em alguma condição de race do CSS, porque `:has()` pode não ser avaliado no momento certo.
 
-body:has(.proposal-page),
-#root:has(.proposal-page) {
-  overflow: visible !important;
-  background-color: hsl(0 0% 0%) !important;
-}
-```
+## Plano de correção definitiva
 
-O `!important` é necessário aqui porque as regras globais no topo do arquivo estão no mesmo nível de especificidade. O `color-scheme: dark` faz o scrollbar nativo do browser renderizar escuro.
+### 1. Remover o spacer desnecessário após o footer
+**Arquivo**: `src/features/proposals/components/ProposalPublicPage.tsx`
+- Remover `<div className="h-24 no-print" />` (linha 136) — ele adiciona 96px de espaço vazio após o footer que não serve para nada na proposta pública e contribui para scroll extra.
 
-### 2. `src/features/proposals/components/ProposalPublicPage.tsx`
+### 2. Excluir a proposta da regra wildcard `max-width: 100%`
+**Arquivo**: `src/index.css`
+- Alterar a regra `*, *::before, *::after` para excluir elementos dentro de `.proposal-page`:
+  ```css
+  *:not(.proposal-page *), *::before, *::after {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  .proposal-page *, .proposal-page *::before, .proposal-page *::after {
+    box-sizing: border-box;
+  }
+  ```
 
-Sem mudanças — o `useLayoutEffect` já foi removido e o wrapper está correto com `overflow-x-hidden`.
+### 3. Forçar scroll único via abordagem nuclear
+**Arquivo**: `src/index.css`
+- Adicionar `height: auto` e `min-height: 100vh` explicitamente para `body` e `#root` quando a proposta está ativa, garantindo que nenhum deles crie um scroll container:
+  ```css
+  html:has(.proposal-page) {
+    scrollbar-gutter: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    background-color: #000 !important;
+    color-scheme: dark !important;
+  }
+  body:has(.proposal-page),
+  #root:has(.proposal-page) {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    background-color: #000 !important;
+  }
+  ```
 
-### Por que vai funcionar desta vez
+### 4. Esconder qualquer ScrollBar Radix residual na proposta
+**Arquivo**: `src/index.css`
+- Como segurança extra, esconder qualquer ScrollBar do Radix que possa vazar para a proposta:
+  ```css
+  .proposal-page [data-radix-scroll-area-scrollbar] {
+    display: none !important;
+  }
+  ```
 
-As tentativas anteriores falharam porque:
-- O `!important` não estava nos overrides da proposta, então `scrollbar-gutter: stable` do html global ganhava
-- O `color-scheme: dark` não estava sendo aplicado, então o scrollbar nativo ficava claro contra fundo preto
-- Agora, com `!important` nos overrides específicos da proposta, as regras vencem qualquer conflito
+### Resumo dos arquivos
+- `src/index.css` — corrigir wildcard `max-width`, fortalecer overrides da proposta, esconder ScrollBar Radix
+- `src/features/proposals/components/ProposalPublicPage.tsx` — remover spacer `h-24` após footer
 
