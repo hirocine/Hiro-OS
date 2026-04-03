@@ -295,12 +295,11 @@ export default function ProposalDetails() {
                     </Badge>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Rascunho</SelectItem>
-                    <SelectItem value="sent">Enviada</SelectItem>
-                    <SelectItem value="opened">Aberta</SelectItem>
-                    <SelectItem value="new_version">Nova Versão</SelectItem>
-                    <SelectItem value="approved">Aprovada</SelectItem>
-                    <SelectItem value="expired">Arquivada</SelectItem>
+                    {Object.entries(statusMap).map(([value, { label, variant }]) => (
+                      <SelectItem key={value} value={value}>
+                        <Badge variant={variant as any}>{label}</Badge>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
