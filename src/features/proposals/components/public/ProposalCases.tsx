@@ -32,7 +32,7 @@ export function ProposalCases({ cases }: Props) {
         {filtered.map((item, idx) => (
           <div
             key={item.id || idx}
-            className='relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 transition-all duration-400 hover:border-[#4CFF5C] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)] group aspect-video'
+            className='relative rounded-2xl overflow-hidden bg-gray-900 ring-1 ring-inset ring-gray-800 transition-all duration-400 hover:ring-[#4CFF5C] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)] group aspect-video'
           >
             {item.vimeoId && (
               <iframe
