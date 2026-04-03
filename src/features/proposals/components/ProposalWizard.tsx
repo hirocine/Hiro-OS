@@ -11,10 +11,12 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
   CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
   Building2, Target, Video, DollarSign, Package, ListChecks,
-  Phone, Sparkles
+  Phone, Sparkles, Smartphone, Camera, ClipboardList, Clapperboard,
+  Palette, Image, Music, Monitor, Mic
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
