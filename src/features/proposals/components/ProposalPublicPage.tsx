@@ -132,8 +132,6 @@ export function ProposalPublicPage() {
       </div>
 
       <ProposalFooter />
-
-      <div className="h-24 no-print" />
     </div>
   );
 }
