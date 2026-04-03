@@ -59,6 +59,9 @@ export function ProposalWizard() {
   const [form, setForm] = useState<ProposalFormData>({ ...defaultFormData });
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null);
 
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   // New pain point inline form
   const [showNewPain, setShowNewPain] = useState(false);
   const [newPain, setNewPain] = useState<DiagnosticoDor>({ label: '', title: '', desc: '' });
@@ -66,6 +69,24 @@ export function ProposalWizard() {
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from('proposal-moodboard').upload(path, file);
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from('proposal-moodboard').getPublicUrl(path);
+      updateField('client_logo', urlData.publicUrl);
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      import('sonner').then(m => m.toast.error('Erro ao enviar logo'));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const parseVimeoUrl = (url: string): { id: string; hash: string } => {
     // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
