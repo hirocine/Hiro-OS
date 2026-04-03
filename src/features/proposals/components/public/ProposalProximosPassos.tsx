@@ -62,14 +62,10 @@ export function ProposalProximosPassos({ validityDate }: Props) {
         `}</style>
 
         <div className='flex flex-col md:flex-row my-12 relative md:-ml-[45px]'>
-          {/* Mobile: vertical line connecting all steps */}
-          <div className='block md:hidden absolute left-[25px] top-[25px] w-px bg-gray-700' style={{ height: `calc(100% - 50px)` }} />
-          <div className='block md:hidden absolute left-[25px] top-[25px] w-px bg-[#4CFF5C]/30' style={{ height: '50px' }} />
-
           {steps.map((step, i) => (
             <div
               key={step.num}
-              className={`flex flex-row items-center md:flex-col md:items-center relative mb-6 md:mb-0 gap-4 md:gap-0 md:w-[140px] ${i < steps.length - 1 ? 'md:mr-[48px]' : ''}`}
+              className={`flex flex-row items-center md:flex-col md:items-center relative md:w-[140px] ${i < steps.length - 1 ? 'md:mr-[48px] mb-0' : 'mb-0'}`}
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'translateY(0)' : 'translateY(20px)',
@@ -84,30 +80,39 @@ export function ProposalProximosPassos({ validityDate }: Props) {
                   }`}
                   style={{
                     width: 'calc(140px + 48px - 50px)',
-                    marginRight: '48px',
                     animation: visible ? `lineGrow 0.4s ease ${i * 0.15 + 0.3}s both` : 'none',
                   }}
                 />
               )}
-              <div
-                className={`w-[50px] h-[50px] min-w-[50px] rounded-full flex items-center justify-center font-bold text-lg md:mb-4 relative z-10 border-2 ${
-                  step.status === 'done'
-                    ? 'bg-[#4CFF5C]/10 border-[#4CFF5C] text-[#4CFF5C]'
-                    : step.status === 'current'
-                    ? 'bg-white/10 border-[#f0f0f0] text-[#f0f0f0]'
-                    : 'bg-transparent border-gray-700 text-gray-500'
-                }`}
-                style={step.status === 'current' ? { animation: 'stepPulse 1.5s ease-out infinite' } : {}}
-              >
-                {step.status === 'done' ? (
-                  <Check className='w-5 h-5' />
-                ) : step.status === 'locked' ? (
-                  <Lock className='w-4 h-4' />
-                ) : (
-                  step.num
+              <div className='flex flex-col items-center md:contents'>
+                <div
+                  className={`w-[50px] h-[50px] min-w-[50px] rounded-full flex items-center justify-center font-bold text-lg md:mb-4 relative z-10 border-2 ${
+                    step.status === 'done'
+                      ? 'bg-[#4CFF5C]/10 border-[#4CFF5C] text-[#4CFF5C]'
+                      : step.status === 'current'
+                      ? 'bg-white/10 border-[#f0f0f0] text-[#f0f0f0]'
+                      : 'bg-transparent border-gray-700 text-gray-500'
+                  }`}
+                  style={step.status === 'current' ? { animation: 'stepPulse 1.5s ease-out infinite' } : {}}
+                >
+                  {step.status === 'done' ? (
+                    <Check className='w-5 h-5' />
+                  ) : step.status === 'locked' ? (
+                    <Lock className='w-4 h-4' />
+                  ) : (
+                    step.num
+                  )}
+                </div>
+                {/* Mobile vertical line BETWEEN steps (below circle, above next circle) */}
+                {i < steps.length - 1 && (
+                  <div
+                    className={`block md:hidden w-px h-[24px] ${
+                      step.status === 'done' ? 'bg-[#4CFF5C]/30' : 'bg-gray-700'
+                    }`}
+                  />
                 )}
               </div>
-              <h4 className={`text-sm font-bold ${
+              <h4 className={`ml-4 md:ml-0 text-sm font-bold ${
                 step.status === 'done' ? 'text-[#4CFF5C]' : step.status === 'current' ? 'text-[#f0f0f0]' : 'text-gray-500'
               }`}>{step.title}</h4>
             </div>
