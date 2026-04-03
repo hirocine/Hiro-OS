@@ -63,7 +63,7 @@ export function ProposalWizard() {
 
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
-  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+  const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
 
   const parseVimeoUrl = (url: string): { id: string; hash: string } => {
     // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
