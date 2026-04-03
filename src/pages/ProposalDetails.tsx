@@ -551,27 +551,59 @@ export default function ProposalDetails() {
               {doresForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
               )}
-              {doresForm.map((dor, i) => (
-                <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
-                  <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
-                    <X className="h-4 w-4" />
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Label</Label>
-                      <Input value={dor.label} onChange={e => updateDor(i, 'label', e.target.value)} placeholder="Ex: Dor 01" />
-                    </div>
-                    <div className="md:col-span-2 space-y-1.5">
-                      <Label className="text-xs">Título</Label>
-                      <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
+              {doresForm.map((dor, i) => {
+                const DorIcon = DOR_ICON_MAP[dor.label] || Star;
+                return (
+                  <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
+                    <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
+                    <div className="flex items-start gap-3">
+                      {/* Icon selector */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Ícone</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                              <DorIcon className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" align="start">
+                            <div className="grid grid-cols-5 gap-1">
+                              {DOR_ICON_OPTIONS.map(opt => {
+                                const Icon = opt.icon;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => updateDor(i, 'label', opt.value)}
+                                    className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors ${
+                                      dor.label === opt.value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+                                    }`}
+                                    title={opt.label}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Dor</Label>
+                          <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Descrição</Label>
+                          <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Descrição</Label>
-                    <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
             {doresDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
