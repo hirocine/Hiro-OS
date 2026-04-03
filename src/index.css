@@ -526,6 +526,13 @@ html, body {
 .proposal-page {
   font-family: 'Helvetica Now Display', 'Inter', sans-serif;
   line-height: 1.6;
+  scrollbar-gutter: auto !important;
+  overflow-y: auto !important;
+}
+
+.proposal-page,
+.proposal-page * {
+  --removed-body-scroll-bar-size: 0 !important;
 }
 
 .proposal-font-display {
