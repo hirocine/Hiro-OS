@@ -576,13 +576,11 @@ export default function ProposalDetails() {
                     <button onClick={() => removeDor(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
                       <X className="h-4 w-4" />
                     </button>
-                    <div className="flex items-start gap-3">
-                      {/* Icon selector */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Ícone</Label>
+                    <div className="space-y-3">
+                      <div className="flex items-end gap-3">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                            <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0">
                               <DorIcon className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
@@ -607,17 +605,17 @@ export default function ProposalDetails() {
                             </div>
                           </PopoverContent>
                         </Popover>
-                      </div>
-                      <div className="flex-1 space-y-3">
-                        <div className="space-y-1.5">
+                        <div className="flex-1 space-y-1.5">
                           <Label className="text-xs">Dor</Label>
                           <Input value={dor.title} onChange={e => updateDor(i, 'title', e.target.value)} placeholder="Título da dor" />
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Descrição</Label>
-                          <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
-                        </div>
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Descrição</Label>
+                        <Textarea value={dor.desc} onChange={e => updateDor(i, 'desc', e.target.value)} rows={2} placeholder="Descreva a dor do cliente..." />
+                      </div>
+                    </div>
+                  </div>
                     </div>
                   </div>
                 );
