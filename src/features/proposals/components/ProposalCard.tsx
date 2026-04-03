@@ -23,7 +23,7 @@ interface Props {
   onEdit?: (proposal: Proposal) => void;
 }
 
-export function ProposalCard({ proposal, onDelete }: Props) {
+export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
   const status = statusMap[proposal.status] || statusMap.draft;
   const daysLeft = differenceInDays(new Date(proposal.validity_date), new Date());
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
