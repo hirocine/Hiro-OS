@@ -79,12 +79,12 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
         Proposta Comercial {new Date(createdAt).getFullYear()}
       </p>
 
-      <h1 className='proposal-font-display text-5xl md:text-7xl font-bold mb-5 leading-[1.1] relative z-10'>
-        HIRO <span className='text-[#4CFF5C]'>FILMS</span>
+      <h1 className='proposal-font-display text-5xl md:text-7xl font-bold mb-5 leading-[1.1] relative z-10 uppercase'>
+        {projectName}
       </h1>
 
       <p className='text-base md:text-lg text-gray-400 font-light mb-16 max-w-[500px] relative z-10'>
-        Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.
+        {companyDescription || 'Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.'}
       </p>
 
       <div className='w-[60px] h-[2px] bg-[#4CFF5C] mb-10 relative z-10' />

@@ -171,6 +171,7 @@ export function useProposals() {
           entregaveis: entregaveisJsonb as any,
           cases: casesJsonb as any,
           whatsapp_number: form.whatsapp_number.trim() || null,
+          company_description: form.company_description.trim() || null,
         } as any)
         .select()
         .single();
