@@ -76,6 +76,12 @@ export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
                 <Eye className="mr-2 h-4 w-4" />
                 Ver Proposta
               </DropdownMenuItem>
+              {onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(proposal)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleCopyLink}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copiar Link
