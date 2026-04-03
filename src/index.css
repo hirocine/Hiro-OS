@@ -535,6 +535,13 @@ html, body {
   --removed-body-scroll-bar-size: 0 !important;
 }
 
+.proposal-page .proposal-gradient-1,
+.proposal-page .proposal-gradient-2,
+.proposal-page .proposal-invest-gradient-1,
+.proposal-page .proposal-invest-gradient-2 {
+  max-width: none !important;
+}
+
 .proposal-font-display {
   font-family: 'Helvetica Now Display', 'Inter', sans-serif;
 }
