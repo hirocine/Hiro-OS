@@ -525,14 +525,16 @@ html, body {
 
 /* Proposal public page — dark background, no gutter shift */
 html:has(.proposal-page) {
-  scrollbar-gutter: auto;
-  background-color: hsl(0 0% 0%);
-  color-scheme: dark;
+  scrollbar-gutter: auto !important;
+  overflow-y: auto !important;
+  background-color: hsl(0 0% 0%) !important;
+  color-scheme: dark !important;
 }
 
 body:has(.proposal-page),
 #root:has(.proposal-page) {
-  background-color: hsl(0 0% 0%);
+  overflow: visible !important;
+  background-color: hsl(0 0% 0%) !important;
 }
 
 .proposal-page {
