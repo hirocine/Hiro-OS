@@ -37,6 +37,7 @@ const Capex = lazy(() => import("./pages/Capex"));
 import Proposals from "./pages/Proposals";
 import NewProposal from "./pages/NewProposal";
 const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
+const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
