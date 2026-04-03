@@ -1,24 +1,28 @@
 
 
-# Ajustes no Hero da Proposta Pública
+# Skeleton dedicado para a página de Orçamentos
+
+## O que será feito
+
+Substituir o spinner circular (`Loader2`) por um skeleton que espelha fielmente o layout real da página: PageHeader + Card "Ativos" com grid de ProposalCard skeletons + dois headers colapsados (Aprovados e Arquivados).
 
 ## Mudanças
 
-### 1. Hero: trocar "HIRO FILMS" pelo nome do projeto
-Onde hoje está hardcoded `HIRO FILMS`, exibir `projectName` em caixa alta. O subtítulo fixo ("Produtora audiovisual especializada...") será substituído pelo novo campo `company_description`.
+### 1. Criar `ProposalCardSkeleton` e `ProposalsPageSkeleton`
+**Arquivo**: `src/features/proposals/components/ProposalsSkeleton.tsx`
 
-### 2. Novo campo "Descrição da Empresa" no formulário (Step 0)
-Adicionar um campo `Textarea` na primeira etapa do wizard para o usuário preencher uma descrição curta da empresa (ex: "Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público."). Valor default = o texto atual hardcoded.
+- `ProposalCardSkeleton` — replica o layout do `ProposalCard`: avatar circle + linhas de texto, badges, info rows, botão
+- `ProposalsPageSkeleton` — compõe o layout completo:
+  - Header (título + botão "Nova Proposta" desabilitado como skeleton)
+  - Card "Ativos" com ícone Clock + título skeleton + grid de 4 ProposalCardSkeletons
+  - Dois cards colapsados (Aprovados e Arquivados) — apenas o header com ícone + título skeleton + chevron
 
-### 3. Persistir no banco
-Adicionar coluna `company_description` (text, nullable) na tabela `orcamentos` via migration. Salvar e ler esse campo no `useProposals`.
+### 2. Usar o skeleton na página
+**Arquivo**: `src/pages/Proposals.tsx`
 
-## Arquivos afetados
+- Substituir o bloco `isLoading ? <Loader2 spinner>` pelo `<ProposalsPageSkeleton />`
 
-- **Migration**: nova coluna `company_description` na tabela `orcamentos`
-- **`src/features/proposals/types/index.ts`**: adicionar `company_description` no tipo `Proposal` e `ProposalFormData`, e no `defaultFormData`
-- **`src/features/proposals/components/ProposalWizard.tsx`**: adicionar campo Textarea no Step 0
-- **`src/features/proposals/hooks/useProposals.ts`**: incluir `company_description` no insert e no mapProposal
-- **`src/features/proposals/components/public/ProposalHero.tsx`**: receber `companyDescription` como prop; trocar h1 para `projectName.toUpperCase()` e subtítulo para `companyDescription`
-- **`src/features/proposals/components/ProposalPublicPage.tsx`**: passar `companyDescription` ao `ProposalHero`
+### Arquivos
+- `src/features/proposals/components/ProposalsSkeleton.tsx` (novo)
+- `src/pages/Proposals.tsx` (editar bloco de loading)
 
