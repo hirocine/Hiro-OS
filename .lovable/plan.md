@@ -1,28 +1,37 @@
 
 
-# Fix: quadrados do background iniciam com opacidade máxima
+# Remover loading intermediário da página de Orçamentos
 
 ## Problema
-O `maskRef` div começa com `style={{ maskImage: 'none' }}`. Em CSS, `mask-image: none` significa **sem máscara** — ou seja, o conteúdo aparece 100% visível. O layer com `opacity-50` dos quadrados fica totalmente visível até o mouse passar e definir o gradiente radial.
+Ao navegar para `/orcamentos`, o usuário vê brevemente o spinner do `ProtectedRoute` (Loader2 circular) e/ou o skeleton fallback do `Suspense` no `Layout.tsx` (blocos cinza pulsantes). Como `Proposals` já NÃO é lazy-loaded (importado diretamente no App.tsx), o Suspense do Layout não deveria disparar — mas o spinner do ProtectedRoute aparece brevemente toda vez que o auth state está sendo verificado.
+
+## Diagnóstico
+- `ProtectedRoute` mostra `Loader2` spinner enquanto `loading` é `true` (verificação de auth)
+- `Layout.tsx` tem `Suspense` com skeleton pulse como fallback — dispara para rotas lazy
+- Proposals **não é lazy** (linha 37-38 do App.tsx), mas compartilha o mesmo ProtectedRoute/Layout
 
 ## Solução
-Mudar o valor inicial do `maskImage` de `'none'` para um gradiente transparente que esconde tudo:
+O ProtectedRoute já é necessário para proteger rotas, e o `loading` do auth geralmente resolve muito rápido. Os "skeletons" que o usuário vê são provavelmente o fallback do Suspense no Layout.tsx disparando para **outras rotas lazy vizinhas** durante navegação, ou um flash do ProtectedRoute.
 
-**Arquivo**: `src/features/proposals/components/public/ProposalHero.tsx`
+A abordagem mais limpa: remover o skeleton pesado do `Suspense` no Layout e usar um fallback mínimo (div vazia ou null), já que cada página já gerencia seu próprio loading state.
 
-Linha 67 — trocar:
+### Mudança
+
+**`src/components/Layout/Layout.tsx`**:
+- Trocar o fallback do Suspense de skeleton pulse (header + grid de 3 cards) por `null` — elimina completamente o flash de skeleton entre navegações de páginas lazy
+
 ```tsx
-style={{ maskImage: 'none', WebkitMaskImage: 'none' }}
-```
-Por:
-```tsx
-style={{
-  maskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)',
-  WebkitMaskImage: 'radial-gradient(circle 0px at 0px 0px, transparent 0%, transparent 100%)'
-}}
+// De:
+<Suspense fallback={
+  <div className="p-6 lg:p-8 space-y-6 animate-pulse">
+    <div className="h-8 bg-muted rounded-lg w-1/3" />
+    ...
+  </div>
+}>
+
+// Para:
+<Suspense fallback={null}>
 ```
 
-Isso garante que o layer brilhante dos quadrados comece invisível e só apareça ao mover o mouse — exatamente como o `handleMouseLeave` já faz.
-
-1 arquivo, 1 linha alterada.
+1 arquivo, 1 mudança simples.
 
