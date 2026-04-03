@@ -1,40 +1,32 @@
 
 
-# Adicionar seções faltantes na página de detalhes da proposta
+# Dores do Cliente como Banco Pré-Configurado
 
-## Contexto
-A página `ProposalDetails.tsx` atualmente só tem: Cliente/Projeto, Investimento, Objetivo e Depoimento. Faltam 3 seções que existem no modelo de dados: **Dores do Cliente** (`diagnostico_dores`), **Cases/Portfólio** (`cases`), e **Entregas e Serviços** (`entregaveis`).
+## O que muda
+A seção "Dores do Cliente" deixa de ser apenas campos livres. Passa a funcionar como um **seletor de banco de dores** (tabela `proposal_pain_points` já existente) onde o usuário:
+1. Seleciona dores do banco existente (multi-select / lista com checkboxes)
+2. Ao selecionar, a dor é copiada para o formulário da proposta e pode ser **editada localmente** (sem alterar o banco)
+3. Pode **adicionar uma nova dor** que vai tanto para o banco quanto para a proposta atual
+4. Pode remover dores selecionadas da proposta
 
 ## Plano
 
-### 1. Seção "Dores do Cliente" (diagnostico_dores)
-- Card com lista editável de dores (label, title, desc)
-- Cada dor tem 3 campos inline (Label, Título, Descrição)
-- Botão "Adicionar Dor" para inserir novas
-- Botão "X" para remover individualmente
-- Salva como array JSONB no campo `diagnostico_dores`
+### 1. Buscar dores do banco
+- Importar e usar o hook `usePainPoints()` já existente no `ProposalDetails.tsx`
+- Ele retorna todas as dores cadastradas na tabela `proposal_pain_points`
 
-### 2. Seção "Cases / Portfólio" (cases)
-- Card com lista dos cases selecionados (tipo, titulo, descricao, vimeoId, vimeoHash, destaque)
-- Cada case editável inline com campos: Tipo, Título, Descrição, Vimeo ID, Vimeo Hash, Destaque (switch)
-- Botão para adicionar/remover cases
-- Salva como array JSONB no campo `cases`
+### 2. UI de seleção + edição
+- No topo da seção, adicionar um **dropdown/combobox multi-select** com as dores do banco
+- Ao selecionar uma dor do banco, ela é adicionada ao `doresForm` com os valores pré-preenchidos (label, title, desc)
+- Dores já selecionadas aparecem marcadas no dropdown
+- Cada dor no formulário continua editável inline (campos Label, Título, Descrição) -- edições são locais à proposta
+- Botão "Adicionar Nova Dor" abre um mini-form para criar uma nova dor, que é salva no banco via `createPainPoint` e automaticamente adicionada à proposta
 
-### 3. Seção "Entregas e Serviços" (entregaveis)
-- O campo `entregaveis` é um JSONB com blocos: "Output" (entregas) e "Serviços" (incluso)
-- **Bloco Output**: lista de itens com titulo, descricao, quantidade, icone — editável inline
-- **Bloco Serviços**: cards de categorias com itens toggle (ativo/inativo) — editável com checkboxes
-- Botões para adicionar/remover itens em cada bloco
-- Salva tudo junto no campo `entregaveis`
+### 3. Mapeamento banco → proposta
+- O campo `diagnostico_dores` da proposta armazena `{label, title, desc}` -- sem referência ao ID do banco
+- Ao selecionar do banco, copiar `{label: pp.label, title: pp.title, desc: pp.description}` para o array local
+- Isso permite edição livre sem afetar o banco original
 
-### 4. Estado e salvamento
-- Novos estados: `doresForm`, `casesForm`, `entregaveisForm`
-- Dirty checks para cada seção
-- Botão "Salvar" por seção, chamando `saveSection` com o campo correspondente
-- População dos forms no `useEffect` existente
-
-### Detalhes técnicos
-- Arquivo editado: `src/pages/ProposalDetails.tsx`
-- Todos os dados já existem no modelo `Proposal` e são retornados pelo hook `useProposalDetailsById`
-- Nenhuma mudança de banco de dados necessária
+### 4. Arquivos alterados
+- `src/pages/ProposalDetails.tsx` -- importar `usePainPoints`, redesenhar a seção de dores com seletor + edição inline
 
