@@ -105,8 +105,8 @@ export function ProposalPublicPage() {
       </div>
 
       <div className='relative overflow-hidden rounded-t-[40px] border-t border-gray-800'>
-        <div className='absolute inset-0 pointer-events-none overflow-hidden' style={{ zIndex: 0 }}>
-          <div className='absolute inset-[-50%] w-[200%] h-[200%] md:inset-[-25%] md:w-[150%] md:h-[150%]'>
+        <div className='hidden md:block absolute inset-0 pointer-events-none overflow-hidden' style={{ zIndex: 0 }}>
+          <div className='absolute inset-[-25%] w-[150%] h-[150%]'>
             <iframe
               src='https://player.vimeo.com/video/1068269996?h=bad24e450f&title=0&byline=0&portrait=0&background=1&muted=1'
               className='w-full h-full border-0'
@@ -115,10 +115,6 @@ export function ProposalPublicPage() {
             />
           </div>
           <div className='absolute inset-0' style={{
-            zIndex: 1,
-            background: 'linear-gradient(to right, rgb(0,0,0) 55%, rgba(0,0,0,0.5) 100%)',
-          }} />
-          <div className='hidden md:block absolute inset-0' style={{
             zIndex: 1,
             background: 'linear-gradient(to right, rgb(0,0,0) 35%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.1) 100%)',
           }} />
