@@ -26,9 +26,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposals } from '@/features/proposals/hooks/useProposals';
-import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory } from '@/features/proposals/types';
-import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/types';
+import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
+import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
+import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const DOR_EMOJI_OPTIONS = [
