@@ -227,15 +227,10 @@ export default function ProposalDetails() {
       <div className="animate-fade-in space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/orcamentos')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <BreadcrumbNav items={[
-              { label: 'Orçamentos', href: '/orcamentos' },
-              { label: proposal.project_name },
-            ]} className="mb-0" />
-          </div>
+          <BreadcrumbNav items={[
+            { label: 'Orçamentos', href: '/orcamentos' },
+            { label: proposal.project_name },
+          ]} className="mb-0" />
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}>
               <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
