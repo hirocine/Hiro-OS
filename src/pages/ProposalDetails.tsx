@@ -413,6 +413,21 @@ export default function ProposalDetails() {
     setExclusiveDorForm({ label: '⭐', title: '', desc: '' });
     setShowExclusiveDor(false);
   };
+// Vimeo thumbnail component using oEmbed API
+function VimeoThumbnail({ videoId, alt, className }: { videoId: string; alt?: string; className?: string }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!videoId) return;
+    let cancelled = false;
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}&width=640`)
+      .then(r => r.json())
+      .then(data => { if (!cancelled && data.thumbnail_url) setThumbUrl(data.thumbnail_url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [videoId]);
+  if (!thumbUrl) return <div className={cn("bg-muted flex items-center justify-center", className)}><Briefcase className="h-8 w-8 text-muted-foreground/30" /></div>;
+  return <img src={thumbUrl} alt={alt || ''} className={cn("object-cover", className)} />;
+}
 
 
   // Cases bank helpers
