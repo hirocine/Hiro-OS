@@ -11,8 +11,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import {
-  CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check, Upload, X,
-  Building2, Target, Video, FileText, DollarSign, Phone, MessageSquare, Sparkles
+  CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
+  Building2, Target, Video, DollarSign, Phone, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
