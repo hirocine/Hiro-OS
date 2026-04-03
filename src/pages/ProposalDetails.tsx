@@ -124,8 +124,11 @@ export default function ProposalDetails() {
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const [showNewDorDialog, setShowNewDorDialog] = useState(false);
-  const [newDorForm, setNewDorForm] = useState({ label: '⭐', title: '', description: '' });
+  const [showDoresBank, setShowDoresBank] = useState(false);
+  const [doresBankSearch, setDoresBankSearch] = useState('');
+  const [doresBankSelection, setDoresBankSelection] = useState<DiagnosticoDor[]>([]);
+  const [showExclusiveDor, setShowExclusiveDor] = useState(false);
+  const [exclusiveDorForm, setExclusiveDorForm] = useState({ label: '⭐', title: '', desc: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
