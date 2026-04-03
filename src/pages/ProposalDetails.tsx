@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X
+  AlertTriangle, Briefcase, Package, Plus, X, Check
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -27,6 +27,8 @@ import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDe
 import { useProposals } from '@/features/proposals/hooks/useProposals';
 import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS } from '@/features/proposals/types';
+import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -68,8 +70,11 @@ export default function ProposalDetails() {
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
+  const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [showNewDorDialog, setShowNewDorDialog] = useState(false);
+  const [newDorForm, setNewDorForm] = useState({ label: '', title: '', description: '' });
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -268,10 +273,43 @@ export default function ProposalDetails() {
   const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
 
   // Dores helpers
-  const addDor = () => setDoresForm(prev => [...prev, { label: '', title: '', desc: '' }]);
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
   const updateDor = (i: number, field: keyof DiagnosticoDor, value: string) =>
     setDoresForm(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d));
+
+  const selectPainPointFromBank = (ppId: string) => {
+    const pp = painPointsBank.find(p => p.id === ppId);
+    if (!pp) return;
+    // Check if already added (by matching label+title)
+    const alreadyExists = doresForm.some(d => d.label === pp.label && d.title === pp.title);
+    if (alreadyExists) {
+      // Remove it
+      setDoresForm(prev => prev.filter(d => !(d.label === pp.label && d.title === pp.title)));
+    } else {
+      setDoresForm(prev => [...prev, { label: pp.label, title: pp.title, desc: pp.description }]);
+    }
+  };
+
+  const isPainPointSelected = (pp: { label: string; title: string }) =>
+    doresForm.some(d => d.label === pp.label && d.title === pp.title);
+
+  const handleCreateNewDor = async () => {
+    if (!newDorForm.label.trim() || !newDorForm.title.trim()) return;
+    try {
+      const created = await createPainPoint.mutateAsync({
+        label: newDorForm.label.trim(),
+        title: newDorForm.title.trim(),
+        description: newDorForm.description.trim(),
+      });
+      // Also add to current proposal
+      setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
+      setNewDorForm({ label: '', title: '', description: '' });
+      setShowNewDorDialog(false);
+      toast.success('Dor criada e adicionada!');
+    } catch {
+      toast.error('Erro ao criar dor');
+    }
+  };
 
   // Cases helpers
   const addCase = () => setCasesForm(prev => [...prev, { tipo: 'video', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
@@ -479,14 +517,39 @@ export default function ProposalDetails() {
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-base">Dores do Cliente</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={addDor}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+                <Button variant="outline" size="sm" onClick={() => setShowNewDorDialog(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Nova Dor
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
+              {/* Bank selector */}
+              {painPointsBank.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Selecionar do banco de dores</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {painPointsBank.map(pp => (
+                      <button
+                        key={pp.id}
+                        type="button"
+                        onClick={() => selectPainPointFromBank(pp.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isPainPointSelected(pp)
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {isPainPointSelected(pp) && <Check className="h-3 w-3" />}
+                        {pp.label}: {pp.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Selected & editable dores */}
               {doresForm.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor adicionada.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma dor selecionada. Escolha do banco acima ou crie uma nova.</p>
               )}
               {doresForm.map((dor, i) => (
                 <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
@@ -518,6 +581,35 @@ export default function ProposalDetails() {
               </CardFooter>
             )}
           </Card>
+
+          {/* New Dor Dialog */}
+          <Dialog open={showNewDorDialog} onOpenChange={setShowNewDorDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nova Dor</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Label</Label>
+                  <Input value={newDorForm.label} onChange={e => setNewDorForm(p => ({ ...p, label: e.target.value }))} placeholder="Ex: Dor 01" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Título</Label>
+                  <Input value={newDorForm.title} onChange={e => setNewDorForm(p => ({ ...p, title: e.target.value }))} placeholder="Título da dor" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Descrição</Label>
+                  <Textarea value={newDorForm.description} onChange={e => setNewDorForm(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Descreva a dor..." />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowNewDorDialog(false)}>Cancelar</Button>
+                <Button onClick={handleCreateNewDor} disabled={!newDorForm.label.trim() || !newDorForm.title.trim() || createPainPoint.isPending}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Cases / Portfólio Section */}
           <Card className="lg:col-span-2">
