@@ -877,13 +877,8 @@ function VimeoThumbnail({ videoId, alt, className }: { videoId: string; alt?: st
                   {casesForm.map((c, i) => (
                     <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
                       {c.vimeoId && (
-                        <div className="aspect-video bg-muted">
-                          <img
-                            src={`https://vumbnail.com/${c.vimeoId}.jpg`}
-                            alt={c.titulo || ''}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
+                        <div className="aspect-video">
+                          <VimeoThumbnail videoId={c.vimeoId} alt={c.titulo || ''} className="w-full h-full" />
                         </div>
                       )}
                       <div className="p-3">
