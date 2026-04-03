@@ -27,11 +27,16 @@ import { useProposalCases } from '../hooks/useProposalCases';
 import {
   defaultFormData,
   ICON_OPTIONS,
+  CASE_TAG_OPTIONS,
   type ProposalFormData,
   type EntregavelItem,
   type DiagnosticoDor,
   type InclusoItem,
 } from '../types';
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, Image, Music, Monitor, Mic,
+};
 
 const STEPS = [
   { label: 'Cliente', icon: Building2 },
