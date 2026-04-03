@@ -226,7 +226,44 @@ export default function ProposalDetails() {
     return true; // Always allow save for complex nested structure
   }, [entregaveisForm, proposal]);
 
-  if (isLoading) {
+  // Group bank by category
+  const categoryOrder = [
+    'Qualidade & padrão visual',
+    'Prazo & velocidade de entrega',
+    'Experiência com fornecedores anteriores',
+    'Diferencial criativo & estratégico',
+    'Performance & resultado de negócio',
+    'Orçamento & justificativa de investimento',
+    'Operacional & estrutura de produção',
+    'Escala & recorrência',
+  ];
+
+  const painPointsByCategory = useMemo(() => {
+    const groups: Record<string, typeof painPointsBank> = {};
+    painPointsBank.forEach(pp => {
+      const cat = (pp as any).category || 'Sem categoria';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(pp);
+    });
+    return groups;
+  }, [painPointsBank]);
+
+  const filteredCategories = useMemo(() => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return categoryOrder.filter(c => painPointsByCategory[c]?.length > 0);
+    return categoryOrder.filter(c => {
+      const pps = painPointsByCategory[c];
+      if (!pps) return false;
+      return pps.some(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
+    });
+  }, [doresBankSearch, painPointsByCategory]);
+
+  const filterPainPoints = (pps: typeof painPointsBank) => {
+    const search = doresBankSearch.toLowerCase();
+    if (!search) return pps;
+    return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
+  };
+
     return (
       <ResponsiveContainer maxWidth="7xl">
         <div className="space-y-6">
