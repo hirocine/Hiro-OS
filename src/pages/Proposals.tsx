@@ -136,7 +136,6 @@ export default function Proposals() {
             </Card>
           </Collapsible>
         </div>
-      )}
     </ResponsiveContainer>
   );
 }
