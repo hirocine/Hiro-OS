@@ -425,8 +425,8 @@ function VimeoThumbnail({ videoId, alt, className }: { videoId: string; alt?: st
       .catch(() => {});
     return () => { cancelled = true; };
   }, [videoId]);
-  if (!thumbUrl) return <div className={cn("bg-muted flex items-center justify-center", className)}><Briefcase className="h-8 w-8 text-muted-foreground/30" /></div>;
-  return <img src={thumbUrl} alt={alt || ''} className={cn("object-cover", className)} />;
+  if (!thumbUrl) return <div className={`bg-muted flex items-center justify-center ${className || ''}`}><Briefcase className="h-8 w-8 text-muted-foreground/30" /></div>;
+  return <img src={thumbUrl} alt={alt || ''} className={`object-cover ${className || ''}`} />;
 }
 
 
