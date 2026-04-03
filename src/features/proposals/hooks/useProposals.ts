@@ -189,6 +189,23 @@ export function useProposals() {
     },
   });
 
+  const updateProposal = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Record<string, any>> }) => {
+      const { error } = await supabase
+        .from('orcamentos')
+        .update(data as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      toast.success('Proposta atualizada com sucesso!');
+    },
+    onError: (err: Error) => {
+      toast.error('Erro ao atualizar proposta: ' + err.message);
+    },
+  });
+
   const deleteProposal = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('orcamentos').delete().eq('id', id);
@@ -200,7 +217,7 @@ export function useProposals() {
     },
   });
 
-  return { ...query, createProposal, deleteProposal };
+  return { ...query, createProposal, updateProposal, deleteProposal };
 }
 
 function mapProposal(row: any): Proposal {

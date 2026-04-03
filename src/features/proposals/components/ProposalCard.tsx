@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User } from 'lucide-react';
+import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -20,9 +20,10 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
 interface Props {
   proposal: Proposal;
   onDelete?: (id: string) => void;
+  onEdit?: (proposal: Proposal) => void;
 }
 
-export function ProposalCard({ proposal, onDelete }: Props) {
+export function ProposalCard({ proposal, onDelete, onEdit }: Props) {
   const status = statusMap[proposal.status] || statusMap.draft;
   const daysLeft = differenceInDays(new Date(proposal.validity_date), new Date());
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
@@ -75,6 +76,12 @@ export function ProposalCard({ proposal, onDelete }: Props) {
                 <Eye className="mr-2 h-4 w-4" />
                 Ver Proposta
               </DropdownMenuItem>
+              {onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(proposal)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleCopyLink}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copiar Link
