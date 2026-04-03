@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
