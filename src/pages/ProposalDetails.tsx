@@ -271,6 +271,16 @@ export default function ProposalDetails() {
     return pps.filter(pp => pp.title.toLowerCase().includes(search) || pp.description.toLowerCase().includes(search));
   };
 
+  const filteredCasesBank = useMemo(() => {
+    const search = casesBankSearch.toLowerCase();
+    if (!search) return casesBank;
+    return casesBank.filter(c =>
+      c.client_name.toLowerCase().includes(search) ||
+      c.campaign_name.toLowerCase().includes(search) ||
+      (c.tags || []).some(t => t.toLowerCase().includes(search))
+    );
+  }, [casesBankSearch, casesBank]);
+
   if (isLoading) {
     return (
       <ResponsiveContainer maxWidth="7xl">
