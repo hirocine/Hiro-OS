@@ -127,6 +127,7 @@ export interface ProposalFormData {
   client_name: string;
   project_name: string;
   client_responsible: string;
+  client_logo: string;
   whatsapp_number: string;
   company_description: string;
   sent_date: Date;
@@ -230,6 +231,7 @@ export const defaultFormData: ProposalFormData = {
   client_name: '',
   project_name: '',
   client_responsible: '',
+  client_logo: '',
   whatsapp_number: '',
   company_description: 'Produtora audiovisual especializada em criar narrativas visuais que conectam marcas ao seu público.',
   sent_date: new Date(),

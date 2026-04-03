@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +16,13 @@ import {
   CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
   Building2, Target, Video, DollarSign, Package, ListChecks,
   Phone, Sparkles, Smartphone, Camera, ClipboardList, Clapperboard,
-  Palette, Image, Music, Monitor, Mic
+  Palette, Image, Music, Monitor, Mic, Upload, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
@@ -57,6 +59,9 @@ export function ProposalWizard() {
   const [form, setForm] = useState<ProposalFormData>({ ...defaultFormData });
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null);
 
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   // New pain point inline form
   const [showNewPain, setShowNewPain] = useState(false);
   const [newPain, setNewPain] = useState<DiagnosticoDor>({ label: '', title: '', desc: '' });
@@ -64,6 +69,24 @@ export function ProposalWizard() {
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from('proposal-moodboard').upload(path, file);
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from('proposal-moodboard').getPublicUrl(path);
+      updateField('client_logo', urlData.publicUrl);
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      import('sonner').then(m => m.toast.error('Erro ao enviar logo'));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const parseVimeoUrl = (url: string): { id: string; hash: string } => {
     // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
@@ -228,6 +251,44 @@ export function ProposalWizard() {
                 <h3 className="text-lg font-semibold text-foreground">Cliente e Projeto</h3>
                 <p className="text-sm text-muted-foreground">Informações que aparecem no topo da proposta.</p>
               </div>
+              {/* Logo Upload */}
+              <div className="flex items-center gap-4">
+                <div className="relative group cursor-pointer" onClick={() => logoInputRef.current?.click()}>
+                  <Avatar className="h-20 w-20 ring-2 ring-border">
+                    <AvatarImage src={form.client_logo || undefined} />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                      <Building2 className="h-8 w-8" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    {uploadingLogo ? (
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-5 w-5 text-white" />
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">Logo do Cliente</p>
+                  <p className="text-xs text-muted-foreground">Aparece no card de gerenciamento</p>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                      <Upload className="mr-1.5 h-3.5 w-3.5" />
+                      {form.client_logo ? 'Alterar' : 'Enviar'}
+                    </Button>
+                    {form.client_logo && (
+                      <Button type="button" variant="outline" size="sm" onClick={() => updateField('client_logo', '')} disabled={uploadingLogo}>
+                        <X className="mr-1.5 h-3.5 w-3.5" />
+                        Remover
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ''; }} />
+              </div>
+
+              <Separator />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Nome do Cliente *</Label>
