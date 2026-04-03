@@ -8,14 +8,24 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check, Upload, X, Building2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import {
+  CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check, Upload, X,
+  Building2, Target, FileText, Video, DollarSign, MessageSquare, Phone
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useProposals } from '../hooks/useProposals';
-import { defaultFormData, type ProposalFormData } from '../types';
+import { defaultFormData, type ProposalFormData, type CaseItem } from '../types';
 
-const STEPS = ['Dados Básicos', 'Mídia e Contexto', 'Escopo e Cronograma', 'Investimento'];
+const STEPS = [
+  'Dados Básicos',
+  'Objetivo e Diagnóstico',
+  'Entregáveis e Cases',
+  'Investimento e Pagamento',
+  'Depoimento e WhatsApp',
+];
 
 export function ProposalWizard() {
   const navigate = useNavigate();
@@ -41,18 +51,6 @@ export function ProposalWizard() {
     updateField('client_logo_preview', '');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const previews = files.map(f => URL.createObjectURL(f));
-    updateField('moodboard_files', [...form.moodboard_files, ...files]);
-    updateField('moodboard_previews', [...form.moodboard_previews, ...previews]);
-  };
-
-  const removeMoodboardImage = (index: number) => {
-    updateField('moodboard_files', form.moodboard_files.filter((_, i) => i !== index));
-    updateField('moodboard_previews', form.moodboard_previews.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async () => {
     const result = await createProposal.mutateAsync(form);
     setGeneratedSlug(result.slug);
@@ -64,6 +62,57 @@ export function ProposalWizard() {
   };
 
   const finalValue = form.base_value * (1 - (form.discount_pct || 0) / 100);
+
+  // --- Entregáveis helpers ---
+  const addEntregavel = () => {
+    updateField('entregaveis', [...form.entregaveis, { output: '', items: [''] }]);
+  };
+  const removeEntregavel = (idx: number) => {
+    updateField('entregaveis', form.entregaveis.filter((_: any, i: number) => i !== idx));
+  };
+  const updateEntregavelOutput = (idx: number, value: string) => {
+    const updated = [...form.entregaveis];
+    updated[idx] = { ...updated[idx], output: value };
+    updateField('entregaveis', updated);
+  };
+  const addEntregavelItem = (idx: number) => {
+    const updated = [...form.entregaveis];
+    updated[idx] = { ...updated[idx], items: [...(updated[idx].items || []), ''] };
+    updateField('entregaveis', updated);
+  };
+  const updateEntregavelItem = (eIdx: number, iIdx: number, value: string) => {
+    const updated = [...form.entregaveis];
+    const items = [...(updated[eIdx].items || [])];
+    items[iIdx] = value;
+    updated[eIdx] = { ...updated[eIdx], items };
+    updateField('entregaveis', updated);
+  };
+  const removeEntregavelItem = (eIdx: number, iIdx: number) => {
+    const updated = [...form.entregaveis];
+    updated[eIdx] = { ...updated[eIdx], items: updated[eIdx].items.filter((_: any, i: number) => i !== iIdx) };
+    updateField('entregaveis', updated);
+  };
+
+  // --- Cases helpers ---
+  const addCase = () => {
+    updateField('cases', [...form.cases, { tipo: '', titulo: '', descricao: '', vimeoId: '', vimeoHash: '', destaque: false }]);
+  };
+  const removeCase = (idx: number) => {
+    updateField('cases', form.cases.filter((_: CaseItem, i: number) => i !== idx));
+  };
+  const updateCase = (idx: number, field: keyof CaseItem, value: any) => {
+    const updated = [...form.cases];
+    updated[idx] = { ...updated[idx], [field]: value };
+    updateField('cases', updated);
+  };
+
+  // --- Payment options helpers ---
+  const addPaymentOption = () => {
+    updateField('payment_options', [...form.payment_options, { titulo: '', valor: '', descricao: '', destaque: '', recomendado: false }]);
+  };
+  const removePaymentOption = (idx: number) => {
+    updateField('payment_options', form.payment_options.filter((_, i) => i !== idx));
+  };
 
   if (generatedSlug) {
     const publicUrl = `${window.location.origin}/orcamento/${generatedSlug}`;
@@ -113,28 +162,24 @@ export function ProposalWizard() {
 
       <Card>
         <CardContent className="pt-6 space-y-6">
+          {/* ─── Step 0: Dados Básicos ─── */}
           {step === 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Dados Básicos</h3>
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Building2 className="h-5 w-5" /> Dados Básicos
+              </h3>
 
-              {/* Logo Upload */}
+              {/* Logo */}
               <div className="space-y-2">
                 <Label>Logo do Cliente</Label>
                 <div className="flex items-center gap-4">
                   <div className="relative group">
                     <Avatar className="h-16 w-16">
-                      {form.client_logo_preview ? (
-                        <AvatarImage src={form.client_logo_preview} alt="Logo" />
-                      ) : null}
-                      <AvatarFallback className="bg-muted">
-                        <Building2 className="h-6 w-6 text-muted-foreground" />
-                      </AvatarFallback>
+                      {form.client_logo_preview ? <AvatarImage src={form.client_logo_preview} alt="Logo" /> : null}
+                      <AvatarFallback className="bg-muted"><Building2 className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
                     {form.client_logo_preview && (
-                      <button
-                        onClick={removeLogo}
-                        className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
+                      <button onClick={removeLogo} className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <X className="h-3 w-3" />
                       </button>
                     )}
@@ -143,10 +188,7 @@ export function ProposalWizard() {
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" id="logo-upload" />
                     <label htmlFor="logo-upload">
                       <Button variant="outline" size="sm" asChild>
-                        <span className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-1" />
-                          {form.client_logo_preview ? 'Trocar' : 'Enviar Logo'}
-                        </span>
+                        <span className="cursor-pointer"><Upload className="h-4 w-4 mr-1" />{form.client_logo_preview ? 'Trocar' : 'Enviar Logo'}</span>
                       </Button>
                     </label>
                     <p className="text-xs text-muted-foreground mt-1">Opcional. PNG, JPG até 2MB</p>
@@ -182,134 +224,209 @@ export function ProposalWizard() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.validity_date}
-                      onSelect={d => updateField('validity_date', d)}
-                      disabled={date => date < new Date()}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
+                    <Calendar mode="single" selected={form.validity_date} onSelect={d => updateField('validity_date', d)} disabled={date => date < new Date()} initialFocus className="p-3 pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-          )}
 
-          {step === 1 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Mídia e Contexto</h3>
               <div className="space-y-2">
                 <Label>Briefing</Label>
-                <Textarea value={form.briefing} onChange={e => updateField('briefing', e.target.value)} placeholder="Descreva o briefing do projeto..." rows={6} />
+                <Textarea value={form.briefing} onChange={e => updateField('briefing', e.target.value)} placeholder="Descreva o briefing do projeto..." rows={4} />
               </div>
               <div className="space-y-2">
                 <Label>URL do Vídeo Reel (YouTube/Vimeo)</Label>
                 <Input value={form.video_url} onChange={e => updateField('video_url', e.target.value)} placeholder="https://youtube.com/watch?v=..." />
               </div>
+            </div>
+          )}
+
+          {/* ─── Step 1: Objetivo e Diagnóstico ─── */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Target className="h-5 w-5" /> Objetivo e Diagnóstico
+              </h3>
+
               <div className="space-y-2">
-                <Label>Moodboard (imagens)</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                  <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" id="moodboard-upload" />
-                  <label htmlFor="moodboard-upload" className="cursor-pointer flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <Upload className="h-8 w-8" />
-                    <span className="text-sm">Clique para adicionar imagens</span>
-                  </label>
-                </div>
-                {form.moodboard_previews.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
-                    {form.moodboard_previews.map((url, i) => (
-                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button onClick={() => removeMoodboardImage(i)} className="absolute top-1 right-1 h-6 w-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <X className="h-3 w-3" />
-                        </button>
+                <Label>Objetivo do Projeto</Label>
+                <Textarea
+                  value={form.objetivo}
+                  onChange={e => updateField('objetivo', e.target.value)}
+                  placeholder="Descreva o objetivo estratégico deste projeto para o cliente..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label className="text-sm font-semibold">Diagnóstico — 3 Dores do Cliente</Label>
+                <p className="text-xs text-muted-foreground">Identifique os 3 principais problemas/desafios que este projeto resolve.</p>
+                {form.diagnostico_dores.map((dor, i) => (
+                  <Card key={i} className="border-border">
+                    <CardContent className="pt-4 space-y-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">{dor.label}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Label</Label>
+                          <Input
+                            value={dor.label}
+                            onChange={e => {
+                              const updated = [...form.diagnostico_dores];
+                              updated[i] = { ...updated[i], label: e.target.value };
+                              updateField('diagnostico_dores', updated);
+                            }}
+                            placeholder="Ex: Prioridade"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Título</Label>
+                          <Input
+                            value={dor.title}
+                            onChange={e => {
+                              const updated = [...form.diagnostico_dores];
+                              updated[i] = { ...updated[i], title: e.target.value };
+                              updateField('diagnostico_dores', updated);
+                            }}
+                            placeholder="Ex: Ausência de conteúdo estratégico"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Descrição</Label>
+                        <Textarea
+                          value={dor.desc}
+                          onChange={e => {
+                            const updated = [...form.diagnostico_dores];
+                            updated[i] = { ...updated[i], desc: e.target.value };
+                            updateField('diagnostico_dores', updated);
+                          }}
+                          placeholder="Descrição do problema..."
+                          rows={2}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           )}
 
+          {/* ─── Step 2: Entregáveis e Cases ─── */}
           {step === 2 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-foreground">Escopo e Cronograma</h3>
-              {([
-                { key: 'scope_pre_production' as const, label: 'Pré-Produção' },
-                { key: 'scope_production' as const, label: 'Produção' },
-                { key: 'scope_post_production' as const, label: 'Pós-Produção' },
-              ]).map(({ key, label }) => (
-                <div key={key} className="space-y-3">
-                  <Label className="text-sm font-semibold">{label}</Label>
-                  {form[key].map((item, i) => (
-                    <div key={i} className="flex gap-2">
-                      <Input
-                        value={item.item}
-                        onChange={e => {
-                          const updated = [...form[key]];
-                          updated[i] = { item: e.target.value };
-                          updateField(key, updated);
-                        }}
-                        placeholder={`Item de ${label.toLowerCase()}`}
-                      />
-                      <Button variant="ghost" size="icon" onClick={() => updateField(key, form[key].filter((_, idx) => idx !== i))} disabled={form[key].length <= 1}>
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <FileText className="h-5 w-5" /> Entregáveis
+              </h3>
+
+              {form.entregaveis.map((ent: any, eIdx: number) => (
+                <Card key={eIdx} className="border-border">
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Entregável {eIdx + 1}</Label>
+                      <Button variant="ghost" size="icon" onClick={() => removeEntregavel(eIdx)} className="h-7 w-7">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => updateField(key, [...form[key], { item: '' }])}>
-                    <Plus className="h-4 w-4 mr-1" /> Adicionar
-                  </Button>
-                </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Output (ex: "1 vídeo institucional de 2min")</Label>
+                      <Input value={ent.output || ''} onChange={e => updateEntregavelOutput(eIdx, e.target.value)} placeholder="Descrição do entregável" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Serviços inclusos</Label>
+                      {(ent.items || []).map((item: string, iIdx: number) => (
+                        <div key={iIdx} className="flex gap-2">
+                          <Input value={item} onChange={e => updateEntregavelItem(eIdx, iIdx, e.target.value)} placeholder="Ex: Roteirização" />
+                          <Button variant="ghost" size="icon" onClick={() => removeEntregavelItem(eIdx, iIdx)} disabled={(ent.items || []).length <= 1} className="h-10 w-10 shrink-0">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={() => addEntregavelItem(eIdx)}>
+                        <Plus className="h-3 w-3 mr-1" /> Serviço
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
+              <Button variant="outline" onClick={addEntregavel}>
+                <Plus className="h-4 w-4 mr-1" /> Adicionar Entregável
+              </Button>
 
-              <div className="space-y-3 pt-4 border-t border-border">
-                <Label className="text-sm font-semibold">Cronograma</Label>
-                {form.timeline.map((item, i) => (
-                  <div key={i} className="flex gap-2">
-                    <Input
-                      value={item.week}
-                      onChange={e => {
-                        const updated = [...form.timeline];
-                        updated[i] = { ...updated[i], week: e.target.value };
-                        updateField('timeline', updated);
-                      }}
-                      placeholder="Semana / Data"
-                      className="w-1/3"
-                    />
-                    <Input
-                      value={item.description}
-                      onChange={e => {
-                        const updated = [...form.timeline];
-                        updated[i] = { ...updated[i], description: e.target.value };
-                        updateField('timeline', updated);
-                      }}
-                      placeholder="Descrição da etapa"
-                      className="flex-1"
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => updateField('timeline', form.timeline.filter((_, idx) => idx !== i))} disabled={form.timeline.length <= 1}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+              {/* Cases */}
+              <div className="pt-6 border-t border-border space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Video className="h-5 w-5" /> Cases Similares
+                </h3>
+                <p className="text-xs text-muted-foreground">Adicione projetos similares para referência. O Vimeo ID e Hash são usados para embed automático.</p>
+
+                {form.cases.map((c, idx) => (
+                  <Card key={idx} className="border-border">
+                    <CardContent className="pt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Case {idx + 1}</Label>
+                        <Button variant="ghost" size="icon" onClick={() => removeCase(idx)} className="h-7 w-7">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tipo (ex: "Vídeo Institucional")</Label>
+                          <Input value={c.tipo || ''} onChange={e => updateCase(idx, 'tipo', e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Título</Label>
+                          <Input value={c.titulo || ''} onChange={e => updateCase(idx, 'titulo', e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Vimeo ID</Label>
+                          <Input value={c.vimeoId || ''} onChange={e => updateCase(idx, 'vimeoId', e.target.value)} placeholder="Ex: 1234567890" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Vimeo Hash</Label>
+                          <Input value={c.vimeoHash || ''} onChange={e => updateCase(idx, 'vimeoHash', e.target.value)} placeholder="Ex: abc123def" />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Descrição</Label>
+                        <Textarea value={c.descricao || ''} onChange={e => updateCase(idx, 'descricao', e.target.value)} rows={2} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={!!c.destaque} onCheckedChange={v => updateCase(idx, 'destaque', v)} />
+                        <Label className="text-xs">Destaque (aparece maior)</Label>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => updateField('timeline', [...form.timeline, { week: '', description: '' }])}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar Etapa
+                <Button variant="outline" onClick={addCase}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar Case
                 </Button>
               </div>
             </div>
           )}
 
+          {/* ─── Step 3: Investimento e Pagamento ─── */}
           {step === 3 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Investimento</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <DollarSign className="h-5 w-5" /> Investimento
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Valor Base (R$)</Label>
+                  <Label>Valor de Tabela (R$)</Label>
                   <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
+                    type="number" min={0} step={0.01}
+                    value={form.list_price || ''}
+                    onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)}
+                    placeholder="Valor riscado (opcional)"
+                  />
+                  <p className="text-xs text-muted-foreground">Aparece riscado na proposta</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Valor Base (R$) *</Label>
+                  <Input
+                    type="number" min={0} step={0.01}
                     value={form.base_value || ''}
                     onChange={e => updateField('base_value', parseFloat(e.target.value) || 0)}
                     placeholder="0,00"
@@ -318,26 +435,20 @@ export function ProposalWizard() {
                 <div className="space-y-2">
                   <Label>Desconto (%)</Label>
                   <Input
-                    type="number"
-                    min={0}
-                    max={100}
+                    type="number" min={0} max={100}
                     value={form.discount_pct || ''}
                     onChange={e => updateField('discount_pct', parseFloat(e.target.value) || 0)}
                     placeholder="0"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Condições de Pagamento</Label>
-                <Textarea value={form.payment_terms} onChange={e => updateField('payment_terms', e.target.value)} rows={3} />
-              </div>
 
               {form.base_value > 0 && (
-                <div className="bg-muted rounded-lg p-4 space-y-2">
-                  <p className="text-sm text-muted-foreground">Preview do Investimento:</p>
-                  {form.discount_pct > 0 && (
+                <div className="bg-muted rounded-lg p-4 space-y-1">
+                  <p className="text-sm text-muted-foreground">Preview:</p>
+                  {form.list_price > 0 && (
                     <p className="text-sm text-muted-foreground line-through">
-                      Subtotal: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(form.base_value)}
+                      Tabela: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(form.list_price)}
                     </p>
                   )}
                   {form.discount_pct > 0 && (
@@ -348,6 +459,135 @@ export function ProposalWizard() {
                   </p>
                 </div>
               )}
+
+              {/* Payment Options */}
+              <div className="pt-4 border-t border-border space-y-4">
+                <Label className="text-sm font-semibold">Opções de Pagamento</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs">Condições gerais</Label>
+                  <Textarea value={form.payment_terms} onChange={e => updateField('payment_terms', e.target.value)} rows={2} />
+                </div>
+
+                {form.payment_options.map((opt, idx) => (
+                  <Card key={idx} className="border-border">
+                    <CardContent className="pt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Opção {idx + 1}</Label>
+                        <Button variant="ghost" size="icon" onClick={() => removePaymentOption(idx)} className="h-7 w-7">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Título</Label>
+                          <Input
+                            value={opt.titulo}
+                            onChange={e => {
+                              const updated = [...form.payment_options];
+                              updated[idx] = { ...updated[idx], titulo: e.target.value };
+                              updateField('payment_options', updated);
+                            }}
+                            placeholder="Ex: À Vista"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Valor</Label>
+                          <Input
+                            value={opt.valor}
+                            onChange={e => {
+                              const updated = [...form.payment_options];
+                              updated[idx] = { ...updated[idx], valor: e.target.value };
+                              updateField('payment_options', updated);
+                            }}
+                            placeholder="Ex: R$ 25.000"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Descrição</Label>
+                        <Input
+                          value={opt.descricao}
+                          onChange={e => {
+                            const updated = [...form.payment_options];
+                            updated[idx] = { ...updated[idx], descricao: e.target.value };
+                            updateField('payment_options', updated);
+                          }}
+                          placeholder="Ex: Pagamento único com 5% de desconto"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Destaque (badge)</Label>
+                          <Input
+                            value={opt.destaque || ''}
+                            onChange={e => {
+                              const updated = [...form.payment_options];
+                              updated[idx] = { ...updated[idx], destaque: e.target.value };
+                              updateField('payment_options', updated);
+                            }}
+                            placeholder="Ex: Melhor custo-benefício"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 pt-5">
+                          <Switch
+                            checked={!!opt.recomendado}
+                            onCheckedChange={v => {
+                              const updated = [...form.payment_options];
+                              updated[idx] = { ...updated[idx], recomendado: v };
+                              updateField('payment_options', updated);
+                            }}
+                          />
+                          <Label className="text-xs">Recomendado</Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                <Button variant="outline" onClick={addPaymentOption}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar Opção de Pagamento
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Step 4: Depoimento e WhatsApp ─── */}
+          {step === 4 && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" /> Depoimento
+              </h3>
+              <p className="text-xs text-muted-foreground">Opcional. Aparece na seção de investimento como prova social.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome</Label>
+                  <Input value={form.testimonial_name} onChange={e => updateField('testimonial_name', e.target.value)} placeholder="Ex: João Silva" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Cargo</Label>
+                  <Input value={form.testimonial_role} onChange={e => updateField('testimonial_role', e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Texto do Depoimento</Label>
+                <Textarea value={form.testimonial_text} onChange={e => updateField('testimonial_text', e.target.value)} rows={3} placeholder="O que o cliente disse sobre o trabalho..." />
+              </div>
+              <div className="space-y-2">
+                <Label>URL da Foto</Label>
+                <Input value={form.testimonial_image} onChange={e => updateField('testimonial_image', e.target.value)} placeholder="https://..." />
+                <p className="text-xs text-muted-foreground">URL da foto do depoente. Se vazio, usa imagem padrão.</p>
+              </div>
+
+              <div className="pt-6 border-t border-border space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Phone className="h-5 w-5" /> WhatsApp
+                </h3>
+                <div className="space-y-2">
+                  <Label>Número do WhatsApp</Label>
+                  <Input value={form.whatsapp_number} onChange={e => updateField('whatsapp_number', e.target.value)} placeholder="5511999999999" />
+                  <p className="text-xs text-muted-foreground">Número completo com DDI+DDD. Usado no botão flutuante de aprovação.</p>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
