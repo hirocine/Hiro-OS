@@ -357,7 +357,7 @@ export default function ProposalDetails() {
                 <CardTitle className="text-base">Objetivo</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-2">
               <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={6} />
             </CardContent>
             {diagDirty && (
