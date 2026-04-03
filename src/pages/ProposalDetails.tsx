@@ -286,22 +286,21 @@ export default function ProposalDetails() {
                 <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="text-right">
-                  <p className="text-lg font-bold">{formattedValue}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Validade: {format(new Date(proposal.validity_date), 'dd/MM/yyyy')}
-                  </p>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-muted-foreground">Status</span>
                 <Select value={proposal.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-[130px] h-8">
-                    <SelectValue />
+                  <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
+                    <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
+                      {(statusMap[proposal.status] || statusMap.draft).label}
+                    </Badge>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Rascunho</SelectItem>
                     <SelectItem value="sent">Enviada</SelectItem>
+                    <SelectItem value="opened">Aberta</SelectItem>
+                    <SelectItem value="new_version">Nova Versão</SelectItem>
                     <SelectItem value="approved">Aprovada</SelectItem>
-                    <SelectItem value="expired">Expirada</SelectItem>
+                    <SelectItem value="expired">Arquivada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
