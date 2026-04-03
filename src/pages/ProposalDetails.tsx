@@ -953,13 +953,8 @@ function VimeoThumbnail({ videoId, alt, className }: { videoId: string; alt?: st
                         }`}
                       >
                         {bc.vimeo_id && (
-                          <div className="aspect-video bg-muted relative">
-                            <img
-                              src={`https://vumbnail.com/${bc.vimeo_id}.jpg`}
-                              alt={bc.campaign_name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
+                          <div className="aspect-video relative">
+                            <VimeoThumbnail videoId={bc.vimeo_id} alt={bc.campaign_name} className="w-full h-full" />
                             {selected && (
                               <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
                                 <Check className="h-3 w-3" />
