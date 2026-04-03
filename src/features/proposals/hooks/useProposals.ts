@@ -43,9 +43,9 @@ export function useProposals() {
         slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
       }
 
-      const baseValue = form.base_value || 0;
+      const listPrice = form.list_price || 0;
       const discountPct = form.discount_pct || 0;
-      const finalValue = baseValue * (1 - discountPct / 100);
+      const finalValue = listPrice * (1 - discountPct / 100);
 
       const { data: userData } = await supabase.auth.getUser();
 
@@ -60,14 +60,17 @@ export function useProposals() {
           .select('*')
           .in('id', form.selected_case_ids);
         if (casesData) {
-          casesJsonb = (casesData as unknown as ProposalCase[]).map(c => ({
-            tipo: c.tipo,
-            titulo: c.client_name,
-            descricao: c.campaign_name,
-            vimeoId: c.vimeo_id,
-            vimeoHash: c.vimeo_hash,
-            destaque: c.destaque,
-          }));
+          casesJsonb = (casesData as unknown as ProposalCase[]).map(c => {
+            const tags = Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : (c.tipo ? [c.tipo] : []);
+            return {
+              tipo: tags[0] || '',
+              titulo: c.client_name,
+              descricao: c.campaign_name,
+              vimeoId: c.vimeo_id,
+              vimeoHash: c.vimeo_hash,
+              destaque: c.destaque,
+            };
+          });
         }
       }
 
@@ -153,10 +156,10 @@ export function useProposals() {
           client_responsible: form.client_responsible.trim() || null,
           validity_date: form.validity_date?.toISOString().split('T')[0],
           sent_date: form.sent_date.toISOString().split('T')[0],
-          base_value: baseValue,
+          base_value: finalValue,
           discount_pct: discountPct,
           final_value: finalValue,
-          list_price: form.list_price || null,
+          list_price: listPrice || null,
           payment_terms: form.payment_terms.trim(),
           created_by: userData?.user?.id || null,
           status: 'draft',

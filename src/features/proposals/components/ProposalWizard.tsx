@@ -11,10 +11,12 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
   CalendarIcon, Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Check,
   Building2, Target, Video, DollarSign, Package, ListChecks,
-  Phone, Sparkles
+  Phone, Sparkles, Smartphone, Camera, ClipboardList, Clapperboard,
+  Palette, Image, Music, Monitor, Mic
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -25,11 +27,16 @@ import { useProposalCases } from '../hooks/useProposalCases';
 import {
   defaultFormData,
   ICON_OPTIONS,
+  CASE_TAG_OPTIONS,
   type ProposalFormData,
   type EntregavelItem,
   type DiagnosticoDor,
   type InclusoItem,
 } from '../types';
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, Image, Music, Monitor, Mic,
+};
 
 const STEPS = [
   { label: 'Cliente', icon: Building2 },
@@ -56,7 +63,7 @@ export function ProposalWizard() {
 
   // New case inline form
   const [showNewCase, setShowNewCase] = useState(false);
-  const [newCase, setNewCase] = useState({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+  const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
 
   const parseVimeoUrl = (url: string): { id: string; hash: string } => {
     // Supports: https://vimeo.com/1234567890/abc123def or https://vimeo.com/1234567890?h=abc123def
@@ -82,7 +89,8 @@ export function ProposalWizard() {
     return true;
   };
 
-  const finalValue = form.base_value * (1 - (form.discount_pct || 0) / 100);
+  const listPrice = form.list_price || 0;
+  const finalValue = listPrice * (1 - (form.discount_pct || 0) / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
   // Pain point selection helpers
@@ -388,24 +396,34 @@ export function ProposalWizard() {
               <div className="grid grid-cols-1 gap-3">
                 {casesBank.map(c => {
                   const isSelected = form.selected_case_ids.includes(c.id);
+                  const tags = Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : (c.tipo ? [c.tipo] : []);
                   return (
                     <div
                       key={c.id}
                       onClick={() => toggleCase(c.id)}
                       className={cn(
-                        "rounded-lg border p-4 cursor-pointer transition-all",
+                        "rounded-lg border p-3 cursor-pointer transition-all",
                         isSelected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <Checkbox checked={isSelected} className="shrink-0" />
+                        {c.vimeo_id && (
+                          <img
+                            src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                            alt={c.campaign_name}
+                            className="w-24 h-14 object-cover rounded shrink-0 bg-muted"
+                          />
+                        )}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
-                              {c.tipo}
-                            </span>
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            {tags.map((tag, i) => (
+                              <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                {tag}
+                              </span>
+                            ))}
                             {c.destaque && (
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30 px-2 py-0.5 rounded">
                                 Destaque
                               </span>
                             )}
@@ -413,7 +431,6 @@ export function ProposalWizard() {
                           <p className="text-sm font-semibold text-foreground">{c.client_name}</p>
                           <p className="text-xs text-muted-foreground">{c.campaign_name}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground font-mono shrink-0">{c.vimeo_id}</span>
                       </div>
                     </div>
                   );
@@ -431,9 +448,14 @@ export function ProposalWizard() {
               ) : (
                 <div className="rounded-lg border border-dashed border-primary/50 p-4 space-y-3 bg-primary/5">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Tipo de Projeto</Label>
-                      <Input value={newCase.tipo} onChange={e => setNewCase(p => ({ ...p, tipo: e.target.value }))} placeholder="Campanha Publicitária" className="h-9" />
+                    <div className="space-y-1 col-span-2">
+                      <Label className="text-xs text-muted-foreground">Tags do Projeto</Label>
+                      <MultiSelect
+                        options={CASE_TAG_OPTIONS.map(t => ({ value: t, label: t }))}
+                        value={newCase.tags}
+                        onValueChange={v => setNewCase(p => ({ ...p, tags: v }))}
+                        placeholder="Selecione as categorias..."
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Nome do Cliente</Label>
@@ -459,8 +481,8 @@ export function ProposalWizard() {
                       onClick={async () => {
                         const { id: vimeoId, hash: vimeoHash } = parseVimeoUrl(newCase.vimeo_url);
                         if (vimeoId.trim()) {
-                          await createCase.mutateAsync({ tipo: newCase.tipo, client_name: newCase.client_name, campaign_name: newCase.campaign_name, vimeo_id: vimeoId, vimeo_hash: vimeoHash, destaque: newCase.destaque });
-                          setNewCase({ tipo: '', client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
+                          await createCase.mutateAsync({ tags: newCase.tags, client_name: newCase.client_name, campaign_name: newCase.campaign_name, vimeo_id: vimeoId, vimeo_hash: vimeoHash, destaque: newCase.destaque });
+                          setNewCase({ tags: [], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
                           setShowNewCase(false);
                         }
                       }}
@@ -505,12 +527,22 @@ export function ProposalWizard() {
                         <Label className="text-xs text-muted-foreground">Ícone</Label>
                         <Select value={ent.icone} onValueChange={v => updateEntregavel(idx, 'icone', v)}>
                           <SelectTrigger className="h-9">
-                            <SelectValue />
+                            <SelectValue>
+                              {(() => { const IC = ICON_MAP[ent.icone]; return IC ? <span className="flex items-center gap-1.5"><IC className="h-3.5 w-3.5" />{ICON_OPTIONS.find(o => o.value === ent.icone)?.label}</span> : ent.icone; })()}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {ICON_OPTIONS.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
+                            {ICON_OPTIONS.map(opt => {
+                              const IC = ICON_MAP[opt.value];
+                              return (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <span className="flex items-center gap-2">
+                                    {IC && <IC className="h-4 w-4 text-muted-foreground" />}
+                                    {opt.label}
+                                  </span>
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -653,28 +685,21 @@ export function ProposalWizard() {
                 <p className="text-sm text-muted-foreground">Valores e condições de pagamento.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor do Projeto (R$) *</Label>
-                  <Input type="number" min={0} step={0.01} value={form.base_value || ''} onChange={e => updateField('base_value', parseFloat(e.target.value) || 0)} placeholder="20000" className="h-10" />
-                  <p className="text-xs text-muted-foreground">Valor cheio antes do desconto</p>
+                  <Label className="text-xs font-medium">Valor de Tabela (R$) *</Label>
+                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="20000" className="h-10" />
+                  <p className="text-xs text-muted-foreground">Valor cheio — aparece riscado na proposta</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Desconto (%)</Label>
                   <Input type="number" min={0} max={100} value={form.discount_pct || ''} onChange={e => updateField('discount_pct', parseFloat(e.target.value) || 0)} placeholder="50" className="h-10" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Valor de Tabela (R$)</Label>
-                  <Input type="number" min={0} step={0.01} value={form.list_price || ''} onChange={e => updateField('list_price', parseFloat(e.target.value) || 0)} placeholder="Opcional — riscado" className="h-10" />
-                  <p className="text-xs text-muted-foreground">Aparece riscado na proposta</p>
-                </div>
               </div>
 
-              {form.base_value > 0 && (
-                <div className="bg-muted rounded-lg p-4 space-y-1">
-                  {form.list_price > 0 && (
-                    <p className="text-sm text-muted-foreground line-through">Tabela: {fmt(form.list_price)}</p>
-                  )}
+              {listPrice > 0 && (
+                <div className="bg-muted rounded-lg p-4 space-y-2">
+                  <p className="text-sm text-muted-foreground line-through">Tabela: {fmt(listPrice)}</p>
                   {form.discount_pct > 0 && (
                     <p className="text-sm text-success font-medium">Desconto: {form.discount_pct}%</p>
                   )}

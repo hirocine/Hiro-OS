@@ -102,6 +102,7 @@ export interface PainPoint {
 export interface ProposalCase {
   id: string;
   tipo: string;
+  tags: string[];
   client_name: string;
   campaign_name: string;
   vimeo_id: string;
@@ -110,6 +111,16 @@ export interface ProposalCase {
   created_by: string | null;
   created_at: string;
 }
+
+export const CASE_TAG_OPTIONS = [
+  'Marketing Digital',
+  'Eventos',
+  'Criativos',
+  'Fotografia',
+  'Publicidade',
+  'Motion',
+  'VFX',
+];
 
 export interface ProposalFormData {
   client_name: string;

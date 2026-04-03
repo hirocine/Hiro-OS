@@ -1,0 +1,1 @@
+ALTER TABLE public.proposal_cases ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}'::TEXT[];
