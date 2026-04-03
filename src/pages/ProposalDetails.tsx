@@ -322,7 +322,7 @@ export default function ProposalDetails() {
       });
       // Also add to current proposal
       setDoresForm(prev => [...prev, { label: created.label, title: created.title, desc: created.description }]);
-      setNewDorForm({ label: 'Star', title: '', description: '' });
+      setNewDorForm({ label: '⭐', title: '', description: '' });
       setShowNewDorDialog(false);
       toast.success('Dor criada e adicionada!');
     } catch {
