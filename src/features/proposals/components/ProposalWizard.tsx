@@ -334,7 +334,7 @@ export function ProposalWizard() {
                 <div key={eIdx} className="rounded-lg border border-border p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-primary" />
+                      <Video className="h-4 w-4 text-primary" />
                       Entregável {eIdx + 1}
                     </span>
                     <Button variant="ghost" size="icon" onClick={() => removeEntregavel(eIdx)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
