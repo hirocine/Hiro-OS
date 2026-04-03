@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { Loader2 } from 'lucide-react';
@@ -21,6 +22,55 @@ function GlowSpot({ className }: { className: string }) {
 export function ProposalPublicPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: proposal, isLoading, error } = useProposalDetails(slug);
+
+  useLayoutEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+
+    const previousStyles = [
+      [html, 'scrollbar-gutter', html.style.getPropertyValue('scrollbar-gutter')],
+      [html, 'overflow-y', html.style.getPropertyValue('overflow-y')],
+      [html, 'overflow-x', html.style.getPropertyValue('overflow-x')],
+      [body, 'overflow', body.style.getPropertyValue('overflow')],
+      [body, 'overflow-y', body.style.getPropertyValue('overflow-y')],
+      [body, 'overflow-x', body.style.getPropertyValue('overflow-x')],
+      [root, 'overflow', root?.style.getPropertyValue('overflow') ?? ''],
+      [root, 'overflow-y', root?.style.getPropertyValue('overflow-y') ?? ''],
+      [root, 'overflow-x', root?.style.getPropertyValue('overflow-x') ?? ''],
+      [root, 'min-height', root?.style.getPropertyValue('min-height') ?? ''],
+    ] as const;
+
+    const setImportant = (element: HTMLElement | null, property: string, value: string) => {
+      element?.style.setProperty(property, value, 'important');
+    };
+
+    const restoreProperty = (element: HTMLElement | null, property: string, value: string) => {
+      if (!element) return;
+      if (value) {
+        element.style.setProperty(property, value);
+      } else {
+        element.style.removeProperty(property);
+      }
+    };
+
+    setImportant(html, 'scrollbar-gutter', 'auto');
+    setImportant(html, 'overflow-y', 'auto');
+    setImportant(html, 'overflow-x', 'hidden');
+    setImportant(body, 'overflow', 'visible');
+    setImportant(body, 'overflow-y', 'visible');
+    setImportant(body, 'overflow-x', 'hidden');
+    setImportant(root, 'overflow', 'visible');
+    setImportant(root, 'overflow-y', 'visible');
+    setImportant(root, 'overflow-x', 'hidden');
+    setImportant(root, 'min-height', '100%');
+
+    return () => {
+      previousStyles.forEach(([element, property, value]) => {
+        restoreProperty(element, property, value);
+      });
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -137,3 +187,4 @@ export function ProposalPublicPage() {
     </div>
   );
 }
+
