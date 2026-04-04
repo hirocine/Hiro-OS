@@ -224,6 +224,7 @@ export default function ProposalDetails() {
       testimonial_name: proposal.testimonial_name || '',
       testimonial_role: proposal.testimonial_role || '',
       testimonial_text: proposal.testimonial_text || '',
+      testimonial_image: proposal.testimonial_image || '',
     });
     setDoresForm(Array.isArray(proposal.diagnostico_dores) ? proposal.diagnostico_dores : []);
     setCasesForm(Array.isArray(proposal.cases) ? proposal.cases : []);
