@@ -1,34 +1,92 @@
 
 
-# Thumbnails dos vídeos não aparecem no PDF
+# Evitar quebra de conteúdo no PDF da proposta
 
 ## Problema
 
-O componente `ProposalCases.tsx` (página pública) usa `vumbnail.com/{vimeoId}.jpg` para gerar thumbnails de print. Porém, vídeos **não listados** no Vimeo exigem o `hash` na URL -- o vumbnail.com não suporta isso e retorna erro, resultando em imagens quebradas.
+O CSS atual só aplica `break-inside: avoid` em `<section>`, mas dentro das seções existem cards, grids e blocos menores que são cortados no meio ao imprimir. O browser não sabe quais elementos internos devem permanecer inteiros.
 
-O editor (`ProposalDetails.tsx`) já resolve isso corretamente usando a API oEmbed do Vimeo com o hash, mas o componente público não.
+## Solução: Granular break-inside rules no Print CSS
 
-## Solução
+Adicionar regras de `break-inside: avoid` para todos os elementos internos que não devem ser cortados:
 
-### 1. Adicionar resolução de thumbnail via oEmbed no `ProposalCases.tsx`
+### Arquivo: `src/index.css` (bloco `@media print`)
 
-Criar um sub-componente `CaseCard` que usa `useEffect` + `fetch` para buscar a thumbnail real via oEmbed (mesmo padrão do `VimeoThumbnail` que já existe no editor):
+Adicionar após as regras existentes de cards/sections:
 
-- Construir URL: `https://vimeo.com/api/oembed.json?url=https://vimeo.com/{vimeoId}/{vimeoHash}`
-- Extrair `thumbnail_url` da resposta
-- Fallback para `vumbnail.com` se oEmbed falhar
-- Renderizar a `<img>` **sempre visível** como background do card (não apenas em print), com o iframe por cima
+```css
+/* Cards individuais — nunca cortar no meio */
+.proposal-page .bg-\\[\\#111\\] {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-### 2. Layout: thumb sempre visível, iframe por cima
+/* Grid rows — evitar corte entre cards de uma mesma linha */
+.proposal-page .grid {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-Em vez de esconder a thumbnail e mostrar só no print:
-- `<img>` da thumbnail: `absolute inset-0 w-full h-full object-cover` (sempre visível, serve como "poster")
-- `<iframe>`: `absolute inset-0 w-full h-full` por cima (reproduz o vídeo na web)
-- No print: iframe fica `print:hidden`, thumbnail já está visível naturalmente
+/* Blocos de entregáveis (cada grupo label+título+grid) */
+.proposal-page .flex.flex-col.gap-16 > div {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-Isso elimina a dependência do print CSS para mostrar thumbnails e garante que funcionem tanto na web (como poster enquanto o iframe carrega) quanto no PDF.
+/* Payment option cards */
+.proposal-page .rounded-2xl,
+.proposal-page .rounded-xl {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-### Arquivos alterados
+/* Testimonial block */
+.proposal-page .border-l-2 {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-- `src/features/proposals/components/public/ProposalCases.tsx` -- refatorar para usar oEmbed e thumbnail sempre visível
+/* Cases cards */
+.proposal-page .aspect-video {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Glow spots — esconder no print (são decorativos e podem causar overflow) */
+.proposal-page .blur-\\[120px\\] {
+  display: none !important;
+}
+
+/* Iframe de fundo de próximos passos — esconder no print */
+.proposal-page .rounded-t-\\[40px\\] iframe {
+  display: none !important;
+}
+
+/* Seções com overflow hidden podem causar corte — liberar para print */
+.proposal-page .overflow-hidden {
+  overflow: visible !important;
+}
+
+/* Dividers não devem gerar page break sozinhos */
+.proposal-page .border-b,
+.proposal-page .h-px {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+```
+
+### Arquivo: `src/features/proposals/components/public/ProposalEntregaveis.tsx`
+
+Na seção de Entregáveis, os cards de serviços (com checklists longos) podem ser muito grandes para caber numa página. Para esses, permitir break mas forçar que cada `CheckItem` individual não quebre:
+
+- Adicionar `print:break-inside-auto` nos cards de serviços (que têm subcategorias longas)
+- Ou melhor: não mudar o componente, apenas confiar no CSS pois o Tailwind `print:` prefix resolve
+
+### Resultado esperado
+
+- Cards de entregáveis, cases e investimento nunca são cortados no meio
+- Seções grandes (Entregáveis com muitos cards) podem quebrar entre cards, mas nunca no meio de um card
+- Glow spots decorativos removidos no print
+- Iframe de vídeo de fundo removido no print
+- Overflow liberado para que o browser possa fazer page breaks corretamente
 
