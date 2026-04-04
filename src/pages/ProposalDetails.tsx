@@ -1201,7 +1201,7 @@ export default function ProposalDetails() {
             </CardHeader>
             <CardContent className="pt-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {entregaveisForm.incluso_categories.map((cat, catIdx) => (
+                {inclusoForm.map((cat, catIdx) => (
                   <div key={catIdx} className="space-y-3">
                     <h4 className="text-sm font-semibold">{cat.categoria}</h4>
                     {cat.itens && (
