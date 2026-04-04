@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Proposal, ProposalFormData, ProposalCase } from '../types';
 
-function generateSlug(clientName: string, projectName: string): string {
+export function generateSlug(clientName: string, projectName: string): string {
   const year = new Date().getFullYear();
   const raw = `hiro-${clientName}-${projectName}-${year}`;
   return raw
