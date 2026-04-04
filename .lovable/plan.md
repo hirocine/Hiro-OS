@@ -1,23 +1,66 @@
 
+Não é o melhor caminho “só puxar a escrita para frente”.
 
-# Fix Page 1: Clients at Bottom + Text Visibility
+## O que está acontecendo
+No `PdfHero`, o background está assim:
 
-## Problems
-1. "Quem confia na Hiro Films" and "Nossos Clientes" text appears faded/buggy in the PDF capture
-2. Client logos should be pushed to the bottom of page 1, not immediately after the hero
+- `position: 'absolute', inset: 0` no bloco interno
+- mas o container do `PdfHero` não está com `position: 'relative'`
 
-## Solution
+Como a página (`pageStyle`) já tem `position: 'relative'`, esse background acaba se ancorando na página inteira, não só no hero. Resultado: ele fica por cima visualmente da área de clientes e apaga o texto.
 
-### File: `ProposalPdfDocument.tsx`
+## Por que só aumentar z-index não é a solução ideal
+Daria para “forçar” o texto dos clientes para frente com `position: 'relative'` + `zIndex` alto, mas isso é um remendo:
 
-**Page 1 layout**: Make it a flex column with the clients section pushed to the bottom via `marginTop: 'auto'`.
+- resolve só o título/subtítulo;
+- pode deixar o overlay ainda escurecendo os logos;
+- mantém a causa raiz no layout;
+- pode gerar novos bugs em outras áreas da página 1.
 
-**Text fix**: The subtitle and title use `color` values that may get overridden or rendered poorly. Will set explicit high-contrast colors with inline `!important`-equivalent approach and ensure `fontWeight` is strong enough.
+## Melhor correção
+Conter o background dentro do próprio hero.
 
-Changes:
-1. Page 1 `pageStyle` override: add `display: 'flex', flexDirection: 'column'`
-2. `PdfClients` wrapper: add `marginTop: 'auto'` so it anchors to the bottom
-3. `PdfClients` title text: change color to `#ffffff` (pure white) instead of `#f5f5f5`, increase font weight
-4. Subtitle "Quem confia": ensure `color: '#4CFF5C'` and `opacity: 1` are explicit
-5. Logo opacity: bump from `0.7` to `0.85` for better visibility
+### Arquivo
+`src/features/proposals/components/public/ProposalPdfDocument.tsx`
 
+### Ajuste principal
+No container raiz do `PdfHero`, adicionar:
+
+- `position: 'relative'`
+- `overflow: 'hidden'`
+
+Hoje ele está assim:
+```ts
+<div style={{ padding: '60px 60px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+```
+
+Vai passar a ficar conceitualmente assim:
+```ts
+<div style={{
+  padding: '60px 60px 30px',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+}}>
+```
+
+## Ajuste complementar
+Para blindar a seção de clientes no PDF, também vale deixar o wrapper dela explicitamente acima no stacking context:
+
+- `position: 'relative'`
+- `zIndex: 2`
+
+no container do `PdfClients`.
+
+Isso não substitui a correção principal, mas ajuda a garantir consistência no `html2canvas`.
+
+## Resultado esperado
+- o background e gradiente ficam limitados ao hero;
+- “Quem confia na Hiro Films” e “Nossos Clientes” deixam de ficar apagados;
+- os logos continuam no final da página 1;
+- a página fica estruturalmente correta, sem depender de gambiarra de camada.
+
+## Resumo da decisão
+Então: sim, até daria para “puxar a escrita para frente”, mas o correto é primeiro impedir que o background do hero invada a área dos clientes. Depois, se necessário, reforçar o `z-index` da seção de clientes como proteção extra.
