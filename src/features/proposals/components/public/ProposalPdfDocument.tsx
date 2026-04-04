@@ -235,8 +235,10 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                   return (
                     <div key={idx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {isEmoji ? <span style={{ fontSize: 16 }}>{item.icone}</span> : Icon && <Icon style={{ width: 16, height: 16, color: '#4CFF5C' }} />}
+                        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', position: 'relative' }}>
+                          {isEmoji
+                            ? <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, lineHeight: 1, display: 'block' }}>{item.icone}</span>
+                            : Icon && <Icon style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, color: '#4CFF5C', display: 'block' }} />}
                         </div>
                         {item.quantidade && <span style={{ fontSize: 24, fontWeight: 800, color: 'rgba(76,255,92,0.2)', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{item.quantidade}</span>}
                       </div>
