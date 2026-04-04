@@ -191,6 +191,7 @@ export default function ProposalDetails() {
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
   const [casesForm, setCasesForm] = useState<CaseItem[]>([]);
   const [entregaveisForm, setEntregaveisForm] = useState<EntregaveisData>({ entregaveis: [], incluso_categories: [] });
+  const [entregaveisSnapshot, setEntregaveisSnapshot] = useState('');
 
   // Populate forms when proposal loads
   useEffect(() => {
