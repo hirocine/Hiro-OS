@@ -190,8 +190,10 @@ export default function ProposalDetails() {
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
   const [casesForm, setCasesForm] = useState<CaseItem[]>([]);
-  const [entregaveisForm, setEntregaveisForm] = useState<EntregaveisData>({ entregaveis: [], incluso_categories: [] });
-  const [entregaveisSnapshot, setEntregaveisSnapshot] = useState('');
+  const [outputForm, setOutputForm] = useState<EntregavelItem[]>([]);
+  const [outputSnapshot, setOutputSnapshot] = useState('');
+  const [inclusoForm, setInclusoForm] = useState<InclusoCategory[]>([]);
+  const [inclusoSnapshot, setInclusoSnapshot] = useState('');
 
   // Populate forms when proposal loads
   useEffect(() => {
