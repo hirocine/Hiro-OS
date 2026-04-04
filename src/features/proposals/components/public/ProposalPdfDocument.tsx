@@ -108,7 +108,7 @@ function PdfHero({ proposal }: { proposal: Proposal }) {
 function PdfClients() {
   const logos = Array.from({ length: 13 }, (_, i) => `/logos/Logo ${i + 1}.png`)
   return (
-    <div style={{ padding: '30px 60px 40px' }}>
+    <div style={{ padding: '30px 60px 40px', position: 'relative', zIndex: 2 }}>
       <p style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#4CFF5C', fontWeight: 700, marginBottom: 10 }}>
         Quem confia na Hiro Films
       </p>
