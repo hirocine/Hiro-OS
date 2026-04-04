@@ -409,7 +409,7 @@ function PdfFooter() {
             Av. Sagitário, 138 - Edifício City, Salas 2506 à 2513 - Alphaville Conde II, Barueri - SP, 06473-073
           </p>
         </div>
-        <img src='/proposal-assets/Asset3.svg' alt='Hiro Films' style={{ height: 80 }} />
+        <img src={ASSET3_SVG_DATA_URI} alt='Hiro Films' style={{ height: 80 }} />
       </div>
       <div style={{ borderTop: '1px solid #333', marginTop: 30, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ fontSize: 10, color: '#666' }}>Esta proposta é confidencial e destinada exclusivamente ao destinatário.</p>
