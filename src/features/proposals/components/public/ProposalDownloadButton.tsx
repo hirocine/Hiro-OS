@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { ProposalPdfDocument } from './ProposalPdfDocument'
+import { svgToPngDataUri } from './asset3DataUri'
 import type { Proposal } from '../../types'
 
 interface Props {
