@@ -286,8 +286,8 @@ export default function ProposalDetails() {
 
   const entregaveisDirty = useMemo(() => {
     if (!proposal) return false;
-    return true; // Always allow save for complex nested structure
-  }, [entregaveisForm, proposal]);
+    return JSON.stringify(entregaveisForm) !== entregaveisSnapshot;
+  }, [entregaveisForm, entregaveisSnapshot, proposal]);
 
   // Group bank by category
   const categoryOrder = [
