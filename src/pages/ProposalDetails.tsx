@@ -922,13 +922,6 @@ export default function ProposalDetails() {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <button
-                              onClick={() => toggleCaseDestaque(i)}
-                              className={`p-1 rounded transition-colors ${c.destaque ? 'text-yellow-500' : 'text-muted-foreground/40 hover:text-yellow-500'}`}
-                              title="Destaque"
-                            >
-                              ⭐
-                            </button>
-                            <button
                               onClick={() => removeCase(i)}
                               className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             >
