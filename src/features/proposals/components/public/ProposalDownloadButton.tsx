@@ -141,8 +141,8 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
         const offsetX = (A4_WIDTH_MM - imgWidth) / 2
         const offsetY = 0 // top-aligned
 
-        const imageData = canvas.toDataURL('image/jpeg', 0.92)
-        pdf.addImage(imageData, 'JPEG', offsetX, offsetY, imgWidth, imgHeight)
+        const imageData = canvas.toDataURL('image/png')
+        pdf.addImage(imageData, 'PNG', offsetX, offsetY, imgWidth, imgHeight)
       }
 
       // Save

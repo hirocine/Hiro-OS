@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X, Star, Clock, Film, Zap, Target, TrendingUp, Eye, Heart, Lightbulb, MessageSquare, Award, Globe, Users, Megaphone, BarChart3, Sparkles } from 'lucide-react'
+import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Proposal } from '../../types'
 
@@ -14,13 +14,6 @@ const iconMap: Record<string, LucideIcon> = {
   'Palette': Palette,
 }
 
-const emojiToIcon: Record<string, LucideIcon> = {
-  '⭐': Star, '🌟': Sparkles, '⏰': Clock, '🎬': Film, '🎥': Video,
-  '⚡': Zap, '🎯': Target, '📈': TrendingUp, '👁': Eye, '👀': Eye,
-  '❤️': Heart, '💡': Lightbulb, '💬': MessageSquare, '🏆': Award,
-  '🌍': Globe, '🌎': Globe, '👥': Users, '📢': Megaphone, '📊': BarChart3,
-  '✨': Sparkles, '📱': Smartphone, '📷': Camera, '🎨': Palette,
-}
 
 const PAGE_WIDTH = 794
 const PAGE_MIN_HEIGHT = 1123
@@ -35,11 +28,7 @@ interface Props {
 /*  PDF-safe helpers – position:absolute centering, NO flexbox        */
 /* ------------------------------------------------------------------ */
 
-function PdfCenteredEmoji({ emoji, size, fontSize }: { emoji: string; size: number; fontSize: number }) {
-  const MappedIcon = emojiToIcon[emoji]
-  if (MappedIcon) {
-    return <PdfCenteredIcon Icon={MappedIcon} size={size} iconSize={fontSize} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
-  }
+function PdfCenteredEmoji({ emoji, size = 40, fontSize = 20 }: { emoji: string; size?: number; fontSize?: number }) {
   return (
     <div style={{ width: size, height: size, borderRadius: 8, background: 'rgba(76,255,92,0.1)', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
       <span style={{ position: 'absolute', top: 0, left: 0, width: size, height: size, lineHeight: `${size}px`, textAlign: 'center', fontSize, display: 'block' }}>{emoji}</span>
@@ -97,8 +86,8 @@ function PdfInfoItem({ label, value }: { label: string; value: string }) {
 }
 
 function PdfCheckItem({ nome, ativo, quantidade }: { nome: string; ativo: boolean; quantidade?: string }) {
-  const boxSize = 18
-  const icoSize = 10
+  const boxSize = 22
+  const icoSize = 14
   const icoOff = Math.round((boxSize - icoSize) / 2)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', color: ativo ? '#f0f0f0' : '#555' }}>
@@ -213,7 +202,7 @@ function PdfDiagnostico({ proposal }: { proposal: Proposal }) {
           {dores.map((d, i) => (
             <div key={i} style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <PdfCenteredEmoji emoji={d.label || '⭐'} size={36} fontSize={18} />
+                <PdfCenteredEmoji emoji={d.label || '⭐'} size={40} fontSize={20} />
                 <div>
                   <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{d.title}</h4>
                   <p style={{ fontSize: 11, color: '#999', lineHeight: 1.5 }}>{d.desc}</p>
@@ -292,8 +281,8 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                     <div key={idx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                         {isEmoji
-                          ? <PdfCenteredEmoji emoji={item.icone} size={34} fontSize={16} />
-                          : Icon && <PdfCenteredIcon Icon={Icon} size={34} iconSize={16} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
+                          ? <PdfCenteredEmoji emoji={item.icone} size={40} fontSize={20} />
+                          : Icon && <PdfCenteredIcon Icon={Icon} size={40} iconSize={20} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
                         }
                         {item.quantidade && <span style={{ fontSize: 24, fontWeight: 800, color: 'rgba(76,255,92,0.2)', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{item.quantidade}</span>}
                       </div>
@@ -313,8 +302,8 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                     <div key={cIdx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ marginBottom: 12 }}>
                         {isEmoji
-                          ? <PdfCenteredEmoji emoji={card.icone} size={34} fontSize={16} />
-                          : Icon && <PdfCenteredIcon Icon={Icon} size={34} iconSize={16} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
+                          ? <PdfCenteredEmoji emoji={card.icone} size={40} fontSize={20} />
+                          : Icon && <PdfCenteredIcon Icon={Icon} size={40} iconSize={20} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
                         }
                       </div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{card.titulo}</h4>
@@ -438,7 +427,7 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
           const borderColor = step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555'
           const bg = step.status === 'done' ? 'rgba(76,255,92,0.1)' : step.status === 'current' ? 'rgba(255,255,255,0.1)' : 'transparent'
           const fg = step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555'
-          const circleSize = 44
+          const circleSize = 48
 
           return (
             <div key={step.num} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', width: 100 }}>
@@ -446,9 +435,9 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
                 <div style={{ position: 'absolute', top: 22, left: 72, width: 52, height: 1, background: step.status === 'done' ? 'rgba(76,255,92,0.3)' : '#333' }} />
               )}
               {step.status === 'done' ? (
-                <PdfCenteredIcon Icon={Check} size={circleSize} iconSize={18} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
+                <PdfCenteredIcon Icon={Check} size={circleSize} iconSize={22} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
               ) : step.status === 'locked' ? (
-                <PdfCenteredIcon Icon={Lock} size={circleSize} iconSize={14} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
+                <PdfCenteredIcon Icon={Lock} size={circleSize} iconSize={18} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
               ) : (
                 <div style={{ width: circleSize, height: circleSize, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${borderColor}`, background: bg, position: 'relative' }}>
                   <PdfCenteredText text={String(step.num)} size={circleSize} fontSize={16} color={fg} />
