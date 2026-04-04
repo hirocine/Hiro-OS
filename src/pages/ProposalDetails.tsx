@@ -912,6 +912,13 @@ export default function ProposalDetails() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {casesForm.map((c, i) => (
                     <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
+                      {/* Remove button - top right */}
+                      <button
+                        onClick={() => removeCase(i)}
+                        className="absolute top-2 right-2 z-10 p-1 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 text-white hover:text-destructive transition-all"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                       {c.vimeoId && (
                         <div className="aspect-video">
                           <VimeoThumbnail videoId={c.vimeoId} videoHash={c.vimeoHash} alt={c.titulo || ''} className="w-full h-full" />
@@ -923,15 +930,7 @@ export default function ProposalDetails() {
                             <p className="text-sm font-medium leading-tight">{c.titulo || 'Sem título'}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{c.descricao}</p>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0 self-center">
-                            {c.tipo && <Badge variant="secondary" className="text-[10px] whitespace-nowrap">{c.tipo}</Badge>}
-                            <button
-                              onClick={() => removeCase(i)}
-                              className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
+                          {c.tipo && <Badge variant="secondary" className="text-[10px] whitespace-nowrap shrink-0 self-center">{c.tipo}</Badge>}
                         </div>
                       </div>
                     </div>
