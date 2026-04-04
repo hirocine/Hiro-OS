@@ -60,6 +60,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPdfDoc, setShowPdfDoc] = useState(false)
   const [caseThumbnails, setCaseThumbnails] = useState<Record<string, string>>({})
+  const [footerPng, setFooterPng] = useState<string>('')
   const pdfRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
