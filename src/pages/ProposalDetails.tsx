@@ -299,7 +299,8 @@ export default function ProposalDetails() {
     if (!proposal) return false;
     return testimonialForm.testimonial_name !== (proposal.testimonial_name || '') ||
       testimonialForm.testimonial_role !== (proposal.testimonial_role || '') ||
-      testimonialForm.testimonial_text !== (proposal.testimonial_text || '');
+      testimonialForm.testimonial_text !== (proposal.testimonial_text || '') ||
+      testimonialForm.testimonial_image !== (proposal.testimonial_image || '');
   }, [testimonialForm, proposal]);
 
   const doresDirty = useMemo(() => {
