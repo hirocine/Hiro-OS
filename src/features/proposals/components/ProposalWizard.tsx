@@ -63,6 +63,7 @@ export function ProposalWizard() {
   const { createProposal } = useProposals();
   const { data: painPoints = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
+  const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<ProposalFormData>({ ...defaultFormData });
