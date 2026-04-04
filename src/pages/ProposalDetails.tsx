@@ -392,7 +392,13 @@ export default function ProposalDetails() {
       } else if (section === 'cases') {
         data = { cases: casesForm };
       } else if (section === 'entregaveis') {
-        data = { entregaveis: entregaveisForm };
+        // Save in wizard block format for compatibility with public page
+        data = {
+          entregaveis: [
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: entregaveisForm.entregaveis },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: entregaveisForm.incluso_categories },
+          ],
+        };
       }
       await updateProposal.mutateAsync({ id: proposal.id, data });
       await refetch();
