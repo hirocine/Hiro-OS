@@ -305,10 +305,15 @@ export default function ProposalDetails() {
     return JSON.stringify(casesForm) !== JSON.stringify(original);
   }, [casesForm, proposal]);
 
-  const entregaveisDirty = useMemo(() => {
+  const outputDirty = useMemo(() => {
     if (!proposal) return false;
-    return JSON.stringify(entregaveisForm) !== entregaveisSnapshot;
-  }, [entregaveisForm, entregaveisSnapshot, proposal]);
+    return JSON.stringify(outputForm) !== outputSnapshot;
+  }, [outputForm, outputSnapshot, proposal]);
+
+  const inclusoDirty = useMemo(() => {
+    if (!proposal) return false;
+    return JSON.stringify(inclusoForm) !== inclusoSnapshot;
+  }, [inclusoForm, inclusoSnapshot, proposal]);
 
   // Group bank by category
   const categoryOrder = [
