@@ -1,36 +1,20 @@
 
 
-# Fix auth in ai-proposal-assistant edge function
+# Fix Supabase client import version in ai-proposal-assistant
 
 ## Problem
-`supabase.auth.getClaims(token)` doesn't exist in the Supabase JS client, causing a 401 error.
+The edge function imports `@supabase/supabase-js@2.97.0` which doesn't exist on esm.sh, causing a runtime error.
 
 ## Change
+**File: `supabase/functions/ai-proposal-assistant/index.ts`** — Line 2
 
-**File: `supabase/functions/ai-proposal-assistant/index.ts`**
-
-Replace lines 124-132 (the `getClaims` block):
+Replace:
 ```typescript
-const token = authHeader.replace("Bearer ", "");
-const { data: claimsData, error: claimsError } =
-  await supabase.auth.getClaims(token);
-if (claimsError || !claimsData?.claims) {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.97.0";
 ```
-
 With:
 ```typescript
-const { data: userData, error: userError } = await supabase.auth.getUser();
-if (userError || !userData?.user) {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 ```
 
 No other files changed. Edge function will be redeployed automatically.
