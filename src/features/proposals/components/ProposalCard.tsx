@@ -45,7 +45,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <Avatar className="h-12 w-12 shrink-0">
               {proposal.client_logo ? (
                 <AvatarImage src={proposal.client_logo} alt={proposal.client_name} />
