@@ -11,20 +11,7 @@ import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
   const navigate = useNavigate();
-  const { data: proposals, deleteProposal, createDraft } = useProposals();
-  const [creatingDraft, setCreatingDraft] = useState(false);
-
-  const handleNewProposal = async () => {
-    setCreatingDraft(true);
-    try {
-      const id = await createDraft.mutateAsync();
-      navigate(`/orcamentos/${id}`);
-    } catch {
-      // error handled by mutation
-    } finally {
-      setCreatingDraft(false);
-    }
-  };
+  const { data: proposals, deleteProposal } = useProposals();
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -50,8 +37,8 @@ export default function Proposals() {
         title="Orçamentos"
         subtitle="Gerencie suas propostas comerciais"
         actions={
-          <Button onClick={handleNewProposal} disabled={creatingDraft}>
-            <Plus className="h-4 w-4 mr-2" /> {creatingDraft ? 'Criando...' : 'Nova Proposta'}
+          <Button onClick={() => navigate('/orcamentos/novo')}>
+            <Plus className="h-4 w-4 mr-2" /> Nova Proposta
           </Button>
         }
       />
