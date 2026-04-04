@@ -33,7 +33,11 @@ export function ProposalDownloadButton({ whatsappNumber, projectName }: Props) {
   const handleWhatsAppApproval = () => {
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     const url = isMobile ? whatsappMobileUrl : whatsappDesktopUrl
-    window.open(url, '_blank', 'noopener,noreferrer')
+    // Use location.href as primary method to avoid popup blockers
+    const newWindow = window.open(url, '_blank')
+    if (!newWindow) {
+      window.location.href = url
+    }
   }
 
   return (

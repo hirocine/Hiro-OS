@@ -204,7 +204,7 @@ export default function ProposalDetails() {
       clientForm.client_name !== proposal.client_name ||
       clientForm.project_name !== proposal.project_name ||
       clientForm.client_responsible !== (proposal.client_responsible || '') ||
-      clientForm.whatsapp_number !== (proposal.whatsapp_number || '') ||
+      clientForm.whatsapp_number.replace(/\D/g, '') !== (proposal.whatsapp_number || '').replace(/\D/g, '') ||
       clientForm.company_description !== (proposal.company_description || '');
   }, [clientForm, proposal]);
 
