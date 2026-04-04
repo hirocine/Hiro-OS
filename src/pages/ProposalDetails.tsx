@@ -1200,41 +1200,59 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {inclusoForm.map((cat, catIdx) => (
-                  <div key={catIdx} className="space-y-3">
-                    <h4 className="text-sm font-semibold">{cat.categoria}</h4>
-                    {cat.itens && (
-                      <div className="space-y-1.5">
-                        {cat.itens.map((item, itemIdx) => (
-                          <label key={itemIdx} className="flex items-center gap-2 text-sm cursor-pointer">
-                            <Checkbox
-                              checked={item.ativo}
-                              onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)}
-                            />
-                            <span>{item.nome}</span>
-                          </label>
-                        ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {inclusoForm.map((cat, catIdx) => {
+                  const phaseEmoji = cat.categoria === 'Pré-produção' ? '📋' : cat.categoria === 'Gravação' ? '🎬' : '✂️';
+                  const allItems = [
+                    ...(cat.itens || []),
+                    ...(cat.subcategorias?.flatMap(s => s.itens) || []),
+                  ];
+                  const activeCount = allItems.filter(i => i.ativo).length;
+                  const totalCount = allItems.length;
+
+                  return (
+                    <div key={catIdx} className="border rounded-xl bg-muted/30 p-5 space-y-3">
+                      <div className="flex items-center justify-between border-b border-border/50 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{phaseEmoji}</span>
+                          <h4 className="text-sm font-semibold">{cat.categoria}</h4>
+                        </div>
+                        {activeCount > 0 && (
+                          <span className="text-[10px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                            {activeCount}/{totalCount}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    {cat.subcategorias?.map((sub, subIdx) => (
-                      <div key={subIdx} className="space-y-1.5">
-                        <h5 className="text-xs font-medium text-muted-foreground">{sub.nome}</h5>
-                        <div className="space-y-1.5">
+                      {cat.itens && (
+                        <div className="space-y-0.5">
+                          {cat.itens.map((item, itemIdx) => (
+                            <label key={itemIdx} className="flex items-center gap-2.5 text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 -mx-2 transition-colors">
+                              <Checkbox
+                                checked={item.ativo}
+                                onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)}
+                              />
+                              <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>{item.nome}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      {cat.subcategorias?.map((sub, subIdx) => (
+                        <div key={subIdx} className="space-y-0.5">
+                          <p className="uppercase tracking-wider text-[10px] text-muted-foreground font-semibold px-2 pt-1 pb-0.5">{sub.nome}</p>
                           {sub.itens.map((item, itemIdx) => (
-                            <label key={itemIdx} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <label key={itemIdx} className="flex items-center gap-2.5 text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 -mx-2 transition-colors">
                               <Checkbox
                                 checked={item.ativo}
                                 onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx, subIdx)}
                               />
-                              <span>{item.nome}</span>
+                              <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>{item.nome}</span>
                             </label>
                           ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
             {inclusoDirty && (
