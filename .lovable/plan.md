@@ -1,66 +1,59 @@
 
-Não é o melhor caminho “só puxar a escrita para frente”.
 
-## O que está acontecendo
-No `PdfHero`, o background está assim:
+# Fix: Emojis/icons desalinhados e arte do rodapé sumindo no PDF
 
-- `position: 'absolute', inset: 0` no bloco interno
-- mas o container do `PdfHero` não está com `position: 'relative'`
+## Causa raiz
 
-Como a página (`pageStyle`) já tem `position: 'relative'`, esse background acaba se ancorando na página inteira, não só no hero. Resultado: ele fica por cima visualmente da área de clientes e apaga o texto.
+Dois problemas distintos:
 
-## Por que só aumentar z-index não é a solução ideal
-Daria para “forçar” o texto dos clientes para frente com `position: 'relative'` + `zIndex` alto, mas isso é um remendo:
+1. **Emojis e Lucide icons desalinhados**: `html2canvas` renderiza emojis como imagens bitmap e ícones SVG inline de forma inconsistente. O `display: flex` + `alignItems: center` nem sempre funciona na captura. Os emojis ficam "flutuando" fora das caixas verdes.
 
-- resolve só o título/subtítulo;
-- pode deixar o overlay ainda escurecendo os logos;
-- mantém a causa raiz no layout;
-- pode gerar novos bugs em outras áreas da página 1.
+2. **Arte do rodapé (Asset3.svg) sumindo**: `html2canvas` tem suporte limitado a SVGs referenciados via `<img src="*.svg">`. O arquivo `Asset3.svg` simplesmente não é capturado.
 
-## Melhor correção
-Conter o background dentro do próprio hero.
+## Solução
 
-### Arquivo
-`src/features/proposals/components/public/ProposalPdfDocument.tsx`
+### Arquivo: `ProposalPdfDocument.tsx`
 
-### Ajuste principal
-No container raiz do `PdfHero`, adicionar:
+**1. Emojis -- trocar por imagem renderizada ou forçar alinhamento**
 
-- `position: 'relative'`
-- `overflow: 'hidden'`
+Nos cards de Diagnóstico (linha 154) e Entregáveis (linhas 234, 253), os emojis estão dentro de um flex container mas o `html2canvas` não respeita o alinhamento vertical. Solução:
+- Envolver cada emoji em um `<span>` com `lineHeight` igual à altura do container, `textAlign: center`, `display: block`, `width: 100%`, `height: 100%` -- forçando o bitmap a centralizar
+- Adicionar `position: relative` nos containers dos ícones para criar stacking context
 
-Hoje ele está assim:
-```ts
-<div style={{ padding: '60px 60px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-```
+**2. Lucide icons (Check, X, Lock) -- forçar dimensões explícitas**
 
-Vai passar a ficar conceitualmente assim:
-```ts
-<div style={{
-  padding: '60px 60px 30px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-}}>
-```
+Os ícones SVG do Lucide nas seções "O que está incluso" (PdfCheckItem) e "Próximos Passos" renderizam com offset. Solução:
+- Adicionar `display: block` nos ícones Lucide para remover o baseline alignment que causa offset
+- Usar `position: absolute` + `top: 50%, left: 50%, transform: translate(-50%,-50%)` nos ícones dentro dos círculos/quadrados para forçar centralização independente do html2canvas
 
-## Ajuste complementar
-Para blindar a seção de clientes no PDF, também vale deixar o wrapper dela explicitamente acima no stacking context:
+**3. Badges (INCLUSO, ADD-ON, -50%, RECOMENDADO)**
 
-- `position: 'relative'`
-- `zIndex: 2`
+Os badges com `borderRadius: 999` e texto pequeno podem desalinhar. Adicionar `lineHeight: 1` e `display: inline-flex` + `alignItems: center` explícitos.
 
-no container do `PdfClients`.
+**4. Footer SVG -- converter referência para PNG ou usar inline SVG**
 
-Isso não substitui a correção principal, mas ajuda a garantir consistência no `html2canvas`.
+O `Asset3.svg` não renderiza no `html2canvas`. Duas opções:
+- **Opção A (simples)**: Converter o SVG para PNG e referenciar o PNG no PDF document
+- **Opção B (melhor)**: Inline o SVG diretamente como JSX no `PdfFooter`, eliminando a dependência de fetch externo
 
-## Resultado esperado
-- o background e gradiente ficam limitados ao hero;
-- “Quem confia na Hiro Films” e “Nossos Clientes” deixam de ficar apagados;
-- os logos continuam no final da página 1;
-- a página fica estruturalmente correta, sem depender de gambiarra de camada.
+Vou usar a **Opção A**: criar uma versão PNG do logo para o PDF, já que o SVG original pode ser complexo demais para inline.
 
-## Resumo da decisão
-Então: sim, até daria para “puxar a escrita para frente”, mas o correto é primeiro impedir que o background do hero invada a área dos clientes. Depois, se necessário, reforçar o `z-index` da seção de clientes como proteção extra.
+Se não for possível gerar PNG facilmente, uso **Opção B**: ler o SVG e colá-lo como JSX inline no `PdfFooter`.
+
+### Resumo das mudanças
+
+Todas em `src/features/proposals/components/public/ProposalPdfDocument.tsx`:
+
+1. **PdfDiagnostico** (linha ~154): emoji container com posicionamento absoluto centralizado
+2. **PdfEntregaveis** (linhas ~234, ~253): idem para emojis nos cards
+3. **PdfCheckItem** (linha ~42-56): ícones Check/X com `display: block`, containers com posicionamento explícito
+4. **PdfProximosPassos** (linha ~375-381): ícones Check/Lock com posicionamento absoluto centralizado nos círculos
+5. **PdfFooter** (linha ~402): trocar `<img src="Asset3.svg">` por SVG inline ou PNG
+6. Badges: adicionar `lineHeight: 1`, `display: inline-flex`
+
+### Resultado esperado
+- Emojis centralizados nas caixas verdes
+- Ícones Check/X/Lock centralizados nos círculos e quadrados
+- Badges alinhados corretamente
+- Logo Hiro Films visível no rodapé do PDF
+
