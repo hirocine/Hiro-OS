@@ -14,7 +14,14 @@ const iconMap: Record<string, LucideIcon> = {
   'Palette': Palette,
 }
 
-// A4 at 96dpi = 794 x 1123 px. We use a fixed width and let pages flow.
+const emojiToIcon: Record<string, LucideIcon> = {
+  '⭐': Star, '🌟': Sparkles, '⏰': Clock, '🎬': Film, '🎥': Video,
+  '⚡': Zap, '🎯': Target, '📈': TrendingUp, '👁': Eye, '👀': Eye,
+  '❤️': Heart, '💡': Lightbulb, '💬': MessageSquare, '🏆': Award,
+  '🌍': Globe, '🌎': Globe, '👥': Users, '📢': Megaphone, '📊': BarChart3,
+  '✨': Sparkles, '📱': Smartphone, '📷': Camera, '🎨': Palette,
+}
+
 const PAGE_WIDTH = 794
 const PAGE_MIN_HEIGHT = 1123
 
@@ -25,63 +32,59 @@ interface Props {
 }
 
 /* ------------------------------------------------------------------ */
-/*  PDF-safe helpers (html2canvas-proof)                              */
+/*  PDF-safe helpers – position:absolute centering, NO flexbox        */
 /* ------------------------------------------------------------------ */
 
-/** Centered emoji inside a fixed-size box – uses line-height trick */
 function PdfCenteredEmoji({ emoji, size, fontSize }: { emoji: string; size: number; fontSize: number }) {
+  const MappedIcon = emojiToIcon[emoji]
+  if (MappedIcon) {
+    return <PdfCenteredIcon Icon={MappedIcon} size={size} iconSize={fontSize} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
+  }
   return (
-    <div style={{ width: size, height: size, borderRadius: 8, background: 'rgba(76,255,92,0.1)', overflow: 'hidden', flexShrink: 0 }}>
-      <span style={{
-        display: 'block',
-        width: size,
-        height: size,
-        lineHeight: `${size}px`,
-        textAlign: 'center',
-        fontSize,
-      }}>{emoji}</span>
+    <div style={{ width: size, height: size, borderRadius: 8, background: 'rgba(76,255,92,0.1)', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+      <span style={{ position: 'absolute', top: 0, left: 0, width: size, height: size, lineHeight: `${size}px`, textAlign: 'center', fontSize, display: 'block' }}>{emoji}</span>
     </div>
   )
 }
 
-/** Centered Lucide icon inside a fixed-size circle/rounded-rect */
 function PdfCenteredIcon({ Icon, size, iconSize, borderRadius, background, color, border }: {
   Icon: LucideIcon; size: number; iconSize: number; borderRadius: number | string;
   background: string; color: string; border?: string;
 }) {
+  const offset = Math.round((size - iconSize) / 2)
   return (
-    <div style={{
-      width: size, height: size, borderRadius, background, border,
-      overflow: 'hidden', flexShrink: 0,
-    }}>
-      <div style={{
-        width: size, height: size,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <Icon style={{ width: iconSize, height: iconSize, color, display: 'block' }} />
-      </div>
+    <div style={{ width: size, height: size, borderRadius, background, border, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+      <Icon style={{ position: 'absolute', top: offset, left: offset, width: iconSize, height: iconSize, color, display: 'block' }} />
     </div>
   )
 }
 
-/** Stable pill/badge for html2canvas */
 function PdfBadge({ children, bg, color, fontSize = 8, letterSpacing = 1.5, padding = '3px 8px', border }: {
   children: React.ReactNode; bg: string; color: string;
   fontSize?: number; letterSpacing?: number; padding?: string; border?: string;
 }) {
+  const h = fontSize + 10
+  const hPad = typeof padding === 'string' ? padding.split(' ').pop() : '8px'
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      height: fontSize + 8,
-      lineHeight: 1, whiteSpace: 'nowrap',
+      display: 'inline-block', height: h, lineHeight: `${h}px`,
+      textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap',
       fontSize, letterSpacing, textTransform: 'uppercase', fontWeight: 700,
-      padding, borderRadius: 999, background: bg, color, border,
+      padding: `0 ${hPad}`, borderRadius: 999, background: bg, color, border,
     }}>{children}</span>
   )
 }
 
+function PdfCenteredText({ text, size, fontSize, color, fontWeight = 700 }: {
+  text: string; size: number; fontSize: number; color: string; fontWeight?: number;
+}) {
+  return (
+    <span style={{ display: 'block', width: size, height: size, lineHeight: `${size}px`, textAlign: 'center', fontSize, fontWeight, color }}>{text}</span>
+  )
+}
+
 /* ------------------------------------------------------------------ */
-/*  Reusable building blocks (PDF-only, no animation, no hover)       */
+/*  Reusable building blocks                                          */
 /* ------------------------------------------------------------------ */
 
 function PdfInfoItem({ label, value }: { label: string; value: string }) {
@@ -94,30 +97,21 @@ function PdfInfoItem({ label, value }: { label: string; value: string }) {
 }
 
 function PdfCheckItem({ nome, ativo, quantidade }: { nome: string; ativo: boolean; quantidade?: string }) {
+  const boxSize = 18
+  const icoSize = 10
+  const icoOff = Math.round((boxSize - icoSize) / 2)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', color: ativo ? '#f0f0f0' : '#555' }}>
-      <div style={{
-        width: 18, height: 18, borderRadius: 5, flexShrink: 0, overflow: 'hidden',
-        background: ativo ? 'rgba(76,255,92,0.15)' : '#1a1a1a',
-      }}>
-        <div style={{
-          width: 18, height: 18,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: ativo ? '#4CFF5C' : '#555',
-        }}>
-          {!ativo
-            ? <X style={{ width: 10, height: 10, display: 'block' }} />
-            : quantidade
-              ? <span style={{ fontSize: 8, fontWeight: 700, lineHeight: 1 }}>{quantidade}</span>
-              : <Check style={{ width: 10, height: 10, display: 'block' }} />
-          }
-        </div>
+      <div style={{ width: boxSize, height: boxSize, borderRadius: 5, flexShrink: 0, overflow: 'hidden', position: 'relative', background: ativo ? 'rgba(76,255,92,0.15)' : '#1a1a1a' }}>
+        {!ativo
+          ? <X style={{ position: 'absolute', top: icoOff, left: icoOff, width: icoSize, height: icoSize, color: '#555', display: 'block' }} />
+          : quantidade
+            ? <PdfCenteredText text={quantidade} size={boxSize} fontSize={8} color='#4CFF5C' />
+            : <Check style={{ position: 'absolute', top: icoOff, left: icoOff, width: icoSize, height: icoSize, color: '#4CFF5C', display: 'block' }} />
+        }
       </div>
       <span style={{ fontSize: 11, flex: 1 }}>{nome}</span>
-      <PdfBadge
-        bg={ativo ? 'rgba(76,255,92,0.1)' : 'rgba(30,30,30,0.5)'}
-        color={ativo ? 'rgba(76,255,92,0.6)' : '#555'}
-      >
+      <PdfBadge bg={ativo ? 'rgba(76,255,92,0.1)' : 'rgba(30,30,30,0.5)'} color={ativo ? 'rgba(76,255,92,0.6)' : '#555'}>
         {ativo ? 'Incluso' : 'Add-on'}
       </PdfBadge>
     </div>
@@ -253,14 +247,7 @@ function PdfCases({ cases, thumbnails }: { cases: Proposal['cases']; thumbnails:
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                   <p style={{ fontSize: 11, color: '#999' }}>{c.descricao}</p>
                   {c.tipo && (
-                    <PdfBadge
-                      bg='rgba(255,255,255,0.1)'
-                      color='rgba(255,255,255,0.8)'
-                      fontSize={9}
-                      letterSpacing={2}
-                      padding='3px 10px'
-                      border='1px solid rgba(255,255,255,0.1)'
-                    >
+                    <PdfBadge bg='rgba(255,255,255,0.1)' color='rgba(255,255,255,0.8)' fontSize={9} letterSpacing={2} padding='3px 10px' border='1px solid rgba(255,255,255,0.1)'>
                       {c.tipo}
                     </PdfBadge>
                   )}
@@ -369,7 +356,6 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
       <p style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#4CFF5C', fontWeight: 700, marginBottom: 16 }}>Valores</p>
       <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 30, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>Investimento</h2>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {/* Price card */}
         <div style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 32, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>Valor Total do Projeto</p>
           {hasDiscount && (
@@ -383,13 +369,12 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
           <p style={{ fontSize: 48, fontWeight: 700, color: '#4CFF5C', margin: '20px 0', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{valorFinal}</p>
           <p style={{ fontSize: 11, color: '#999', marginTop: 'auto' }}>*Valores sujeitos a alteração conforme escopo final do projeto</p>
         </div>
-        {/* Conditions */}
         <div style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 32, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
             {options.map((cond, i) => (
               <div key={i} style={{ position: 'relative', padding: 16, background: '#0A0A0A', borderRadius: 10, textAlign: 'center', border: `1px solid ${cond.recomendado ? '#4CFF5C' : '#333'}` }}>
                 {cond.recomendado && (
-                  <div style={{ position: 'absolute', top: -8, left: 0, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ position: 'absolute', top: -8, left: 0, width: '100%', textAlign: 'center' }}>
                     <PdfBadge bg='#4CFF5C' color='#000' fontSize={8} letterSpacing={1} padding='2px 10px'>
                       Recomendado
                     </PdfBadge>
@@ -405,7 +390,6 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
             ))}
           </div>
           <p style={{ fontSize: 10, color: '#999', fontStyle: 'italic', marginBottom: 20 }}>{proposal.payment_terms}</p>
-          {/* Testimonial */}
           {(proposal.testimonial_text || true) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingTop: 16, borderTop: '1px solid #333', marginTop: 'auto' }}>
               <div style={{ width: 46, height: 46, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
@@ -454,6 +438,7 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
           const borderColor = step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555'
           const bg = step.status === 'done' ? 'rgba(76,255,92,0.1)' : step.status === 'current' ? 'rgba(255,255,255,0.1)' : 'transparent'
           const fg = step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555'
+          const circleSize = 44
 
           return (
             <div key={step.num} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', width: 100 }}>
@@ -461,21 +446,12 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
                 <div style={{ position: 'absolute', top: 22, left: 72, width: 52, height: 1, background: step.status === 'done' ? 'rgba(76,255,92,0.3)' : '#333' }} />
               )}
               {step.status === 'done' ? (
-                <PdfCenteredIcon Icon={Check} size={44} iconSize={18} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
+                <PdfCenteredIcon Icon={Check} size={circleSize} iconSize={18} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
               ) : step.status === 'locked' ? (
-                <PdfCenteredIcon Icon={Lock} size={44} iconSize={14} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
+                <PdfCenteredIcon Icon={Lock} size={circleSize} iconSize={14} borderRadius='50%' background={bg} color={fg} border={`2px solid ${borderColor}`} />
               ) : (
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%', overflow: 'hidden',
-                  border: `2px solid ${borderColor}`, background: bg,
-                }}>
-                  <div style={{
-                    width: 44, height: 44,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: 16, color: fg,
-                  }}>
-                    {step.num}
-                  </div>
+                <div style={{ width: circleSize, height: circleSize, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${borderColor}`, background: bg, position: 'relative' }}>
+                  <PdfCenteredText text={String(step.num)} size={circleSize} fontSize={16} color={fg} />
                 </div>
               )}
               <h4 style={{ fontSize: 12, fontWeight: 700, color: fg, marginTop: 10 }}>{step.title}</h4>
@@ -517,7 +493,6 @@ function PdfFooter({ footerPngDataUri }: { footerPngDataUri?: string }) {
 
 export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
   ({ proposal, caseThumbnails, footerPngDataUri }, ref) => {
-    // Common page style
     const pageStyle: React.CSSProperties = {
       width: PAGE_WIDTH,
       minHeight: PAGE_MIN_HEIGHT,
@@ -541,7 +516,6 @@ export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
           pointerEvents: 'none',
         }}
       >
-        {/* Page 1: Hero + Clients */}
         <div className='proposal-pdf-page' style={{ ...pageStyle, display: 'flex', flexDirection: 'column' }}>
           <PdfHero proposal={proposal} />
           <div style={{ marginTop: 'auto' }}>
@@ -550,26 +524,22 @@ export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
           </div>
         </div>
 
-        {/* Page 2: Diagnostico */}
         <div className='proposal-pdf-page' style={pageStyle}>
           <PdfDiagnostico proposal={proposal} />
         </div>
 
-        {/* Page 3: Cases (if any) */}
         {proposal.cases.length > 0 && (
           <div className='proposal-pdf-page' style={pageStyle}>
             <PdfCases cases={proposal.cases} thumbnails={caseThumbnails} />
           </div>
         )}
 
-        {/* Page 4: Entregaveis */}
         {proposal.entregaveis.length > 0 && (
           <div className='proposal-pdf-page' style={pageStyle}>
             <PdfEntregaveis entregaveis={proposal.entregaveis} />
           </div>
         )}
 
-        {/* Page 5: Investimento + Próximos Passos + Footer */}
         <div className='proposal-pdf-page' style={{ ...pageStyle, display: 'flex', flexDirection: 'column' }}>
           <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
           <PdfInvestimento proposal={proposal} />
