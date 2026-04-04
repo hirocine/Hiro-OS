@@ -17,7 +17,8 @@ export function ProposalClients() {
         </h2>
       </div>
 
-      <div className='relative h-[100px] w-full overflow-hidden mb-14'>
+      {/* Animated slider — hidden in print */}
+      <div className='relative h-[100px] w-full overflow-hidden mb-14 proposal-clients-slider'>
         <InfiniteSlider
           className='flex h-full w-full items-center'
           duration={60}
@@ -38,6 +39,22 @@ export function ProposalClients() {
         </InfiniteSlider>
         <div className='pointer-events-none absolute inset-0 left-0 w-[100px] md:w-[600px] bg-gradient-to-r from-black to-transparent' />
         <div className='pointer-events-none absolute inset-0 left-auto w-[100px] md:w-[600px] bg-gradient-to-l from-black to-transparent' />
+      </div>
+
+      {/* Static grid — visible only in print */}
+      <div className='hidden proposal-clients-static grid-cols-4 md:grid-cols-6 gap-6 px-10 mb-14'>
+        {clientLogos.map((cliente) => (
+          <div
+            key={cliente.id}
+            className='flex items-center justify-center h-[60px]'
+          >
+            <img
+              src={cliente.logo}
+              alt={cliente.id}
+              className='max-h-[50px] max-w-[100px] object-contain opacity-80'
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
