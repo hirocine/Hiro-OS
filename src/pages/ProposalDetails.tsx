@@ -191,6 +191,7 @@ export default function ProposalDetails() {
   const [showNewTestimonial, setShowNewTestimonial] = useState(false);
   const [newTestimonialForm, setNewTestimonialForm] = useState({ name: '', role: '', text: '', image: '' });
   const [uploadingTestimonialImage, setUploadingTestimonialImage] = useState(false);
+  const [editingTestimonialId, setEditingTestimonialId] = useState<string | null>(null);
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
