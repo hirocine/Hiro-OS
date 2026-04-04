@@ -1,4 +1,5 @@
-export { ProposalWizard } from './ProposalWizard';
-export { ProposalGuidedWizard } from './ProposalGuidedWizard';
-export { ProposalCard } from './ProposalCard';
-export { ProposalPublicPage } from './ProposalPublicPage';
+export * from './components';
+export * from './hooks/useProposals';
+export * from './hooks/useProposalDetails';
+export * from './hooks/useProposalDetailsById';
+export * from './types';
