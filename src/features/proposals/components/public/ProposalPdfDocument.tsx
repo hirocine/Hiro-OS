@@ -155,8 +155,8 @@ function PdfDiagnostico({ proposal }: { proposal: Proposal }) {
           {dores.map((d, i) => (
             <div key={i} style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18 }}>
-                  {d.label || '⭐'}
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(76,255,92,0.1)', flexShrink: 0, fontSize: 18, position: 'relative' }}>
+                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', lineHeight: 1, display: 'block' }}>{d.label || '⭐'}</span>
                 </div>
                 <div>
                   <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{d.title}</h4>
