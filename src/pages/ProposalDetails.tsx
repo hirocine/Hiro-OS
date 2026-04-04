@@ -631,11 +631,13 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
-              <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
+              </div>
               <div className="space-y-1.5"><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={3} /></div>
             </CardContent>
             {clientDirty && (
