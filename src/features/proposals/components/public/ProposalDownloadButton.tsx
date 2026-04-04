@@ -28,9 +28,17 @@ export function ProposalDownloadButton({ whatsappNumber, projectName }: Props) {
   const rawPhone = (whatsappNumber || '5511951513862').replace(/\D/g, '')
   const phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const isInIframe = (() => {
+    try {
+      return window.self !== window.top
+    } catch {
+      return true
+    }
+  })()
   const whatsappUrl = isMobile
     ? `https://wa.me/${phone}?text=${encodedMessage}`
     : `https://web.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`
+  const linkTarget = isInIframe ? '_top' : '_blank'
 
   return (
     <div
@@ -40,7 +48,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName }: Props) {
     >
       <a
         href={whatsappUrl}
-        target='_blank'
+        target={linkTarget}
         rel='noopener noreferrer'
         className='inline-flex items-center gap-2.5 bg-[#4CFF5C] text-black px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-[2px] hover:bg-[#5fff6b] hover:-translate-y-0.5 hover:shadow-[0_10px_40px_rgba(76,255,92,0.3)] transition-all duration-300 shadow-[0_4px_20px_rgba(76,255,92,0.3)]'
       >
