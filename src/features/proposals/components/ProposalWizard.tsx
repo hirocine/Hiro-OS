@@ -622,21 +622,15 @@ export function ProposalWizard() {
                         <Select value={ent.icone} onValueChange={v => updateEntregavel(idx, 'icone', v)}>
                           <SelectTrigger className="h-9">
                             <SelectValue>
-                              {(() => { const IC = ICON_MAP[ent.icone]; return IC ? <span className="flex items-center gap-1.5"><IC className="h-3.5 w-3.5" />{ICON_OPTIONS.find(o => o.value === ent.icone)?.label}</span> : ent.icone; })()}
+                              {ICON_OPTIONS.find(o => o.value === ent.icone)?.label || ent.icone}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {ICON_OPTIONS.map(opt => {
-                              const IC = ICON_MAP[opt.value];
-                              return (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  <span className="flex items-center gap-2">
-                                    {IC && <IC className="h-4 w-4 text-muted-foreground" />}
-                                    {opt.label}
-                                  </span>
-                                </SelectItem>
-                              );
-                            })}
+                            {ICON_OPTIONS.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>

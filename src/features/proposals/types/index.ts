@@ -149,16 +149,16 @@ export interface ProposalFormData {
 }
 
 export const ICON_OPTIONS = [
-  { value: 'Video', label: 'Vídeo' },
-  { value: 'Smartphone', label: 'Smartphone' },
-  { value: 'Camera', label: 'Câmera' },
-  { value: 'ClipboardList', label: 'Checklist' },
-  { value: 'Clapperboard', label: 'Claquete' },
-  { value: 'Palette', label: 'Paleta' },
-  { value: 'Image', label: 'Imagem' },
-  { value: 'Music', label: 'Música' },
-  { value: 'Monitor', label: 'Monitor' },
-  { value: 'Mic', label: 'Microfone' },
+  { value: 'Video', label: '🎬 Vídeo', emoji: '🎬' },
+  { value: 'Smartphone', label: '📱 Smartphone', emoji: '📱' },
+  { value: 'Camera', label: '📷 Câmera', emoji: '📷' },
+  { value: 'ClipboardList', label: '📋 Checklist', emoji: '📋' },
+  { value: 'Clapperboard', label: '🎬 Claquete', emoji: '🎬' },
+  { value: 'Palette', label: '🎨 Paleta', emoji: '🎨' },
+  { value: 'Image', label: '🖼️ Imagem', emoji: '🖼️' },
+  { value: 'Music', label: '🎵 Música', emoji: '🎵' },
+  { value: 'Monitor', label: '🖥️ Monitor', emoji: '🖥️' },
+  { value: 'Mic', label: '🎙️ Microfone', emoji: '🎙️' },
 ];
 
 export const DEFAULT_INCLUSO_CATEGORIES: InclusoCategory[] = [
