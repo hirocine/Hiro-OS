@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale'
 import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Proposal } from '../../types'
+import { ASSET3_SVG_DATA_URI } from './asset3DataUri'
 
 const iconMap: Record<string, LucideIcon> = {
   'Vídeo principal': Video,
