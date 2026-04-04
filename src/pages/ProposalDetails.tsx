@@ -17,8 +17,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil
+  AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil, Sparkles, Loader2
 } from 'lucide-react';
+import { useProposalAI } from '@/features/proposals/hooks/useProposalAI';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
