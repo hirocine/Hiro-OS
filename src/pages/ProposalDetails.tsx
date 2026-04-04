@@ -992,7 +992,7 @@ export default function ProposalDetails() {
                             {(bc.tags || []).map(tag => (
                               <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
                             ))}
-                            {bc.destaque && <span className="text-xs">⭐</span>}
+                            
                           </div>
                           <p className="text-sm font-medium leading-tight">{bc.campaign_name}</p>
                           <p className="text-xs text-muted-foreground">{bc.client_name}</p>
