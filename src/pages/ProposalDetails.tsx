@@ -620,7 +620,7 @@ export default function ProposalDetails() {
         <div className="flex items-center justify-between">
           <BreadcrumbNav items={[
             { label: 'Orçamentos', href: '/orcamentos' },
-            { label: proposal.project_name },
+            { label: isNewProposal ? 'Nova Proposta' : (proposal.project_name || 'Sem nome') },
           ]} className="mb-0" />
           <div className="flex items-center gap-2">
             <DropdownMenu>
@@ -630,18 +630,22 @@ export default function ProposalDetails() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
-                  <Copy className="mr-2 h-4 w-4" /> Copiar Link
-                </DropdownMenuItem>
+                {!isNewProposal && (
+                  <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
+                    <Copy className="mr-2 h-4 w-4" /> Copiar Link
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
-              <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
-            </Button>
+            {!isNewProposal && (
+              <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
+                <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
+              </Button>
+            )}
           </div>
         </div>
 
