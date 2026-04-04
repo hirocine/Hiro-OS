@@ -460,6 +460,17 @@ function formatWhatsApp(value: string): string {
   return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4,9)}-${digits.slice(9)}`;
 }
 
+function formatWhatsApp(value: string): string {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length > 0 && !digits.startsWith('55')) digits = '55' + digits;
+  if (digits.length > 13) digits = digits.slice(0, 13);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `+${digits}`;
+  if (digits.length <= 4) return `+${digits.slice(0,2)} (${digits.slice(2)}`;
+  if (digits.length <= 9) return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4)}`;
+  return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4,9)}-${digits.slice(9)}`;
+}
+
 
   // Cases bank helpers
   const openCasesBank = () => {
