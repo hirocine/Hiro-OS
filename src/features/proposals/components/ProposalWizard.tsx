@@ -607,33 +607,40 @@ export function ProposalWizard() {
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3 items-end">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Ícone</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="h-9 w-9 p-0 text-lg">
+                            {ent.icone || '🎬'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2" align="start">
+                          <div className="grid grid-cols-8 gap-1">
+                            {ICON_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => updateEntregavel(idx, 'icone', opt.value)}
+                                className={`h-8 w-8 rounded-md flex items-center justify-center text-base transition-colors ${
+                                  ent.icone === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                                }`}
+                              >
+                                {opt.value}
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Título</Label>
                       <Input value={ent.titulo} onChange={e => updateEntregavel(idx, 'titulo', e.target.value)} placeholder="Vídeo principal" className="h-9" />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Quantidade</Label>
-                        <Input value={ent.quantidade} onChange={e => updateEntregavel(idx, 'quantidade', e.target.value)} placeholder="1" className="h-9" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Ícone</Label>
-                        <Select value={ent.icone} onValueChange={v => updateEntregavel(idx, 'icone', v)}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue>
-                              {ICON_OPTIONS.find(o => o.value === ent.icone)?.label || ent.icone}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ICON_OPTIONS.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Quantidade</Label>
+                      <Input value={ent.quantidade} onChange={e => updateEntregavel(idx, 'quantidade', e.target.value)} placeholder="1" className="h-9" />
                     </div>
                   </div>
                   <div className="space-y-1">

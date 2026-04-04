@@ -101,12 +101,17 @@ export function ProposalEntregaveis({ entregaveis }: Props) {
             {'cards' in bloco && bloco.cards && (
               <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                 {bloco.cards.map((card: any, cIdx: number) => {
-                  const Icon = iconMap[card.icone] || ClipboardList
+                  const isEmoji = card.icone && /\p{Emoji}/u.test(card.icone);
+                  const Icon = !isEmoji ? (iconMap[card.icone] || ClipboardList) : null;
                   return (
                     <div key={cIdx} className='relative overflow-hidden p-7 bg-[#111] rounded-2xl border border-gray-800 transition-all duration-300 hover:border-[#4CFF5C] hover:-translate-y-1 group'>
                       <div className='absolute top-0 left-0 right-0 h-[2px] bg-[#4CFF5C] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left' />
                       <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center mb-4'>
-                        <Icon className='w-5 h-5 text-[#4CFF5C]' />
+                        {isEmoji ? (
+                          <span className='text-xl'>{card.icone}</span>
+                        ) : (
+                          Icon && <Icon className='w-5 h-5 text-[#4CFF5C]' />
+                        )}
                       </div>
                       <h4 className='text-[15px] font-bold mb-5'>{card.titulo}</h4>
 
