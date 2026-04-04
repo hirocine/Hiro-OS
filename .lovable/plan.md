@@ -1,34 +1,35 @@
 
 
-# Separar Entregáveis e Serviços Inclusos em estados independentes
+# Melhorar visualmente a seção Serviços Inclusos
 
-## Problema
+## Atual
 
-Atualmente, "Entregas (Output)" e "Serviços Inclusos" compartilham:
-- O mesmo estado (`entregaveisForm` com `{ entregaveis, incluso_categories }`)
-- O mesmo snapshot e dirty check (`entregaveisDirty`)
-- O mesmo `saveSection('entregaveis')` que salva os dois juntos
+Três colunas simples com título em texto e checkboxes empilhados, sem diferenciação visual entre colunas nem hierarquia clara. Aparência de formulário genérico.
 
-Isso significa que ao alterar apenas um entregável, o botão "Salvar Serviços" também aparece (e vice-versa), e salvar um sempre salva o outro junto.
+## Proposta
 
-## Solução
+Transformar cada coluna em um **card estilizado** com cabeçalho destacado, bordas sutis, e melhor hierarquia entre categorias e subcategorias.
 
-Separar em dois estados, dois snapshots, dois dirty checks e duas ações de save independentes. Ambos continuam salvando no mesmo campo `entregaveis` do banco (formato de blocos), mas cada seção controla apenas seu bloco.
+```text
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ 🎬 Pré-Produção │  │ 🎥 Gravação     │  │ ✂️ Pós-Produção │
+│─────────────────│  │─────────────────│  │─────────────────│
+│ ☐ Roteiro       │  │ ☐ Captação      │  │ ☐ Edição        │
+│ ☐ Storyboard    │  │ ☐ Iluminação    │  │ ☐ Color         │
+│                 │  │                 │  │                 │
+│ ▸ Direção       │  │ ▸ Áudio         │  │ ▸ Motion        │
+│   ☐ Dir. Cena   │  │   ☐ Boom        │  │   ☐ Lower       │
+│   ☐ Dir. Arte   │  │   ☐ Lapela      │  │   ☐ Transição   │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
 
 ## Alterações
 
-**Arquivo: `src/pages/ProposalDetails.tsx`**
+**Arquivo: `src/pages/ProposalDetails.tsx` (linhas ~1202-1237)**
 
-1. **Estado**: Substituir `entregaveisForm: EntregaveisData` por dois estados separados:
-   - `outputForm: EntregavelItem[]` (entregas)
-   - `inclusoForm: InclusoCategory[]` (serviços)
-   - Dois snapshots: `outputSnapshot` e `inclusoSnapshot`
-
-2. **Parsing (useEffect)**: Popular cada estado separadamente a partir dos blocos do banco
-
-3. **Dirty checks**: Dois `useMemo` independentes — `outputDirty` e `inclusoDirty`
-
-4. **Save**: Dois handlers ou adaptar `saveSection` com `'output'` e `'incluso'`. Ambos reconstroem o array de blocos completo ao salvar (lendo o estado atual do outro para não sobrescrever)
-
-5. **UI**: Atualizar referências de `entregaveisForm.entregaveis` para `outputForm` e `entregaveisForm.incluso_categories` para `inclusoForm`. Botões de salvar condicionados ao respectivo dirty check
+1. Envolver cada coluna em um card com `border rounded-xl p-5 bg-muted/30`
+2. Cabeçalho com ícone de fase (emoji do `icone` da categoria ou fallback) + título em `font-semibold text-sm` com um `border-b pb-3 mb-3`
+3. Subcategorias com label `uppercase tracking-wider text-[10px] text-muted-foreground font-semibold` e padding-left sutil
+4. Checkboxes com `hover:bg-muted/50 rounded px-2 py-1.5 -mx-2` para efeito de hover row
+5. Badge de contagem de itens ativos no cabeçalho (ex: "4/7")
 
