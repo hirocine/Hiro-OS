@@ -33,5 +33,21 @@ export function useTestimonials() {
     },
   });
 
-  return { ...query, createTestimonial };
+  const updateTestimonial = useMutation({
+    mutationFn: async ({ id, ...t }: { id: string; name: string; role: string; text: string; image?: string | null }) => {
+      const { data, error } = await supabase
+        .from('proposal_testimonials' as any)
+        .update(t as any)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as Testimonial;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposal-testimonials'] });
+    },
+  });
+
+  return { ...query, createTestimonial, updateTestimonial };
 }
