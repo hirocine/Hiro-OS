@@ -50,8 +50,8 @@ export default function Proposals() {
         title="Orçamentos"
         subtitle="Gerencie suas propostas comerciais"
         actions={
-          <Button onClick={() => navigate('/orcamentos/novo')}>
-            <Plus className="h-4 w-4 mr-2" /> Nova Proposta
+          <Button onClick={handleNewProposal} disabled={creatingDraft}>
+            <Plus className="h-4 w-4 mr-2" /> {creatingDraft ? 'Criando...' : 'Nova Proposta'}
           </Button>
         }
       />
