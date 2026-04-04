@@ -43,11 +43,15 @@ export function ProposalCases({ cases }: Props) {
               />
             )}
             <div className='absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-6 md:p-8'>
-              <p className='text-[10px] uppercase tracking-[3px] text-[#4CFF5C] mb-2'>
-                {item.tipo}
-              </p>
               <h3 className='text-lg font-bold'>{item.titulo}</h3>
-              <p className='text-[13px] text-gray-400 mt-1'>{item.descricao}</p>
+              <div className='flex items-center gap-3 mt-1'>
+                <p className='text-[13px] text-gray-400'>{item.descricao}</p>
+                {item.tipo && (
+                  <span className='ml-auto text-[10px] uppercase tracking-[2px] text-white/80 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full whitespace-nowrap border border-white/10'>
+                    {item.tipo}
+                  </span>
+                )}
+              </div>
             </div>
             <div className='absolute inset-0 rounded-2xl border border-gray-800 pointer-events-none transition-colors duration-400 group-hover:border-[#4CFF5C] z-10' />
           </div>
