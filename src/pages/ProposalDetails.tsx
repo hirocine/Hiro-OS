@@ -1117,8 +1117,7 @@ export default function ProposalDetails() {
                     <X className="h-4 w-4" />
                   </button>
                   <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_2fr] gap-3 items-end">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Ícone</Label>
+                    <div>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button variant="outline" className="h-10 w-10 p-0 text-lg">
