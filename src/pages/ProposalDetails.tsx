@@ -312,7 +312,7 @@ export default function ProposalDetails() {
           client_name: clientForm.client_name.trim(),
           project_name: clientForm.project_name.trim(),
           client_responsible: clientForm.client_responsible.trim() || null,
-          whatsapp_number: clientForm.whatsapp_number.trim() || null,
+          whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').trim() || null,
           company_description: clientForm.company_description.trim() || null,
         };
       } else if (section === 'invest') {
