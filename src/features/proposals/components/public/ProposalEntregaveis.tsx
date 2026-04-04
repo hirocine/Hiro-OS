@@ -71,13 +71,18 @@ export function ProposalEntregaveis({ entregaveis }: Props) {
             {'itens' in bloco && bloco.itens && (
               <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                 {bloco.itens.map((item: any, idx: number) => {
-                  const Icon = iconMap[item.titulo] || Video
+                  const isEmoji = item.icone && /\p{Emoji}/u.test(item.icone);
+                  const Icon = !isEmoji ? (iconMap[item.icone] || iconMap[item.titulo] || Video) : null;
                   return (
                     <div key={idx} className='relative overflow-hidden p-7 bg-[#111] rounded-2xl border border-gray-800 transition-all duration-300 hover:border-[#4CFF5C] hover:-translate-y-1 group'>
                       <div className='absolute top-0 left-0 right-0 h-[2px] bg-[#4CFF5C] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left' />
                       <div className='flex items-start justify-between mb-4'>
                         <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center'>
-                          <Icon className='w-5 h-5 text-[#4CFF5C]' />
+                          {isEmoji ? (
+                            <span className='text-xl'>{item.icone}</span>
+                          ) : (
+                            Icon && <Icon className='w-5 h-5 text-[#4CFF5C]' />
+                          )}
                         </div>
                         {item.quantidade && (
                           <span className='proposal-font-display text-3xl font-extrabold text-[#4CFF5C]/20'>
