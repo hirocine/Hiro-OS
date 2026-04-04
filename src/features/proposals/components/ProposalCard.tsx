@@ -46,12 +46,12 @@ export function ProposalCard({ proposal, onDelete }: Props) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3 min-w-0 flex-1">
-            <Avatar className="h-10 w-10 shrink-0">
+            <Avatar className="h-12 w-12 shrink-0">
               {proposal.client_logo ? (
                 <AvatarImage src={proposal.client_logo} alt={proposal.client_name} />
               ) : null}
               <AvatarFallback className="bg-muted">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <Building2 className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
