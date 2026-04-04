@@ -562,24 +562,15 @@ export default function ProposalDetails() {
 
 
   // Entregaveis helpers
-  const addEntregavel = () => setEntregaveisForm(prev => ({
-    ...prev,
-    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }],
-  }));
-  const removeEntregavel = (i: number) => setEntregaveisForm(prev => ({
-    ...prev,
-    entregaveis: prev.entregaveis.filter((_, idx) => idx !== i),
-  }));
+  const addEntregavel = () => setOutputForm(prev => [...prev, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }]);
+  const removeEntregavel = (i: number) => setOutputForm(prev => prev.filter((_, idx) => idx !== i));
   const updateEntregavel = (i: number, field: keyof EntregavelItem, value: string) =>
-    setEntregaveisForm(prev => ({
-      ...prev,
-      entregaveis: prev.entregaveis.map((e, idx) => idx === i ? { ...e, [field]: value } : e),
-    }));
+    setOutputForm(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
 
   // Incluso toggle helper
   const toggleInclusoItem = (catIdx: number, itemIdx: number, subIdx?: number) => {
-    setEntregaveisForm(prev => {
-      const cats = JSON.parse(JSON.stringify(prev.incluso_categories));
+    setInclusoForm(prev => {
+      const cats = JSON.parse(JSON.stringify(prev));
       const cat = cats[catIdx];
       if (subIdx !== undefined && cat.subcategorias) {
         const item = cat.subcategorias[subIdx].itens[itemIdx];
@@ -587,7 +578,7 @@ export default function ProposalDetails() {
       } else if (cat.itens) {
         cat.itens[itemIdx].ativo = !cat.itens[itemIdx].ativo;
       }
-      return { ...prev, incluso_categories: cats };
+      return cats;
     });
   };
 
