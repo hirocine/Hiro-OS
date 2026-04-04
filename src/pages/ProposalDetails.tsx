@@ -1158,6 +1158,13 @@ export default function ProposalDetails() {
                 </div>
               ))}
             </CardContent>
+            {entregaveisDirty && (
+              <CardFooter className="pt-0 pb-4 px-6">
+                <Button size="sm" onClick={() => saveSection('entregaveis')} disabled={updateProposal.isPending}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* Serviços Inclusos Section */}
