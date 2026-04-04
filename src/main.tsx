@@ -5,10 +5,37 @@ import { queryClient } from '@/lib/queryClient'
 import App from './App.tsx'
 import './index.css'
 
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <App />
-    </ThemeProvider>
-  </QueryClientProvider>
-)
+const isInIframe = (() => {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+})()
+
+const isPreviewHost =
+  window.location.hostname.includes('id-preview--') ||
+  window.location.hostname.includes('lovableproject.com') ||
+  window.location.hostname.includes('lovable.app')
+
+const cleanupPreviewServiceWorkers = async () => {
+  if ((!isInIframe && !isPreviewHost) || !('serviceWorker' in navigator)) return
+
+  const registrations = await navigator.serviceWorker.getRegistrations()
+  await Promise.all(registrations.map((registration) => registration.unregister()))
+
+  if ('caches' in window) {
+    const cacheKeys = await caches.keys()
+    await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)))
+  }
+}
+
+cleanupPreviewServiceWorkers().finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
+        <App />
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
+})
