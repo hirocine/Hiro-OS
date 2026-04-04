@@ -72,7 +72,7 @@ function PdfHero({ proposal }: { proposal: Proposal }) {
   })()
 
   return (
-    <div style={{ padding: '60px 60px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+    <div style={{ padding: '60px 60px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <img src='/proposal-assets/bg.png' alt='' style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', maxHeight: '90%', maxWidth: '90%', objectFit: 'contain', opacity: 0.08 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(10,10,10,0.9) 40%, transparent)' }} />
@@ -108,7 +108,7 @@ function PdfHero({ proposal }: { proposal: Proposal }) {
 function PdfClients() {
   const logos = Array.from({ length: 13 }, (_, i) => `/logos/Logo ${i + 1}.png`)
   return (
-    <div style={{ padding: '30px 60px 40px' }}>
+    <div style={{ padding: '30px 60px 40px', position: 'relative', zIndex: 2 }}>
       <p style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#4CFF5C', fontWeight: 700, marginBottom: 10 }}>
         Quem confia na Hiro Films
       </p>
