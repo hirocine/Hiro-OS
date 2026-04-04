@@ -1,54 +1,42 @@
 
-Objetivo: corrigir de vez o desalinhamento de emojis e textos no PDF, agora que o rodapé já voltou a funcionar.
 
-O que a leitura do código mostrou
-- O rodapé foi resolvido: `ProposalDownloadButton.tsx` já converte `Asset3.svg` para PNG antes da captura, então essa parte está ok.
-- O problema restante está no próprio `ProposalPdfDocument.tsx`: os helpers “PDF-safe” ainda dependem de comportamentos que o `html2canvas` renderiza mal.
-- Hoje ainda há pontos frágeis:
-  - `PdfCenteredIcon` usa `display: flex` para centralizar SVG;
-  - `PdfCheckItem` usa wrapper interno com flex para check/X/quantidade;
-  - o círculo do passo atual em `PdfProximosPassos` também centraliza com flex;
-  - `PdfBadge` ainda usa `inline-flex`, que pode variar baseline/altura na captura;
-  - os emojis vêm direto do conteúdo (`⭐`, `⏰`, `🎬` etc.), então o canvas pode trocar fonte/renderização e “flutuar” dentro da caixa.
+# Rodada final de ajustes no PDF: PNG + simplificação dos elementos problemáticos
 
-Plano de correção
-1. Reescrever os helpers do PDF para layout explícito
-- Ajustar `PdfCenteredIcon` para usar container `position: relative` e ícone absoluto com `top/left` definidos por pixels, sem depender de flex.
-- Ajustar `PdfBadge` para uma pill com altura fixa real, `display: inline-block`, `lineHeight` igual à altura e `textAlign: center`, evitando baseline variável.
-- Criar um helper de texto/quantidade centralizado para substituir o conteúdo interno de caixas pequenas (`1x`, `2x`, números, quantidades).
+## O que muda desta vez
 
-2. Corrigir os itens que ainda usam flex dentro de caixas pequenas
-- Aplicar o helper novo em:
-  - `PdfCheckItem` (check, X e quantidade);
-  - `PdfProximosPassos` no passo “current” (número dentro do círculo);
-  - badges de `Incluso/Add-on`, `Recomendado`, desconto e tipo do case.
-- Isso padroniza todos os elementos pequenos com fundo, que são justamente os que mais quebram no canvas.
+Duas mudanças concretas que as rodadas anteriores não fizeram:
 
-3. Tratar os emojis como conteúdo especial no PDF
-- Como o desalinhamento pode continuar mesmo com `line-height`, o caminho mais confiável é não depender do glyph nativo do sistema para o PDF.
-- Trocar os emojis do PDF por uma versão mais previsível:
-  - opção preferida: mapear os emojis usados (`⭐`, `⏰`, `🎬` e os mais comuns do editor) para equivalentes Lucide quando existir;
-  - fallback: renderizar o emoji em uma caixa com altura fixa e `lineHeight` exata, mas sem misturar com flex nem padding interno.
-- Assim o PDF fica visualmente estável mesmo se o emoji original no editor continuar livre.
+1. **Trocar JPEG por PNG** no output final (linha 144 do `ProposalDownloadButton.tsx`). Isso elimina o blur/compressão que apaga micro-elementos. É a mudança mais impactante e nunca foi feita.
 
-4. Revisar os pontos exatos no arquivo
-- `PdfCenteredEmoji`
-- `PdfCenteredIcon`
-- `PdfBadge`
-- `PdfCheckItem`
-- `PdfDiagnostico`
-- `PdfEntregaveis`
-- `PdfProximosPassos`
-- `PdfInvestimento`
-- `PdfCases`
+2. **Remover o mapeamento emoji→Lucide** que piorou o visual. Voltar a usar emojis nativos, mas com `fontSize` maior e container mais generoso para absorver a variação do `html2canvas`.
 
-Resultado esperado
-- emojis deixam de “boiar” nas caixas verdes;
-- checks, X, quantidades e números ficam centralizados de forma consistente;
-- textos dentro de badges/pills ficam corretamente alinhados com o fundo;
-- a captura do PDF fica previsível sem depender de flexbox em elementos pequenos.
+## Mudanças específicas
 
-Detalhe técnico importante
-- O rodapé já prova que o pipeline de imagem está funcionando.
-- O bug restante não parece mais ser de asset; ele está concentrado em micro-layout e renderização tipográfica do `html2canvas`.
-- Se, depois dessa refatoração, algum emoji específico ainda continuar torto, a última camada de robustez é substituir esses emojis por ícones equivalentes apenas no documento PDF, mantendo o site original intacto.
+### `ProposalDownloadButton.tsx`
+- Linha 144: trocar `canvas.toDataURL('image/jpeg', 0.92)` por `canvas.toDataURL('image/png')`
+- Linha 145: trocar `'JPEG'` por `'PNG'` no `addImage`
+
+### `ProposalPdfDocument.tsx`
+
+**Remover `emojiToIcon`** (linhas 17-23) e o branch em `PdfCenteredEmoji` que substitui emoji por ícone (linhas 39-42). Manter apenas o render de emoji nativo com `lineHeight` fixa.
+
+**Aumentar tamanho dos containers de emoji** de 34/36px para 40px com `fontSize` de 20px, dando mais margem para o glyph não vazar.
+
+**`PdfCheckItem`** (linhas 99-118): aumentar `boxSize` de 18 para 22px e `icoSize` de 10 para 14px — os ícones estão sumindo por serem pequenos demais na captura PNG.
+
+**`PdfProximosPassos`** (linhas 441-460): aumentar `circleSize` de 44 para 48px e `iconSize` proporcionalmente.
+
+**Badges**: manter como estão (a mudança para PNG já deve resolver o blur nos textos pequenos).
+
+## Por que pode funcionar desta vez
+
+- A troca para PNG é uma mudança no pipeline de output, não no layout. Remove o artefato de compressão JPEG que borra os detalhes finos.
+- O aumento dos containers dá folga real para o `html2canvas` posicionar emojis e ícones, em vez de tentar micro-ajustar CSS que o canvas não respeita.
+- A remoção do mapeamento emoji→Lucide desfaz a regressão visual da última rodada.
+
+## Resultado esperado
+- Textos e badges mais nítidos (PNG vs JPEG)
+- Emojis visíveis e aproximadamente centralizados (containers maiores)
+- Ícones check/lock/X visíveis (tamanhos maiores)
+- Rodapé continua funcionando (não é alterado)
+
