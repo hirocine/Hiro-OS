@@ -1,45 +1,35 @@
 
 
-# Fix: Entregáveis não aparecem na página de gerenciamento
+# Fix: Serviços Inclusos mostrando apenas Pré-Produção
 
 ## Problema
 
-Há um **descompasso de formato** entre como o Wizard salva e como o ProposalDetails lê os entregáveis.
-
-**Wizard salva** no banco como array de blocos:
-```json
-[
-  { "label": "Output", "titulo": "Entregas do Projeto", "itens": [...] },
-  { "label": "Serviços", "titulo": "O que está incluso", "cards": [...] }
-]
-```
-
-**ProposalDetails espera** ao carregar:
-```json
-{ "entregaveis": [...], "incluso_categories": [...] }
-```
-ou
-```json
-[{ "entregaveis": [...], "incluso_categories": [...] }]
-```
-
-Como o formato não bate (`itens` vs `entregaveis`, `cards` vs `incluso_categories`), o parsing cai no `else` e inicializa tudo vazio.
+O Wizard salva as categorias de serviços com o campo `titulo` (ex: `{ titulo: "Pré-Produção", icone: "...", itens: [...] }`), mas o componente de renderização espera o campo `categoria`. Na hora de parsear os dados do banco (linha 228), os cards são usados diretamente sem converter `titulo` para `categoria`, resultando em categorias sem nome e potencialmente quebrando a renderização das colunas de Produção e Pós-Produção.
 
 ## Solução
 
-Corrigir o parsing no `useEffect` do `ProposalDetails.tsx` (linhas ~219-233) para reconhecer o formato salvo pelo Wizard:
-
-1. Verificar se `rawEntregaveis` é um array com objetos contendo `label`
-2. Extrair os itens do bloco `"Output"` e mapear para o formato `EntregavelItem[]`
-3. Extrair os cards do bloco `"Serviços"` e reconstruir as `incluso_categories`
-4. Manter compatibilidade com o formato antigo (caso já exista)
-
-Também ajustar o `saveSection('entregaveis')` para salvar de volta no formato que o Wizard e a página pública esperam (array de blocos com `label`), garantindo consistência bidirecional.
+No parsing dos dados (linhas 223-229), mapear cada card do bloco "Serviços" para converter `titulo` -> `categoria`, garantindo compatibilidade com a interface `InclusoCategory`.
 
 ## Alteração
 
-**Arquivo: `src/pages/ProposalDetails.tsx`**
+**Arquivo: `src/pages/ProposalDetails.tsx` (~linha 228)**
 
-- **Parsing (useEffect)**: Adicionar detecção do formato `[{ label: "Output", itens: [...] }, { label: "Serviços", cards: [...] }]` e converter para o estado interno `{ entregaveis, incluso_categories }`
-- **Save (saveSection)**: Ao salvar `entregaveis`, converter de volta para o formato de array de blocos antes de enviar ao banco
+Substituir:
+```ts
+incluso_categories: servicosBlock?.cards || DEFAULT...
+```
+
+Por:
+```ts
+incluso_categories: servicosBlock?.cards
+  ? servicosBlock.cards.map((c: any) => ({
+      categoria: c.titulo || c.categoria,
+      icone: c.icone,
+      itens: c.itens,
+      subcategorias: c.subcategorias,
+    }))
+  : JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
+```
+
+Isso garante que os 3 blocos (Pré-Produção, Produção, Pós-Produção) apareçam corretamente com seus itens e subcategorias.
 
