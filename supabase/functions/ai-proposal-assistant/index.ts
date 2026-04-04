@@ -293,7 +293,7 @@ Retorne APENAS um JSON válido (sem markdown, sem backticks) neste formato:
 }
 
 REGRAS para gerar perguntas:
-- Se identificar MAIS DE UM projeto ou escopo distinto, pergunte qual incluir na proposta. Sempre inclua a opção "Juntar todos em 1 proposta".
+- Se identificar MAIS DE UM projeto ou escopo distinto, liste CADA projeto como uma opção individual para o usuário escolher qual incluir na proposta. Cada opção deve ter o nome do projeto e uma descrição breve do escopo. Sempre inclua como última opção "Juntar todos em 1 proposta". Exemplo: se a transcrição menciona webcasts, EAD e vídeo institucional, as opções devem ser: opção A = Webcasts (com descrição), opção B = EAD (com descrição), opção C = Vídeo institucional (com descrição), opção D = Juntar todos em 1 proposta.
 - Se identificar MAIS DE UM contato do lado do cliente, pergunte quem é o contato principal. Sempre inclua a opção "Ambos" ou "Todos".
 - Se o tipo/formato do projeto não estiver claro (ex: vídeo institucional vs série de conteúdo vs evento), pergunte.
 - Se o prazo ou urgência não estiver claro, NÃO pergunte (isso será definido depois).
