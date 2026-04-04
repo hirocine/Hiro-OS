@@ -318,7 +318,7 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
             {options.map((cond, i) => (
               <div key={i} style={{ position: 'relative', padding: 16, background: '#0A0A0A', borderRadius: 10, textAlign: 'center', border: `1px solid ${cond.recomendado ? '#4CFF5C' : '#333'}` }}>
                 {cond.recomendado && (
-                  <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: '#4CFF5C', color: '#000', fontSize: 8, fontWeight: 700, padding: '2px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: 1 }}>Recomendado</span>
+                  <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: '#4CFF5C', color: '#000', fontSize: 8, fontWeight: 700, padding: '2px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: 1, display: 'inline-flex', alignItems: 'center', lineHeight: 1, whiteSpace: 'nowrap' }}>Recomendado</span>
                 )}
                 <p style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>{cond.titulo}</p>
                 <p style={{ fontSize: 20, fontWeight: 700, color: '#f0f0f0', marginBottom: 4, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{cond.valor}</p>
