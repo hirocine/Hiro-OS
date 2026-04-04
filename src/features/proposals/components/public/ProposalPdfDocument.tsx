@@ -256,8 +256,10 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                   const Icon = !isEmoji ? (iconMap[card.icone] || ClipboardList) : null
                   return (
                     <div key={cIdx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                        {isEmoji ? <span style={{ fontSize: 16 }}>{card.icone}</span> : Icon && <Icon style={{ width: 16, height: 16, color: '#4CFF5C' }} />}
+                      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', position: 'relative', marginBottom: 12 }}>
+                        {isEmoji
+                          ? <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, lineHeight: 1, display: 'block' }}>{card.icone}</span>
+                          : Icon && <Icon style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, color: '#4CFF5C', display: 'block' }} />}
                       </div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{card.titulo}</h4>
                       {card.itens && card.itens.map((item: any, iIdx: number) => (
