@@ -878,9 +878,221 @@ export function ProposalGuidedWizard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          STEP 6 — INVESTIMENTO
+          STEP 6 — SERVIÇOS INCLUSOS
          ══════════════════════════════════════════════════════════════ */}
       {step === 6 && (
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Serviços Inclusos</h2>
+            <p className="text-sm text-muted-foreground">Selecione os serviços inclusos nesta proposta</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {inclusoCategories.map((cat, catIdx) => {
+              const emoji = PHASE_EMOJIS[cat.categoria] || '📦';
+              const activeCount = cat.itens
+                ? cat.itens.filter(i => i.ativo).length
+                : cat.subcategorias
+                  ? cat.subcategorias.reduce((acc, sub) => acc + sub.itens.filter(i => i.ativo).length, 0)
+                  : 0;
+              const totalCount = cat.itens
+                ? cat.itens.length
+                : cat.subcategorias
+                  ? cat.subcategorias.reduce((acc, sub) => acc + sub.itens.length, 0)
+                  : 0;
+
+              return (
+                <div key={cat.categoria} className="bg-muted/30 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{emoji}</span>
+                      <h3 className="text-sm font-semibold">{cat.categoria}</h3>
+                    </div>
+                    <Badge variant="outline" className="text-xs">{activeCount}/{totalCount}</Badge>
+                  </div>
+
+                  {/* Flat items (Pré-produção, Pós-produção) */}
+                  {cat.itens && (
+                    <div className="space-y-1">
+                      {cat.itens.map((item, itemIdx) => (
+                        <div key={itemIdx} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                          <Checkbox
+                            checked={item.ativo}
+                            onCheckedChange={() => toggleInclusoItem(catIdx, null, itemIdx)}
+                          />
+                          {item.custom ? (
+                            <Input
+                              value={item.nome}
+                              onChange={e => updateCustomInclusoName(catIdx, null, itemIdx, e.target.value)}
+                              placeholder="Nome do item"
+                              className="h-7 text-sm flex-1"
+                            />
+                          ) : (
+                            <span className="text-sm flex-1">{item.nome}</span>
+                          )}
+                          {item.ativo && 'quantidade' in item && (
+                            <Input
+                              value={item.quantidade || ''}
+                              onChange={e => updateInclusoQuantidade(catIdx, null, itemIdx, e.target.value)}
+                              placeholder="Qtd"
+                              className="h-7 w-16 text-sm text-center"
+                            />
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addCustomInclusoItem(catIdx, null)}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+                      >
+                        <Plus className="h-3 w-3" /> Adicionar item
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Subcategories (Gravação) */}
+                  {cat.subcategorias && cat.subcategorias.map((sub, subIdx) => (
+                    <div key={sub.nome} className="space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-1">{sub.nome}</p>
+                      {sub.itens.map((item, itemIdx) => (
+                        <div key={itemIdx} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                          <Checkbox
+                            checked={item.ativo}
+                            onCheckedChange={() => toggleInclusoItem(catIdx, subIdx, itemIdx)}
+                          />
+                          {item.custom ? (
+                            <Input
+                              value={item.nome}
+                              onChange={e => updateCustomInclusoName(catIdx, subIdx, itemIdx, e.target.value)}
+                              placeholder="Nome do item"
+                              className="h-7 text-sm flex-1"
+                            />
+                          ) : (
+                            <span className="text-sm flex-1">{item.nome}</span>
+                          )}
+                          {item.ativo && 'quantidade' in item && (
+                            <Input
+                              value={item.quantidade || ''}
+                              onChange={e => updateInclusoQuantidade(catIdx, subIdx, itemIdx, e.target.value)}
+                              placeholder="Qtd"
+                              className="h-7 w-16 text-sm text-center"
+                            />
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addCustomInclusoItem(catIdx, subIdx)}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+                      >
+                        <Plus className="h-3 w-3" /> Adicionar item
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
+            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          STEP 7 — DEPOIMENTO
+         ══════════════════════════════════════════════════════════════ */}
+      {step === 7 && (
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Depoimento</h2>
+            <p className="text-sm text-muted-foreground">Escolha um depoimento de cliente para incluir na proposta</p>
+          </div>
+
+          {testimonialsBank.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {testimonialsBank.map(t => {
+                  const isSelected = selectedTestimonialId === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setSelectedTestimonialId(t.id);
+                        setTestimonialName(t.name);
+                        setTestimonialRole(t.role);
+                        setTestimonialText(t.text);
+                        setTestimonialImage(t.image || '');
+                      }}
+                      className={cn(
+                        'flex items-start gap-3 p-4 rounded-lg border transition-all text-left',
+                        isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                      )}
+                    >
+                      <Avatar className="h-10 w-10 shrink-0">
+                        {t.image && <AvatarImage src={t.image} />}
+                        <AvatarFallback className="text-xs">{t.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{t.text}</p>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0 mt-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setSelectedTestimonialId(null);
+                    setTestimonialName('');
+                    setTestimonialRole('');
+                    setTestimonialText('');
+                    setTestimonialImage('');
+                    goNext();
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Pular sem depoimento →
+                </button>
+              </div>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Nome</Label>
+                    <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Cargo</Label>
+                    <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Depoimento</Label>
+                  <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
+            <Button onClick={goNext}>Continuar <ArrowRight className="h-4 w-4 ml-1" /></Button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          STEP 8 — INVESTIMENTO
+         ══════════════════════════════════════════════════════════════ */}
+      {step === 8 && (
         <div className="space-y-6">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold">Investimento</h2>
@@ -918,9 +1130,9 @@ export function ProposalGuidedWizard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          STEP 7 — REVISÃO FINAL
+          STEP 9 — REVISÃO FINAL
          ══════════════════════════════════════════════════════════════ */}
-      {step === 7 && (
+      {step === 9 && (
         <div className="space-y-6">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold">Revisão Final</h2>
@@ -994,8 +1206,30 @@ export function ProposalGuidedWizard() {
               </CardContent>
             </Card>
 
-            {/* Investimento */}
+            {/* Serviços Inclusos */}
             <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(6)}>
+              <CardContent className="pt-4 pb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Serviços Inclusos</p>
+                  <p className="text-sm">{countActiveInclusos()}/{totalInclusoItems()} serviços selecionados</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+
+            {/* Depoimento */}
+            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(7)}>
+              <CardContent className="pt-4 pb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Depoimento</p>
+                  <p className="text-sm">{testimonialName ? `${testimonialName} — ${testimonialRole}` : 'Nenhum depoimento'}</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+
+            {/* Investimento */}
+            <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(8)}>
               <CardContent className="pt-4 pb-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">Investimento</p>
