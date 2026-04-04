@@ -244,6 +244,92 @@ export function ProposalGuidedWizard() {
     const u = [...entregaveis]; u[idx] = { ...u[idx], [field]: value }; setEntregaveis(u);
   };
 
+  // ── Incluso helpers ──
+  const toggleInclusoItem = (catIdx: number, subIdx: number | null, itemIdx: number) => {
+    setInclusoCategories(prev => {
+      const cats = JSON.parse(JSON.stringify(prev)) as InclusoCategory[];
+      const cat = cats[catIdx];
+      let item: InclusoItem;
+      if (subIdx !== null && cat.subcategorias) {
+        item = cat.subcategorias[subIdx].itens[itemIdx];
+      } else if (cat.itens) {
+        item = cat.itens[itemIdx];
+      } else return prev;
+      item.ativo = !item.ativo;
+      return cats;
+    });
+  };
+
+  const updateInclusoQuantidade = (catIdx: number, subIdx: number | null, itemIdx: number, value: string) => {
+    setInclusoCategories(prev => {
+      const cats = JSON.parse(JSON.stringify(prev)) as InclusoCategory[];
+      const cat = cats[catIdx];
+      if (subIdx !== null && cat.subcategorias) {
+        cat.subcategorias[subIdx].itens[itemIdx].quantidade = value;
+      } else if (cat.itens) {
+        cat.itens[itemIdx].quantidade = value;
+      }
+      return cats;
+    });
+  };
+
+  const addCustomInclusoItem = (catIdx: number, subIdx: number | null) => {
+    setInclusoCategories(prev => {
+      const cats = JSON.parse(JSON.stringify(prev)) as InclusoCategory[];
+      const newItem: InclusoItem = { nome: '', ativo: true, custom: true };
+      const cat = cats[catIdx];
+      if (subIdx !== null && cat.subcategorias) {
+        cat.subcategorias[subIdx].itens.push(newItem);
+      } else if (cat.itens) {
+        cat.itens.push(newItem);
+      }
+      return cats;
+    });
+  };
+
+  const updateCustomInclusoName = (catIdx: number, subIdx: number | null, itemIdx: number, name: string) => {
+    setInclusoCategories(prev => {
+      const cats = JSON.parse(JSON.stringify(prev)) as InclusoCategory[];
+      const cat = cats[catIdx];
+      if (subIdx !== null && cat.subcategorias) {
+        cat.subcategorias[subIdx].itens[itemIdx].nome = name;
+      } else if (cat.itens) {
+        cat.itens[itemIdx].nome = name;
+      }
+      return cats;
+    });
+  };
+
+  const countActiveInclusos = () => {
+    let count = 0;
+    for (const cat of inclusoCategories) {
+      if (cat.itens) count += cat.itens.filter(i => i.ativo).length;
+      if (cat.subcategorias) {
+        for (const sub of cat.subcategorias) {
+          count += sub.itens.filter(i => i.ativo).length;
+        }
+      }
+    }
+    return count;
+  };
+
+  const totalInclusoItems = () => {
+    let count = 0;
+    for (const cat of inclusoCategories) {
+      if (cat.itens) count += cat.itens.length;
+      if (cat.subcategorias) {
+        for (const sub of cat.subcategorias) count += sub.itens.length;
+      }
+    }
+    return count;
+  };
+
+  const PHASE_EMOJIS: Record<string, string> = {
+    'Pré-produção': '📋',
+    'Gravação': '🎬',
+    'Pós-produção': '🎨',
+  };
+
   const handleCreateProposal = async () => {
     try {
       const result = await createProposal.mutateAsync({
