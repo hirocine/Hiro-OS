@@ -402,14 +402,31 @@ export default function ProposalDetails() {
     try {
       let data: Record<string, any> = {};
       if (section === 'client') {
+        const clientName = clientForm.client_name.trim();
+        const projectName = clientForm.project_name.trim();
         data = {
           project_number: clientForm.project_number.trim() || null,
-          client_name: clientForm.client_name.trim(),
-          project_name: clientForm.project_name.trim(),
+          client_name: clientName || null,
+          project_name: projectName || null,
           client_responsible: clientForm.client_responsible.trim() || null,
           whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').trim() || null,
           company_description: clientForm.company_description.trim() || null,
         };
+        // Auto-generate slug when both names are filled and slug is still a draft placeholder
+        if (clientName && projectName && proposal.slug.startsWith('rascunho-')) {
+          let newSlug = generateSlug(clientName, projectName);
+          // Check uniqueness
+          const { data: existing } = await supabase
+            .from('orcamentos')
+            .select('slug')
+            .eq('slug', newSlug)
+            .neq('id', proposal.id)
+            .maybeSingle();
+          if (existing) {
+            newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
+          }
+          data.slug = newSlug;
+        }
       } else if (section === 'invest') {
         const finalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
         data = {
