@@ -17,8 +17,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil
+  AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil, Sparkles, Loader2
 } from 'lucide-react';
+import { useProposalAI } from '@/features/proposals/hooks/useProposalAI';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
@@ -171,6 +172,7 @@ export default function ProposalDetails() {
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
+  const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
   const { data: testimonialsBank = [], createTestimonial, updateTestimonial } = useTestimonials();
@@ -192,6 +194,8 @@ export default function ProposalDetails() {
   const [newTestimonialForm, setNewTestimonialForm] = useState({ name: '', role: '', text: '', image: '' });
   const [uploadingTestimonialImage, setUploadingTestimonialImage] = useState(false);
   const [editingTestimonialId, setEditingTestimonialId] = useState<string | null>(null);
+  const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
+  const [transcriptText, setTranscriptText] = useState('');
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -703,9 +707,15 @@ export default function ProposalDetails() {
           {/* Client Section */}
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+                </div>
+                <Button variant="outline" size="sm" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
+                  {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                  Importar Transcrição
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
@@ -716,7 +726,21 @@ export default function ProposalDetails() {
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
               </div>
-              <div className="space-y-1.5"><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} /></div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Descrição da empresa</Label>
+                  <Button variant="outline" size="sm" disabled={isEnriching || !clientForm.client_name} onClick={async () => {
+                    try {
+                      const desc = await enrichClient(clientForm.client_name);
+                      if (desc) { setClientForm(p => ({ ...p, company_description: desc })); toast.success('Descrição preenchida com IA'); }
+                    } catch (err) { toast.error('Erro ao buscar descrição: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+                  }}>
+                    {isEnriching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Buscar com IA
+                  </Button>
+                </div>
+                <Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} />
+              </div>
             </CardContent>
             {clientDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
@@ -793,9 +817,20 @@ export default function ProposalDetails() {
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-base">Dores do Cliente</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={openDoresBank}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" disabled={isSuggesting} onClick={async () => {
+                    try {
+                      const dores = await suggestPainPoints(clientForm.client_name, clientForm.project_name, diagForm.objetivo);
+                      if (dores.length > 0) { setDoresForm(dores); toast.success(`${dores.length} dores sugeridas pela IA`); }
+                    } catch (err) { toast.error('Erro ao sugerir dores: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+                  }}>
+                    {isSuggesting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Sugerir com IA
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={openDoresBank}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-2">
@@ -1511,6 +1546,40 @@ export default function ProposalDetails() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Transcript Dialog */}
+        <Dialog open={showTranscriptDialog} onOpenChange={setShowTranscriptDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Importar Transcrição</DialogTitle>
+            </DialogHeader>
+            <Textarea
+              value={transcriptText}
+              onChange={e => setTranscriptText(e.target.value)}
+              rows={10}
+              placeholder="Cole aqui a transcrição da reunião de briefing..."
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowTranscriptDialog(false)}>Cancelar</Button>
+              <Button disabled={isParsing || !transcriptText.trim()} onClick={async () => {
+                try {
+                  const result = await parseTranscript(transcriptText);
+                  if (result.client_name) setClientForm(p => ({ ...p, client_name: result.client_name! }));
+                  if (result.project_name) setClientForm(p => ({ ...p, project_name: result.project_name! }));
+                  if (result.client_responsible) setClientForm(p => ({ ...p, client_responsible: result.client_responsible! }));
+                  if (result.objetivo) setDiagForm({ objetivo: result.objetivo });
+                  if (result.diagnostico_dores?.length) setDoresForm(result.diagnostico_dores);
+                  if (result.entregaveis?.length) setOutputForm(result.entregaveis);
+                  toast.success('Transcrição processada com sucesso');
+                  setShowTranscriptDialog(false);
+                } catch (err) { toast.error('Erro ao processar: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+              }}>
+                {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                Processar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ResponsiveContainer>
   );
