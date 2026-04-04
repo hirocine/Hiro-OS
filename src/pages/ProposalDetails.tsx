@@ -922,13 +922,6 @@ export default function ProposalDetails() {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <button
-                              onClick={() => toggleCaseDestaque(i)}
-                              className={`p-1 rounded transition-colors ${c.destaque ? 'text-yellow-500' : 'text-muted-foreground/40 hover:text-yellow-500'}`}
-                              title="Destaque"
-                            >
-                              ⭐
-                            </button>
-                            <button
                               onClick={() => removeCase(i)}
                               className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             >
@@ -999,7 +992,7 @@ export default function ProposalDetails() {
                             {(bc.tags || []).map(tag => (
                               <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
                             ))}
-                            {bc.destaque && <span className="text-xs">⭐</span>}
+                            
                           </div>
                           <p className="text-sm font-medium leading-tight">{bc.campaign_name}</p>
                           <p className="text-xs text-muted-foreground">{bc.client_name}</p>
@@ -1057,10 +1050,6 @@ export default function ProposalDetails() {
                             </button>
                           ))}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch checked={newCaseForm.destaque} onCheckedChange={v => setNewCaseForm(p => ({ ...p, destaque: v }))} />
-                        <Label className="text-xs">Destaque</Label>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" onClick={handleCreateCase} disabled={!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim() || createCase.isPending}>

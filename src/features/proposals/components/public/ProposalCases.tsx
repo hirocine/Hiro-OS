@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function ProposalCases({ cases }: Props) {
-  const filtered = cases.filter((c) => !c.destaque)
+  const filtered = cases
   if (filtered.length === 0) return null
 
   return (
