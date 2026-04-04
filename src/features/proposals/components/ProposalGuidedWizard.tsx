@@ -345,7 +345,7 @@ export function ProposalGuidedWizard() {
         diagnostico_dores: dores,
         selected_case_ids: selectedCaseIds,
         entregaveis,
-        incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
+        incluso_categories: inclusoCategories,
         list_price: listPrice,
         base_value: finalValue,
         discount_pct: discountPct,
