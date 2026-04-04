@@ -1,41 +1,44 @@
 
 
-# Redesign Cases/Portfólio -- Banco de Cases com Dialog (igual Dores)
+# Diagnóstico: Página pública mostrando versão antiga (Service Worker cache)
 
-## O que muda
+## Problema encontrado
 
-A seção "Cases / Portfólio" atual (formulários inline) será substituída pelo mesmo padrão da seção de Dores:
+A página pública da proposta (`/orcamento/:slug`) está exibindo o layout antigo (com `HeroSection`, `UrgencyBar`, grid pattern, "Nº 256", "HIRO FILMS®", "PROPOSTA DE INVESTIMENTO") que **já não existe mais no código atual**.
 
-1. **Na página**: grid de cards dos cases selecionados (com thumbnail Vimeo + título + descrição + botão X)
-2. **Botão "Adicionar Cases"** abre um Dialog grande com o banco completo (`proposal_cases`)
-3. No dialog, o usuário seleciona cases existentes OU cria um novo -- e o novo **fica salvo** no banco `proposal_cases`
+O código atual está correto -- `ProposalPublicPage` usa o novo `ProposalHero` com bg.png e animações. O problema é o **Service Worker (VitePWA)** que está cacheando a build antiga e servindo assets desatualizados.
 
-## Mudanças
+## Causa raiz
 
-### 1. Importar `useProposalCases` e redesenhar seção em `ProposalDetails.tsx`
+O projeto usa `VitePWA` com `registerType: 'autoUpdate'` e workbox configurado para cachear `**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff2,woff}`. O navegador do usuário tem um SW ativo com a versão antiga do bundle.
 
-**Cards de cases selecionados**: Grid 2 colunas com cards mostrando:
-- Thumbnail do Vimeo (via `https://vimg.net/video/{vimeoId}`)
-- Tipo (tag), Título, Descrição
-- Toggle destaque (estrela)
-- Botão X para remover
+## Solução
 
-**Dialog "Banco de Cases"** (`sm:max-w-4xl`):
-- Lista de todos os cases do banco (`useProposalCases`) como cards clicáveis com checkbox visual
-- Filtro/busca por texto (client_name, campaign_name, tags)
-- Cases já na proposta aparecem marcados
-- Seção "Criar novo case" com campos: client_name, campaign_name, vimeo_id, vimeo_hash, tags, destaque -- ao criar, chama `createCase` do hook e o case fica salvo no banco + adicionado à proposta
-- Rodapé fixo com contador + botão Confirmar
+### 1. Limpeza imediata (para o usuário)
+- Abrir DevTools > Application > Service Workers > "Unregister"
+- Hard refresh (Cmd+Shift+R)
+- Ou: abrir em aba anônima
 
-### 2. Mapeamento banco → proposta
-- O campo JSONB `cases` da proposta armazena `{ tipo, titulo, descricao, vimeoId, vimeoHash, destaque }`
-- Ao selecionar do banco, copiar os dados relevantes para o array local (sem referência ao ID)
-- Ao criar novo, salvar no banco via mutation E adicionar ao array local
+### 2. Limpeza de código morto
+Remover componentes que não são mais importados em lugar nenhum:
+- `src/features/proposals/components/HeroSection.tsx` -- layout antigo do hero (V1)
+- `src/features/proposals/components/UrgencyBar.tsx` -- barra amarela de expiração (V1)
+- `src/features/proposals/components/ProposalHeader.tsx` -- header antigo (V1)
 
-### 3. Remover lógica inline atual
-- Remover `addCase`, `removeCase`, `updateCase` inline
-- Substituir pelo padrão de seleção do banco + confirmação
+### 3. Forçar invalidação do cache do SW
+Adicionar `version` no `VitePWA` config ou um `skipWaiting` mais agressivo no `vite.config.ts`:
+
+```
+workbox: {
+  skipWaiting: true,
+  clientsClaim: true,
+  ...
+}
+```
+
+Isso garante que novas builds tomem controle imediato do SW sem esperar o reload.
 
 ## Arquivos alterados
-- `src/pages/ProposalDetails.tsx` -- redesign completo da seção de cases com dialog do banco
+- `vite.config.ts` -- adicionar `skipWaiting: true` e `clientsClaim: true`
+- Deletar 3 componentes mortos (HeroSection, UrgencyBar, ProposalHeader)
 
