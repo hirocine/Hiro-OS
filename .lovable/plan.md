@@ -1,69 +1,34 @@
 
 
-# PDF da Proposta Igual ao Site
+# Thumbnails dos vídeos não aparecem no PDF
 
-## Resumo
+## Problema
 
-Transformar o PDF gerado (botão "Baixar PDF") para que mantenha o visual escuro e estilizado do site, incluindo imagens e thumbnails de vídeos no lugar dos iframes.
+O componente `ProposalCases.tsx` (página pública) usa `vumbnail.com/{vimeoId}.jpg` para gerar thumbnails de print. Porém, vídeos **não listados** no Vimeo exigem o `hash` na URL -- o vumbnail.com não suporta isso e retorna erro, resultando em imagens quebradas.
 
-## Abordagem escolhida: Print CSS avançado
+O editor (`ProposalDetails.tsx`) já resolve isso corretamente usando a API oEmbed do Vimeo com o hash, mas o componente público não.
 
-Existem 3 caminhos possíveis:
+## Solução
 
-| Abordagem | Fidelidade | Complexidade | Peso do PDF |
-|-----------|-----------|-------------|-------------|
-| **Print CSS (dark mode)** | Alta | Baixa | Leve, texto selecionável |
-| html2canvas + jsPDF | Muito alta | Média | Pesado (imagens rasterizadas) |
-| Puppeteer (Edge Function) | Perfeita | Alta | Requer infra servidor |
+### 1. Adicionar resolução de thumbnail via oEmbed no `ProposalCases.tsx`
 
-**Print CSS é a melhor opção**: o PDF É literalmente o site impresso, mantendo fontes, cores, layout. Texto continua selecionável, arquivo leve, zero dependências novas.
+Criar um sub-componente `CaseCard` que usa `useEffect` + `fetch` para buscar a thumbnail real via oEmbed (mesmo padrão do `VimeoThumbnail` que já existe no editor):
 
-## Alterações
+- Construir URL: `https://vimeo.com/api/oembed.json?url=https://vimeo.com/{vimeoId}/{vimeoHash}`
+- Extrair `thumbnail_url` da resposta
+- Fallback para `vumbnail.com` se oEmbed falhar
+- Renderizar a `<img>` **sempre visível** como background do card (não apenas em print), com o iframe por cima
 
-### 1. Print CSS completo em `src/index.css`
+### 2. Layout: thumb sempre visível, iframe por cima
 
-Substituir o bloco `@media print` atual (que tenta forçar fundo branco) por um que preserve o tema escuro:
+Em vez de esconder a thumbnail e mostrar só no print:
+- `<img>` da thumbnail: `absolute inset-0 w-full h-full object-cover` (sempre visível, serve como "poster")
+- `<iframe>`: `absolute inset-0 w-full h-full` por cima (reproduz o vídeo na web)
+- No print: iframe fica `print:hidden`, thumbnail já está visível naturalmente
 
-- `background: black`, `color: #f5f5f5` em body e `.proposal-page`
-- `-webkit-print-color-adjust: exact` + `print-color-adjust: exact` para forçar backgrounds
-- Esconder: navbar, botão download/WhatsApp, scroll indicator, animated gradients, glow spots
-- Cards `bg-[#111]` e borders preservados
-- Forçar `opacity: 1` e `transform: none` em todos os elementos animados (evitar que fiquem invisíveis no print)
-- Page breaks: `break-inside: avoid` em cards e seções, `break-before: page` antes de seções grandes (Entregáveis, Investimento, Próximos Passos)
-- Remover padding lateral excessivo para melhor uso do papel
-- Esconder o carousel infinito de logos (InfiniteSlider) e mostrar uma versão estática em grid
+Isso elimina a dependência do print CSS para mostrar thumbnails e garante que funcionem tanto na web (como poster enquanto o iframe carrega) quanto no PDF.
 
-### 2. Thumbnails de vídeo para Cases (`ProposalCases.tsx`)
+### Arquivos alterados
 
-Para cada case com `vimeoId`, adicionar uma tag `<img>` com a thumbnail do Vimeo:
-- URL: `https://vumbnail.com/{vimeoId}.jpg` (serviço público de thumbnails Vimeo)
-- A imagem fica `hidden` na tela (`hidden print:block`) e o iframe fica `print:hidden`
-- Resultado: no PDF aparece a thumbnail estática do vídeo em vez de um retângulo vazio
-
-### 3. Thumbnail no vídeo de fundo de Próximos Passos (`ProposalProximosPassos.tsx` / `ProposalPublicPage.tsx`)
-
-O iframe do Vimeo na seção de Próximos Passos também precisa de fallback:
-- Adicionar `print:hidden` no container do iframe
-- O gradiente escuro já garante que a seção fique bonita sem o vídeo
-
-### 4. Logo dos clientes em versão estática (`ProposalClients.tsx`)
-
-O carousel infinito não funciona em print. Adicionar um grid estático dos logos:
-- `hidden print:grid grid-cols-6 gap-6` com os logos
-- `print:hidden` no InfiniteSlider
-
-### 5. Hero: garantir visibilidade
-
-Os elementos do Hero usam CSS animations com `opacity: 0` inicial. No print, forçar `opacity: 1 !important` e `transform: none !important` para que tudo apareça.
-
-## Seções do site que aparecerão no PDF
-
-1. **Hero** - Nome do projeto, cliente, datas (sem bg animado)
-2. **Clientes** - Grid estático de logos
-3. **Diagnóstico** - Objetivo + cards de dores
-4. **Cases** - Grid com thumbnails dos vídeos
-5. **Entregáveis** - Cards com ícones e checklists
-6. **Investimento** - Valores, opções de pagamento, depoimento
-7. **Próximos Passos** - Timeline com steps
-8. **Footer** - Contato e logo Hiro
+- `src/features/proposals/components/public/ProposalCases.tsx` -- refatorar para usar oEmbed e thumbnail sempre visível
 
