@@ -669,30 +669,32 @@ export default function ProposalDetails() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name}</h1>
+                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name || 'Nova Proposta'}</h1>
                   {proposal.project_number && (
                     <span className="text-xl text-muted-foreground">Nº {proposal.project_number}</span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
+                <p className="text-sm text-muted-foreground">{proposal.client_name || 'Preencha os dados do cliente'}</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-muted-foreground">Status</span>
-                <Select value={proposal.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
-                    <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
-                      {(statusMap[proposal.status] || statusMap.draft).label}
-                    </Badge>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusMap).map(([value, { label, variant }]) => (
-                      <SelectItem key={value} value={value}>
-                        <Badge variant={variant as any}>{label}</Badge>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isNewProposal && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <Select value={proposal.status} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
+                      <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
+                        {(statusMap[proposal.status] || statusMap.draft).label}
+                      </Badge>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusMap).map(([value, { label, variant }]) => (
+                        <SelectItem key={value} value={value}>
+                          <Badge variant={variant as any}>{label}</Badge>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
