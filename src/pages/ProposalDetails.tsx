@@ -173,6 +173,7 @@ export default function ProposalDetails() {
   const { updateProposal, deleteProposal } = useProposals();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
+  const { data: testimonialsBank = [], createTestimonial } = useTestimonials();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showDoresBank, setShowDoresBank] = useState(false);
@@ -185,11 +186,16 @@ export default function ProposalDetails() {
   const [casesBankSelection, setCasesBankSelection] = useState<CaseItem[]>([]);
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCaseForm, setNewCaseForm] = useState({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [] as string[], destaque: false });
+  const [showTestimonialBank, setShowTestimonialBank] = useState(false);
+  const [testimonialBankSearch, setTestimonialBankSearch] = useState('');
+  const [showNewTestimonial, setShowNewTestimonial] = useState(false);
+  const [newTestimonialForm, setNewTestimonialForm] = useState({ name: '', role: '', text: '', image: '' });
+  const [uploadingTestimonialImage, setUploadingTestimonialImage] = useState(false);
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
-  const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
+  const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' });
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
   const [casesForm, setCasesForm] = useState<CaseItem[]>([]);
   const [outputForm, setOutputForm] = useState<EntregavelItem[]>([]);
