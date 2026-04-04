@@ -1,34 +1,43 @@
 
 
-# Melhorar Dialog do Banco de Depoimentos + Edição
+# Unificar criação e edição de propostas na mesma página
 
-## Problema
+## Resumo
 
-O Dialog de depoimentos está com layout simples (max-w-lg, sem estrutura de header/body separada), diferente do padrão visual do Banco de Dores (max-w-4xl, p-0, header com border-b, body com scroll independente). Além disso, não é possível editar depoimentos existentes no banco.
+Eliminar o Wizard (`ProposalWizard`) e a página `NewProposal`. O botão "Nova Proposta" criará um registro draft no banco com valores placeholder e redirecionará para `/orcamentos/:id`, onde o usuário edita tudo na mesma interface que já existe.
 
 ## Alterações
 
-### 1. Hook: adicionar `updateTestimonial` mutation (`useTestimonials.ts`)
+### 1. Migration: tornar `client_name`, `project_name` e `validity_date` nullable
 
-Adicionar mutation de update por id, invalidando a query após sucesso.
+Esses campos são NOT NULL hoje, o que impede criar um registro vazio. Alternativa: inserir com placeholders ("Sem nome", etc.), mas isso polui o banco. Melhor: `ALTER COLUMN ... DROP NOT NULL` para os 3 campos, permitindo criar um draft realmente vazio.
 
-### 2. Dialog visual igual ao de Dores (`ProposalDetails.tsx`, linhas ~1328-1448)
+### 2. Adaptar `useProposals.ts` - nova mutation `createDraft`
 
-- `max-w-lg` → `sm:max-w-2xl`
-- `p-0` com header separado (px-6 pt-6 pb-4 border-b) e body scrollável (px-6 py-4)
-- Cards dos depoimentos em grid com estilo igual aos cards de dores (border, hover:border-primary/30, selected state)
-- Avatar sempre visível com fallback de iniciais
-- Botão de editar (ícone Pencil) em cada card do banco, que abre o formulário de edição preenchido
+Nova mutation simples que:
+- Gera slug temporário (`rascunho-<random>`)
+- Insere registro mínimo: `{ slug, status: 'draft', created_by }`
+- Retorna o `id` do registro criado
 
-### 3. Estado de edição
+### 3. Página de listagem (`Proposals.tsx`) - botão "Nova Proposta"
 
-- Adicionar `editingTestimonialId` state (string | null)
-- Quando clica em editar, preenche o form com dados do depoimento e mostra o formulário (reutiliza o form de criação)
-- Botão "Salvar alterações" chama `updateTestimonial` em vez de `createTestimonial`
+Trocar `navigate('/orcamentos/novo')` por: chamar `createDraft`, aguardar o id, navegar para `/orcamentos/:id`.
 
-### 4. Fluxo
+### 4. `ProposalDetails.tsx` - suportar modo criação
 
-- Clicar no card → seleciona para a proposta (como hoje)
-- Clicar no ícone de editar → abre formulário de edição inline
-- "Criar novo" → abre formulário em branco (como hoje)
+- Dirty checks: quando `proposal` tem campos vazios/null, considerar qualquer preenchimento como dirty (já funciona naturalmente, pois compara com `''` ou `null`)
+- `saveSection`: já usa `updateProposal.mutateAsync` com o id - funciona igual
+- Ao salvar `client_name` + `project_name` pela primeira vez, regenerar o slug automaticamente (chamando update com novo slug)
+- Breadcrumb: mostrar "Nova Proposta" quando `client_name` estiver vazio
+- Esconder botão "Ver Proposta" e dropdown de status enquanto `client_name` estiver vazio
+
+### 5. Rota e limpeza
+
+- Remover rota `/orcamentos/novo` do `App.tsx`
+- Remover import de `NewProposal`
+- O arquivo `NewProposal.tsx` e `ProposalWizard.tsx` podem ser mantidos temporariamente mas não serão mais referenciados
+
+### 6. Slug auto-update
+
+Quando o usuário salva a seção "Cliente" e tanto `client_name` quanto `project_name` estão preenchidos, incluir no payload de update um novo `slug` gerado (reaproveitando a função `generateSlug` que já existe em `useProposals.ts`). Extrair essa função para poder reutilizá-la.
 
