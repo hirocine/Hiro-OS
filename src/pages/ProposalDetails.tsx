@@ -1051,10 +1051,6 @@ export default function ProposalDetails() {
                           ))}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch checked={newCaseForm.destaque} onCheckedChange={v => setNewCaseForm(p => ({ ...p, destaque: v }))} />
-                        <Label className="text-xs">Destaque</Label>
-                      </div>
                       <div className="flex gap-2">
                         <Button size="sm" onClick={handleCreateCase} disabled={!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim() || createCase.isPending}>
                           <Plus className="h-3.5 w-3.5 mr-1" /> Criar e Adicionar
