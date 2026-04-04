@@ -707,9 +707,15 @@ export default function ProposalDetails() {
           {/* Client Section */}
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+                </div>
+                <Button variant="outline" size="sm" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
+                  {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                  Importar Transcrição
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
@@ -720,7 +726,21 @@ export default function ProposalDetails() {
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
               </div>
-              <div className="space-y-1.5"><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} /></div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Descrição da empresa</Label>
+                  <Button variant="outline" size="sm" disabled={isEnriching || !clientForm.client_name} onClick={async () => {
+                    try {
+                      const desc = await enrichClient(clientForm.client_name);
+                      if (desc) { setClientForm(p => ({ ...p, company_description: desc })); toast.success('Descrição preenchida com IA'); }
+                    } catch (err) { toast.error('Erro ao buscar descrição: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+                  }}>
+                    {isEnriching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Buscar com IA
+                  </Button>
+                </div>
+                <Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} />
+              </div>
             </CardContent>
             {clientDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
