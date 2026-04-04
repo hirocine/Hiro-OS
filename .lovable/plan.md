@@ -1,42 +1,34 @@
 
 
-# Banco de Depoimentos (igual ao padrão de Dores)
+# Melhorar Dialog do Banco de Depoimentos + Edição
 
-## Resumo
+## Problema
 
-Criar uma tabela `proposal_testimonials` no banco de dados e transformar a seção de Depoimento na página de detalhes para funcionar como a seção de Dores: o usuário abre um Dialog, navega pelo banco de depoimentos existentes, seleciona um, e ele é copiado para a proposta. Também pode criar depoimentos novos direto no banco.
+O Dialog de depoimentos está com layout simples (max-w-lg, sem estrutura de header/body separada), diferente do padrão visual do Banco de Dores (max-w-4xl, p-0, header com border-b, body com scroll independente). Além disso, não é possível editar depoimentos existentes no banco.
 
 ## Alterações
 
-### 1. Migration: criar tabela `proposal_testimonials`
+### 1. Hook: adicionar `updateTestimonial` mutation (`useTestimonials.ts`)
 
-Campos: `id`, `name` (texto), `role` (texto), `text` (texto), `image` (URL), `created_by`, `created_at`. RLS com acesso para authenticated. Seed com o depoimento padrão (Thiago Nigro).
+Adicionar mutation de update por id, invalidando a query após sucesso.
 
-### 2. Hook: `useTestimonials.ts`
+### 2. Dialog visual igual ao de Dores (`ProposalDetails.tsx`, linhas ~1328-1448)
 
-Seguir o padrão exato do `usePainPoints.ts`: query para listar todos, mutation para criar novo. Arquivo em `src/features/proposals/hooks/useTestimonials.ts`.
+- `max-w-lg` → `sm:max-w-2xl`
+- `p-0` com header separado (px-6 pt-6 pb-4 border-b) e body scrollável (px-6 py-4)
+- Cards dos depoimentos em grid com estilo igual aos cards de dores (border, hover:border-primary/30, selected state)
+- Avatar sempre visível com fallback de iniciais
+- Botão de editar (ícone Pencil) em cada card do banco, que abre o formulário de edição preenchido
 
-### 3. Tipo: adicionar `Testimonial` interface
+### 3. Estado de edição
 
-Em `src/features/proposals/types/index.ts`, adicionar:
-```ts
-interface Testimonial {
-  id: string; name: string; role: string; text: string;
-  image: string | null; created_by: string | null; created_at: string;
-}
-```
+- Adicionar `editingTestimonialId` state (string | null)
+- Quando clica em editar, preenche o form com dados do depoimento e mostra o formulário (reutiliza o form de criação)
+- Botão "Salvar alterações" chama `updateTestimonial` em vez de `createTestimonial`
 
-### 4. ProposalDetails.tsx - Substituir formulário por seleção
+### 4. Fluxo
 
-- Importar `useTestimonials`
-- Adicionar state `showTestimonialBank` (boolean)
-- Trocar os inputs de nome/cargo/texto por um card de preview do depoimento selecionado (com botão de remover)
-- Botão "Selecionar do Banco" abre Dialog com lista de depoimentos disponíveis (cards com foto, nome, cargo, trecho do texto)
-- Opção de "Criar novo depoimento" dentro do Dialog (formulário com nome, cargo, texto, upload de foto)
-- Ao selecionar, preenche `testimonialForm` com os dados e adiciona `testimonial_image`
-- Dirty check e save continuam funcionando como antes
-
-### 5. Upload de foto do depoimento
-
-No Dialog de criação de novo depoimento, incluir campo de upload de imagem (usando o mesmo padrão de upload do logo da proposta), salvando no storage do Supabase.
+- Clicar no card → seleciona para a proposta (como hoje)
+- Clicar no ícone de editar → abre formulário de edição inline
+- "Criar novo" → abre formulário em branco (como hoje)
 
