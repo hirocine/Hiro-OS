@@ -1120,7 +1120,11 @@ export default function ProposalDetails() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Ícone</Label>
                       <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue>
+                            {ICON_OPTIONS.find(o => o.value === ent.icone)?.label || ent.icone}
+                          </SelectValue>
+                        </SelectTrigger>
                         <SelectContent>
                           {ICON_OPTIONS.map(opt => (
                             <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
