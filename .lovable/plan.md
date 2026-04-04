@@ -1,41 +1,34 @@
 
 
-# Fix: Serviços Inclusos - merge dados salvos com categorias padrão
+# Separar Entregáveis e Serviços Inclusos em estados independentes
 
 ## Problema
 
-O banco de dados só tem 1 card no bloco "Serviços" (Pré-produção) porque o Wizard só salvou as categorias que tinham itens. O parsing atual usa os cards do banco diretamente, sem preencher as categorias faltantes (Gravação, Pós-produção).
+Atualmente, "Entregas (Output)" e "Serviços Inclusos" compartilham:
+- O mesmo estado (`entregaveisForm` com `{ entregaveis, incluso_categories }`)
+- O mesmo snapshot e dirty check (`entregaveisDirty`)
+- O mesmo `saveSection('entregaveis')` que salva os dois juntos
+
+Isso significa que ao alterar apenas um entregável, o botão "Salvar Serviços" também aparece (e vice-versa), e salvar um sempre salva o outro junto.
 
 ## Solução
 
-No parsing (linha ~228), após mapear os cards do banco, fazer um **merge** com `DEFAULT_INCLUSO_CATEGORIES`: para cada categoria padrão, usar os dados salvos se existirem, senão usar o default. Isso garante que as 3 colunas sempre apareçam.
+Separar em dois estados, dois snapshots, dois dirty checks e duas ações de save independentes. Ambos continuam salvando no mesmo campo `entregaveis` do banco (formato de blocos), mas cada seção controla apenas seu bloco.
 
-## Alteração
+## Alterações
 
-**Arquivo: `src/pages/ProposalDetails.tsx` (~linhas 228-235)**
+**Arquivo: `src/pages/ProposalDetails.tsx`**
 
-Substituir o mapeamento direto por um merge:
+1. **Estado**: Substituir `entregaveisForm: EntregaveisData` por dois estados separados:
+   - `outputForm: EntregavelItem[]` (entregas)
+   - `inclusoForm: InclusoCategory[]` (serviços)
+   - Dois snapshots: `outputSnapshot` e `inclusoSnapshot`
 
-```ts
-incluso_categories: (() => {
-  const savedCards = servicosBlock?.cards || [];
-  // Merge: para cada categoria padrão, usar dados salvos se existirem
-  return DEFAULT_INCLUSO_CATEGORIES.map(defaultCat => {
-    const saved = savedCards.find((c: any) =>
-      (c.titulo || c.categoria) === defaultCat.categoria
-    );
-    if (saved) {
-      return {
-        categoria: saved.titulo || saved.categoria,
-        icone: saved.icone || defaultCat.icone,
-        itens: saved.itens || defaultCat.itens,
-        subcategorias: saved.subcategorias || defaultCat.subcategorias,
-      };
-    }
-    return JSON.parse(JSON.stringify(defaultCat));
-  });
-})(),
-```
+2. **Parsing (useEffect)**: Popular cada estado separadamente a partir dos blocos do banco
 
-Isso garante que mesmo que o Wizard tenha salvo apenas 1 categoria, as 3 colunas (Pré-produção, Gravação, Pós-produção) apareçam com seus itens corretos.
+3. **Dirty checks**: Dois `useMemo` independentes — `outputDirty` e `inclusoDirty`
+
+4. **Save**: Dois handlers ou adaptar `saveSection` com `'output'` e `'incluso'`. Ambos reconstroem o array de blocos completo ao salvar (lendo o estado atual do outro para não sobrescrever)
+
+5. **UI**: Atualizar referências de `entregaveisForm.entregaveis` para `outputForm` e `entregaveisForm.incluso_categories` para `inclusoForm`. Botões de salvar condicionados ao respectivo dirty check
 
