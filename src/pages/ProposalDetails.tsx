@@ -531,7 +531,7 @@ export default function ProposalDetails() {
   // Entregaveis helpers
   const addEntregavel = () => setEntregaveisForm(prev => ({
     ...prev,
-    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: 'Video' }],
+    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }],
   }));
   const removeEntregavel = (i: number) => setEntregaveisForm(prev => ({
     ...prev,
@@ -1116,27 +1116,38 @@ export default function ProposalDetails() {
                   <button onClick={() => removeEntregavel(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-4 w-4" />
                   </button>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_2fr] gap-3 items-end">
                     <div className="space-y-1.5">
                       <Label className="text-xs">Ícone</Label>
-                      <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
-                        <SelectTrigger>
-                          <SelectValue>
-                            {ICON_OPTIONS.find(o => o.value === ent.icone)?.label || ent.icone}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ICON_OPTIONS.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="h-10 w-10 p-0 text-lg">
+                            {ent.icone || '🎬'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2" align="start">
+                          <div className="grid grid-cols-8 gap-1">
+                            {ICON_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => updateEntregavel(i, 'icone', opt.value)}
+                                className={`h-8 w-8 rounded-md flex items-center justify-center text-base transition-colors ${
+                                  ent.icone === opt.value ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                                }`}
+                              >
+                                {opt.value}
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">Quantidade</Label>
                       <Input value={ent.quantidade} onChange={e => updateEntregavel(i, 'quantidade', e.target.value)} placeholder="Ex: 3" />
                     </div>
-                    <div className="md:col-span-2 space-y-1.5">
+                    <div className="space-y-1.5">
                       <Label className="text-xs">Título</Label>
                       <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome da entrega" />
                     </div>
