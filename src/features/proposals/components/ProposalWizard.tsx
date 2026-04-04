@@ -497,6 +497,26 @@ export function ProposalWizard() {
                     <Label className="text-sm font-semibold">Dores do Cliente</Label>
                     <span className="text-xs text-muted-foreground">({selectedDores.length}/3)</span>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isSuggesting}
+                    onClick={async () => {
+                      try {
+                        const dores = await suggestPainPoints(form.client_name, form.project_name, form.objetivo);
+                        if (dores && dores.length > 0) {
+                          updateField('diagnostico_dores', dores.slice(0, 3));
+                          toast.success(`${dores.length} dores sugeridas pela IA!`);
+                        }
+                      } catch (err) {
+                        toast.error('Erro ao sugerir dores: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+                      }
+                    }}
+                  >
+                    {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Sugerir com IA
+                  </Button>
                 </div>
                 <p className="text-xs text-muted-foreground -mt-2">Selecione até 3 dores do banco ou adicione uma personalizada.</p>
 
