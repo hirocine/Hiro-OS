@@ -209,8 +209,8 @@ export default function ProposalDetails() {
     if (!proposal) return;
     setClientForm({
       project_number: proposal.project_number || '',
-      client_name: proposal.client_name,
-      project_name: proposal.project_name,
+      client_name: proposal.client_name || '',
+      project_name: proposal.project_name || '',
       client_responsible: proposal.client_responsible || '',
       whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
       company_description: proposal.company_description || '',
