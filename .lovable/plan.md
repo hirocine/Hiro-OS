@@ -1,92 +1,67 @@
 
+# Corrigir a fidelidade do PDF da proposta
 
-# Evitar quebra de conteúdo no PDF da proposta
+## Resumo
+O problema não é só visual: hoje o botão monta o PDF capturando cada filho da `.proposal-page` separadamente e inserindo vários PNGs no `jsPDF`. Por isso o resultado fica com fundo branco entre áreas, cara de “colagem” e pouca fidelidade ao site.
 
-## Problema
+## Melhor caminho
+Trocar o export atual por um documento PDF dedicado, usando a mesma identidade visual da página, mas organizado em páginas A4 explícitas e capturado 1 vez por página — não mais 1 vez por seção.
 
-O CSS atual só aplica `break-inside: avoid` em `<section>`, mas dentro das seções existem cards, grids e blocos menores que são cortados no meio ao imprimir. O browser não sabe quais elementos internos devem permanecer inteiros.
+## O que será feito
+1. Criar um `ProposalPdfDocument` novo
+- Componente offscreen, usado só na exportação.
+- Mesmos dados da proposta, mesmas cores, mesma estética.
+- Cada página terá fundo preto real e layout pensado para A4.
 
-## Solução: Granular break-inside rules no Print CSS
+2. Separar modo web e modo PDF
+- Reaproveitar os componentes públicos com um `pdfMode`/`variant="pdf"`.
+- No modo PDF:
+  - sem animações;
+  - sem `mask-image`, blur e hover;
+  - sem iframes;
+  - com thumbnail estática dos vídeos;
+  - com espaçamentos ajustados para papel.
 
-Adicionar regras de `break-inside: avoid` para todos os elementos internos que não devem ser cortados:
+3. Paginar por blocos reais
+- Montar páginas com blocos estáveis: hero, clientes, diagnóstico, rows de cases, grupos de entregáveis, investimento, próximos passos e footer.
+- Se um bloco não couber, ele vai para a próxima página.
+- Entregáveis/cases grandes serão quebrados entre cards/grupos, nunca no meio do card.
 
-### Arquivo: `src/index.css` (bloco `@media print`)
+4. Refazer o gerador do botão
+- `ProposalDownloadButton` vai capturar cada `.proposal-pdf-page` inteira com `html2canvas`.
+- Antes de adicionar a imagem no `jsPDF`, cada página será pintada de preto.
+- Sai a lógica atual de “várias seções + slices”, que é a causa do efeito de colagem.
 
-Adicionar após as regras existentes de cards/sections:
+5. Garantir assets confiáveis
+- Esperar fontes, imagens e thumbs antes de gerar.
+- Dar fallback melhor para logos/SVGs problemáticos no PDF.
+- No export, vídeo sempre entra congelado em thumb.
 
-```css
-/* Cards individuais — nunca cortar no meio */
-.proposal-page .bg-\\[\\#111\\] {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+## Detalhes técnicos
+- O fundo branco acontece porque a página do `jsPDF` continua branca e hoje só recebe imagens por cima.
+- A aparência de “imagens coladas” acontece porque o export atual faz `html2canvas(section)` para cada bloco da página.
+- As regras de `@media print` quase não ajudam no botão atual, porque ele não usa o fluxo de impressão do navegador; ele usa `html2canvas` no DOM normal.
+- Vou parar de depender de print CSS para o download e usar um DOM de exportação explícito e previsível.
 
-/* Grid rows — evitar corte entre cards de uma mesma linha */
-.proposal-page .grid {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+## Arquivos principais
+- `src/features/proposals/components/public/ProposalDownloadButton.tsx`
+- `src/features/proposals/components/public/ProposalPdfDocument.tsx` (novo)
+- `src/features/proposals/components/ProposalPublicPage.tsx`
+- `src/features/proposals/components/public/ProposalHero.tsx`
+- `src/features/proposals/components/public/ProposalClients.tsx`
+- `src/features/proposals/components/public/ProposalCases.tsx`
+- `src/features/proposals/components/public/ProposalEntregaveis.tsx`
+- `src/features/proposals/components/public/ProposalInvestimento.tsx`
+- `src/features/proposals/components/public/ProposalProximosPassos.tsx`
+- `src/features/proposals/components/public/ProposalFooter.tsx`
+- `src/index.css` (somente para estilos do documento PDF)
 
-/* Blocos de entregáveis (cada grupo label+título+grid) */
-.proposal-page .flex.flex-col.gap-16 > div {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+## Resultado esperado
+- fundo preto consistente em todas as páginas;
+- PDF com aparência de documento adaptado, não de colagem;
+- visual muito mais fiel ao site;
+- thumbs de vídeo funcionando no PDF;
+- menos bugs de conteúdo sumindo.
 
-/* Payment option cards */
-.proposal-page .rounded-2xl,
-.proposal-page .rounded-xl {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* Testimonial block */
-.proposal-page .border-l-2 {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* Cases cards */
-.proposal-page .aspect-video {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* Glow spots — esconder no print (são decorativos e podem causar overflow) */
-.proposal-page .blur-\\[120px\\] {
-  display: none !important;
-}
-
-/* Iframe de fundo de próximos passos — esconder no print */
-.proposal-page .rounded-t-\\[40px\\] iframe {
-  display: none !important;
-}
-
-/* Seções com overflow hidden podem causar corte — liberar para print */
-.proposal-page .overflow-hidden {
-  overflow: visible !important;
-}
-
-/* Dividers não devem gerar page break sozinhos */
-.proposal-page .border-b,
-.proposal-page .h-px {
-  break-after: avoid;
-  page-break-after: avoid;
-}
-```
-
-### Arquivo: `src/features/proposals/components/public/ProposalEntregaveis.tsx`
-
-Na seção de Entregáveis, os cards de serviços (com checklists longos) podem ser muito grandes para caber numa página. Para esses, permitir break mas forçar que cada `CheckItem` individual não quebre:
-
-- Adicionar `print:break-inside-auto` nos cards de serviços (que têm subcategorias longas)
-- Ou melhor: não mudar o componente, apenas confiar no CSS pois o Tailwind `print:` prefix resolve
-
-### Resultado esperado
-
-- Cards de entregáveis, cases e investimento nunca são cortados no meio
-- Seções grandes (Entregáveis com muitos cards) podem quebrar entre cards, mas nunca no meio de um card
-- Glow spots decorativos removidos no print
-- Iframe de vídeo de fundo removido no print
-- Overflow liberado para que o browser possa fazer page breaks corretamente
-
+## Observação
+Se no futuro você quiser um PDF com texto selecionável e fidelidade máxima de HTML/CSS, o caminho ideal seria geração server-side com Chromium. Mas, dentro da arquitetura atual, a melhor solução é este fluxo de documento PDF dedicado + captura por página.
