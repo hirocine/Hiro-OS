@@ -1132,10 +1132,10 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
-              {entregaveisForm.entregaveis.length === 0 && (
+              {outputForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma entrega adicionada.</p>
               )}
-              {entregaveisForm.entregaveis.map((ent, i) => (
+              {outputForm.map((ent, i) => (
                 <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
                   <button onClick={() => removeEntregavel(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-4 w-4" />
