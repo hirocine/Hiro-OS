@@ -376,7 +376,29 @@ export function ProposalWizard() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Descrição da Empresa</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium">Descrição da Empresa</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isEnriching || !form.client_name.trim()}
+                    onClick={async () => {
+                      try {
+                        const desc = await enrichClient(form.client_name);
+                        if (desc) {
+                          updateField('company_description', desc);
+                          toast.success('Descrição preenchida com IA!');
+                        }
+                      } catch (err) {
+                        toast.error('Erro ao buscar descrição: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+                      }
+                    }}
+                  >
+                    {isEnriching ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Buscar com IA
+                  </Button>
+                </div>
                 <Textarea
                   value={form.company_description}
                   onChange={e => updateField('company_description', e.target.value)}
@@ -386,6 +408,64 @@ export function ProposalWizard() {
                 />
                 <p className="text-xs text-muted-foreground">Aparece como subtítulo no hero da proposta</p>
               </div>
+
+              <Separator />
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTranscriptModal(true)}
+                disabled={isParsing}
+              >
+                {isParsing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                Importar Transcrição
+              </Button>
+
+              {/* Transcript Modal */}
+              <Dialog open={showTranscriptModal} onOpenChange={setShowTranscriptModal}>
+                <DialogContent className="max-w-2xl max-h-[90vh]">
+                  <DialogHeader>
+                    <DialogTitle>Importar Transcrição de Reunião</DialogTitle>
+                  </DialogHeader>
+                  <Textarea
+                    value={transcriptText}
+                    onChange={e => setTranscriptText(e.target.value)}
+                    rows={12}
+                    placeholder="Cole aqui a transcrição da reunião de briefing..."
+                    className="text-sm"
+                  />
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowTranscriptModal(false)}>Cancelar</Button>
+                    <Button
+                      disabled={isParsing || !transcriptText.trim()}
+                      onClick={async () => {
+                        try {
+                          const result = await parseTranscript(transcriptText);
+                          if (result.client_name) updateField('client_name', result.client_name);
+                          if (result.project_name) updateField('project_name', result.project_name);
+                          if (result.client_responsible) updateField('client_responsible', result.client_responsible);
+                          if (result.objetivo) updateField('objetivo', result.objetivo);
+                          if (result.diagnostico_dores && result.diagnostico_dores.length > 0) {
+                            updateField('diagnostico_dores', result.diagnostico_dores.slice(0, 3));
+                          }
+                          if (result.entregaveis && result.entregaveis.length > 0) {
+                            updateField('entregaveis', result.entregaveis);
+                          }
+                          setShowTranscriptModal(false);
+                          setTranscriptText('');
+                          toast.success('Transcrição processada! Campos preenchidos com sucesso.');
+                        } catch (err) {
+                          toast.error('Erro ao processar transcrição: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+                        }
+                      }}
+                    >
+                      {isParsing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                      Processar
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
 
