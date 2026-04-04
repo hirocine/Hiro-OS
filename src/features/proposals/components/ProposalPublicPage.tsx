@@ -51,6 +51,7 @@ export function ProposalPublicPage() {
         <ProposalDownloadButton
           whatsappNumber={proposal.whatsapp_number}
           projectName={proposal.project_name}
+          proposal={proposal}
         />
       </div>
 
