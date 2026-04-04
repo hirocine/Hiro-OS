@@ -190,8 +190,10 @@ export default function ProposalDetails() {
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '' });
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
   const [casesForm, setCasesForm] = useState<CaseItem[]>([]);
-  const [entregaveisForm, setEntregaveisForm] = useState<EntregaveisData>({ entregaveis: [], incluso_categories: [] });
-  const [entregaveisSnapshot, setEntregaveisSnapshot] = useState('');
+  const [outputForm, setOutputForm] = useState<EntregavelItem[]>([]);
+  const [outputSnapshot, setOutputSnapshot] = useState('');
+  const [inclusoForm, setInclusoForm] = useState<InclusoCategory[]>([]);
+  const [inclusoSnapshot, setInclusoSnapshot] = useState('');
 
   // Populate forms when proposal loads
   useEffect(() => {
@@ -256,9 +258,10 @@ export default function ProposalDetails() {
     } else {
       parsed = { entregaveis: [], incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)) };
     }
-    setEntregaveisForm(parsed);
-    setEntregaveisSnapshot(JSON.stringify(parsed));
-  }, [proposal]);
+    setOutputForm(parsed.entregaveis);
+    setOutputSnapshot(JSON.stringify(parsed.entregaveis));
+    setInclusoForm(parsed.incluso_categories);
+    setInclusoSnapshot(JSON.stringify(parsed.incluso_categories));
 
   // Dirty checks
   const clientDirty = useMemo(() => {
@@ -302,10 +305,15 @@ export default function ProposalDetails() {
     return JSON.stringify(casesForm) !== JSON.stringify(original);
   }, [casesForm, proposal]);
 
-  const entregaveisDirty = useMemo(() => {
+  const outputDirty = useMemo(() => {
     if (!proposal) return false;
-    return JSON.stringify(entregaveisForm) !== entregaveisSnapshot;
-  }, [entregaveisForm, entregaveisSnapshot, proposal]);
+    return JSON.stringify(outputForm) !== outputSnapshot;
+  }, [outputForm, outputSnapshot, proposal]);
+
+  const inclusoDirty = useMemo(() => {
+    if (!proposal) return false;
+    return JSON.stringify(inclusoForm) !== inclusoSnapshot;
+  }, [inclusoForm, inclusoSnapshot, proposal]);
 
   // Group bank by category
   const categoryOrder = [
@@ -410,12 +418,18 @@ export default function ProposalDetails() {
         data = { diagnostico_dores: doresForm };
       } else if (section === 'cases') {
         data = { cases: casesForm };
-      } else if (section === 'entregaveis') {
-        // Save in wizard block format for compatibility with public page
+      } else if (section === 'output') {
         data = {
           entregaveis: [
-            { label: 'Output', titulo: 'Entregas do Projeto', itens: entregaveisForm.entregaveis },
-            { label: 'Serviços', titulo: 'O que está incluso', cards: entregaveisForm.incluso_categories },
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: outputForm },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: inclusoForm },
+          ],
+        };
+      } else if (section === 'incluso') {
+        data = {
+          entregaveis: [
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: outputForm },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: inclusoForm },
           ],
         };
       }
@@ -548,24 +562,15 @@ export default function ProposalDetails() {
 
 
   // Entregaveis helpers
-  const addEntregavel = () => setEntregaveisForm(prev => ({
-    ...prev,
-    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }],
-  }));
-  const removeEntregavel = (i: number) => setEntregaveisForm(prev => ({
-    ...prev,
-    entregaveis: prev.entregaveis.filter((_, idx) => idx !== i),
-  }));
+  const addEntregavel = () => setOutputForm(prev => [...prev, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }]);
+  const removeEntregavel = (i: number) => setOutputForm(prev => prev.filter((_, idx) => idx !== i));
   const updateEntregavel = (i: number, field: keyof EntregavelItem, value: string) =>
-    setEntregaveisForm(prev => ({
-      ...prev,
-      entregaveis: prev.entregaveis.map((e, idx) => idx === i ? { ...e, [field]: value } : e),
-    }));
+    setOutputForm(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
 
   // Incluso toggle helper
   const toggleInclusoItem = (catIdx: number, itemIdx: number, subIdx?: number) => {
-    setEntregaveisForm(prev => {
-      const cats = JSON.parse(JSON.stringify(prev.incluso_categories));
+    setInclusoForm(prev => {
+      const cats = JSON.parse(JSON.stringify(prev));
       const cat = cats[catIdx];
       if (subIdx !== undefined && cat.subcategorias) {
         const item = cat.subcategorias[subIdx].itens[itemIdx];
@@ -573,7 +578,7 @@ export default function ProposalDetails() {
       } else if (cat.itens) {
         cat.itens[itemIdx].ativo = !cat.itens[itemIdx].ativo;
       }
-      return { ...prev, incluso_categories: cats };
+      return cats;
     });
   };
 
@@ -1127,10 +1132,10 @@ export default function ProposalDetails() {
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
-              {entregaveisForm.entregaveis.length === 0 && (
+              {outputForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma entrega adicionada.</p>
               )}
-              {entregaveisForm.entregaveis.map((ent, i) => (
+              {outputForm.map((ent, i) => (
                 <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
                   <button onClick={() => removeEntregavel(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-4 w-4" />
@@ -1177,9 +1182,9 @@ export default function ProposalDetails() {
                 </div>
               ))}
             </CardContent>
-            {entregaveisDirty && (
+            {outputDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('entregaveis')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => saveSection('output')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
                 </Button>
               </CardFooter>
@@ -1196,7 +1201,7 @@ export default function ProposalDetails() {
             </CardHeader>
             <CardContent className="pt-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {entregaveisForm.incluso_categories.map((cat, catIdx) => (
+                {inclusoForm.map((cat, catIdx) => (
                   <div key={catIdx} className="space-y-3">
                     <h4 className="text-sm font-semibold">{cat.categoria}</h4>
                     {cat.itens && (
@@ -1232,9 +1237,9 @@ export default function ProposalDetails() {
                 ))}
               </div>
             </CardContent>
-            {entregaveisDirty && (
+            {inclusoDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('entregaveis')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => saveSection('incluso')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
                 </Button>
               </CardFooter>
