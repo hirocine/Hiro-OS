@@ -1119,7 +1119,15 @@ export default function ProposalDetails() {
                   <button onClick={() => removeEntregavel(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-4 w-4" />
                   </button>
-                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_2fr] gap-3 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto] gap-3 items-end">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Título</Label>
+                      <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome da entrega" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Quantidade</Label>
+                      <Input value={ent.quantidade} onChange={e => updateEntregavel(i, 'quantidade', e.target.value)} placeholder="Ex: 3" />
+                    </div>
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -1127,7 +1135,7 @@ export default function ProposalDetails() {
                             {ent.icone || '🎬'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-2" align="start">
+                        <PopoverContent className="w-auto p-2" align="end">
                           <div className="grid grid-cols-8 gap-1">
                             {ICON_OPTIONS.map(opt => (
                               <button
@@ -1144,14 +1152,6 @@ export default function ProposalDetails() {
                           </div>
                         </PopoverContent>
                       </Popover>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Quantidade</Label>
-                      <Input value={ent.quantidade} onChange={e => updateEntregavel(i, 'quantidade', e.target.value)} placeholder="Ex: 3" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Título</Label>
-                      <Input value={ent.titulo} onChange={e => updateEntregavel(i, 'titulo', e.target.value)} placeholder="Nome da entrega" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
