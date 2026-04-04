@@ -464,31 +464,7 @@ html, body {
   animation: marquee 20s linear infinite;
 }
 
-/* Print styles for proposal PDF export */
-@media print {
-  .print\\:hidden {
-    display: none !important;
-  }
-
-  body {
-    background: white !important;
-    color: black !important;
-  }
-
-  .proposal-content {
-    background: white !important;
-    color: #111 !important;
-  }
-
-  .proposal-content * {
-    color: #111 !important;
-  }
-
-  .proposal-content section {
-    border-color: #e5e5e5 !important;
-    page-break-inside: avoid;
-  }
-}
+/* Print styles — removed old white-background block (proposal uses dark print below) */
 
 /* ========================================
    PROPOSAL V2 — Scoped Styles
