@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
-  AlertTriangle, Briefcase, Package, Plus, X, Check
+  AlertTriangle, Briefcase, Package, Plus, X, Check, Pencil
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -173,7 +173,7 @@ export default function ProposalDetails() {
   const { updateProposal, deleteProposal } = useProposals();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
-  const { data: testimonialsBank = [], createTestimonial } = useTestimonials();
+  const { data: testimonialsBank = [], createTestimonial, updateTestimonial } = useTestimonials();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showDoresBank, setShowDoresBank] = useState(false);
@@ -191,6 +191,7 @@ export default function ProposalDetails() {
   const [showNewTestimonial, setShowNewTestimonial] = useState(false);
   const [newTestimonialForm, setNewTestimonialForm] = useState({ name: '', role: '', text: '', image: '' });
   const [uploadingTestimonialImage, setUploadingTestimonialImage] = useState(false);
+  const [editingTestimonialId, setEditingTestimonialId] = useState<string | null>(null);
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
@@ -1326,124 +1327,162 @@ export default function ProposalDetails() {
           </Card>
 
           {/* Testimonial Bank Dialog */}
-          <Dialog open={showTestimonialBank} onOpenChange={setShowTestimonialBank}>
-            <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
+          <Dialog open={showTestimonialBank} onOpenChange={(open) => { setShowTestimonialBank(open); if (!open) { setShowNewTestimonial(false); setEditingTestimonialId(null); } }}>
+            <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0">
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
                 <DialogTitle>Banco de Depoimentos</DialogTitle>
+                <div className="pt-3">
+                  <Input
+                    value={testimonialBankSearch}
+                    onChange={e => setTestimonialBankSearch(e.target.value)}
+                    placeholder="Buscar por nome..."
+                    className="h-9"
+                  />
+                </div>
               </DialogHeader>
-              <Input placeholder="Buscar por nome..." value={testimonialBankSearch} onChange={e => setTestimonialBankSearch(e.target.value)} className="mb-3" />
 
-              {!showNewTestimonial ? (
-                <>
-                  <div className="space-y-2 max-h-[40vh] overflow-y-auto">
-                    {testimonialsBank
-                      .filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase()))
-                      .map(t => (
-                        <button
-                          key={t.id}
-                          className="w-full text-left border rounded-lg p-3 hover:bg-muted/50 transition-colors flex gap-3 items-start"
-                          onClick={() => {
-                            setTestimonialForm({
-                              testimonial_name: t.name,
-                              testimonial_role: t.role,
-                              testimonial_text: t.text,
-                              testimonial_image: t.image || '',
-                            });
-                            setShowTestimonialBank(false);
-                          }}
-                        >
-                          {t.image && (
-                            <Avatar className="h-10 w-10 shrink-0">
-                              <AvatarImage src={t.image} />
-                              <AvatarFallback>{t.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm">{t.name}</p>
-                            {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">"{t.text}"</p>
-                          </div>
-                        </button>
-                      ))}
-                    {testimonialsBank.filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase())).length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-4">Nenhum depoimento encontrado</p>
-                    )}
-                  </div>
-                  <Button variant="outline" className="w-full mt-3" onClick={() => { setShowNewTestimonial(true); setNewTestimonialForm({ name: '', role: '', text: '', image: '' }); }}>
-                    <Plus className="h-4 w-4 mr-2" /> Criar novo depoimento
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nome *</Label>
-                    <Input value={newTestimonialForm.name} onChange={e => setNewTestimonialForm(p => ({ ...p, name: e.target.value }))} placeholder="Nome da pessoa" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Cargo</Label>
-                    <Input value={newTestimonialForm.role} onChange={e => setNewTestimonialForm(p => ({ ...p, role: e.target.value }))} placeholder="Cargo, Empresa" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Texto do depoimento *</Label>
-                    <Textarea value={newTestimonialForm.text} onChange={e => setNewTestimonialForm(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que a pessoa disse..." />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Foto</Label>
-                    <div className="flex items-center gap-3">
-                      {newTestimonialForm.image && (
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={newTestimonialForm.image} />
-                          <AvatarFallback>{newTestimonialForm.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                {!showNewTestimonial ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-2">
+                      {testimonialsBank
+                        .filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase()))
+                        .map(t => {
+                          const isSelected = testimonialForm.testimonial_name === t.name && testimonialForm.testimonial_text === t.text;
+                          return (
+                            <div
+                              key={t.id}
+                              className={`relative text-left border rounded-lg p-3 transition-all flex gap-3 items-start cursor-pointer ${
+                                isSelected
+                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                                  : 'border-border hover:border-primary/30'
+                              }`}
+                              onClick={() => {
+                                setTestimonialForm({
+                                  testimonial_name: t.name,
+                                  testimonial_role: t.role,
+                                  testimonial_text: t.text,
+                                  testimonial_image: t.image || '',
+                                });
+                                setShowTestimonialBank(false);
+                              }}
+                            >
+                              <Avatar className="h-10 w-10 shrink-0">
+                                <AvatarImage src={t.image || undefined} />
+                                <AvatarFallback className="text-xs">{t.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-sm flex-1">{t.name}</p>
+                                  {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                                </div>
+                                {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">"{t.text}"</p>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="shrink-0 h-7 w-7 opacity-50 hover:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTestimonialId(t.id);
+                                  setNewTestimonialForm({ name: t.name, role: t.role, text: t.text, image: t.image || '' });
+                                  setShowNewTestimonial(true);
+                                }}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      {testimonialsBank.filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase())).length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">Nenhum depoimento encontrado</p>
                       )}
-                      <Button variant="outline" size="sm" disabled={uploadingTestimonialImage} onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.onchange = async (e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0];
-                          if (!file) return;
-                          setUploadingTestimonialImage(true);
-                          try {
-                            const ext = file.name.split('.').pop();
-                            const path = `testimonials/${crypto.randomUUID()}.${ext}`;
-                            const { error } = await supabase.storage.from('orcamentos').upload(path, file, { upsert: true });
-                            if (error) throw error;
-                            const { data: urlData } = supabase.storage.from('orcamentos').getPublicUrl(path);
-                            setNewTestimonialForm(p => ({ ...p, image: urlData.publicUrl }));
-                          } catch (err) {
-                            toast.error('Erro ao fazer upload da foto');
-                          } finally {
-                            setUploadingTestimonialImage(false);
+                    </div>
+                    <div className="border-t border-border pt-4 mt-4">
+                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setShowNewTestimonial(true); setEditingTestimonialId(null); setNewTestimonialForm({ name: '', role: '', text: '', image: '' }); }}>
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Criar novo depoimento
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">{editingTestimonialId ? 'Editar depoimento' : 'Novo depoimento'}</h4>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nome *</Label>
+                      <Input value={newTestimonialForm.name} onChange={e => setNewTestimonialForm(p => ({ ...p, name: e.target.value }))} placeholder="Nome da pessoa" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Cargo</Label>
+                      <Input value={newTestimonialForm.role} onChange={e => setNewTestimonialForm(p => ({ ...p, role: e.target.value }))} placeholder="Cargo, Empresa" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Texto do depoimento *</Label>
+                      <Textarea value={newTestimonialForm.text} onChange={e => setNewTestimonialForm(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que a pessoa disse..." />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Foto</Label>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={newTestimonialForm.image || undefined} />
+                          <AvatarFallback className="text-xs">{newTestimonialForm.name.charAt(0) || '?'}</AvatarFallback>
+                        </Avatar>
+                        <Button variant="outline" size="sm" disabled={uploadingTestimonialImage} onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = async (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (!file) return;
+                            setUploadingTestimonialImage(true);
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const path = `testimonials/${crypto.randomUUID()}.${ext}`;
+                              const { error } = await supabase.storage.from('orcamentos').upload(path, file, { upsert: true });
+                              if (error) throw error;
+                              const { data: urlData } = supabase.storage.from('orcamentos').getPublicUrl(path);
+                              setNewTestimonialForm(p => ({ ...p, image: urlData.publicUrl }));
+                            } catch (err) {
+                              toast.error('Erro ao fazer upload da foto');
+                            } finally {
+                              setUploadingTestimonialImage(false);
+                            }
+                          };
+                          input.click();
+                        }}>
+                          <Upload className="h-3.5 w-3.5 mr-1.5" /> {uploadingTestimonialImage ? 'Enviando...' : 'Upload'}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2 border-t border-border">
+                      <Button variant="ghost" size="sm" onClick={() => { setShowNewTestimonial(false); setEditingTestimonialId(null); }}>Voltar</Button>
+                      <Button size="sm" disabled={!newTestimonialForm.name.trim() || !newTestimonialForm.text.trim() || createTestimonial.isPending || updateTestimonial.isPending} onClick={async () => {
+                        try {
+                          const payload = {
+                            name: newTestimonialForm.name.trim(),
+                            role: newTestimonialForm.role.trim(),
+                            text: newTestimonialForm.text.trim(),
+                            image: newTestimonialForm.image || null,
+                          };
+                          if (editingTestimonialId) {
+                            await updateTestimonial.mutateAsync({ id: editingTestimonialId, ...payload });
+                            toast.success('Depoimento atualizado!');
+                          } else {
+                            await createTestimonial.mutateAsync(payload);
+                            toast.success('Depoimento criado no banco!');
                           }
-                        };
-                        input.click();
+                          setShowNewTestimonial(false);
+                          setEditingTestimonialId(null);
+                        } catch {
+                          toast.error('Erro ao salvar depoimento');
+                        }
                       }}>
-                        <Upload className="h-3.5 w-3.5 mr-1.5" /> {uploadingTestimonialImage ? 'Enviando...' : 'Upload'}
+                        <Check className="h-3.5 w-3.5 mr-1.5" /> {editingTestimonialId ? 'Salvar alterações' : 'Salvar no banco'}
                       </Button>
                     </div>
                   </div>
-                  <DialogFooter className="gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setShowNewTestimonial(false)}>Voltar</Button>
-                    <Button size="sm" disabled={!newTestimonialForm.name.trim() || !newTestimonialForm.text.trim() || createTestimonial.isPending} onClick={async () => {
-                      try {
-                        await createTestimonial.mutateAsync({
-                          name: newTestimonialForm.name.trim(),
-                          role: newTestimonialForm.role.trim(),
-                          text: newTestimonialForm.text.trim(),
-                          image: newTestimonialForm.image || null,
-                        });
-                        toast.success('Depoimento criado no banco!');
-                        setShowNewTestimonial(false);
-                      } catch {
-                        toast.error('Erro ao criar depoimento');
-                      }
-                    }}>
-                      <Check className="h-3.5 w-3.5 mr-1.5" /> Salvar no banco
-                    </Button>
-                  </DialogFooter>
-                </div>
-              )}
+                )}
+              </div>
             </DialogContent>
           </Dialog>
         </div>
