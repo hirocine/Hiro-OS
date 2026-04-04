@@ -831,6 +831,7 @@ export default function ProposalDetails() {
                     <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
                   </Button>
                 </div>
+              </div>
             </CardHeader>
             <CardContent className="pt-2">
               {doresForm.length === 0 ? (
