@@ -173,7 +173,7 @@ export default function ProposalDetails() {
   const { updateProposal, deleteProposal } = useProposals();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
-  const { data: testimonialsBank = [], createTestimonial } = useTestimonials();
+  const { data: testimonialsBank = [], createTestimonial, updateTestimonial } = useTestimonials();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [showDoresBank, setShowDoresBank] = useState(false);
