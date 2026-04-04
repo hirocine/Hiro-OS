@@ -258,9 +258,10 @@ export default function ProposalDetails() {
     } else {
       parsed = { entregaveis: [], incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)) };
     }
-    setEntregaveisForm(parsed);
-    setEntregaveisSnapshot(JSON.stringify(parsed));
-  }, [proposal]);
+    setOutputForm(parsed.entregaveis);
+    setOutputSnapshot(JSON.stringify(parsed.entregaveis));
+    setInclusoForm(parsed.incluso_categories);
+    setInclusoSnapshot(JSON.stringify(parsed.incluso_categories));
 
   // Dirty checks
   const clientDirty = useMemo(() => {
