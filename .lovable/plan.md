@@ -1,44 +1,27 @@
 
 
-# Diagnóstico: Página pública mostrando versão antiga (Service Worker cache)
+# Ajustes no campo WhatsApp e botão de aprovação
 
-## Problema encontrado
+## Problemas identificados
 
-A página pública da proposta (`/orcamento/:slug`) está exibindo o layout antigo (com `HeroSection`, `UrgencyBar`, grid pattern, "Nº 256", "HIRO FILMS®", "PROPOSTA DE INVESTIMENTO") que **já não existe mais no código atual**.
-
-O código atual está correto -- `ProposalPublicPage` usa o novo `ProposalHero` com bg.png e animações. O problema é o **Service Worker (VitePWA)** que está cacheando a build antiga e servindo assets desatualizados.
-
-## Causa raiz
-
-O projeto usa `VitePWA` com `registerType: 'autoUpdate'` e workbox configurado para cachear `**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff2,woff}`. O navegador do usuário tem um SW ativo com a versão antiga do bundle.
+1. **Label do campo**: Está como "WhatsApp", deveria ser "WhatsApp para Aprovação"
+2. **Formatação do número**: O campo não formata automaticamente (ex: `(11) 95151-3862`)
+3. **Botão na proposta pública não abre WhatsApp**: O número salvo é `5511951513862` (com código do país), mas o `wa.me` precisa do formato `+5511951513862` ou apenas digits sem o `+`. O problema real é que o número pode conter caracteres de formatação que quebram a URL.
 
 ## Solução
 
-### 1. Limpeza imediata (para o usuário)
-- Abrir DevTools > Application > Service Workers > "Unregister"
-- Hard refresh (Cmd+Shift+R)
-- Ou: abrir em aba anônima
+### 1. Renomear label (ProposalDetails.tsx, linha 627)
+- Alterar `"WhatsApp"` para `"WhatsApp para Aprovação"`
 
-### 2. Limpeza de código morto
-Remover componentes que não são mais importados em lugar nenhum:
-- `src/features/proposals/components/HeroSection.tsx` -- layout antigo do hero (V1)
-- `src/features/proposals/components/UrgencyBar.tsx` -- barra amarela de expiração (V1)
-- `src/features/proposals/components/ProposalHeader.tsx` -- header antigo (V1)
+### 2. Formatar número automaticamente no input (ProposalDetails.tsx)
+- Aplicar máscara brasileira no `onChange`: ao digitar, formatar como `(XX) XXXXX-XXXX`
+- Ao salvar, limpar para apenas dígitos
 
-### 3. Forçar invalidação do cache do SW
-Adicionar `version` no `VitePWA` config ou um `skipWaiting` mais agressivo no `vite.config.ts`:
-
-```
-workbox: {
-  skipWaiting: true,
-  clientsClaim: true,
-  ...
-}
-```
-
-Isso garante que novas builds tomem controle imediato do SW sem esperar o reload.
+### 3. Corrigir URL do WhatsApp (ProposalDownloadButton.tsx)
+- Sanitizar o número removendo tudo que não é dígito antes de montar a URL `wa.me`
+- Garantir que o formato final seja apenas números (ex: `5511951513862`)
 
 ## Arquivos alterados
-- `vite.config.ts` -- adicionar `skipWaiting: true` e `clientsClaim: true`
-- Deletar 3 componentes mortos (HeroSection, UrgencyBar, ProposalHeader)
+- `src/pages/ProposalDetails.tsx` -- label + máscara de formatação no input
+- `src/features/proposals/components/public/ProposalDownloadButton.tsx` -- sanitizar número na URL
 
