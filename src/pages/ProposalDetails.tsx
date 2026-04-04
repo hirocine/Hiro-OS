@@ -531,7 +531,7 @@ export default function ProposalDetails() {
   // Entregaveis helpers
   const addEntregavel = () => setEntregaveisForm(prev => ({
     ...prev,
-    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: 'Video' }],
+    entregaveis: [...prev.entregaveis, { titulo: '', descricao: '', quantidade: '', icone: '🎬' }],
   }));
   const removeEntregavel = (i: number) => setEntregaveisForm(prev => ({
     ...prev,

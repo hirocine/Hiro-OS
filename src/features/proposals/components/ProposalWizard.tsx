@@ -160,7 +160,7 @@ export function ProposalWizard() {
   };
 
   // Entregavel helpers
-  const addEntregavel = () => updateField('entregaveis', [...form.entregaveis, { titulo: '', descricao: '', quantidade: '1', icone: 'Video' }]);
+  const addEntregavel = () => updateField('entregaveis', [...form.entregaveis, { titulo: '', descricao: '', quantidade: '1', icone: '🎬' }]);
   const removeEntregavel = (idx: number) => updateField('entregaveis', form.entregaveis.filter((_, i) => i !== idx));
   const updateEntregavel = (idx: number, field: keyof EntregavelItem, value: string) => {
     const u = [...form.entregaveis]; u[idx] = { ...u[idx], [field]: value }; updateField('entregaveis', u);
