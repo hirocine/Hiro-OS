@@ -567,7 +567,7 @@ export default function ProposalDetails() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}`, '_blank')}>
+            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
               <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
             </Button>
           </div>

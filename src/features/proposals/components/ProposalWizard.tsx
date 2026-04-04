@@ -221,7 +221,7 @@ export function ProposalWizard() {
           <Button variant="outline" onClick={() => navigator.clipboard.writeText(publicUrl).then(() => import('sonner').then(m => m.toast.success('Link copiado!')))}>
             Copiar Link
           </Button>
-          <Button onClick={() => window.open(`/orcamento/${generatedSlug}`, '_blank')}>
+          <Button onClick={() => window.open(`/orcamento/${generatedSlug}?v=${Date.now()}`, '_blank')}>
             Ver Proposta
           </Button>
           <Button variant="secondary" onClick={() => navigate('/orcamentos')}>

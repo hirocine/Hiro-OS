@@ -37,7 +37,8 @@ export function ProposalCard({ proposal, onDelete }: Props) {
   };
 
   const handleOpenProposal = () => {
-    window.open(`/orcamento/${proposal.slug}`, '_blank');
+    const url = `/orcamento/${proposal.slug}?v=${Date.now()}`;
+    window.open(url, '_blank');
   };
 
   return (

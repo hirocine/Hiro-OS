@@ -73,6 +73,10 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
+            urlPattern: /^\/orcamento\/.*/,
+            handler: 'NetworkOnly',
+          },
+          {
             urlPattern: /^\/.*$/,
             handler: 'NetworkFirst',
             options: {
