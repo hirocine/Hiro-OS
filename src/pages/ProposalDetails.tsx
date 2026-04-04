@@ -1291,12 +1291,10 @@ export default function ProposalDetails() {
             <CardContent className="pt-2">
               {testimonialForm.testimonial_name ? (
                 <div className="border rounded-xl bg-muted/30 p-5 flex gap-4 items-start">
-                  {testimonialForm.testimonial_image && (
-                    <Avatar className="h-14 w-14 shrink-0">
-                      <AvatarImage src={testimonialForm.testimonial_image} />
-                      <AvatarFallback>{testimonialForm.testimonial_name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  )}
+                  <Avatar className="h-14 w-14 shrink-0">
+                    <AvatarImage src={testimonialForm.testimonial_image || undefined} />
+                    <AvatarFallback>{testimonialForm.testimonial_name.charAt(0)}</AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-sm">{testimonialForm.testimonial_name}</p>
