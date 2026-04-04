@@ -35,12 +35,20 @@ export function ProposalCases({ cases }: Props) {
             className='relative rounded-2xl overflow-hidden bg-gray-900 transition-all duration-400 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)] group aspect-video'
           >
             {item.vimeoId && (
-              <iframe
-                src={`https://player.vimeo.com/video/${item.vimeoId}?h=${item.vimeoHash || ''}&title=0&byline=0&portrait=0&background=1&muted=1`}
-                className='absolute inset-0 w-full h-full pointer-events-none'
-                tabIndex={-1}
-                loading='lazy'
-              />
+              <>
+                <iframe
+                  src={`https://player.vimeo.com/video/${item.vimeoId}?h=${item.vimeoHash || ''}&title=0&byline=0&portrait=0&background=1&muted=1`}
+                  className='absolute inset-0 w-full h-full pointer-events-none proposal-video-iframe'
+                  tabIndex={-1}
+                  loading='lazy'
+                />
+                {/* Print fallback: static thumbnail */}
+                <img
+                  src={`https://vumbnail.com/${item.vimeoId}.jpg`}
+                  alt={item.titulo || ''}
+                  className='absolute inset-0 w-full h-full object-cover hidden proposal-video-thumb'
+                />
+              </>
             )}
             <div className='absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-6 md:p-8'>
               <h3 className='text-lg font-bold'>{item.titulo}</h3>

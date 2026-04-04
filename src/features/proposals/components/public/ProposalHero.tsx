@@ -113,7 +113,7 @@ export function ProposalHero({ clientName, projectName, validityDate, createdAt,
         <div className='hidden md:block w-px h-10 bg-gray-700 self-center' />
         <InfoItem label='Validade' value={validityDays} />
 
-        <div className='hidden md:flex flex-col items-center gap-1.5 ml-auto proposal-bounce-slow'>
+        <div className='hidden md:flex flex-col items-center gap-1.5 ml-auto proposal-bounce-slow no-print'>
           <span className='text-[10px] uppercase tracking-[3px] text-gray-500'>Scroll</span>
           <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' className='text-gray-500'>
             <path d='M7 13l5 5 5-5M7 6l5 5 5-5' />
