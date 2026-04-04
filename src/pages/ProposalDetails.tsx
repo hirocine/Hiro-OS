@@ -817,10 +817,20 @@ export default function ProposalDetails() {
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-base">Dores do Cliente</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={openDoresBank}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
-                </Button>
-              </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" disabled={isSuggesting} onClick={async () => {
+                    try {
+                      const dores = await suggestPainPoints(clientForm.client_name, clientForm.project_name, diagForm.objetivo);
+                      if (dores.length > 0) { setDoresForm(dores); toast.success(`${dores.length} dores sugeridas pela IA`); }
+                    } catch (err) { toast.error('Erro ao sugerir dores: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+                  }}>
+                    {isSuggesting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Sugerir com IA
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={openDoresBank}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
+                  </Button>
+                </div>
             </CardHeader>
             <CardContent className="pt-2">
               {doresForm.length === 0 ? (
