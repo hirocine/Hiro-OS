@@ -1292,6 +1292,36 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_testimonials: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          image: string | null
+          name: string
+          role: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image?: string | null
+          name: string
+          role?: string
+          text?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image?: string | null
+          name?: string
+          role?: string
+          text?: string
+        }
+        Relationships: []
+      }
       saved_filters: {
         Row: {
           created_at: string
