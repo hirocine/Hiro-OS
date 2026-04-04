@@ -202,7 +202,7 @@ function PdfDiagnostico({ proposal }: { proposal: Proposal }) {
           {dores.map((d, i) => (
             <div key={i} style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <PdfCenteredEmoji emoji={d.label || '⭐'} size={36} fontSize={18} />
+                <PdfCenteredEmoji emoji={d.label || '⭐'} size={40} fontSize={20} />
                 <div>
                   <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{d.title}</h4>
                   <p style={{ fontSize: 11, color: '#999', lineHeight: 1.5 }}>{d.desc}</p>
@@ -281,8 +281,8 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                     <div key={idx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                         {isEmoji
-                          ? <PdfCenteredEmoji emoji={item.icone} size={34} fontSize={16} />
-                          : Icon && <PdfCenteredIcon Icon={Icon} size={34} iconSize={16} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
+                          ? <PdfCenteredEmoji emoji={item.icone} size={40} fontSize={20} />
+                          : Icon && <PdfCenteredIcon Icon={Icon} size={40} iconSize={20} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
                         }
                         {item.quantidade && <span style={{ fontSize: 24, fontWeight: 800, color: 'rgba(76,255,92,0.2)', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{item.quantidade}</span>}
                       </div>
@@ -302,8 +302,8 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                     <div key={cIdx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ marginBottom: 12 }}>
                         {isEmoji
-                          ? <PdfCenteredEmoji emoji={card.icone} size={34} fontSize={16} />
-                          : Icon && <PdfCenteredIcon Icon={Icon} size={34} iconSize={16} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
+                          ? <PdfCenteredEmoji emoji={card.icone} size={40} fontSize={20} />
+                          : Icon && <PdfCenteredIcon Icon={Icon} size={40} iconSize={20} borderRadius={8} background='rgba(76,255,92,0.1)' color='#4CFF5C' />
                         }
                       </div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{card.titulo}</h4>
