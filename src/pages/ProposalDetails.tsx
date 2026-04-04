@@ -172,6 +172,7 @@ export default function ProposalDetails() {
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
   const { updateProposal, deleteProposal } = useProposals();
+  const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
   const { data: testimonialsBank = [], createTestimonial, updateTestimonial } = useTestimonials();
@@ -193,6 +194,8 @@ export default function ProposalDetails() {
   const [newTestimonialForm, setNewTestimonialForm] = useState({ name: '', role: '', text: '', image: '' });
   const [uploadingTestimonialImage, setUploadingTestimonialImage] = useState(false);
   const [editingTestimonialId, setEditingTestimonialId] = useState<string | null>(null);
+  const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
+  const [transcriptText, setTranscriptText] = useState('');
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
