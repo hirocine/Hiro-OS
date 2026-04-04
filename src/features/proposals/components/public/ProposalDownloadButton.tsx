@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { ProposalPdfDocument } from './ProposalPdfDocument'
+import { svgToPngDataUri } from './asset3DataUri'
 import type { Proposal } from '../../types'
 
 interface Props {
@@ -59,6 +60,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPdfDoc, setShowPdfDoc] = useState(false)
   const [caseThumbnails, setCaseThumbnails] = useState<Record<string, string>>({})
+  const [footerPng, setFooterPng] = useState<string>('')
   const pdfRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -80,9 +82,13 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
     setIsGenerating(true)
 
     try {
-      // 1. Pre-fetch thumbnails
-      const thumbs = await fetchCaseThumbnails(proposal.cases)
+      // 1. Pre-fetch thumbnails + convert footer SVG to PNG in parallel
+      const [thumbs, pngUri] = await Promise.all([
+        fetchCaseThumbnails(proposal.cases),
+        svgToPngDataUri('/proposal-assets/Asset3.svg', 120).catch(() => ''),
+      ])
       setCaseThumbnails(thumbs)
+      setFooterPng(pngUri)
 
       // 2. Mount the off-screen PDF document
       setShowPdfDoc(true)
@@ -201,6 +207,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
           ref={pdfRef}
           proposal={proposal}
           caseThumbnails={caseThumbnails}
+          footerPngDataUri={footerPng}
         />,
         document.body
       )}
