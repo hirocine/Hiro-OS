@@ -262,8 +262,8 @@ export default function ProposalDetails() {
     setOutputSnapshot(JSON.stringify(parsed.entregaveis));
     setInclusoForm(parsed.incluso_categories);
     setInclusoSnapshot(JSON.stringify(parsed.incluso_categories));
+  }, [proposal]);
 
-  // Dirty checks
   const clientDirty = useMemo(() => {
     if (!proposal) return false;
     return clientForm.project_number !== (proposal.project_number || '') ||
