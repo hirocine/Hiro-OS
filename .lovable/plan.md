@@ -1,42 +1,66 @@
 
 
-# Rodada final de ajustes no PDF: PNG + simplificação dos elementos problemáticos
+# Integração IA no ProposalWizard com Anthropic API + Web Search
 
-## O que muda desta vez
+## Pré-requisito: adicionar secret
 
-Duas mudanças concretas que as rodadas anteriores não fizeram:
+`ANTHROPIC_API_KEY` não está configurada nos secrets do projeto. Preciso adicioná-la antes de qualquer código funcionar.
 
-1. **Trocar JPEG por PNG** no output final (linha 144 do `ProposalDownloadButton.tsx`). Isso elimina o blur/compressão que apaga micro-elementos. É a mudança mais impactante e nunca foi feita.
+## Arquivos a criar
 
-2. **Remover o mapeamento emoji→Lucide** que piorou o visual. Voltar a usar emojis nativos, mas com `fontSize` maior e container mais generoso para absorver a variação do `html2canvas`.
+### 1. `supabase/functions/ai-proposal-assistant/index.ts`
 
-## Mudanças específicas
+Edge function com 3 actions:
 
-### `ProposalDownloadButton.tsx`
-- Linha 144: trocar `canvas.toDataURL('image/jpeg', 0.92)` por `canvas.toDataURL('image/png')`
-- Linha 145: trocar `'JPEG'` por `'PNG'` no `addImage`
+- **`enrich_client`**: Recebe `client_name`, usa Anthropic com `web_search` tool para buscar dados reais da empresa, retorna `company_description`.
+- **`parse_transcript`**: Recebe `transcript`, extrai campos estruturados (client_name, project_name, client_responsible, objetivo, diagnostico_dores, entregaveis).
+- **`suggest_pain_points`**: Recebe contexto do projeto, usa Anthropic com `web_search` tool para sugerir 3 dores relevantes.
 
-### `ProposalPdfDocument.tsx`
+Detalhes técnicos:
+- Prioriza `ANTHROPIC_API_KEY` chamando `https://api.anthropic.com/v1/messages` com modelo `claude-sonnet-4-20250514`
+- Nas actions `enrich_client` e `suggest_pain_points`, inclui `tools: [{ type: "web_search_20250305", name: "web_search" }]`
+- Fallback para `LOVABLE_API_KEY` via Lovable AI Gateway (sem web search) caso Anthropic não esteja configurada
+- System prompt completo com contexto da Hiro Films, posicionamento e faixas de preço
+- CORS headers, validação de auth JWT, retorna JSON
 
-**Remover `emojiToIcon`** (linhas 17-23) e o branch em `PdfCenteredEmoji` que substitui emoji por ícone (linhas 39-42). Manter apenas o render de emoji nativo com `lineHeight` fixa.
+### 2. `src/features/proposals/hooks/useProposalAI.ts`
 
-**Aumentar tamanho dos containers de emoji** de 34/36px para 40px com `fontSize` de 20px, dando mais margem para o glyph não vazar.
+Hook expondo:
+- `enrichClient(clientName)` → retorna string
+- `parseTranscript(transcript)` → retorna objeto com campos do form
+- `suggestPainPoints(clientName, projectName, objetivo)` → retorna `DiagnosticoDor[]`
+- Loading states: `isEnriching`, `isParsing`, `isSuggesting`
 
-**`PdfCheckItem`** (linhas 99-118): aumentar `boxSize` de 18 para 22px e `icoSize` de 10 para 14px — os ícones estão sumindo por serem pequenos demais na captura PNG.
+Usa `supabase.functions.invoke('ai-proposal-assistant', { body })`.
 
-**`PdfProximosPassos`** (linhas 441-460): aumentar `circleSize` de 44 para 48px e `iconSize` proporcionalmente.
+## Arquivo a modificar
 
-**Badges**: manter como estão (a mudança para PNG já deve resolver o blur nos textos pequenos).
+### 3. `src/features/proposals/components/ProposalWizard.tsx`
 
-## Por que pode funcionar desta vez
+**Step 0 (linha ~366)** — Após label "Descrição da Empresa":
+- Botão `variant="outline" size="sm"` com ícone `Sparkles` + texto "Buscar com IA"
+- Disabled quando `isEnriching` ou `!form.client_name`
+- On click: chama `enrichClient(form.client_name)`, preenche `company_description`, toast de sucesso/erro
 
-- A troca para PNG é uma mudança no pipeline de output, não no layout. Remove o artefato de compressão JPEG que borra os detalhes finos.
-- O aumento dos containers dá folga real para o `html2canvas` posicionar emojis e ícones, em vez de tentar micro-ajustar CSS que o canvas não respeita.
-- A remoção do mapeamento emoji→Lucide desfaz a regressão visual da última rodada.
+**Step 0 (linha ~375)** — Após o bloco de "Descrição da Empresa":
+- Botão "Importar Transcrição" com ícone `Sparkles`
+- Abre um Dialog com Textarea para colar transcrição
+- On confirm: chama `parseTranscript`, preenche campos disponíveis, toast de sucesso/erro
 
-## Resultado esperado
-- Textos e badges mais nítidos (PNG vs JPEG)
-- Emojis visíveis e aproximadamente centralizados (containers maiores)
-- Ícones check/lock/X visíveis (tamanhos maiores)
-- Rodapé continua funcionando (não é alterado)
+**Step 1 (linha ~401)** — Ao lado de "Dores do Cliente":
+- Botão "Sugerir com IA" com ícone `Sparkles`
+- Disabled quando `isSuggesting`
+- On click: chama `suggestPainPoints`, preenche `diagnostico_dores`, toast de sucesso/erro
+
+Todos os botões mostram `Loader2 animate-spin` durante loading.
+
+**Nenhum arquivo em `src/features/proposals/components/public/` será alterado.**
+
+## Ordem de execução
+
+1. Adicionar secret `ANTHROPIC_API_KEY`
+2. Criar edge function
+3. Criar hook
+4. Modificar ProposalWizard
+5. Deploy e testar edge function
 
