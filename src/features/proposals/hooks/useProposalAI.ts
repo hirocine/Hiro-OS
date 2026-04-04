@@ -11,10 +11,30 @@ interface TranscriptResult {
   entregaveis?: EntregavelItem[];
 }
 
+export interface AnalyzeQuestion {
+  id: string;
+  emoji: string;
+  text: string;
+  type: 'single_select';
+  options: Array<{ id: string; label: string; description?: string }>;
+}
+
+export interface AnalyzeResult {
+  confirmed: {
+    client_name: string;
+    project_name: string;
+    contacts: string[];
+    summary: string;
+  };
+  questions: AnalyzeQuestion[];
+}
+
 export function useProposalAI() {
   const [isEnriching, setIsEnriching] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   const enrichClient = async (clientName: string): Promise<string> => {
     setIsEnriching(true);
@@ -62,12 +82,47 @@ export function useProposalAI() {
     }
   };
 
+  const analyzeTranscript = async (transcript: string): Promise<AnalyzeResult> => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-proposal-assistant', {
+        body: { action: 'analyze_transcript', transcript },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as AnalyzeResult;
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const finalizeTranscript = async (
+    transcript: string,
+    answers: Record<string, string>
+  ): Promise<TranscriptResult> => {
+    setIsFinalizing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-proposal-assistant', {
+        body: { action: 'finalize_transcript', transcript, answers },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as TranscriptResult;
+    } finally {
+      setIsFinalizing(false);
+    }
+  };
+
   return {
     enrichClient,
     parseTranscript,
     suggestPainPoints,
+    analyzeTranscript,
+    finalizeTranscript,
     isEnriching,
     isParsing,
     isSuggesting,
+    isAnalyzing,
+    isFinalizing,
   };
 }

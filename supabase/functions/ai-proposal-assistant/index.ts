@@ -100,13 +100,28 @@ function extractTextFromAnthropicResponse(response: any): string {
   return "";
 }
 
+function parseJsonSafe(text: string): any {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const objMatch = text.match(/\{[\s\S]*\}/);
+    if (objMatch) {
+      try { return JSON.parse(objMatch[0]); } catch {}
+    }
+    const arrMatch = text.match(/\[[\s\S]*\]/);
+    if (arrMatch) {
+      try { return JSON.parse(arrMatch[0]); } catch {}
+    }
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -147,15 +162,13 @@ serve(async (req) => {
 
     let result: any;
 
+    // ── enrich_client ──
     if (action === "enrich_client") {
       const { client_name } = params;
       if (!client_name) {
         return new Response(
           JSON.stringify({ error: "client_name is required" }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -167,25 +180,19 @@ serve(async (req) => {
           [{ type: "web_search_20250305", name: "web_search" }],
           anthropicKey
         );
-        result = {
-          company_description: extractTextFromAnthropicResponse(response),
-        };
+        result = { company_description: extractTextFromAnthropicResponse(response) };
       } else {
-        const text = await callLovableGateway(
-          [{ role: "user", content: prompt }],
-          lovableKey!
-        );
+        const text = await callLovableGateway([{ role: "user", content: prompt }], lovableKey!);
         result = { company_description: text };
       }
+
+    // ── parse_transcript ──
     } else if (action === "parse_transcript") {
       const { transcript } = params;
       if (!transcript) {
         return new Response(
           JSON.stringify({ error: "transcript is required" }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -209,32 +216,16 @@ Se algum campo não puder ser identificado, use string vazia ou array vazio. Par
 TRANSCRIÇÃO:
 ${transcript}`;
 
+      let text: string;
       if (useAnthropic) {
-        const response = await callAnthropic(
-          [{ role: "user", content: prompt }],
-          [],
-          anthropicKey
-        );
-        const text = extractTextFromAnthropicResponse(response);
-        try {
-          result = JSON.parse(text);
-        } catch {
-          // Try to extract JSON from the text
-          const match = text.match(/\{[\s\S]*\}/);
-          result = match ? JSON.parse(match[0]) : { error: "Could not parse response" };
-        }
+        const response = await callAnthropic([{ role: "user", content: prompt }], [], anthropicKey);
+        text = extractTextFromAnthropicResponse(response);
       } else {
-        const text = await callLovableGateway(
-          [{ role: "user", content: prompt }],
-          lovableKey!
-        );
-        try {
-          result = JSON.parse(text);
-        } catch {
-          const match = text.match(/\{[\s\S]*\}/);
-          result = match ? JSON.parse(match[0]) : { error: "Could not parse response" };
-        }
+        text = await callLovableGateway([{ role: "user", content: prompt }], lovableKey!);
       }
+      result = parseJsonSafe(text) || { error: "Could not parse response" };
+
+    // ── suggest_pain_points ──
     } else if (action === "suggest_pain_points") {
       const { client_name, project_name, objetivo } = params;
 
@@ -249,42 +240,131 @@ Contexto:
 - Projeto: ${project_name || "Não informado"}
 - Objetivo: ${objetivo || "Não informado"}`;
 
+      let text: string;
       if (useAnthropic) {
         const response = await callAnthropic(
           [{ role: "user", content: prompt }],
           [{ type: "web_search_20250305", name: "web_search" }],
           anthropicKey
         );
-        const text = extractTextFromAnthropicResponse(response);
-        try {
-          result = { diagnostico_dores: JSON.parse(text) };
-        } catch {
-          const match = text.match(/\[[\s\S]*\]/);
-          result = match
-            ? { diagnostico_dores: JSON.parse(match[0]) }
-            : { diagnostico_dores: [] };
-        }
+        text = extractTextFromAnthropicResponse(response);
       } else {
-        const text = await callLovableGateway(
-          [{ role: "user", content: prompt }],
-          lovableKey!
-        );
-        try {
-          result = { diagnostico_dores: JSON.parse(text) };
-        } catch {
-          const match = text.match(/\[[\s\S]*\]/);
-          result = match
-            ? { diagnostico_dores: JSON.parse(match[0]) }
-            : { diagnostico_dores: [] };
-        }
+        text = await callLovableGateway([{ role: "user", content: prompt }], lovableKey!);
       }
+      const parsed = parseJsonSafe(text);
+      result = { diagnostico_dores: Array.isArray(parsed) ? parsed : (parsed?.diagnostico_dores || []) };
+
+    // ── analyze_transcript ──
+    } else if (action === "analyze_transcript") {
+      const { transcript } = params;
+      if (!transcript) {
+        return new Response(
+          JSON.stringify({ error: "transcript is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const prompt = `Analise a transcrição abaixo de uma reunião de briefing entre a Hiro Films e um potencial cliente.
+
+Sua tarefa é:
+1. Extrair as informações que você tem CERTEZA
+2. Identificar AMBIGUIDADES e formular perguntas claras para o usuário resolver
+
+Retorne APENAS um JSON válido (sem markdown, sem backticks) neste formato:
+
+{
+  "confirmed": {
+    "client_name": "nome da empresa cliente ou string vazia",
+    "project_name": "nome do projeto principal ou string vazia se houver ambiguidade",
+    "contacts": ["nome 1", "nome 2"],
+    "summary": "resumo de 2-3 frases do que foi discutido na reunião"
+  },
+  "questions": [
+    {
+      "id": "identificador_unico",
+      "emoji": "emoji relevante",
+      "text": "Pergunta clara para o usuário",
+      "type": "single_select",
+      "options": [
+        { "id": "opcao_1", "label": "Texto curto da opção", "description": "Descrição opcional" }
+      ]
+    }
+  ]
+}
+
+REGRAS para gerar perguntas:
+- Se identificar MAIS DE UM projeto ou escopo distinto, pergunte qual incluir na proposta. Sempre inclua a opção "Juntar todos em 1 proposta".
+- Se identificar MAIS DE UM contato do lado do cliente, pergunte quem é o contato principal. Sempre inclua a opção "Ambos" ou "Todos".
+- Se o tipo/formato do projeto não estiver claro (ex: vídeo institucional vs série de conteúdo vs evento), pergunte.
+- Se o prazo ou urgência não estiver claro, NÃO pergunte (isso será definido depois).
+- Se o orçamento não estiver claro, NÃO pergunte (isso será definido depois).
+- Gere NO MÁXIMO 3 perguntas. Priorize as mais importantes.
+- Se não houver ambiguidades, retorne o array de questions vazio.
+
+TRANSCRIÇÃO:
+${transcript}`;
+
+      let text: string;
+      if (useAnthropic) {
+        const response = await callAnthropic([{ role: "user", content: prompt }], [], anthropicKey);
+        text = extractTextFromAnthropicResponse(response);
+      } else {
+        text = await callLovableGateway([{ role: "user", content: prompt }], lovableKey!);
+      }
+      result = parseJsonSafe(text) || { confirmed: { client_name: "", project_name: "", contacts: [], summary: "" }, questions: [] };
+
+    // ── finalize_transcript ──
+    } else if (action === "finalize_transcript") {
+      const { transcript, answers } = params;
+      if (!transcript) {
+        return new Response(
+          JSON.stringify({ error: "transcript is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const answersFormatted = answers && Object.keys(answers).length > 0
+        ? Object.entries(answers).map(([qId, optId]) => `- Pergunta "${qId}": ${optId}`).join("\n")
+        : "Nenhuma pergunta foi feita (sem ambiguidades).";
+
+      const prompt = `Com base na transcrição da reunião e nas respostas do usuário às perguntas de clarificação, extraia as informações estruturadas para preencher uma proposta comercial da Hiro Films.
+
+RESPOSTAS DO USUÁRIO:
+${answersFormatted}
+
+TRANSCRIÇÃO:
+${transcript}
+
+Retorne APENAS um JSON válido (sem markdown, sem backticks):
+
+{
+  "client_name": "nome da empresa cliente",
+  "project_name": "nome do projeto (baseado na escolha do usuário)",
+  "client_responsible": "nome(s) do(s) responsável(eis) (baseado na escolha do usuário)",
+  "objetivo": "texto de 2-4 parágrafos descrevendo o objetivo estratégico do projeto",
+  "diagnostico_dores": [
+    { "label": "emoji", "title": "título curto", "desc": "descrição 1-2 frases" }
+  ],
+  "entregaveis": [
+    { "titulo": "nome do entregável", "descricao": "descrição", "quantidade": "1", "icone": "🎬" }
+  ]
+}
+
+Liste CADA entregável separadamente. Se há 3 webcasts, são 3 itens (ou 1 item com quantidade 3). Se há 5 aulas EAD, é 1 item com quantidade 5. Não agrupe projetos diferentes num só entregável.`;
+
+      let text: string;
+      if (useAnthropic) {
+        const response = await callAnthropic([{ role: "user", content: prompt }], [], anthropicKey);
+        text = extractTextFromAnthropicResponse(response);
+      } else {
+        text = await callLovableGateway([{ role: "user", content: prompt }], lovableKey!);
+      }
+      result = parseJsonSafe(text) || { error: "Could not parse response" };
+
     } else {
       return new Response(
         JSON.stringify({ error: `Unknown action: ${action}` }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -294,13 +374,8 @@ Contexto:
   } catch (error) {
     console.error("ai-proposal-assistant error:", error);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

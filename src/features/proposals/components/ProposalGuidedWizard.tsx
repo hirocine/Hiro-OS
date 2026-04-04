@@ -20,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useProposalAI } from '../hooks/useProposalAI';
+import type { AnalyzeResult } from '../hooks/useProposalAI';
 import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
@@ -28,12 +29,16 @@ import type { DiagnosticoDor, EntregavelItem } from '../types';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES } from '../types';
 
 // ── Loading messages ──
-const LOADING_MESSAGES = [
+const ANALYZE_MESSAGES = [
   'Lendo o briefing...',
   'Identificando o cliente...',
-  'Mapeando entregáveis...',
   'Analisando o escopo...',
-  'Preparando sugestões...',
+];
+
+const FINALIZE_MESSAGES = [
+  'Preparando os campos...',
+  'Buscando dados da empresa...',
+  'Quase pronto...',
 ];
 
 // ── Steps config ──
@@ -51,7 +56,10 @@ const STEPS = [
 export function ProposalGuidedWizard() {
   const navigate = useNavigate();
   const { createProposal } = useProposals();
-  const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
+  const {
+    enrichClient, parseTranscript, suggestPainPoints, analyzeTranscript, finalizeTranscript,
+    isEnriching, isParsing, isSuggesting, isAnalyzing, isFinalizing,
+  } = useProposalAI();
   const { data: painPointsBank = [] } = usePainPoints();
   const { data: casesBank = [] } = useProposalCases();
   const { data: testimonialsBank = [] } = useTestimonials();
@@ -61,6 +69,11 @@ export function ProposalGuidedWizard() {
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [skippedBriefing, setSkippedBriefing] = useState(false);
+
+  // Sub-step state for questions within step 0
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [analyzeResultState, setAnalyzeResultState] = useState<AnalyzeResult | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   // Form data
   const [clientName, setClientName] = useState('');
@@ -90,46 +103,112 @@ export function ProposalGuidedWizard() {
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
+  const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
+
   // Rotate loading messages
   useEffect(() => {
-    if (!isParsing) return;
+    if (!isAnalyzing && !isFinalizing && !isEnriching) return;
+    setLoadingMsg(0);
     const interval = setInterval(() => {
-      setLoadingMsg(prev => (prev + 1) % LOADING_MESSAGES.length);
+      setLoadingMsg(prev => (prev + 1) % activeLoadingMessages.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [isParsing]);
+  }, [isAnalyzing, isFinalizing, isEnriching, activeLoadingMessages.length]);
 
-  // ── Handlers ──
-  const handleAnalyzeBriefing = async () => {
-    if (!transcript.trim()) return;
+  // Check if all questions answered
+  const allQuestionsAnswered = useMemo(() => {
+    if (!analyzeResultState?.questions?.length) return true;
+    return analyzeResultState.questions.every(q => answers[q.id]);
+  }, [analyzeResultState, answers]);
 
-    const result = await parseTranscript(transcript);
-    if (!result) return;
-
-    const filled = new Set<string>();
-
+  // ── Fill form from finalized result ──
+  const fillFormFromResult = (result: any, filled: Set<string>) => {
     if (result.client_name) { setClientName(result.client_name); filled.add('client_name'); }
     if (result.project_name) { setProjectName(result.project_name); filled.add('project_name'); }
     if (result.client_responsible) { setClientResponsible(result.client_responsible); filled.add('client_responsible'); }
     if (result.objetivo) { setObjetivo(result.objetivo); filled.add('objetivo'); }
     if (result.diagnostico_dores?.length) { setDores(result.diagnostico_dores); filled.add('dores'); }
     if (result.entregaveis?.length) { setEntregaveis(result.entregaveis); filled.add('entregaveis'); }
+  };
 
-    // Enrich client description
-    if (result.client_name) {
-      const desc = await enrichClient(result.client_name);
-      if (desc) { setCompanyDescription(desc); filled.add('company_description'); }
+  // ── Handlers ──
+  const handleAnalyzeBriefing = async () => {
+    if (!transcript.trim()) return;
+
+    try {
+      const result = await analyzeTranscript(transcript);
+      if (!result) return;
+
+      if (!result.questions || result.questions.length === 0) {
+        // No ambiguities — finalize directly
+        const finalResult = await finalizeTranscript(transcript, {});
+        if (!finalResult) return;
+
+        const filled = new Set<string>();
+        fillFormFromResult(finalResult, filled);
+
+        // Enrich client
+        const cName = finalResult.client_name || result.confirmed?.client_name;
+        if (cName) {
+          const desc = await enrichClient(cName);
+          if (desc) { setCompanyDescription(desc); filled.add('company_description'); }
+        }
+
+        setAiFilledFields(filled);
+        toast.success('Briefing analisado com sucesso!');
+        setStep(1);
+      } else {
+        // Has questions — show sub-step
+        setAnalyzeResultState(result);
+        setAnswers({});
+        setShowQuestions(true);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao analisar o briefing');
     }
+  };
 
-    setAiFilledFields(filled);
-    toast.success('Briefing analisado com sucesso!');
-    setStep(1);
+  const handleContinueFromQuestions = async () => {
+    if (!allQuestionsAnswered) return;
+
+    try {
+      // Format answers with the actual selected labels for better context
+      const formattedAnswers: Record<string, string> = {};
+      for (const q of analyzeResultState?.questions || []) {
+        const selectedOptId = answers[q.id];
+        const selectedOpt = q.options.find(o => o.id === selectedOptId);
+        formattedAnswers[q.text] = selectedOpt?.label || selectedOptId || '';
+      }
+
+      const finalResult = await finalizeTranscript(transcript, formattedAnswers);
+      if (!finalResult) return;
+
+      const filled = new Set<string>();
+      fillFormFromResult(finalResult, filled);
+
+      // Enrich client
+      const cName = finalResult.client_name || analyzeResultState?.confirmed?.client_name;
+      if (cName) {
+        const desc = await enrichClient(cName);
+        if (desc) { setCompanyDescription(desc); filled.add('company_description'); }
+      }
+
+      setAiFilledFields(filled);
+      setShowQuestions(false);
+      setAnalyzeResultState(null);
+      toast.success('Briefing analisado com sucesso!');
+      setStep(1);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao processar as respostas');
+    }
   };
 
   const handleSuggestDores = async () => {
     const result = await suggestPainPoints(clientName, projectName, objetivo);
-    if (result?.diagnostico_dores?.length) {
-      setDores(result.diagnostico_dores);
+    if (result?.length) {
+      setDores(result);
       setAiFilledFields(prev => new Set([...prev, 'dores']));
       toast.success('Dores sugeridas pela IA!');
     }
@@ -229,6 +308,8 @@ export function ProposalGuidedWizard() {
   const goNext = () => setStep(prev => Math.min(prev + 1, STEPS.length - 1));
   const goBack = () => setStep(prev => Math.max(prev - 1, 0));
 
+  const isLoadingAI = isAnalyzing || isFinalizing || isEnriching;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 w-full">
       {/* ── Stepper ── */}
@@ -259,9 +340,9 @@ export function ProposalGuidedWizard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          STEP 0 — BRIEFING
+          STEP 0 — BRIEFING (includes questions sub-step)
          ══════════════════════════════════════════════════════════════ */}
-      {step === 0 && (
+      {step === 0 && !showQuestions && (
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 py-12">
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -285,11 +366,11 @@ export function ProposalGuidedWizard() {
             </p>
           </div>
 
-          {isParsing || isEnriching ? (
+          {isLoadingAI ? (
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground animate-pulse">
-                {LOADING_MESSAGES[loadingMsg]}
+                {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
@@ -316,6 +397,93 @@ export function ProposalGuidedWizard() {
             <Sparkles className="h-3 w-3" />
             <span>Powered by Claude · Anthropic</span>
           </div>
+        </div>
+      )}
+
+      {/* ── Sub-step: Questions (within step 0) ── */}
+      {step === 0 && showQuestions && analyzeResultState && (
+        <div className="flex flex-col items-center min-h-[60vh] space-y-8 py-12">
+          {isLoadingAI ? (
+            <div className="flex flex-col items-center gap-3 py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground animate-pulse">
+                {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center space-y-3 max-w-lg">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">Algumas dúvidas</h2>
+                <p className="text-sm text-muted-foreground">
+                  {analyzeResultState.confirmed.summary}
+                </p>
+              </div>
+
+              <div className="w-full max-w-2xl space-y-4">
+                {analyzeResultState.questions.map((q, i) => (
+                  <div
+                    key={q.id}
+                    className="animate-in fade-in slide-in-from-bottom-4"
+                    style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'backwards' }}
+                  >
+                    <Card>
+                      <CardContent className="pt-5 pb-5 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">{q.emoji}</span>
+                          <p className="text-sm font-semibold text-foreground pt-1">{q.text}</p>
+                        </div>
+                        <div className="flex flex-col gap-2 pl-10">
+                          {q.options.map(opt => {
+                            const isSelected = answers[q.id] === opt.id;
+                            return (
+                              <button
+                                key={opt.id}
+                                onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt.id }))}
+                                className={cn(
+                                  'text-left rounded-lg border px-4 py-3 transition-all',
+                                  isSelected
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-border hover:bg-muted/50'
+                                )}
+                              >
+                                <p className={cn('text-sm', isSelected ? 'font-medium text-foreground' : 'text-foreground')}>
+                                  {opt.label}
+                                </p>
+                                {opt.description && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Voltar ao briefing
+                </button>
+                <Button
+                  size="lg"
+                  onClick={handleContinueFromQuestions}
+                  disabled={!allQuestionsAnswered}
+                  className="gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Continuar
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
