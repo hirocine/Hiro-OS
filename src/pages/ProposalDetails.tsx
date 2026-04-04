@@ -153,7 +153,7 @@ export default function ProposalDetails() {
       client_name: proposal.client_name,
       project_name: proposal.project_name,
       client_responsible: proposal.client_responsible || '',
-      whatsapp_number: proposal.whatsapp_number || '',
+      whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
       company_description: proposal.company_description || '',
     });
     setInvestForm({
