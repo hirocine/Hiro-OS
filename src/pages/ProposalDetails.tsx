@@ -1546,6 +1546,40 @@ export default function ProposalDetails() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Transcript Dialog */}
+        <Dialog open={showTranscriptDialog} onOpenChange={setShowTranscriptDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Importar Transcrição</DialogTitle>
+            </DialogHeader>
+            <Textarea
+              value={transcriptText}
+              onChange={e => setTranscriptText(e.target.value)}
+              rows={10}
+              placeholder="Cole aqui a transcrição da reunião de briefing..."
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowTranscriptDialog(false)}>Cancelar</Button>
+              <Button disabled={isParsing || !transcriptText.trim()} onClick={async () => {
+                try {
+                  const result = await parseTranscript(transcriptText);
+                  if (result.client_name) setClientForm(p => ({ ...p, client_name: result.client_name! }));
+                  if (result.project_name) setClientForm(p => ({ ...p, project_name: result.project_name! }));
+                  if (result.client_responsible) setClientForm(p => ({ ...p, client_responsible: result.client_responsible! }));
+                  if (result.objetivo) setDiagForm({ objetivo: result.objetivo });
+                  if (result.diagnostico_dores?.length) setDoresForm(result.diagnostico_dores);
+                  if (result.entregaveis?.length) setOutputForm(result.entregaveis);
+                  toast.success('Transcrição processada com sucesso');
+                  setShowTranscriptDialog(false);
+                } catch (err) { toast.error('Erro ao processar: ' + (err instanceof Error ? err.message : 'Erro desconhecido')); }
+              }}>
+                {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                Processar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ResponsiveContainer>
   );
