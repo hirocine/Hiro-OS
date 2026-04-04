@@ -672,7 +672,7 @@ export default function ProposalDetails() {
                 </div>
                 <div className="space-y-1.5"><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-muted/50 flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Valor Final: </span>
                 <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investFinalValue)}</span>
               </div>
