@@ -381,12 +381,14 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
               <div style={{ position: 'absolute', top: 22, left: 72, width: 52, height: 1, background: step.status === 'done' ? 'rgba(76,255,92,0.3)' : '#333' }} />
             )}
             <div style={{
-              width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginBottom: 10, border: '2px solid',
+              width: 44, height: 44, borderRadius: '50%', position: 'relative', fontWeight: 700, fontSize: 16, marginBottom: 10, border: '2px solid',
               borderColor: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555',
               background: step.status === 'done' ? 'rgba(76,255,92,0.1)' : step.status === 'current' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555',
             }}>
-              {step.status === 'done' ? <Check style={{ width: 18, height: 18 }} /> : step.status === 'locked' ? <Lock style={{ width: 14, height: 14 }} /> : step.num}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {step.status === 'done' ? <Check style={{ width: 18, height: 18, display: 'block' }} /> : step.status === 'locked' ? <Lock style={{ width: 14, height: 14, display: 'block' }} /> : step.num}
+              </div>
             </div>
             <h4 style={{ fontSize: 12, fontWeight: 700, color: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555' }}>{step.title}</h4>
           </div>
