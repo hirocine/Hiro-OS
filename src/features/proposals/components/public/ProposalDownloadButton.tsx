@@ -207,6 +207,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
           ref={pdfRef}
           proposal={proposal}
           caseThumbnails={caseThumbnails}
+          footerPngDataUri={footerPng}
         />,
         document.body
       )}
