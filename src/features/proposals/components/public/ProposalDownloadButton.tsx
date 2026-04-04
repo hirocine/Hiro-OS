@@ -27,7 +27,10 @@ export function ProposalDownloadButton({ whatsappNumber, projectName }: Props) {
   const encodedMessage = encodeURIComponent(message)
   const rawPhone = (whatsappNumber || '5511951513862').replace(/\D/g, '')
   const phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`
-  const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const whatsappUrl = isMobile
+    ? `https://wa.me/${phone}?text=${encodedMessage}`
+    : `https://web.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`
 
   return (
     <div
