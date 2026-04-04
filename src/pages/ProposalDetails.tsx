@@ -117,6 +117,17 @@ interface EntregaveisData {
   incluso_categories: InclusoCategory[];
 }
 
+function formatWhatsApp(value: string): string {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length > 0 && !digits.startsWith('55')) digits = '55' + digits;
+  if (digits.length > 13) digits = digits.slice(0, 13);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `+${digits}`;
+  if (digits.length <= 4) return `+${digits.slice(0,2)} (${digits.slice(2)}`;
+  if (digits.length <= 9) return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4)}`;
+  return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4,9)}-${digits.slice(9)}`;
+}
+
 export default function ProposalDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -153,7 +164,7 @@ export default function ProposalDetails() {
       client_name: proposal.client_name,
       project_name: proposal.project_name,
       client_responsible: proposal.client_responsible || '',
-      whatsapp_number: proposal.whatsapp_number || '',
+      whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
       company_description: proposal.company_description || '',
     });
     setInvestForm({
@@ -624,7 +635,7 @@ export default function ProposalDetails() {
               <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { const digits = e.target.value.replace(/\D/g, ''); let formatted = digits; if (digits.length > 2) formatted = `(${digits.slice(0,2)}) ${digits.slice(2)}`; if (digits.length > 7) formatted = `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7,11)}`; setClientForm(p => ({ ...p, whatsapp_number: formatted })); }} maxLength={15} placeholder="(11) 95151-3862" /></div>
+              <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
               <div className="space-y-1.5"><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={3} /></div>
             </CardContent>
             {clientDirty && (
