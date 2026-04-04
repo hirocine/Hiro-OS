@@ -439,10 +439,12 @@ export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
         }}
       >
         {/* Page 1: Hero + Clients */}
-        <div className='proposal-pdf-page' style={pageStyle}>
+        <div className='proposal-pdf-page' style={{ ...pageStyle, display: 'flex', flexDirection: 'column' }}>
           <PdfHero proposal={proposal} />
-          <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
-          <PdfClients />
+          <div style={{ marginTop: 'auto' }}>
+            <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
+            <PdfClients />
+          </div>
         </div>
 
         {/* Page 2: Diagnostico */}
