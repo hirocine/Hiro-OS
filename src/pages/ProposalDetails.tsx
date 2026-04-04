@@ -216,9 +216,17 @@ export default function ProposalDetails() {
     });
     setDoresForm(Array.isArray(proposal.diagnostico_dores) ? proposal.diagnostico_dores : []);
     setCasesForm(Array.isArray(proposal.cases) ? proposal.cases : []);
-    // Parse entregaveis - it stores both entregaveis and incluso_categories
+    // Parse entregaveis - supports both wizard block format and legacy format
     const rawEntregaveis = proposal.entregaveis as any;
-    if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.entregaveis) {
+    if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.label) {
+      // Wizard block format: [{ label: "Output", itens: [...] }, { label: "Serviços", cards: [...] }]
+      const outputBlock = rawEntregaveis.find((b: any) => b.label === 'Output');
+      const servicosBlock = rawEntregaveis.find((b: any) => b.label === 'Serviços');
+      setEntregaveisForm({
+        entregaveis: outputBlock?.itens || [],
+        incluso_categories: servicosBlock?.cards || JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
+      });
+    } else if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.entregaveis) {
       setEntregaveisForm({
         entregaveis: rawEntregaveis[0].entregaveis || [],
         incluso_categories: rawEntregaveis[0].incluso_categories || JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
@@ -384,7 +392,13 @@ export default function ProposalDetails() {
       } else if (section === 'cases') {
         data = { cases: casesForm };
       } else if (section === 'entregaveis') {
-        data = { entregaveis: entregaveisForm };
+        // Save in wizard block format for compatibility with public page
+        data = {
+          entregaveis: [
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: entregaveisForm.entregaveis },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: entregaveisForm.incluso_categories },
+          ],
+        };
       }
       await updateProposal.mutateAsync({ id: proposal.id, data });
       await refetch();
