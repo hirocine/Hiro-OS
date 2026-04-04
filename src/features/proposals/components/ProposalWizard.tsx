@@ -76,7 +76,10 @@ export function ProposalWizard() {
   const [showNewPain, setShowNewPain] = useState(false);
   const [newPain, setNewPain] = useState<DiagnosticoDor>({ label: '', title: '', desc: '' });
 
-  // New case inline form
+  // Transcript modal
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [transcriptText, setTranscriptText] = useState('');
+
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCase, setNewCase] = useState({ tags: [] as string[], client_name: '', campaign_name: '', vimeo_url: '', destaque: false });
 
