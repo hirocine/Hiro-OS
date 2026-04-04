@@ -306,7 +306,7 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
           {hasDiscount && (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 6 }}>
               <p style={{ fontSize: 22, fontWeight: 700, color: '#555', textDecoration: 'line-through', opacity: 0.5, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{valorTabela}</p>
-              <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#4CFF5C', background: 'rgba(76,255,92,0.1)', padding: '3px 10px', borderRadius: 999, fontWeight: 700, marginBottom: 3 }}>-{proposal.discount_pct}%</span>
+              <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#4CFF5C', background: 'rgba(76,255,92,0.1)', padding: '3px 10px', borderRadius: 999, fontWeight: 700, marginBottom: 3, display: 'inline-flex', alignItems: 'center', lineHeight: 1 }}>-{proposal.discount_pct}%</span>
             </div>
           )}
           <p style={{ fontSize: 48, fontWeight: 700, color: '#4CFF5C', margin: '20px 0', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{valorFinal}</p>
