@@ -29,6 +29,8 @@ import { useProposals } from '@/features/proposals/hooks/useProposals';
 import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
+import { useTestimonials } from '@/features/proposals/hooks/useTestimonials';
+import type { Testimonial } from '@/features/proposals/types';
 import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
