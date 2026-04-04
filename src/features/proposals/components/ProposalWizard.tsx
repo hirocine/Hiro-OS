@@ -608,8 +608,7 @@ export function ProposalWizard() {
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3 items-end">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Ícone</Label>
+                    <div>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button variant="outline" className="h-9 w-9 p-0 text-lg">
