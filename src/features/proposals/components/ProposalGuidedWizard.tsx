@@ -98,7 +98,10 @@ export function ProposalGuidedWizard() {
   const [testimonialRole, setTestimonialRole] = useState('');
   const [testimonialText, setTestimonialText] = useState('');
   const [testimonialImage, setTestimonialImage] = useState('');
-
+  const [inclusoCategories, setInclusoCategories] = useState<InclusoCategory[]>(
+    () => JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES))
+  );
+  const [selectedTestimonialId, setSelectedTestimonialId] = useState<string | null>(null);
   // Track AI-filled fields
   const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
 
