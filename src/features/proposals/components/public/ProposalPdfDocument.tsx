@@ -41,15 +41,18 @@ function PdfCheckItem({ nome, ativo, quantidade }: { nome: string; ativo: boolea
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', color: ativo ? '#f0f0f0' : '#555' }}>
       <div style={{
-        width: 18, height: 18, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        width: 18, height: 18, borderRadius: 5, flexShrink: 0, position: 'relative',
         background: ativo ? 'rgba(76,255,92,0.15)' : '#1a1a1a', color: ativo ? '#4CFF5C' : '#555',
       }}>
-        {!ativo ? <X style={{ width: 10, height: 10 }} /> : quantidade ? <span style={{ fontSize: 8, fontWeight: 700 }}>{quantidade}</span> : <Check style={{ width: 10, height: 10 }} />}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {!ativo ? <X style={{ width: 10, height: 10, display: 'block' }} /> : quantidade ? <span style={{ fontSize: 8, fontWeight: 700, lineHeight: 1 }}>{quantidade}</span> : <Check style={{ width: 10, height: 10, display: 'block' }} />}
+        </div>
       </div>
       <span style={{ fontSize: 11 }}>{nome}</span>
       <span style={{
         fontSize: 8, letterSpacing: 1.5, textTransform: 'uppercase', padding: '2px 6px', borderRadius: 999, marginLeft: 'auto',
         color: ativo ? 'rgba(76,255,92,0.6)' : '#555', background: ativo ? 'rgba(76,255,92,0.1)' : 'rgba(30,30,30,0.5)',
+        display: 'inline-flex', alignItems: 'center', lineHeight: 1,
       }}>
         {ativo ? 'Incluso' : 'Add-on'}
       </span>
