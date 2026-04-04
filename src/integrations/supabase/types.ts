@@ -817,7 +817,7 @@ export type Database = {
           briefing: string | null
           cases: Json | null
           client_logo: string | null
-          client_name: string
+          client_name: string | null
           client_responsible: string | null
           company_description: string | null
           created_at: string
@@ -832,7 +832,7 @@ export type Database = {
           objetivo: string | null
           payment_options: Json | null
           payment_terms: string | null
-          project_name: string
+          project_name: string | null
           project_number: string | null
           scope_post_production: Json | null
           scope_pre_production: Json | null
@@ -846,7 +846,7 @@ export type Database = {
           testimonial_text: string | null
           timeline: Json | null
           updated_at: string
-          validity_date: string
+          validity_date: string | null
           video_url: string | null
           whatsapp_number: string | null
         }
@@ -855,7 +855,7 @@ export type Database = {
           briefing?: string | null
           cases?: Json | null
           client_logo?: string | null
-          client_name: string
+          client_name?: string | null
           client_responsible?: string | null
           company_description?: string | null
           created_at?: string
@@ -870,7 +870,7 @@ export type Database = {
           objetivo?: string | null
           payment_options?: Json | null
           payment_terms?: string | null
-          project_name: string
+          project_name?: string | null
           project_number?: string | null
           scope_post_production?: Json | null
           scope_pre_production?: Json | null
@@ -884,7 +884,7 @@ export type Database = {
           testimonial_text?: string | null
           timeline?: Json | null
           updated_at?: string
-          validity_date: string
+          validity_date?: string | null
           video_url?: string | null
           whatsapp_number?: string | null
         }
@@ -893,7 +893,7 @@ export type Database = {
           briefing?: string | null
           cases?: Json | null
           client_logo?: string | null
-          client_name?: string
+          client_name?: string | null
           client_responsible?: string | null
           company_description?: string | null
           created_at?: string
@@ -908,7 +908,7 @@ export type Database = {
           objetivo?: string | null
           payment_options?: Json | null
           payment_terms?: string | null
-          project_name?: string
+          project_name?: string | null
           project_number?: string | null
           scope_post_production?: Json | null
           scope_pre_production?: Json | null
@@ -922,7 +922,7 @@ export type Database = {
           testimonial_text?: string | null
           timeline?: Json | null
           updated_at?: string
-          validity_date?: string
+          validity_date?: string | null
           video_url?: string | null
           whatsapp_number?: string | null
         }

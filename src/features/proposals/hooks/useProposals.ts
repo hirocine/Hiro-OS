@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Proposal, ProposalFormData, ProposalCase } from '../types';
 
-function generateSlug(clientName: string, projectName: string): string {
+export function generateSlug(clientName: string, projectName: string): string {
   const year = new Date().getFullYear();
   const raw = `hiro-${clientName}-${projectName}-${year}`;
   return raw
@@ -217,7 +217,31 @@ export function useProposals() {
     },
   });
 
-  return { ...query, createProposal, updateProposal, deleteProposal };
+  const createDraft = useMutation({
+    mutationFn: async () => {
+      const tempSlug = `rascunho-${Math.random().toString(36).substring(2, 9)}`;
+      const { data: userData } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('orcamentos')
+        .insert({
+          slug: tempSlug,
+          status: 'draft',
+          created_by: userData?.user?.id || null,
+        } as any)
+        .select('id')
+        .single();
+      if (error) throw error;
+      return data.id as string;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+    },
+    onError: (err: Error) => {
+      toast.error('Erro ao criar rascunho: ' + err.message);
+    },
+  });
+
+  return { ...query, createProposal, createDraft, updateProposal, deleteProposal };
 }
 
 function mapProposal(row: any): Proposal {

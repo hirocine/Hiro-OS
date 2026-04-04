@@ -25,7 +25,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
-import { useProposals } from '@/features/proposals/hooks/useProposals';
+import { useProposals, generateSlug } from '@/features/proposals/hooks/useProposals';
 import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
@@ -209,8 +209,8 @@ export default function ProposalDetails() {
     if (!proposal) return;
     setClientForm({
       project_number: proposal.project_number || '',
-      client_name: proposal.client_name,
-      project_name: proposal.project_name,
+      client_name: proposal.client_name || '',
+      project_name: proposal.project_name || '',
       client_responsible: proposal.client_responsible || '',
       whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
       company_description: proposal.company_description || '',
@@ -274,11 +274,13 @@ export default function ProposalDetails() {
     setInclusoSnapshot(JSON.stringify(parsed.incluso_categories));
   }, [proposal]);
 
+  const isNewProposal = !proposal?.client_name;
+
   const clientDirty = useMemo(() => {
     if (!proposal) return false;
     return clientForm.project_number !== (proposal.project_number || '') ||
-      clientForm.client_name !== proposal.client_name ||
-      clientForm.project_name !== proposal.project_name ||
+      clientForm.client_name !== (proposal.client_name || '') ||
+      clientForm.project_name !== (proposal.project_name || '') ||
       clientForm.client_responsible !== (proposal.client_responsible || '') ||
       clientForm.whatsapp_number.replace(/\D/g, '') !== (proposal.whatsapp_number || '').replace(/\D/g, '') ||
       clientForm.company_description !== (proposal.company_description || '');
@@ -400,14 +402,31 @@ export default function ProposalDetails() {
     try {
       let data: Record<string, any> = {};
       if (section === 'client') {
+        const clientName = clientForm.client_name.trim();
+        const projectName = clientForm.project_name.trim();
         data = {
           project_number: clientForm.project_number.trim() || null,
-          client_name: clientForm.client_name.trim(),
-          project_name: clientForm.project_name.trim(),
+          client_name: clientName || null,
+          project_name: projectName || null,
           client_responsible: clientForm.client_responsible.trim() || null,
           whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').trim() || null,
           company_description: clientForm.company_description.trim() || null,
         };
+        // Auto-generate slug when both names are filled and slug is still a draft placeholder
+        if (clientName && projectName && proposal.slug.startsWith('rascunho-')) {
+          let newSlug = generateSlug(clientName, projectName);
+          // Check uniqueness
+          const { data: existing } = await supabase
+            .from('orcamentos')
+            .select('slug')
+            .eq('slug', newSlug)
+            .neq('id', proposal.id)
+            .maybeSingle();
+          if (existing) {
+            newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
+          }
+          data.slug = newSlug;
+        }
       } else if (section === 'invest') {
         const finalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
         data = {
@@ -601,7 +620,7 @@ export default function ProposalDetails() {
         <div className="flex items-center justify-between">
           <BreadcrumbNav items={[
             { label: 'Orçamentos', href: '/orcamentos' },
-            { label: proposal.project_name },
+            { label: isNewProposal ? 'Nova Proposta' : (proposal.project_name || 'Sem nome') },
           ]} className="mb-0" />
           <div className="flex items-center gap-2">
             <DropdownMenu>
@@ -611,18 +630,22 @@ export default function ProposalDetails() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
-                  <Copy className="mr-2 h-4 w-4" /> Copiar Link
-                </DropdownMenuItem>
+                {!isNewProposal && (
+                  <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
+                    <Copy className="mr-2 h-4 w-4" /> Copiar Link
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
-              <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
-            </Button>
+            {!isNewProposal && (
+              <Button variant="outline" size="sm" onClick={() => window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank')}>
+                <ExternalLink className="h-4 w-4 mr-1.5" /> Ver Proposta
+              </Button>
+            )}
           </div>
         </div>
 
@@ -646,30 +669,32 @@ export default function ProposalDetails() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name}</h1>
+                  <h1 className="text-xl font-semibold leading-tight">{proposal.project_name || 'Nova Proposta'}</h1>
                   {proposal.project_number && (
                     <span className="text-xl text-muted-foreground">Nº {proposal.project_number}</span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
+                <p className="text-sm text-muted-foreground">{proposal.client_name || 'Preencha os dados do cliente'}</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-muted-foreground">Status</span>
-                <Select value={proposal.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
-                    <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
-                      {(statusMap[proposal.status] || statusMap.draft).label}
-                    </Badge>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusMap).map(([value, { label, variant }]) => (
-                      <SelectItem key={value} value={value}>
-                        <Badge variant={variant as any}>{label}</Badge>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isNewProposal && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <Select value={proposal.status} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-[140px] h-8 border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg]:ml-1">
+                      <Badge variant={(statusMap[proposal.status] || statusMap.draft).variant as any}>
+                        {(statusMap[proposal.status] || statusMap.draft).label}
+                      </Badge>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusMap).map(([value, { label, variant }]) => (
+                        <SelectItem key={value} value={value}>
+                          <Badge variant={variant as any}>{label}</Badge>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
