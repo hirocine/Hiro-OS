@@ -225,14 +225,23 @@ export default function ProposalDetails() {
       const servicosBlock = rawEntregaveis.find((b: any) => b.label === 'Serviços');
       parsed = {
         entregaveis: outputBlock?.itens || [],
-        incluso_categories: servicosBlock?.cards
-          ? servicosBlock.cards.map((c: any) => ({
-              categoria: c.titulo || c.categoria,
-              icone: c.icone,
-              itens: c.itens,
-              subcategorias: c.subcategorias,
-            }))
-          : JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
+        incluso_categories: (() => {
+          const savedCards = servicosBlock?.cards || [];
+          return DEFAULT_INCLUSO_CATEGORIES.map(defaultCat => {
+            const saved = savedCards.find((c: any) =>
+              (c.titulo || c.categoria) === defaultCat.categoria
+            );
+            if (saved) {
+              return {
+                categoria: saved.titulo || saved.categoria,
+                icone: saved.icone || defaultCat.icone,
+                itens: saved.itens || defaultCat.itens,
+                subcategorias: saved.subcategorias || defaultCat.subcategorias,
+              };
+            }
+            return JSON.parse(JSON.stringify(defaultCat));
+          });
+        })(),
       };
     } else if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.entregaveis) {
       parsed = {
