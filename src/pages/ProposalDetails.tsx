@@ -191,6 +191,7 @@ export default function ProposalDetails() {
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
   const [casesForm, setCasesForm] = useState<CaseItem[]>([]);
   const [entregaveisForm, setEntregaveisForm] = useState<EntregaveisData>({ entregaveis: [], incluso_categories: [] });
+  const [entregaveisSnapshot, setEntregaveisSnapshot] = useState('');
 
   // Populate forms when proposal loads
   useEffect(() => {
@@ -218,27 +219,29 @@ export default function ProposalDetails() {
     setCasesForm(Array.isArray(proposal.cases) ? proposal.cases : []);
     // Parse entregaveis - supports both wizard block format and legacy format
     const rawEntregaveis = proposal.entregaveis as any;
+    let parsed: EntregaveisData;
     if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.label) {
-      // Wizard block format: [{ label: "Output", itens: [...] }, { label: "Serviços", cards: [...] }]
       const outputBlock = rawEntregaveis.find((b: any) => b.label === 'Output');
       const servicosBlock = rawEntregaveis.find((b: any) => b.label === 'Serviços');
-      setEntregaveisForm({
+      parsed = {
         entregaveis: outputBlock?.itens || [],
         incluso_categories: servicosBlock?.cards || JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
-      });
+      };
     } else if (Array.isArray(rawEntregaveis) && rawEntregaveis.length > 0 && rawEntregaveis[0]?.entregaveis) {
-      setEntregaveisForm({
+      parsed = {
         entregaveis: rawEntregaveis[0].entregaveis || [],
         incluso_categories: rawEntregaveis[0].incluso_categories || JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
-      });
+      };
     } else if (rawEntregaveis && !Array.isArray(rawEntregaveis) && rawEntregaveis.entregaveis) {
-      setEntregaveisForm({
+      parsed = {
         entregaveis: rawEntregaveis.entregaveis || [],
         incluso_categories: rawEntregaveis.incluso_categories || JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)),
-      });
+      };
     } else {
-      setEntregaveisForm({ entregaveis: [], incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)) });
+      parsed = { entregaveis: [], incluso_categories: JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES)) };
     }
+    setEntregaveisForm(parsed);
+    setEntregaveisSnapshot(JSON.stringify(parsed));
   }, [proposal]);
 
   // Dirty checks
@@ -285,8 +288,8 @@ export default function ProposalDetails() {
 
   const entregaveisDirty = useMemo(() => {
     if (!proposal) return false;
-    return true; // Always allow save for complex nested structure
-  }, [entregaveisForm, proposal]);
+    return JSON.stringify(entregaveisForm) !== entregaveisSnapshot;
+  }, [entregaveisForm, entregaveisSnapshot, proposal]);
 
   // Group bank by category
   const categoryOrder = [
