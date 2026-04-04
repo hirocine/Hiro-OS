@@ -423,6 +423,7 @@ export default function ProposalDetails() {
           testimonial_name: testimonialForm.testimonial_name.trim() || null,
           testimonial_role: testimonialForm.testimonial_role.trim() || null,
           testimonial_text: testimonialForm.testimonial_text.trim() || null,
+          testimonial_image: testimonialForm.testimonial_image.trim() || null,
         };
       } else if (section === 'dores') {
         data = { diagnostico_dores: doresForm };
