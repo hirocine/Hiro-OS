@@ -91,6 +91,16 @@ export interface InclusoCategory {
   itens?: InclusoItem[];
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  text: string;
+  image: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
 export interface PainPoint {
   id: string;
   label: string;
