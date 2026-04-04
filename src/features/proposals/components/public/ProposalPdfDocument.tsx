@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale'
 import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Proposal } from '../../types'
+import { ASSET3_SVG_DATA_URI } from './asset3DataUri'
 
 const iconMap: Record<string, LucideIcon> = {
   'Vídeo principal': Video,
@@ -40,15 +41,18 @@ function PdfCheckItem({ nome, ativo, quantidade }: { nome: string; ativo: boolea
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', color: ativo ? '#f0f0f0' : '#555' }}>
       <div style={{
-        width: 18, height: 18, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        width: 18, height: 18, borderRadius: 5, flexShrink: 0, position: 'relative',
         background: ativo ? 'rgba(76,255,92,0.15)' : '#1a1a1a', color: ativo ? '#4CFF5C' : '#555',
       }}>
-        {!ativo ? <X style={{ width: 10, height: 10 }} /> : quantidade ? <span style={{ fontSize: 8, fontWeight: 700 }}>{quantidade}</span> : <Check style={{ width: 10, height: 10 }} />}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {!ativo ? <X style={{ width: 10, height: 10, display: 'block' }} /> : quantidade ? <span style={{ fontSize: 8, fontWeight: 700, lineHeight: 1 }}>{quantidade}</span> : <Check style={{ width: 10, height: 10, display: 'block' }} />}
+        </div>
       </div>
       <span style={{ fontSize: 11 }}>{nome}</span>
       <span style={{
         fontSize: 8, letterSpacing: 1.5, textTransform: 'uppercase', padding: '2px 6px', borderRadius: 999, marginLeft: 'auto',
         color: ativo ? 'rgba(76,255,92,0.6)' : '#555', background: ativo ? 'rgba(76,255,92,0.1)' : 'rgba(30,30,30,0.5)',
+        display: 'inline-flex', alignItems: 'center', lineHeight: 1,
       }}>
         {ativo ? 'Incluso' : 'Add-on'}
       </span>
@@ -151,8 +155,8 @@ function PdfDiagnostico({ proposal }: { proposal: Proposal }) {
           {dores.map((d, i) => (
             <div key={i} style={{ background: '#111', borderRadius: 14, border: '1px solid #222', padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18 }}>
-                  {d.label || '⭐'}
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(76,255,92,0.1)', flexShrink: 0, fontSize: 18, position: 'relative' }}>
+                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', lineHeight: 1, display: 'block' }}>{d.label || '⭐'}</span>
                 </div>
                 <div>
                   <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{d.title}</h4>
@@ -231,8 +235,10 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                   return (
                     <div key={idx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {isEmoji ? <span style={{ fontSize: 16 }}>{item.icone}</span> : Icon && <Icon style={{ width: 16, height: 16, color: '#4CFF5C' }} />}
+                        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', position: 'relative' }}>
+                          {isEmoji
+                            ? <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, lineHeight: 1, display: 'block' }}>{item.icone}</span>
+                            : Icon && <Icon style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, color: '#4CFF5C', display: 'block' }} />}
                         </div>
                         {item.quantidade && <span style={{ fontSize: 24, fontWeight: 800, color: 'rgba(76,255,92,0.2)', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{item.quantidade}</span>}
                       </div>
@@ -250,8 +256,10 @@ function PdfEntregaveis({ entregaveis }: { entregaveis: any[] }) {
                   const Icon = !isEmoji ? (iconMap[card.icone] || ClipboardList) : null
                   return (
                     <div key={cIdx} style={{ padding: 22, background: '#111', borderRadius: 14, border: '1px solid #222' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                        {isEmoji ? <span style={{ fontSize: 16 }}>{card.icone}</span> : Icon && <Icon style={{ width: 16, height: 16, color: '#4CFF5C' }} />}
+                      <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(76,255,92,0.1)', position: 'relative', marginBottom: 12 }}>
+                        {isEmoji
+                          ? <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, lineHeight: 1, display: 'block' }}>{card.icone}</span>
+                          : Icon && <Icon style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, color: '#4CFF5C', display: 'block' }} />}
                       </div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{card.titulo}</h4>
                       {card.itens && card.itens.map((item: any, iIdx: number) => (
@@ -298,7 +306,7 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
           {hasDiscount && (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 6 }}>
               <p style={{ fontSize: 22, fontWeight: 700, color: '#555', textDecoration: 'line-through', opacity: 0.5, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{valorTabela}</p>
-              <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#4CFF5C', background: 'rgba(76,255,92,0.1)', padding: '3px 10px', borderRadius: 999, fontWeight: 700, marginBottom: 3 }}>-{proposal.discount_pct}%</span>
+              <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#4CFF5C', background: 'rgba(76,255,92,0.1)', padding: '3px 10px', borderRadius: 999, fontWeight: 700, marginBottom: 3, display: 'inline-flex', alignItems: 'center', lineHeight: 1 }}>-{proposal.discount_pct}%</span>
             </div>
           )}
           <p style={{ fontSize: 48, fontWeight: 700, color: '#4CFF5C', margin: '20px 0', fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{valorFinal}</p>
@@ -310,7 +318,7 @@ function PdfInvestimento({ proposal }: { proposal: Proposal }) {
             {options.map((cond, i) => (
               <div key={i} style={{ position: 'relative', padding: 16, background: '#0A0A0A', borderRadius: 10, textAlign: 'center', border: `1px solid ${cond.recomendado ? '#4CFF5C' : '#333'}` }}>
                 {cond.recomendado && (
-                  <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: '#4CFF5C', color: '#000', fontSize: 8, fontWeight: 700, padding: '2px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: 1 }}>Recomendado</span>
+                  <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: '#4CFF5C', color: '#000', fontSize: 8, fontWeight: 700, padding: '2px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: 1, display: 'inline-flex', alignItems: 'center', lineHeight: 1, whiteSpace: 'nowrap' }}>Recomendado</span>
                 )}
                 <p style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>{cond.titulo}</p>
                 <p style={{ fontSize: 20, fontWeight: 700, color: '#f0f0f0', marginBottom: 4, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>{cond.valor}</p>
@@ -373,12 +381,14 @@ function PdfProximosPassos({ validityDate }: { validityDate: string }) {
               <div style={{ position: 'absolute', top: 22, left: 72, width: 52, height: 1, background: step.status === 'done' ? 'rgba(76,255,92,0.3)' : '#333' }} />
             )}
             <div style={{
-              width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginBottom: 10, border: '2px solid',
+              width: 44, height: 44, borderRadius: '50%', position: 'relative', fontWeight: 700, fontSize: 16, marginBottom: 10, border: '2px solid',
               borderColor: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555',
               background: step.status === 'done' ? 'rgba(76,255,92,0.1)' : step.status === 'current' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555',
             }}>
-              {step.status === 'done' ? <Check style={{ width: 18, height: 18 }} /> : step.status === 'locked' ? <Lock style={{ width: 14, height: 14 }} /> : step.num}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {step.status === 'done' ? <Check style={{ width: 18, height: 18, display: 'block' }} /> : step.status === 'locked' ? <Lock style={{ width: 14, height: 14, display: 'block' }} /> : step.num}
+              </div>
             </div>
             <h4 style={{ fontSize: 12, fontWeight: 700, color: step.status === 'done' ? '#4CFF5C' : step.status === 'current' ? '#f0f0f0' : '#555' }}>{step.title}</h4>
           </div>
@@ -399,7 +409,7 @@ function PdfFooter() {
             Av. Sagitário, 138 - Edifício City, Salas 2506 à 2513 - Alphaville Conde II, Barueri - SP, 06473-073
           </p>
         </div>
-        <img src='/proposal-assets/Asset3.svg' alt='Hiro Films' style={{ height: 80 }} />
+        <img src={ASSET3_SVG_DATA_URI} alt='Hiro Films' style={{ height: 80 }} />
       </div>
       <div style={{ borderTop: '1px solid #333', marginTop: 30, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ fontSize: 10, color: '#666' }}>Esta proposta é confidencial e destinada exclusivamente ao destinatário.</p>
