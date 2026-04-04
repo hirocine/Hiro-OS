@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X } from 'lucide-react'
+import { Check, Lock, Video, Smartphone, Camera, ClipboardList, Clapperboard, Palette, X, Star, Clock, Film, Zap, Target, TrendingUp, Eye, Heart, Lightbulb, MessageSquare, Award, Globe, Users, Megaphone, BarChart3, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Proposal } from '../../types'
 
