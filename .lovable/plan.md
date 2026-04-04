@@ -1,18 +1,45 @@
 
 
-# Fix: Thumbnails dos cases piscando a cada interação
+# Fix: Entregáveis não aparecem na página de gerenciamento
 
 ## Problema
 
-O componente `VimeoThumbnail` está definido **dentro** da função do componente `ProposalDetails`. Isso significa que a cada re-render (qualquer digitação, clique, mudança de estado), o React cria uma nova "definição" de componente, desmonta o antigo e monta um novo -- causando a piscada e re-fetch das thumbnails.
+Há um **descompasso de formato** entre como o Wizard salva e como o ProposalDetails lê os entregáveis.
+
+**Wizard salva** no banco como array de blocos:
+```json
+[
+  { "label": "Output", "titulo": "Entregas do Projeto", "itens": [...] },
+  { "label": "Serviços", "titulo": "O que está incluso", "cards": [...] }
+]
+```
+
+**ProposalDetails espera** ao carregar:
+```json
+{ "entregaveis": [...], "incluso_categories": [...] }
+```
+ou
+```json
+[{ "entregaveis": [...], "incluso_categories": [...] }]
+```
+
+Como o formato não bate (`itens` vs `entregaveis`, `cards` vs `incluso_categories`), o parsing cai no `else` e inicializa tudo vazio.
 
 ## Solução
 
-Mover o componente `VimeoThumbnail` para **fora** do componente `ProposalDetails`, no nível do módulo. Como ele não depende de nenhum estado do componente pai (recebe tudo via props), basta extraí-lo.
+Corrigir o parsing no `useEffect` do `ProposalDetails.tsx` (linhas ~219-233) para reconhecer o formato salvo pelo Wizard:
+
+1. Verificar se `rawEntregaveis` é um array com objetos contendo `label`
+2. Extrair os itens do bloco `"Output"` e mapear para o formato `EntregavelItem[]`
+3. Extrair os cards do bloco `"Serviços"` e reconstruir as `incluso_categories`
+4. Manter compatibilidade com o formato antigo (caso já exista)
+
+Também ajustar o `saveSection('entregaveis')` para salvar de volta no formato que o Wizard e a página pública esperam (array de blocos com `label`), garantindo consistência bidirecional.
 
 ## Alteração
 
 **Arquivo: `src/pages/ProposalDetails.tsx`**
-- Recortar a definição de `VimeoThumbnail` (linhas ~427-461) de dentro do componente e colar antes da definição do `ProposalDetails`
-- Nenhuma outra mudança necessária -- props e uso permanecem idênticos
+
+- **Parsing (useEffect)**: Adicionar detecção do formato `[{ label: "Output", itens: [...] }, { label: "Serviços", cards: [...] }]` e converter para o estado interno `{ entregaveis, incluso_categories }`
+- **Save (saveSection)**: Ao salvar `entregaveis`, converter de volta para o formato de array de blocos antes de enviar ao banco
 
