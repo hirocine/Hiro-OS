@@ -1278,17 +1278,45 @@ export default function ProposalDetails() {
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Depoimento</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Depoimento</CardTitle>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => { setShowTestimonialBank(true); setTestimonialBankSearch(''); }}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Selecionar do Banco
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Nome</Label><Input value={testimonialForm.testimonial_name} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_name: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">Cargo</Label><Input value={testimonialForm.testimonial_role} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_role: e.target.value }))} /></div>
-                <div className="md:col-span-2 space-y-1.5"><Label className="text-xs">Texto</Label><Textarea value={testimonialForm.testimonial_text} onChange={e => setTestimonialForm(p => ({ ...p, testimonial_text: e.target.value }))} rows={4} /></div>
-              </div>
+              {testimonialForm.testimonial_name ? (
+                <div className="border rounded-xl bg-muted/30 p-5 flex gap-4 items-start">
+                  {testimonialForm.testimonial_image && (
+                    <Avatar className="h-14 w-14 shrink-0">
+                      <AvatarImage src={testimonialForm.testimonial_image} />
+                      <AvatarFallback>{testimonialForm.testimonial_name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{testimonialForm.testimonial_name}</p>
+                      {testimonialForm.testimonial_role && (
+                        <span className="text-xs text-muted-foreground">• {testimonialForm.testimonial_role}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 italic">"{testimonialForm.testimonial_text}"</p>
+                  </div>
+                  <Button size="icon" variant="ghost" className="shrink-0 h-8 w-8" onClick={() => setTestimonialForm({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' })}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="border border-dashed rounded-xl p-8 text-center text-muted-foreground">
+                  <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Nenhum depoimento selecionado</p>
+                  <p className="text-xs mt-1">Clique em "Selecionar do Banco" para escolher</p>
+                </div>
+              )}
             </CardContent>
             {testimonialDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
@@ -1298,6 +1326,128 @@ export default function ProposalDetails() {
               </CardFooter>
             )}
           </Card>
+
+          {/* Testimonial Bank Dialog */}
+          <Dialog open={showTestimonialBank} onOpenChange={setShowTestimonialBank}>
+            <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Banco de Depoimentos</DialogTitle>
+              </DialogHeader>
+              <Input placeholder="Buscar por nome..." value={testimonialBankSearch} onChange={e => setTestimonialBankSearch(e.target.value)} className="mb-3" />
+
+              {!showNewTestimonial ? (
+                <>
+                  <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                    {testimonialsBank
+                      .filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase()))
+                      .map(t => (
+                        <button
+                          key={t.id}
+                          className="w-full text-left border rounded-lg p-3 hover:bg-muted/50 transition-colors flex gap-3 items-start"
+                          onClick={() => {
+                            setTestimonialForm({
+                              testimonial_name: t.name,
+                              testimonial_role: t.role,
+                              testimonial_text: t.text,
+                              testimonial_image: t.image || '',
+                            });
+                            setShowTestimonialBank(false);
+                          }}
+                        >
+                          {t.image && (
+                            <Avatar className="h-10 w-10 shrink-0">
+                              <AvatarImage src={t.image} />
+                              <AvatarFallback>{t.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{t.name}</p>
+                            {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">"{t.text}"</p>
+                          </div>
+                        </button>
+                      ))}
+                    {testimonialsBank.filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase())).length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-4">Nenhum depoimento encontrado</p>
+                    )}
+                  </div>
+                  <Button variant="outline" className="w-full mt-3" onClick={() => { setShowNewTestimonial(true); setNewTestimonialForm({ name: '', role: '', text: '', image: '' }); }}>
+                    <Plus className="h-4 w-4 mr-2" /> Criar novo depoimento
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Nome *</Label>
+                    <Input value={newTestimonialForm.name} onChange={e => setNewTestimonialForm(p => ({ ...p, name: e.target.value }))} placeholder="Nome da pessoa" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Cargo</Label>
+                    <Input value={newTestimonialForm.role} onChange={e => setNewTestimonialForm(p => ({ ...p, role: e.target.value }))} placeholder="Cargo, Empresa" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Texto do depoimento *</Label>
+                    <Textarea value={newTestimonialForm.text} onChange={e => setNewTestimonialForm(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que a pessoa disse..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Foto</Label>
+                    <div className="flex items-center gap-3">
+                      {newTestimonialForm.image && (
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={newTestimonialForm.image} />
+                          <AvatarFallback>{newTestimonialForm.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <Button variant="outline" size="sm" disabled={uploadingTestimonialImage} onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          setUploadingTestimonialImage(true);
+                          try {
+                            const ext = file.name.split('.').pop();
+                            const path = `testimonials/${crypto.randomUUID()}.${ext}`;
+                            const { error } = await supabase.storage.from('orcamentos').upload(path, file, { upsert: true });
+                            if (error) throw error;
+                            const { data: urlData } = supabase.storage.from('orcamentos').getPublicUrl(path);
+                            setNewTestimonialForm(p => ({ ...p, image: urlData.publicUrl }));
+                          } catch (err) {
+                            toast.error('Erro ao fazer upload da foto');
+                          } finally {
+                            setUploadingTestimonialImage(false);
+                          }
+                        };
+                        input.click();
+                      }}>
+                        <Upload className="h-3.5 w-3.5 mr-1.5" /> {uploadingTestimonialImage ? 'Enviando...' : 'Upload'}
+                      </Button>
+                    </div>
+                  </div>
+                  <DialogFooter className="gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setShowNewTestimonial(false)}>Voltar</Button>
+                    <Button size="sm" disabled={!newTestimonialForm.name.trim() || !newTestimonialForm.text.trim() || createTestimonial.isPending} onClick={async () => {
+                      try {
+                        await createTestimonial.mutateAsync({
+                          name: newTestimonialForm.name.trim(),
+                          role: newTestimonialForm.role.trim(),
+                          text: newTestimonialForm.text.trim(),
+                          image: newTestimonialForm.image || null,
+                        });
+                        toast.success('Depoimento criado no banco!');
+                        setShowNewTestimonial(false);
+                      } catch {
+                        toast.error('Erro ao criar depoimento');
+                      }
+                    }}>
+                      <Check className="h-3.5 w-3.5 mr-1.5" /> Salvar no banco
+                    </Button>
+                  </DialogFooter>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </ResponsiveContainer>
