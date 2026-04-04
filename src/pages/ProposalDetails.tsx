@@ -914,13 +914,13 @@ export default function ProposalDetails() {
                         </div>
                       )}
                       <div className="p-3">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            {c.tipo && <Badge variant="secondary" className="text-[10px] mb-1">{c.tipo}</Badge>}
                             <p className="text-sm font-medium leading-tight">{c.titulo || 'Sem título'}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{c.descricao}</p>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0 self-center">
+                            {c.tipo && <Badge variant="secondary" className="text-[10px] whitespace-nowrap">{c.tipo}</Badge>}
                             <button
                               onClick={() => removeCase(i)}
                               className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
