@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
-  CalendarIcon, Plus, Trash2, MessageSquare, Video
+  CalendarIcon, Plus, Trash2, MessageSquare, Video,
+  ListChecks, MessageSquareQuote
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -25,7 +26,8 @@ import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
 import { useTestimonials } from '../hooks/useTestimonials';
-import type { DiagnosticoDor, EntregavelItem } from '../types';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem } from '../types';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES } from '../types';
 
 // ── Loading messages ──
@@ -49,6 +51,8 @@ const STEPS = [
   { key: 'dores', label: 'Dores', icon: MessageSquare },
   { key: 'cases', label: 'Portfólio', icon: Video },
   { key: 'entregaveis', label: 'Entregáveis', icon: Package },
+  { key: 'inclusos', label: 'Serviços Inclusos', icon: ListChecks },
+  { key: 'depoimento', label: 'Depoimento', icon: MessageSquareQuote },
   { key: 'investimento', label: 'Investimento', icon: DollarSign },
   { key: 'revisao', label: 'Revisão', icon: Check },
 ];
