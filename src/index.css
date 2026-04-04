@@ -703,17 +703,24 @@ body:has(.proposal-page),
     display: none !important;
   }
 
-  /* Force all animated elements visible */
-  .proposal-page [style*="opacity: 0"],
-  .proposal-page [style*="opacity:0"] {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-
+  /* Force ALL elements visible — animations set opacity:0 as initial state,
+     disabling animations alone leaves content invisible */
   .proposal-page * {
+    opacity: 1 !important;
     animation: none !important;
     transition: none !important;
+    transform: none !important;
+  }
+
+  /* Restore transforms needed for layout (centering etc) */
+  .proposal-page .-translate-x-1\/2,
+  .proposal-page .-translate-y-1\/2 {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  /* Font fallback — ensure text renders even if custom font fails to load */
+  .proposal-page, .proposal-page * {
+    font-family: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
   }
 
   /* Ensure text colors are preserved */
