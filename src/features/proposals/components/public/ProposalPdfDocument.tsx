@@ -108,17 +108,17 @@ function PdfHero({ proposal }: { proposal: Proposal }) {
 function PdfClients() {
   const logos = Array.from({ length: 13 }, (_, i) => `/logos/Logo ${i + 1}.png`)
   return (
-    <div style={{ padding: '40px 60px 50px' }}>
-      <p style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#4CFF5C', fontWeight: 700, marginBottom: 12, opacity: 1 }}>
+    <div style={{ padding: '30px 60px 40px' }}>
+      <p style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#4CFF5C', fontWeight: 700, marginBottom: 10 }}>
         Quem confia na Hiro Films
       </p>
-      <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 40, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif', color: '#f5f5f5', opacity: 1 }}>
+      <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, fontFamily: '"Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif', color: '#ffffff' }}>
         Nossos Clientes
       </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 24, alignItems: 'center', justifyItems: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 20, alignItems: 'center', justifyItems: 'center' }}>
         {logos.map((logo, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 55 }}>
-            <img src={logo} alt='' style={{ maxHeight: 45, maxWidth: 110, objectFit: 'contain', opacity: 0.7 }} />
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50 }}>
+            <img src={logo} alt='' style={{ maxHeight: 42, maxWidth: 105, objectFit: 'contain', opacity: 0.85 }} />
           </div>
         ))}
       </div>
@@ -439,10 +439,12 @@ export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
         }}
       >
         {/* Page 1: Hero + Clients */}
-        <div className='proposal-pdf-page' style={pageStyle}>
+        <div className='proposal-pdf-page' style={{ ...pageStyle, display: 'flex', flexDirection: 'column' }}>
           <PdfHero proposal={proposal} />
-          <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
-          <PdfClients />
+          <div style={{ marginTop: 'auto' }}>
+            <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
+            <PdfClients />
+          </div>
         </div>
 
         {/* Page 2: Diagnostico */}
