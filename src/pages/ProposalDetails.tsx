@@ -418,12 +418,18 @@ export default function ProposalDetails() {
         data = { diagnostico_dores: doresForm };
       } else if (section === 'cases') {
         data = { cases: casesForm };
-      } else if (section === 'entregaveis') {
-        // Save in wizard block format for compatibility with public page
+      } else if (section === 'output') {
         data = {
           entregaveis: [
-            { label: 'Output', titulo: 'Entregas do Projeto', itens: entregaveisForm.entregaveis },
-            { label: 'Serviços', titulo: 'O que está incluso', cards: entregaveisForm.incluso_categories },
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: outputForm },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: inclusoForm },
+          ],
+        };
+      } else if (section === 'incluso') {
+        data = {
+          entregaveis: [
+            { label: 'Output', titulo: 'Entregas do Projeto', itens: outputForm },
+            { label: 'Serviços', titulo: 'O que está incluso', cards: inclusoForm },
           ],
         };
       }
