@@ -438,15 +438,15 @@ export const ProposalPdfDocument = forwardRef<HTMLDivElement, Props>(
           pointerEvents: 'none',
         }}
       >
-        {/* Page 1: Hero */}
+        {/* Page 1: Hero + Clients */}
         <div className='proposal-pdf-page' style={pageStyle}>
           <PdfHero proposal={proposal} />
+          <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
+          <PdfClients />
         </div>
 
-        {/* Page 2: Clients + Diagnostico */}
+        {/* Page 2: Diagnostico */}
         <div className='proposal-pdf-page' style={pageStyle}>
-          <PdfClients />
-          <div style={{ margin: '0 60px', height: 1, background: '#222' }} />
           <PdfDiagnostico proposal={proposal} />
         </div>
 
