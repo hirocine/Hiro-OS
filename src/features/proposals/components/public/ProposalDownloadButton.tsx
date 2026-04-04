@@ -23,7 +23,7 @@ export function ProposalDownloadButton({ whatsappNumber, projectName }: Props) {
     return () => observer.disconnect()
   }, [])
 
-  const phone = whatsappNumber || '5511951513862'
+  const phone = (whatsappNumber || '5511951513862').replace(/\D/g, '')
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(`Olá! Gostaria de aprovar a proposta do projeto ${projectName}.`)}`
 
   return (

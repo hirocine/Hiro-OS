@@ -312,7 +312,7 @@ export default function ProposalDetails() {
           client_name: clientForm.client_name.trim(),
           project_name: clientForm.project_name.trim(),
           client_responsible: clientForm.client_responsible.trim() || null,
-          whatsapp_number: clientForm.whatsapp_number.trim() || null,
+          whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').trim() || null,
           company_description: clientForm.company_description.trim() || null,
         };
       } else if (section === 'invest') {
@@ -624,7 +624,7 @@ export default function ProposalDetails() {
               <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">WhatsApp</Label><Input value={clientForm.whatsapp_number} onChange={e => setClientForm(p => ({ ...p, whatsapp_number: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { const digits = e.target.value.replace(/\D/g, ''); let formatted = digits; if (digits.length > 2) formatted = `(${digits.slice(0,2)}) ${digits.slice(2)}`; if (digits.length > 7) formatted = `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7,11)}`; setClientForm(p => ({ ...p, whatsapp_number: formatted })); }} maxLength={15} placeholder="(11) 95151-3862" /></div>
               <div className="space-y-1.5"><Label className="text-xs">Descrição da empresa</Label><Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={3} /></div>
             </CardContent>
             {clientDirty && (
