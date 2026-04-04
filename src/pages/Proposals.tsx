@@ -11,7 +11,20 @@ import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
   const navigate = useNavigate();
-  const { data: proposals, deleteProposal } = useProposals();
+  const { data: proposals, deleteProposal, createDraft } = useProposals();
+  const [creatingDraft, setCreatingDraft] = useState(false);
+
+  const handleNewProposal = async () => {
+    setCreatingDraft(true);
+    try {
+      const id = await createDraft.mutateAsync();
+      navigate(`/orcamentos/${id}`);
+    } catch {
+      // error handled by mutation
+    } finally {
+      setCreatingDraft(false);
+    }
+  };
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
