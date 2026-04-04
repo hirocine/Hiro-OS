@@ -82,9 +82,13 @@ export function ProposalDownloadButton({ whatsappNumber, projectName, proposal }
     setIsGenerating(true)
 
     try {
-      // 1. Pre-fetch thumbnails
-      const thumbs = await fetchCaseThumbnails(proposal.cases)
+      // 1. Pre-fetch thumbnails + convert footer SVG to PNG in parallel
+      const [thumbs, pngUri] = await Promise.all([
+        fetchCaseThumbnails(proposal.cases),
+        svgToPngDataUri('/proposal-assets/Asset3.svg', 120).catch(() => ''),
+      ])
       setCaseThumbnails(thumbs)
+      setFooterPng(pngUri)
 
       // 2. Mount the off-screen PDF document
       setShowPdfDoc(true)
