@@ -940,11 +940,26 @@ export function ProposalGuidedWizard() {
                   >
                     <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
                     {c.vimeo_id ? (
-                      <img
-                        src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
-                        alt={c.campaign_name}
-                        className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
-                      />
+                      <>
+                        <img
+                          src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
+                          alt={c.campaign_name}
+                          className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.fallback) {
+                              target.dataset.fallback = '1';
+                              target.src = `https://i.vimeocdn.com/video/${extractVimeoId(c.vimeo_id)}_640x360.jpg`;
+                            } else {
+                              target.style.display = 'none';
+                              (target.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                            }
+                          }}
+                        />
+                        <div className="hidden w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Video className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      </>
                     ) : (
                       <div className="w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <Video className="h-6 w-6 text-muted-foreground" />
@@ -1058,7 +1073,7 @@ export function ProposalGuidedWizard() {
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-start gap-3">
                     <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
-                      <SelectTrigger className="w-16 h-8"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-20 h-8 text-lg"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {ICON_OPTIONS.map(opt => (
                           <SelectItem key={opt.value} value={opt.value}>{opt.value} {opt.label}</SelectItem>
