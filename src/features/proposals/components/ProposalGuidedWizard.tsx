@@ -106,6 +106,7 @@ export function ProposalGuidedWizard() {
   const [showQuestions, setShowQuestions] = useState(false);
   const [analyzeResultState, setAnalyzeResultState] = useState<AnalyzeResult | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [step1Errors, setStep1Errors] = useState({ projectNumber: false, clientName: false, projectName: false, whatsapp: false, validityDate: false });
 
   // Form data
   const [clientName, setClientName] = useState('');
@@ -576,18 +577,32 @@ export function ProposalGuidedWizard() {
 
   // ── Step navigation ──
   const goNext = async () => {
-    if (step === 1 && projectNumber.trim()) {
-      const { data: existing } = await supabase
-        .from('orcamentos')
-        .select('id, project_name, client_name')
-        .eq('project_number', projectNumber.trim())
-        .maybeSingle();
-      if (existing) {
-        toast.error(
-          `Nº ${projectNumber} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
-          { duration: 6000 }
-        );
+    if (step === 1) {
+      const errors = {
+        projectNumber: !projectNumber.trim(),
+        clientName: !clientName.trim(),
+        projectName: !projectName.trim(),
+        whatsapp: whatsappNumber.replace(/\D/g, '').length < 12,
+        validityDate: !validityDate,
+      };
+      setStep1Errors(errors);
+      if (Object.values(errors).some(Boolean)) {
+        toast.error('Preencha todos os campos obrigatórios');
         return;
+      }
+      if (projectNumber.trim()) {
+        const { data: existing } = await supabase
+          .from('orcamentos')
+          .select('id, project_name, client_name')
+          .eq('project_number', projectNumber.trim())
+          .maybeSingle();
+        if (existing) {
+          toast.error(
+            `Nº ${projectNumber} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
+            { duration: 6000 }
+          );
+          return;
+        }
       }
     }
     setStep(prev => Math.min(prev + 1, STEPS.length - 1));
@@ -819,17 +834,17 @@ export function ProposalGuidedWizard() {
               <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nº do Projeto</Label>
-                  <Input value={projectNumber} onChange={e => setProjectNumber(e.target.value)} placeholder="Ex: 001" maxLength={4} />
+                  <Input value={projectNumber} onChange={e => { setProjectNumber(e.target.value); setStep1Errors(p => ({ ...p, projectNumber: false })); }} placeholder="Ex: 001" maxLength={4} className={step1Errors.projectNumber ? 'border-destructive' : ''} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center">Nome do Cliente {aiBadge('client_name')}</Label>
-                  <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Ex: Cacau Show" />
+                  <Input value={clientName} onChange={e => { setClientName(e.target.value); setStep1Errors(p => ({ ...p, clientName: false })); }} placeholder="Ex: Cacau Show" className={step1Errors.clientName ? 'border-destructive' : ''} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center">Nome do Projeto {aiBadge('project_name')}</Label>
-                  <Input value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="Ex: Campanha Natal 2026" />
+                  <Input value={projectName} onChange={e => { setProjectName(e.target.value); setStep1Errors(p => ({ ...p, projectName: false })); }} placeholder="Ex: Campanha Natal 2026" className={step1Errors.projectName ? 'border-destructive' : ''} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center">Responsável {aiBadge('client_responsible')}</Label>
@@ -839,18 +854,23 @@ export function ProposalGuidedWizard() {
               <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs">WhatsApp para Aprovação</Label>
-                  <Input value={whatsappNumber} onChange={e => setWhatsappNumber(formatWhatsApp(e.target.value))} placeholder="+55 (11) 95151-3862" maxLength={20} />
+                  <Input value={whatsappNumber} onChange={e => { setWhatsappNumber(formatWhatsApp(e.target.value)); setStep1Errors(p => ({ ...p, whatsapp: false })); }} placeholder="+55 (11) 95151-3862" maxLength={20} className={step1Errors.whatsapp ? 'border-destructive' : ''} />
+                  {whatsappNumber.replace(/\D/g, '').length >= 12 && (
+                    <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 text-xs text-green-600 hover:text-green-700 px-2" onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')}>
+                      Testar WhatsApp →
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Validade da Proposta</Label>
                   <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !validityDate && 'text-muted-foreground')}>
+                      <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !validityDate && 'text-muted-foreground', step1Errors.validityDate && 'border-destructive')}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {validityDate ? format(validityDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={validityDate} onSelect={(date) => { setValidityDate(date); setCalendarOpen(false); }} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
+                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={validityDate} onSelect={(date) => { setValidityDate(date); setCalendarOpen(false); setStep1Errors(p => ({ ...p, validityDate: false })); }} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
                   </Popover>
                 </div>
               </div>
@@ -871,14 +891,14 @@ export function ProposalGuidedWizard() {
                     </Button>
                   )}
                 </div>
-                <Textarea value={companyDescription} onChange={e => setCompanyDescription(e.target.value)} rows={3} placeholder="Descrição breve da empresa do cliente..." />
+                <Textarea value={companyDescription} onChange={e => setCompanyDescription(e.target.value)} rows={4} placeholder="Descrição breve da empresa do cliente..." />
               </div>
             </CardContent>
           </Card>
 
           <div className="flex justify-between">
             <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
-            <Button onClick={goNext} disabled={!clientName.trim() || !projectName.trim()}>
+            <Button onClick={goNext}>
               Continuar <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
