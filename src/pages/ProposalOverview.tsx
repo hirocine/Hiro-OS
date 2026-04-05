@@ -162,11 +162,8 @@ export default function ProposalOverview() {
 
       {/* Section 2 — Dados do Cliente */}
       <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base">Dados do Cliente</CardTitle>
-          <Button variant="link" size="sm" className="text-xs" onClick={() => navigate(`/orcamentos/${id}`)}>
-            Editar →
-          </Button>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 gap-px bg-border rounded-lg overflow-hidden border">
