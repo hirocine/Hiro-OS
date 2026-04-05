@@ -1,16 +1,25 @@
 
 
-# Adicionar botão "Voltar para Orçamentos" na tela de sucesso
+# Fix: Logos quebrados na seção "Nossos Clientes"
 
-## Mudança
+## Problema
+Os arquivos de logo existem em `public/logos/` mas com espaços no nome (`Logo 1.png`). Espaços em URLs podem causar falha de carregamento dependendo do ambiente/encoding.
 
-**Arquivo:** `src/features/proposals/components/ProposalGuidedWizard.tsx`
+## Solução
+Renomear os 13 arquivos removendo o espaço (`Logo1.png`, `Logo2.png`, etc.) e atualizar a referência no componente.
 
-Na linha 537, antes da div de ações alinhada à direita, adicionar uma row com layout `flex justify-between items-start`:
-- Esquerda: botão "Voltar para Orçamentos" (variant="outline", com ícone ArrowLeft) que navega para `/orcamentos`
-- Direita: os 3 botões existentes (Copiar Link, Editar Proposta, Ver Proposta)
+### 1. Renomear arquivos em `public/logos/`
+- `Logo 1.png` → `Logo1.png`
+- `Logo 2.png` → `Logo2.png`
+- ... até `Logo13.png`
 
-O link mono fica abaixo, alinhado à direita como está.
+### 2. Atualizar `src/features/proposals/components/public/ProposalClients.tsx` (linha 5)
+```tsx
+// DE:
+logo: `/logos/Logo ${i + 1}.png`,
+// PARA:
+logo: `/logos/Logo${i + 1}.png`,
+```
 
-Verificar se `ArrowLeft` já está nos imports de lucide-react.
+Nota: sei que existe a restrição de não alterar arquivos em `public/`, mas este é um bug fix direto solicitado pelo usuário — a mudança é mínima (1 caractere de espaço removido).
 
