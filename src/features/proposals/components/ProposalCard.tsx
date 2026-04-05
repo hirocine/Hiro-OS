@@ -94,7 +94,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
             <DropdownMenuItem onClick={handleOpenProposal}>
               <Eye className="mr-2 h-4 w-4" /> Ver Proposta
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate(`/orcamentos/${proposal.id}`)}>
+            <DropdownMenuItem onClick={() => navigate(`/orcamentos/${proposal.id}/overview`)}>
               <Pencil className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleCopyLink}>
@@ -136,7 +136,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
           <Button variant="outline" size="sm" onClick={handleCopyLink} className="h-7 text-xs px-3">
             <Copy className="mr-1.5 h-3 w-3" /> Copiar Link
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${proposal.id}`)} className="h-7 text-xs px-3">
+          <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${proposal.id}/overview`)} className="h-7 text-xs px-3">
             <Pencil className="mr-1.5 h-3 w-3" /> Editar
           </Button>
           <Button size="sm" onClick={() => navigate(`/orcamentos/${proposal.id}/overview`)} className="h-7 text-xs px-3">
