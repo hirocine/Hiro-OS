@@ -753,7 +753,7 @@ export default function ProposalDetails() {
             </CardContent>
             {clientDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('client')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('client')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -791,7 +791,7 @@ export default function ProposalDetails() {
             </CardContent>
             {investDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('invest')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('invest')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -811,7 +811,7 @@ export default function ProposalDetails() {
             </CardContent>
             {diagDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('diag')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('diag')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -877,7 +877,7 @@ export default function ProposalDetails() {
             </CardContent>
             {doresDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('dores')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('dores')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -1062,7 +1062,7 @@ export default function ProposalDetails() {
             </CardContent>
             {casesDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('cases')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('cases')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -1267,7 +1267,7 @@ export default function ProposalDetails() {
             </CardContent>
             {outputDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('output')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('output')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
                 </Button>
               </CardFooter>
@@ -1340,7 +1340,7 @@ export default function ProposalDetails() {
             </CardContent>
             {inclusoDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('incluso')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('incluso')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
                 </Button>
               </CardFooter>
@@ -1390,7 +1390,7 @@ export default function ProposalDetails() {
             </CardContent>
             {testimonialDirty && (
               <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => saveSection('testimonial')} disabled={updateProposal.isPending}>
+                <Button size="sm" onClick={() => handleSaveClick('testimonial')} disabled={updateProposal.isPending}>
                   <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                 </Button>
               </CardFooter>
@@ -1592,6 +1592,27 @@ export default function ProposalDetails() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Version Dialog */}
+      <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Como deseja salvar?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Você pode alterar a versão atual ou criar uma nova versão desta proposta.
+          </p>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => handleVersionChoice('update')} disabled={createNewVersion.isPending}>
+              Alterar esta versão
+            </Button>
+            <Button onClick={() => handleVersionChoice('new')} disabled={createNewVersion.isPending}>
+              {createNewVersion.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : null}
+              Criar nova versão
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ResponsiveContainer>
   );
 }

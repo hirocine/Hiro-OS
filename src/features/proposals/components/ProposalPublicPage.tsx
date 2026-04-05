@@ -1,8 +1,8 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { ProposalNavbar } from './public/ProposalNavbar';
 import { ProposalHero } from './public/ProposalHero';
 import { ProposalClients } from './public/ProposalClients';
