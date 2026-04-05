@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send, Loader2, User } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,6 +80,25 @@ export default function ProposalOverview() {
         if (data && data.length > 1) setVersions(data);
       });
   }, [proposal]);
+
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  useEffect(() => {
+    if (!proposal?.id) return;
+    setHistoryLoading(true);
+    supabase
+      .from('audit_logs')
+      .select('id, action, user_email, created_at')
+      .eq('table_name', 'orcamentos')
+      .eq('record_id', proposal.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        setHistory(data || []);
+        setHistoryLoading(false);
+      });
+  }, [proposal?.id]);
 
   const handleSetLatest = async (versionId: string) => {
     if (!proposal) return;
@@ -353,7 +372,42 @@ export default function ProposalOverview() {
         </Card>
       )}
 
-      {/* Section 6 — Placeholder */}
+      {/* Section 6 — Histórico de Alterações */}
+      <Card>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" /> Histórico de Alterações
+          </h3>
+        </div>
+        <CardContent className="pt-0">
+          {historyLoading ? (
+            <div className="py-6 flex justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : history.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Nenhuma alteração registrada ainda.</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {history.map((entry) => (
+                <div key={entry.id} className="flex items-start justify-between px-2 py-3 gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm">{entry.action}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{entry.user_email || 'Sistema'}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground shrink-0 mt-1">
+                    {format(new Date(entry.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </ResponsiveContainer>
   );
 }
