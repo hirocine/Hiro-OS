@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil } from 'lucide-react';
+import { Copy, ExternalLink, Trash2, Calendar, Building2, MoreHorizontal, Eye, DollarSign, User, Pencil, EyeOff } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -111,6 +111,16 @@ export function ProposalCard({ proposal, onDelete }: Props) {
             <Badge variant="destructive" className="text-xs px-2 py-0.5">
               Expirada
             </Badge>
+          )}
+          {proposal.views_count > 0 ? (
+            <Badge variant="outline" className="text-xs px-2 py-0.5">
+              <Eye className="h-3 w-3 mr-1" />
+              {proposal.views_count} {proposal.views_count === 1 ? 'visualização' : 'visualizações'}
+            </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <EyeOff className="h-3 w-3" /> Não visualizada
+            </span>
           )}
         </div>
 

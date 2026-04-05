@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useProposalDetails } from '../hooks/useProposalDetails';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { ProposalNavbar } from './public/ProposalNavbar';
 import { ProposalHero } from './public/ProposalHero';
@@ -21,6 +23,51 @@ function GlowSpot({ className }: { className: string }) {
 export function ProposalPublicPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: proposal, isLoading, error } = useProposalDetails(slug);
+  const viewIdRef = useRef<string | null>(null);
+  const entryTimeRef = useRef<number>(Date.now());
+  const trackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!proposal || trackedRef.current) return;
+    trackedRef.current = true;
+
+    const deviceType = /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+
+    const trackView = async () => {
+      try {
+        const { data } = await supabase
+          .from('proposal_views' as any)
+          .insert({
+            proposal_id: proposal.id,
+            user_agent: navigator.userAgent,
+            device_type: deviceType,
+            referrer: document.referrer || null,
+          } as any)
+          .select('id')
+          .single();
+
+        if (data) viewIdRef.current = (data as any).id;
+
+        await supabase.rpc('increment_proposal_views' as any, { proposal_id: proposal.id });
+      } catch (e) {
+        console.error('Failed to track view:', e);
+      }
+    };
+
+    trackView();
+
+    const handleBeforeUnload = () => {
+      if (!viewIdRef.current) return;
+      const seconds = Math.round((Date.now() - entryTimeRef.current) / 1000);
+      navigator.sendBeacon(
+        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/proposal_views?id=eq.${viewIdRef.current}`,
+        JSON.stringify({ time_on_page_seconds: seconds })
+      );
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [proposal]);
 
   if (isLoading) {
     return null;

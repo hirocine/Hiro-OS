@@ -32,6 +32,7 @@ export function useProposalDetails(slug: string | undefined) {
         entregaveis: Array.isArray((data as any).entregaveis) ? (data as any).entregaveis : [],
         cases: Array.isArray((data as any).cases) ? (data as any).cases : [],
         whatsapp_number: (data as any).whatsapp_number || null,
+        views_count: (data as any).views_count || 0,
       } as unknown as Proposal;
     },
     enabled: !!slug,
