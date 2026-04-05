@@ -306,7 +306,7 @@ export default function ProposalOverview() {
           {viewsLoading ? (
             <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : !views || views.length === 0 ? (
-            <EmptyState icon={EyeOff} title="Nenhuma visualização registrada" compact />
+            <EmptyState icon={EyeOff} title="Nenhuma visualização registrada" description="As visualizações aparecerão aqui quando o link for acessado." compact />
           ) : (
             <div>
               {views.map((view, i) => {
@@ -407,7 +407,7 @@ export default function ProposalOverview() {
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           ) : history.length === 0 ? (
-            <EmptyState icon={Clock} title="Nenhuma alteração registrada ainda." compact />
+            <EmptyState icon={Clock} title="Nenhuma alteração registrada" description="O histórico de alterações aparecerá aqui automaticamente." compact />
           ) : (
             <div className="divide-y divide-border">
               {history.map((entry) => (
