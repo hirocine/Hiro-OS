@@ -140,7 +140,7 @@ export default function ProposalDetails() {
   const [casesBankSearch, setCasesBankSearch] = useState('');
   const [casesBankSelection, setCasesBankSelection] = useState<CaseItem[]>([]);
   const [showNewCase, setShowNewCase] = useState(false);
-  const [newCaseForm, setNewCaseForm] = useState({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [] as string[], destaque: false });
+  const [newCaseForm, setNewCaseForm] = useState({ client_name: '', campaign_name: '', vimeo_url: '', tags: [] as string[], destaque: false });
   const [showTestimonialBank, setShowTestimonialBank] = useState(false);
   const [testimonialBankSearch, setTestimonialBankSearch] = useState('');
   const [showNewTestimonial, setShowNewTestimonial] = useState(false);
@@ -508,7 +508,7 @@ export default function ProposalDetails() {
     setCasesBankSelection([...casesForm]);
     setCasesBankSearch('');
     setShowNewCase(false);
-    setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+    setNewCaseForm({ client_name: '', campaign_name: '', vimeo_url: '', tags: [], destaque: false });
     setShowCasesBank(true);
   };
 
@@ -527,11 +527,20 @@ export default function ProposalDetails() {
     setShowCasesBank(false);
   };
 
+  const parseVimeoUrl = (url: string) => {
+    const match = url.match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
+    if (!match) return null;
+    const hashFromQuery = url.match(/[?&]h=([a-zA-Z0-9]+)/);
+    return { vimeo_id: match[1], vimeo_hash: match[2] || hashFromQuery?.[1] || '' };
+  };
+
   const handleCreateCase = async () => {
     if (!newCaseForm.client_name.trim() || !newCaseForm.campaign_name.trim()) return;
+    const parsed = parseVimeoUrl(newCaseForm.vimeo_url);
+    const vimeo_id = parsed?.vimeo_id || '';
+    const vimeo_hash = parsed?.vimeo_hash || '';
     try {
-      const created = await createCase.mutateAsync(newCaseForm);
-      // Also add to selection
+      const created = await createCase.mutateAsync({ ...newCaseForm, vimeo_id, vimeo_hash });
       setCasesBankSelection(prev => [...prev, {
         tipo: created.tipo,
         titulo: created.campaign_name,
@@ -540,7 +549,7 @@ export default function ProposalDetails() {
         vimeoHash: created.vimeo_hash,
         destaque: created.destaque,
       }]);
-      setNewCaseForm({ client_name: '', campaign_name: '', vimeo_id: '', vimeo_hash: '', tags: [], destaque: false });
+      setNewCaseForm({ client_name: '', campaign_name: '', vimeo_url: '', tags: [], destaque: false });
       setShowNewCase(false);
       toast.success('Case criado e adicionado!');
     } catch {
@@ -1114,13 +1123,15 @@ export default function ProposalDetails() {
                           <Label className="text-xs">Campanha</Label>
                           <Input value={newCaseForm.campaign_name} onChange={e => setNewCaseForm(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Nome da campanha" />
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Vimeo ID</Label>
-                          <Input value={newCaseForm.vimeo_id} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_id: e.target.value }))} placeholder="123456789" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Vimeo Hash</Label>
-                          <Input value={newCaseForm.vimeo_hash} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_hash: e.target.value }))} placeholder="abc123def" />
+                        <div className="space-y-1.5 col-span-2">
+                          <Label className="text-xs">Link do Vimeo</Label>
+                          <Input value={newCaseForm.vimeo_url} onChange={e => setNewCaseForm(p => ({ ...p, vimeo_url: e.target.value }))} placeholder="https://vimeo.com/1234567890/abc123def" />
+                          {(() => {
+                            const parsed = parseVimeoUrl(newCaseForm.vimeo_url);
+                            return parsed ? (
+                              <img src={`https://vumbnail.com/${parsed.vimeo_id}.jpg`} alt="Preview" className="rounded-lg mt-2 w-full max-w-xs" />
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                       <div className="space-y-1.5">
