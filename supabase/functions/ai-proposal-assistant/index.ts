@@ -172,7 +172,7 @@ serve(async (req) => {
         );
       }
 
-      const prompt = `Pesquise sobre a empresa "${client_name}" e escreva um parágrafo curto (2-3 frases) descrevendo o que a empresa faz, seu segmento de atuação e posicionamento. Esse texto será usado como subtítulo de uma proposta comercial da Hiro Films para esse cliente. Responda APENAS com o parágrafo descritivo, sem prefixos ou explicações.`;
+      const prompt = `Pesquise sobre a empresa "${client_name}" e escreva uma descrição de exatamente 2-3 frases que inclua: o que a empresa faz, seu segmento de atuação, e um diferencial ou dado relevante (porte, número de marcas, presença de mercado, etc). Esse texto será usado como subtítulo de uma proposta comercial. Responda APENAS com o parágrafo descritivo, sem prefixos ou explicações.`;
 
       if (useAnthropic) {
         const response = await callAnthropic(
