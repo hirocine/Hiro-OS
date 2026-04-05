@@ -24,6 +24,13 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
+const extractVimeoId = (raw: string): string => {
+  if (!raw) return '';
+  if (/^\d+$/.test(raw)) return raw;
+  const match = raw.match(/(\d{6,})/);
+  return match ? match[1] : raw;
+};
 import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
@@ -617,7 +624,7 @@ export function ProposalWizard() {
                         <Checkbox checked={isSelected} className="shrink-0" />
                         {c.vimeo_id && (
                           <img
-                            src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                            src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
                             alt={c.campaign_name}
                             className="w-24 h-14 object-cover rounded shrink-0 bg-muted"
                           />

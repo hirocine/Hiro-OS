@@ -28,7 +28,7 @@ interface Props {
 export function ProposalCard({ proposal, onDelete }: Props) {
   const navigate = useNavigate();
   const status = statusMap[proposal.status] || statusMap.draft;
-  const daysLeft = differenceInDays(new Date(proposal.validity_date), new Date());
+  const daysLeft = differenceInDays(new Date(proposal.validity_date + 'T12:00:00'), new Date());
   const publicUrl = `${window.location.origin}/orcamento/${proposal.slug}`;
   const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proposal.final_value);
 
@@ -128,7 +128,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
           <div className="flex items-center gap-2">
             <Calendar className="h-3 w-3 text-muted-foreground/60 shrink-0" />
             <span>
-              Validade: {format(new Date(proposal.validity_date), "dd/MM/yyyy")}
+              Validade: {format(new Date(proposal.validity_date + 'T12:00:00'), "dd/MM/yyyy")}
             </span>
           </div>
         </div>

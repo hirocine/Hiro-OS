@@ -28,6 +28,13 @@ import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
 import { useTestimonials } from '../hooks/useTestimonials';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
+const extractVimeoId = (raw: string): string => {
+  if (!raw) return '';
+  if (/^\d+$/.test(raw)) return raw;
+  const match = raw.match(/(\d{6,})/);
+  return match ? match[1] : raw;
+};
 import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS } from '../types';
 
@@ -837,7 +844,7 @@ export function ProposalGuidedWizard() {
                     <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
                     {c.vimeo_id ? (
                       <img
-                        src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                        src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
                         alt={c.campaign_name}
                         className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
                       />
