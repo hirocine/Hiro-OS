@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -125,6 +126,7 @@ export default function ProposalDetails() {
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsBySlug(slug);
   const { updateProposal, deleteProposal, createNewVersion } = useProposals();
+  const queryClient = useQueryClient();
   const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
   const [showVersionDialog, setShowVersionDialog] = useState(false);
   const [pendingSaveSection, setPendingSaveSection] = useState<string | null>(null);
@@ -466,6 +468,7 @@ export default function ProposalDetails() {
       }
       await updateProposal.mutateAsync({ id: proposal.id, data });
       await refetch();
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
       toast.success('Alterações salvas!');
     } catch {
       toast.error('Erro ao salvar alterações');
@@ -509,6 +512,7 @@ export default function ProposalDetails() {
       const { data: urlData } = supabase.storage.from('orcamento-assets').getPublicUrl(path);
       await updateProposal.mutateAsync({ id: proposal.id, data: { client_logo: urlData.publicUrl } });
       await refetch();
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
       toast.success('Logo atualizada!');
     } catch {
       toast.error('Erro ao fazer upload da logo');
