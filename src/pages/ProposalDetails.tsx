@@ -741,10 +741,10 @@ export default function ProposalDetails() {
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação *</Label><Input className={clientErrors.whatsapp_number ? 'border-destructive' : ''} value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); setClientErrors(p => ({ ...p, whatsapp_number: false })); }} maxLength={20} placeholder="+55 (11) 95151-3862" />{clientErrors.whatsapp_number && <p className="text-xs text-destructive mt-1">Informe um número válido com DDD</p>}</div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Validade</Label>
+                  <Label className="text-xs">Validade *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''}`}>
+                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''} ${clientErrors.validity_date ? 'border-destructive' : ''}`}>
                         <Calendar className="h-4 w-4 mr-2" />
                         {clientForm.validity_date
                           ? new Date(clientForm.validity_date + 'T12:00:00').toLocaleDateString('pt-BR')
@@ -755,11 +755,14 @@ export default function ProposalDetails() {
                       <CalendarComponent
                         mode="single"
                         selected={clientForm.validity_date ? new Date(clientForm.validity_date + 'T12:00:00') : undefined}
-                        onSelect={(date) => setClientForm(p => ({ ...p, validity_date: date ? date.toLocaleDateString('en-CA') : '' }))}
+                        onSelect={(date) => { setClientForm(p => ({ ...p, validity_date: date ? date.toLocaleDateString('en-CA') : '' })); setClientErrors(p => ({ ...p, validity_date: false })); }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
+                  </Popover>
+                  {clientErrors.validity_date && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
+                </div>
                   </Popover>
                 </div>
               </div>
