@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Loader2 } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
@@ -137,20 +137,6 @@ export default function ProposalOverview() {
     navigate(`/orcamentos/${target?.slug}/overview`);
   };
 
-  const handleSendToClient = async () => {
-    if (!proposal) return;
-    const today = new Date().toLocaleDateString('en-CA');
-    const { error } = await supabase
-      .from('orcamentos')
-      .update({ status: 'sent', sent_date: today } as any)
-      .eq('id', proposal.id);
-    if (error) {
-      toast.error('Erro ao enviar proposta');
-    } else {
-      toast.success('Proposta enviada ao cliente!');
-      refetch();
-    }
-  };
 
   const totalViews = proposal?.views_count || 0;
   const lastView = views && views.length > 0 ? views[0] : null;
@@ -218,11 +204,6 @@ export default function ProposalOverview() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {proposal.status === 'draft' && (
-              <Button size="sm" onClick={handleSendToClient}>
-                <Send className="mr-1.5 h-4 w-4" /> Enviar ao Cliente
-              </Button>
-            )}
             <Button variant="outline" size="sm" onClick={handleCopyLink}>
               <Copy className="mr-1.5 h-4 w-4" /> Copiar Link
             </Button>
