@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
   CalendarIcon, Plus, Trash2, MessageSquare, Video,
-  ListChecks, MessageSquareQuote
+  ListChecks, MessageSquareQuote, Paperclip
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -36,7 +37,7 @@ const extractVimeoId = (raw: string): string => {
   return match ? match[1] : raw;
 };
 import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
-import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS } from '../types';
+import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
 const ANALYZE_MESSAGES = [
@@ -49,6 +50,14 @@ const FINALIZE_MESSAGES = [
   'Preparando os campos...',
   'Buscando dados da empresa...',
   'Quase pronto...',
+];
+
+// ── Payment presets ──
+const PAYMENT_PRESETS = [
+  { value: '50_50', label: '50% + 50%', text: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final' },
+  { value: '100_antecipado', label: '100% antecipado', text: '100% antecipado com 5% de desconto sobre o valor final' },
+  { value: '3x', label: '3x iguais', text: '3 parcelas iguais: 1ª no fechamento, 2ª na metade do projeto e 3ª na entrega do material final' },
+  { value: 'custom', label: 'Personalizado', text: '' },
 ];
 
 // ── Steps config ──
@@ -74,7 +83,7 @@ export function ProposalGuidedWizard() {
   } = useProposalAI();
   const { data: painPointsBank = [] } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
-  const { data: testimonialsBank = [] } = useTestimonials();
+  const { data: testimonialsBank = [], createTestimonial } = useTestimonials();
 
   // ── State ──
   const [step, setStep] = useState(0);
@@ -113,6 +122,13 @@ export function ProposalGuidedWizard() {
   // New case dialog
   const [showNewCaseDialog, setShowNewCaseDialog] = useState(false);
   const [newCase, setNewCase] = useState({ client_name: '', campaign_name: '', vimeo_url: '', tags: [] as string[], destaque: false });
+  // New testimonial dialog
+  const [showNewTestimonialDialog, setShowNewTestimonialDialog] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({ name: '', role: '', text: '', image: '' });
+  // Payment preset
+  const [paymentPreset, setPaymentPreset] = useState('50_50');
+  // PDF upload ref
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   // Track AI-filled fields
   const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
 
@@ -276,6 +292,43 @@ export function ProposalGuidedWizard() {
       toast.success('Case criado com sucesso!');
     } catch {
       toast.error('Erro ao criar case');
+    }
+  };
+
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (text) setTranscript(prev => prev ? prev + '\n\n' + text : text);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleCreateTestimonial = async () => {
+    if (!newTestimonial.name.trim() || !newTestimonial.text.trim()) {
+      toast.error('Preencha nome e depoimento.');
+      return;
+    }
+    try {
+      const result = await createTestimonial.mutateAsync({
+        name: newTestimonial.name,
+        role: newTestimonial.role,
+        text: newTestimonial.text,
+        image: newTestimonial.image || null,
+      });
+      setSelectedTestimonialId(result.id);
+      setTestimonialName(result.name);
+      setTestimonialRole(result.role);
+      setTestimonialText(result.text);
+      setTestimonialImage(result.image || '');
+      setShowNewTestimonialDialog(false);
+      setNewTestimonial({ name: '', role: '', text: '', image: '' });
+      toast.success('Depoimento criado com sucesso!');
+    } catch {
+      toast.error('Erro ao criar depoimento');
     }
   };
 
@@ -448,7 +501,7 @@ export function ProposalGuidedWizard() {
     <div className="max-w-3xl mx-auto space-y-6 w-full">
       {/* ── Stepper ── */}
       {step > 0 && (
-        <div className="flex items-center gap-1 overflow-x-auto pb-2">
+        <div className="flex items-center gap-1 overflow-hidden" style={{ scrollbarWidth: 'none' }}>
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             const isActive = i === step;
@@ -465,7 +518,7 @@ export function ProposalGuidedWizard() {
                 )}
                 disabled={i > step}
               >
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="hidden sm:inline">{s.label}</span>
               </button>
             );
@@ -488,43 +541,66 @@ export function ProposalGuidedWizard() {
             </p>
           </div>
 
-          <div className="w-full max-w-2xl space-y-3">
-            <Textarea
-              value={transcript}
-              onChange={e => setTranscript(e.target.value)}
-              placeholder="Cole aqui o resumo da reunião do Google Meet..."
-              className="min-h-[240px] text-sm"
-            />
-            <p className="text-xs text-muted-foreground text-center">
-              No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
-            </p>
-          </div>
-
           {isLoadingAI ? (
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground animate-pulse">
+            <div className="w-full max-w-2xl space-y-4 animate-fade-in">
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg w-2/3 mx-auto" />
+              <p className="text-sm text-muted-foreground text-center animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <Button
-                size="lg"
-                onClick={handleAnalyzeBriefing}
-                disabled={!transcript.trim()}
-                className="gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                Analisar Briefing
-              </Button>
+            <>
+              <div className="w-full max-w-2xl">
+                <div className="relative rounded-xl border border-border bg-background p-1">
+                  <Textarea
+                    value={transcript}
+                    onChange={e => setTranscript(e.target.value)}
+                    placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
+                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none"
+                  />
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    <input
+                      ref={pdfInputRef}
+                      type="file"
+                      accept=".pdf,.txt"
+                      onChange={handlePdfUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => pdfInputRef.current?.click()}
+                    >
+                      <Paperclip className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Anexar</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleAnalyzeBriefing}
+                      disabled={!transcript.trim()}
+                      className="gap-1.5"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Analisar
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
+                </p>
+              </div>
+
               <button
                 onClick={() => { setSkippedBriefing(true); setStep(1); }}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Quero preencher manualmente →
               </button>
-            </div>
+            </>
           )}
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
@@ -538,15 +614,18 @@ export function ProposalGuidedWizard() {
       {step === 0 && showQuestions && analyzeResultState && (
         <div className="flex flex-col items-center min-h-[60vh] space-y-8 py-12">
           {isLoadingAI ? (
-            <div className="flex flex-col items-center gap-3 py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground animate-pulse">
+            <div className="w-full max-w-2xl space-y-4 py-12 animate-fade-in">
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg w-1/2 mx-auto" />
+              <p className="text-sm text-muted-foreground text-center animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
             <>
-              <div className="text-center space-y-3 max-w-lg">
+              <div className="text-center space-y-3 max-w-lg animate-fade-in">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <MessageSquare className="h-5 w-5 text-primary" />
                 </div>
@@ -561,7 +640,7 @@ export function ProposalGuidedWizard() {
                   <div
                     key={q.id}
                     className="animate-in fade-in slide-in-from-bottom-4"
-                    style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'backwards' }}
+                    style={{ opacity: 0, animationDelay: `${i * 200}ms`, animationFillMode: 'forwards' }}
                   >
                     <Card>
                       <CardContent className="pt-5 pb-5 space-y-3">
@@ -724,7 +803,7 @@ export function ProposalGuidedWizard() {
             <CardContent className="pt-6">
               <div className="space-y-1.5">
                 <Label className="text-xs flex items-center">Objetivo {aiBadge('objetivo')}</Label>
-                <Textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} rows={10} placeholder="O objetivo deste projeto é desenvolver..." />
+                <Textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} rows={10} placeholder="O objetivo deste projeto é desenvolver..." className="scrollbar-thin" />
               </div>
             </CardContent>
           </Card>
@@ -768,14 +847,32 @@ export function ProposalGuidedWizard() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{dor.label}</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="text-lg hover:bg-muted rounded p-0.5 transition-colors" title="Trocar emoji">{dor.label}</button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-3" align="start">
+                              <div className="grid grid-cols-6 gap-1">
+                                {DOR_EMOJI_OPTIONS.map(opt => (
+                                  <button
+                                    key={opt.value}
+                                    className={cn('text-lg p-1.5 rounded hover:bg-muted transition-colors', dor.label === opt.value && 'bg-primary/10')}
+                                    onClick={() => { const u = [...dores]; u[i] = { ...u[i], label: opt.value }; setDores(u); }}
+                                    title={opt.label}
+                                  >
+                                    {opt.value}
+                                  </button>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                           <Input value={dor.title} onChange={e => {
                             const u = [...dores]; u[i] = { ...u[i], title: e.target.value }; setDores(u);
                           }} className="text-sm font-medium h-8" />
                         </div>
                         <Textarea value={dor.desc} onChange={e => {
                           const u = [...dores]; u[i] = { ...u[i], desc: e.target.value }; setDores(u);
-                        }} rows={2} className="text-sm" />
+                        }} rows={2} className="text-sm scrollbar-thin" />
                       </div>
                       <Button variant="ghost" size="sm" onClick={() => setDores(dores.filter((_, j) => j !== i))}>
                         <Trash2 className="h-4 w-4" />
@@ -792,7 +889,7 @@ export function ProposalGuidedWizard() {
           {painPointsBank.length > 0 && dores.length < 3 && (
             <div className="space-y-3">
               <Label className="text-xs text-muted-foreground">Banco de dores</Label>
-              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto scrollbar-thin">
                 {painPointsBank.filter(pp => !dores.find(d => d.title === pp.title)).map(pp => (
                   <button
                     key={pp.id}
@@ -843,11 +940,26 @@ export function ProposalGuidedWizard() {
                   >
                     <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
                     {c.vimeo_id ? (
-                      <img
-                        src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
-                        alt={c.campaign_name}
-                        className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
-                      />
+                      <>
+                        <img
+                          src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
+                          alt={c.campaign_name}
+                          className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.fallback) {
+                              target.dataset.fallback = '1';
+                              target.src = `https://i.vimeocdn.com/video/${extractVimeoId(c.vimeo_id)}_640x360.jpg`;
+                            } else {
+                              target.style.display = 'none';
+                              (target.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                            }
+                          }}
+                        />
+                        <div className="hidden w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Video className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      </>
                     ) : (
                       <div className="w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <Video className="h-6 w-6 text-muted-foreground" />
@@ -961,7 +1073,7 @@ export function ProposalGuidedWizard() {
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-start gap-3">
                     <Select value={ent.icone} onValueChange={v => updateEntregavel(i, 'icone', v)}>
-                      <SelectTrigger className="w-16 h-8"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-20 h-8 text-lg"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {ICON_OPTIONS.map(opt => (
                           <SelectItem key={opt.value} value={opt.value}>{opt.value} {opt.label}</SelectItem>
@@ -1158,28 +1270,73 @@ export function ProposalGuidedWizard() {
                 })}
               </div>
 
+              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
+                <Plus className="h-4 w-4" /> Criar novo depoimento
+              </Button>
             </>
           ) : (
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+            <>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nome</Label>
+                      <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Cargo</Label>
+                      <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Depoimento</Label>
+                    <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
+                <Plus className="h-4 w-4" /> Criar novo depoimento
+              </Button>
+            </>
+          )}
+
+          {/* New Testimonial Dialog */}
+          <Dialog open={showNewTestimonialDialog} onOpenChange={setShowNewTestimonialDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Novo Depoimento</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Nome</Label>
-                    <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
+                    <Label className="text-xs">Nome *</Label>
+                    <Input value={newTestimonial.name} onChange={e => setNewTestimonial(p => ({ ...p, name: e.target.value }))} placeholder="Ex: João Silva" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Cargo</Label>
-                    <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                    <Input value={newTestimonial.role} onChange={e => setNewTestimonial(p => ({ ...p, role: e.target.value }))} placeholder="Ex: CEO, Empresa X" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Depoimento</Label>
-                  <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." />
+                  <Label className="text-xs">Depoimento *</Label>
+                  <Textarea value={newTestimonial.text} onChange={e => setNewTestimonial(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">URL da foto (opcional)</Label>
+                  <Input value={newTestimonial.image} onChange={e => setNewTestimonial(p => ({ ...p, image: e.target.value }))} placeholder="https://..." />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setShowNewTestimonialDialog(false)}>Cancelar</Button>
+                <Button onClick={handleCreateTestimonial} disabled={createTestimonial.isPending}>
+                  {createTestimonial.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                  Criar Depoimento
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="flex justify-between">
             <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
@@ -1216,7 +1373,25 @@ export function ProposalGuidedWizard() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Condições de Pagamento</Label>
-                <Textarea value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} rows={3} />
+                <Select value={paymentPreset} onValueChange={(v) => {
+                  setPaymentPreset(v);
+                  const preset = PAYMENT_PRESETS.find(p => p.value === v);
+                  if (preset && v !== 'custom') setPaymentTerms(preset.text);
+                }}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_PRESETS.map(p => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Textarea
+                  value={paymentTerms}
+                  onChange={e => setPaymentTerms(e.target.value)}
+                  rows={3}
+                  readOnly={paymentPreset !== 'custom'}
+                  className={cn('scrollbar-thin', paymentPreset !== 'custom' && 'opacity-60')}
+                />
               </div>
             </CardContent>
           </Card>
@@ -1265,11 +1440,11 @@ export function ProposalGuidedWizard() {
             {/* Dores */}
             <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(3)}>
               <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-muted-foreground">Dores ({dores.length})</p>
-                  <div className="flex gap-1 mt-1">
+                  <div className="flex flex-wrap gap-2 mt-1">
                     {dores.map((d, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">{d.label} {d.title}</Badge>
+                      <Badge key={i} variant="outline" className="text-xs whitespace-nowrap">{d.label} {d.title}</Badge>
                     ))}
                     {dores.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma dor selecionada</p>}
                   </div>
