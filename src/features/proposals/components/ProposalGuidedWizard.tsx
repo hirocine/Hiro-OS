@@ -1010,7 +1010,7 @@ export function ProposalGuidedWizard() {
           {painPointsBank.length > 0 && dores.length < 3 && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Banco de dores</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-72 overflow-y-auto scrollbar-thin pr-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pr-1">
                 {painPointsBank.filter(pp => !dores.find(d => d.title === pp.title)).map(pp => (
                   <button
                     key={pp.id}
