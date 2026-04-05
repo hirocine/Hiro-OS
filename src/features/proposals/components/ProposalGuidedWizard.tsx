@@ -28,6 +28,7 @@ import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
 import { useTestimonials } from '../hooks/useTestimonials';
+import { PageHeader } from '@/components/ui/page-header';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const extractVimeoId = (raw: string): string => {
@@ -559,14 +560,14 @@ export function ProposalGuidedWizard() {
           ) : (
             <>
               <div className="w-full max-w-2xl">
-                <div className="relative rounded-xl border border-border bg-background p-1">
+                <div className="rounded-xl border border-border bg-background flex flex-col">
                   <Textarea
                     value={transcript}
                     onChange={e => setTranscript(e.target.value)}
                     placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
-                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none"
+                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none rounded-b-none"
                   />
-                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                  <div className="flex items-center justify-end gap-2 p-3 border-t border-border">
                     <input
                       ref={pdfInputRef}
                       type="file"
@@ -611,6 +612,7 @@ export function ProposalGuidedWizard() {
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
             <Sparkles className="h-3 w-3" />
             <span>Powered by Claude · Anthropic</span>
+          </div>
           </div>
         </div>
       )}
