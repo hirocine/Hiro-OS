@@ -24,6 +24,13 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
+const extractVimeoId = (raw: string): string => {
+  if (!raw) return '';
+  if (/^\d+$/.test(raw)) return raw;
+  const match = raw.match(/(\d{6,})/);
+  return match ? match[1] : raw;
+};
 import { useProposals } from '../hooks/useProposals';
 import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
