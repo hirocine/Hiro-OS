@@ -1,16 +1,14 @@
 
 
-# Redirecionar "Editar" do ProposalCard para a página intermediária (Overview)
+# Block outdated proposal versions with a dedicated screen
 
-## Problema
-No `ProposalCard.tsx`, o botão "Editar" navega diretamente para `/orcamentos/:id` (página de edição). O usuário quer que ele vá primeiro para a página intermediária de Overview (`/orcamentos/:id/overview`), de onde já existe um botão "Editar" que leva à edição.
+## File: `src/features/proposals/components/ProposalPublicPage.tsx`
 
-## Mudança
+### 2 changes:
 
-### Arquivo: `src/features/proposals/components/ProposalCard.tsx`
+1. **Add blocking screen** — After the `if (error || !proposal)` block (~line 95), insert a new conditional return that checks `proposal.is_latest_version === false`. This renders a centered screen with an AlertTriangle icon, message, and a link to the latest version (if `latestSlug` is available).
 
-1. **Botão "Editar" (linha 139)**: trocar `/orcamentos/${proposal.id}` por `/orcamentos/${proposal.id}/overview`
-2. **MenuItem "Editar" no dropdown (linha 97)**: mesma troca — `/orcamentos/${proposal.id}` por `/orcamentos/${proposal.id}/overview`
+2. **Remove yellow banner** — Delete the `{latestSlug && (...)}` yellow banner block from inside the main return (~lines 107-114), since outdated versions will never reach the main render anymore.
 
-Nenhuma outra mudança. A página de Overview já tem o botão "Editar" que leva para `/orcamentos/:id`.
+No other changes — all existing logic for fetching `latestSlug` via the `useEffect` stays intact.
 
