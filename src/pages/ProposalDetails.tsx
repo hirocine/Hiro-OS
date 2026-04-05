@@ -152,7 +152,7 @@ export default function ProposalDetails() {
   const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
   const [transcriptText, setTranscriptText] = useState('');
 
-  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '', validity_date: '' });
+  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '+55 ', company_description: '', validity_date: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' });
@@ -162,6 +162,8 @@ export default function ProposalDetails() {
   const [outputSnapshot, setOutputSnapshot] = useState('');
   const [inclusoForm, setInclusoForm] = useState<InclusoCategory[]>([]);
   const [inclusoSnapshot, setInclusoSnapshot] = useState('');
+  const [clientErrors, setClientErrors] = useState({ project_number: false, whatsapp_number: false, validity_date: false });
+  const [investErrors, setInvestErrors] = useState({ list_price: false });
 
   // Populate forms when proposal loads
   useEffect(() => {
@@ -171,7 +173,7 @@ export default function ProposalDetails() {
       client_name: proposal.client_name || '',
       project_name: proposal.project_name || '',
       client_responsible: proposal.client_responsible || '',
-      whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
+      whatsapp_number: proposal.whatsapp_number ? formatWhatsApp(proposal.whatsapp_number) : '+55 ',
       company_description: proposal.company_description || '',
       validity_date: proposal.validity_date || '',
     });
@@ -361,6 +363,26 @@ export default function ProposalDetails() {
 
   const saveSection = async (section: string) => {
     try {
+      if (section === 'client') {
+        const errors = {
+          project_number: !clientForm.project_number.trim(),
+          whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').length < 12,
+          validity_date: !clientForm.validity_date,
+        };
+        setClientErrors(errors);
+        if (Object.values(errors).some(Boolean)) {
+          toast.error('Preencha todos os campos obrigatórios');
+          return;
+        }
+      }
+      if (section === 'invest') {
+        const errors = { list_price: !investForm.list_price || investForm.list_price <= 0 };
+        setInvestErrors(errors);
+        if (Object.values(errors).some(Boolean)) {
+          toast.error('Preencha o valor do investimento');
+          return;
+        }
+      }
       let data: Record<string, any> = {};
       if (section === 'client') {
         const clientName = clientForm.client_name.trim();
