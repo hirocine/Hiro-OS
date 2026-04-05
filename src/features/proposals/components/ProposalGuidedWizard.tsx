@@ -694,8 +694,8 @@ export function ProposalGuidedWizard() {
                 {analyzeResultState.questions.map((q, i) => (
                   <div
                     key={q.id}
-                    className="animate-in fade-in slide-in-from-bottom-4"
-                    style={{ opacity: 0, animationDelay: `${i * 200}ms`, animationFillMode: 'forwards' }}
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'both' }}
                   >
                     <Card>
                       <CardContent className="pt-5 pb-5 space-y-3">
