@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
+import { supabase } from '@/integrations/supabase/client';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },

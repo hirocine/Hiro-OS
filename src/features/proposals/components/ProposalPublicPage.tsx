@@ -119,6 +119,16 @@ export function ProposalPublicPage() {
       <GlowSpot className='right-[-100px] top-[4800px]' />
       <GlowSpot className='left-[-150px] top-[6200px]' />
 
+      {latestSlug && (
+        <div className="no-print bg-yellow-900/40 border-b border-yellow-700/30 text-yellow-200 text-center py-2 px-4 text-sm flex items-center justify-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          Esta é uma versão anterior.{' '}
+          <Link to={`/orcamento/${latestSlug}`} className="underline font-medium hover:text-yellow-100">
+            Ver versão atual →
+          </Link>
+        </div>
+      )}
+
       <div className="no-print">
         <ProposalNavbar validityDate={proposal.validity_date} />
       </div>
