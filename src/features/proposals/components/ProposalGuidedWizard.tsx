@@ -652,6 +652,7 @@ export function ProposalGuidedWizard() {
                         Analisar
                       </Button>
                     </div>
+                  </div>
                 </div>
               </div>
             </>
