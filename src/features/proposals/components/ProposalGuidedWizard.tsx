@@ -798,14 +798,14 @@ export function ProposalGuidedWizard() {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Validade da Proposta</Label>
-                  <Popover>
+                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !validityDate && 'text-muted-foreground')}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {validityDate ? format(validityDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={validityDate} onSelect={setValidityDate} locale={ptBR} /></PopoverContent>
+                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={validityDate} onSelect={(date) => { setValidityDate(date); setCalendarOpen(false); }} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
                   </Popover>
                 </div>
               </div>
