@@ -534,7 +534,11 @@ export function ProposalGuidedWizard() {
           />
         </div>
 
-        <div className="flex flex-col items-end gap-3">
+        <div className="flex justify-between items-start">
+          <Button variant="outline" onClick={() => navigate('/orcamentos')}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Orçamentos
+          </Button>
+          <div className="flex flex-col items-end gap-3">
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => copyToClipboard(publicUrl).then(ok => ok && toast.success('Link copiado!'))}>
               <Copy className="h-4 w-4 mr-1" /> Copiar Link
