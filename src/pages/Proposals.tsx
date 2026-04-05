@@ -82,7 +82,7 @@ export default function Proposals() {
             <CollapsibleContent>
               <CardContent>
                 {approvedProposals.length > 0 ? renderList(approvedProposals) : (
-                  <EmptyState icon={CheckCircle} title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui" />
+                  <EmptyState icon={CheckCircle} title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui" compact />
                 )}
               </CardContent>
             </CollapsibleContent>
@@ -109,7 +109,7 @@ export default function Proposals() {
             <CollapsibleContent>
               <CardContent>
                 {archivedProposals.length > 0 ? renderList(archivedProposals) : (
-                  <EmptyState icon={Archive} title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá" />
+                  <EmptyState icon={Archive} title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá" compact />
                 )}
               </CardContent>
             </CollapsibleContent>
