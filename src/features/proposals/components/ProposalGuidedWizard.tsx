@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -37,7 +37,7 @@ const extractVimeoId = (raw: string): string => {
   const match = raw.match(/(\d{6,})/);
   return match ? match[1] : raw;
 };
-import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
+import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase, PaymentOption } from '../types';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
@@ -53,13 +53,6 @@ const FINALIZE_MESSAGES = [
   'Quase pronto...',
 ];
 
-// ── Payment presets ──
-const PAYMENT_PRESETS = [
-  { value: '50_50', label: '50% + 50%', text: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final' },
-  { value: '100_antecipado', label: '100% antecipado', text: '100% antecipado com 5% de desconto sobre o valor final' },
-  { value: '3x', label: '3x iguais', text: '3 parcelas iguais: 1ª no fechamento, 2ª na metade do projeto e 3ª na entrega do material final' },
-  { value: 'custom', label: 'Personalizado', text: '' },
-];
 
 // ── Steps config ──
 const STEPS = [
@@ -114,7 +107,11 @@ export function ProposalGuidedWizard() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [listPrice, setListPrice] = useState(0);
   const [discountPct, setDiscountPct] = useState(0);
-  const [paymentTerms, setPaymentTerms] = useState('50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final');
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
+    { titulo: 'À Vista', valor: '', descricao: '5% de desconto para pagamento único', destaque: 'Melhor custo', recomendado: false },
+    { titulo: '2x sem juros', valor: '', descricao: '50% no fechamento + 50% na entrega', destaque: '', recomendado: true },
+  ]);
+  const [paymentNotes, setPaymentNotes] = useState('');
   const [testimonialName, setTestimonialName] = useState('');
   const [testimonialRole, setTestimonialRole] = useState('');
   const [testimonialText, setTestimonialText] = useState('');
@@ -129,8 +126,6 @@ export function ProposalGuidedWizard() {
   // New testimonial dialog
   const [showNewTestimonialDialog, setShowNewTestimonialDialog] = useState(false);
   const [newTestimonial, setNewTestimonial] = useState({ name: '', role: '', text: '', image: '' });
-  // Payment preset
-  const [paymentPreset, setPaymentPreset] = useState('50_50');
   // PDF upload ref
   const pdfInputRef = useRef<HTMLInputElement>(null);
   // Track AI-filled fields
