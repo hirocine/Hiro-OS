@@ -130,7 +130,7 @@ export default function Auth() {
 
       {/* ── Painel esquerdo ── */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[52%] p-12 relative overflow-hidden"
+        className="hidden lg:flex flex-col justify-between w-[60%] p-12 relative overflow-hidden"
         style={{ borderRight: '1px solid #1a1a1a' }}
       >
         <img
@@ -160,8 +160,8 @@ export default function Auth() {
       </div>
 
       {/* ── Painel direito (formulário) ── */}
-      <div className="w-[420px] flex items-center justify-center p-6 lg:p-10">
-        <div className="w-full max-w-xs space-y-8">
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
+        <div className="w-full max-w-sm space-y-8">
 
           {/* Logo mobile (só aparece em telas pequenas) */}
           <div className="flex items-center gap-3 lg:hidden">
