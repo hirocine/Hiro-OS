@@ -803,7 +803,7 @@ export function ProposalGuidedWizard() {
             <CardContent className="pt-6">
               <div className="space-y-1.5">
                 <Label className="text-xs flex items-center">Objetivo {aiBadge('objetivo')}</Label>
-                <Textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} rows={10} placeholder="O objetivo deste projeto é desenvolver..." />
+                <Textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} rows={10} placeholder="O objetivo deste projeto é desenvolver..." className="scrollbar-thin" />
               </div>
             </CardContent>
           </Card>
@@ -847,14 +847,32 @@ export function ProposalGuidedWizard() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{dor.label}</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="text-lg hover:bg-muted rounded p-0.5 transition-colors" title="Trocar emoji">{dor.label}</button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-3" align="start">
+                              <div className="grid grid-cols-6 gap-1">
+                                {DOR_EMOJI_OPTIONS.map(opt => (
+                                  <button
+                                    key={opt.value}
+                                    className={cn('text-lg p-1.5 rounded hover:bg-muted transition-colors', dor.label === opt.value && 'bg-primary/10')}
+                                    onClick={() => { const u = [...dores]; u[i] = { ...u[i], label: opt.value }; setDores(u); }}
+                                    title={opt.label}
+                                  >
+                                    {opt.value}
+                                  </button>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                           <Input value={dor.title} onChange={e => {
                             const u = [...dores]; u[i] = { ...u[i], title: e.target.value }; setDores(u);
                           }} className="text-sm font-medium h-8" />
                         </div>
                         <Textarea value={dor.desc} onChange={e => {
                           const u = [...dores]; u[i] = { ...u[i], desc: e.target.value }; setDores(u);
-                        }} rows={2} className="text-sm" />
+                        }} rows={2} className="text-sm scrollbar-thin" />
                       </div>
                       <Button variant="ghost" size="sm" onClick={() => setDores(dores.filter((_, j) => j !== i))}>
                         <Trash2 className="h-4 w-4" />
