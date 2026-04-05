@@ -37,6 +37,7 @@ const Capex = lazy(() => import("./pages/Capex"));
 import Proposals from "./pages/Proposals";
 const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
+const ProposalOverview = lazy(() => import("./pages/ProposalOverview"));
 const NewProposal = lazy(() => import("./pages/NewProposal"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -94,6 +95,7 @@ const App = () => (
                 <Route path="projetos-av/:id" element={<AVProjectDetails />} />
                 <Route path="orcamentos" element={<Proposals />} />
                 <Route path="orcamentos/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense>} />
+                <Route path="orcamentos/:id/overview" element={<ProposalOverview />} />
                 <Route path="orcamentos/:id" element={<ProposalDetails />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="perfil" element={<Profile />} />
