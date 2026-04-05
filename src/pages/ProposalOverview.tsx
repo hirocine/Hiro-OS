@@ -87,16 +87,25 @@ export default function ProposalOverview() {
   useEffect(() => {
     if (!proposal?.id) return;
     setHistoryLoading(true);
+    const parentId = proposal.parent_id || proposal.id;
     supabase
-      .from('audit_logs')
-      .select('id, action, user_email, created_at')
-      .eq('table_name', 'orcamentos')
-      .eq('record_id', proposal.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
-      .then(({ data }) => {
-        setHistory(data || []);
-        setHistoryLoading(false);
+      .from('orcamentos')
+      .select('id')
+      .or(`id.eq.${parentId},parent_id.eq.${parentId}`)
+      .then(({ data: versionRows }) => {
+        const allIds = (versionRows || []).map((v: any) => v.id);
+        if (allIds.length === 0) { setHistoryLoading(false); return; }
+        supabase
+          .from('audit_logs')
+          .select('id, action, user_email, created_at')
+          .eq('table_name', 'orcamentos')
+          .in('record_id', allIds)
+          .order('created_at', { ascending: false })
+          .limit(50)
+          .then(({ data }) => {
+            setHistory(data || []);
+            setHistoryLoading(false);
+          });
       });
   }, [proposal?.id]);
 
