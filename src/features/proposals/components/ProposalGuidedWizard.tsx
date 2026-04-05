@@ -597,13 +597,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 0 && !showQuestions && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Nova Proposta</h1>
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
-          </div>
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
 
           {isLoadingAI ? (
