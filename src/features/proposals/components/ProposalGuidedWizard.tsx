@@ -863,21 +863,11 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 3 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Dores do Cliente</h2>
-                <p className="text-sm text-muted-foreground">
-                  {aiFilledFields.has('dores')
-                    ? 'Identifiquei essas dores a partir do briefing. Você pode editar ou selecionar do banco:'
-                    : 'Selecione até 3 dores do banco ou peça sugestões à IA:'}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" disabled={isSuggesting} onClick={handleSuggestDores}>
-                {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-                Sugerir com IA
-              </Button>
-            </div>
+          <div className="flex items-center justify-end">
+            <Button variant="outline" size="sm" disabled={isSuggesting} onClick={handleSuggestDores}>
+              {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+              Sugerir com IA
+            </Button>
           </div>
 
           {/* Selected dores */}
