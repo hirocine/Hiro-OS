@@ -197,7 +197,7 @@ export default function ProposalDetails() {
   const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
   const [transcriptText, setTranscriptText] = useState('');
 
-  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '' });
+  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '', validity_date: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' });
@@ -218,6 +218,7 @@ export default function ProposalDetails() {
       client_responsible: proposal.client_responsible || '',
       whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
       company_description: proposal.company_description || '',
+      validity_date: proposal.validity_date || '',
     });
     setInvestForm({
       list_price: proposal.list_price || 0,
@@ -287,7 +288,8 @@ export default function ProposalDetails() {
       clientForm.project_name !== (proposal.project_name || '') ||
       clientForm.client_responsible !== (proposal.client_responsible || '') ||
       clientForm.whatsapp_number.replace(/\D/g, '') !== (proposal.whatsapp_number || '').replace(/\D/g, '') ||
-      clientForm.company_description !== (proposal.company_description || '');
+      clientForm.company_description !== (proposal.company_description || '') ||
+      clientForm.validity_date !== (proposal.validity_date || '');
   }, [clientForm, proposal]);
 
   const investDirty = useMemo(() => {
@@ -415,6 +417,7 @@ export default function ProposalDetails() {
           client_responsible: clientForm.client_responsible.trim() || null,
           whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').trim() || null,
           company_description: clientForm.company_description.trim() || null,
+          validity_date: clientForm.validity_date || null,
         };
         // Auto-generate slug when both names are filled and slug is still a draft placeholder
         if (clientName && projectName && proposal.slug.startsWith('rascunho-')) {
@@ -725,6 +728,28 @@ export default function ProposalDetails() {
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Validade</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''}`}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {clientForm.validity_date
+                          ? new Date(clientForm.validity_date + 'T12:00:00').toLocaleDateString('pt-BR')
+                          : 'Selecionar data'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={clientForm.validity_date ? new Date(clientForm.validity_date + 'T12:00:00') : undefined}
+                        onSelect={(date) => setClientForm(p => ({ ...p, validity_date: date ? date.toLocaleDateString('en-CA') : '' }))}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
