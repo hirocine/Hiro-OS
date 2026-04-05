@@ -598,6 +598,24 @@ export function ProposalGuidedWizard() {
             </div>
           ) : (
             <>
+              {attachedFile && (
+                <div className="w-full max-w-2xl mb-4">
+                  <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/50 max-w-xs">
+                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
+                      <FileIcon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{attachedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(attachedFile.size / (1024 * 1024)).toFixed(2)}MB · {attachedFile.name.split('.').pop()?.toUpperCase()}
+                      </p>
+                    </div>
+                    <button onClick={() => setAttachedFile(null)} className="flex-shrink-0 p-1 rounded-md hover:bg-muted">
+                      <X className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="w-full max-w-2xl">
                 <div className="rounded-xl border border-border bg-background flex flex-col">
                   <Textarea
@@ -606,18 +624,6 @@ export function ProposalGuidedWizard() {
                     placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
                     className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none rounded-b-none"
                   />
-                  {attachedFile && (
-                    <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
-                      <FileIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-xs text-foreground truncate">{attachedFile.name}</span>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        ({(attachedFile.size / 1024).toFixed(0)} KB)
-                      </span>
-                      <button onClick={() => setAttachedFile(null)} className="ml-auto shrink-0">
-                        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                      </button>
-                    </div>
-                  )}
                   <div className="flex items-center justify-end gap-2 p-3 border-t border-border">
                     <input
                       ref={pdfInputRef}
