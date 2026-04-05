@@ -20,8 +20,8 @@ export default function Proposals() {
   const approvedProposals = (proposals || []).filter(p => p.status === 'approved');
   const archivedProposals = (proposals || []).filter(p => p.status === 'expired');
 
-  const renderGrid = (items: Proposal[]) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  const renderList = (items: Proposal[]) => (
+    <div className="flex flex-col gap-3">
       {items.map(p => (
         <ProposalCard
           key={p.id}
@@ -56,7 +56,7 @@ export default function Proposals() {
             </div>
           </CardHeader>
           <CardContent>
-            {activeProposals.length > 0 ? renderGrid(activeProposals) : (
+            {activeProposals.length > 0 ? renderList(activeProposals) : (
               <EmptyState icon={Receipt} title="Nenhum orçamento ativo" description="Crie sua primeira proposta comercial" action={{ label: "Nova Proposta", onClick: () => navigate('/orcamentos/novo') }} />
             )}
           </CardContent>
@@ -81,7 +81,7 @@ export default function Proposals() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                {approvedProposals.length > 0 ? renderGrid(approvedProposals) : (
+                {approvedProposals.length > 0 ? renderList(approvedProposals) : (
                   <EmptyState icon={CheckCircle} title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui" />
                 )}
               </CardContent>
@@ -108,7 +108,7 @@ export default function Proposals() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                {archivedProposals.length > 0 ? renderGrid(archivedProposals) : (
+                {archivedProposals.length > 0 ? renderList(archivedProposals) : (
                   <EmptyState icon={Archive} title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá" />
                 )}
               </CardContent>
