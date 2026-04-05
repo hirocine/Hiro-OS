@@ -152,6 +152,7 @@ export interface ProposalFormData {
   discount_pct: number;
   list_price: number;
   payment_terms: string;
+  payment_options?: PaymentOption[];
   testimonial_name: string;
   testimonial_role: string;
   testimonial_text: string;
