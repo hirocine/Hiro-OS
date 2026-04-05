@@ -985,21 +985,23 @@ export function ProposalGuidedWizard() {
 
           {/* Bank of pain points */}
           {painPointsBank.length > 0 && dores.length < 3 && (
-            <div className="space-y-3">
-              <Label className="text-xs text-muted-foreground">Banco de dores</Label>
-              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto scrollbar-thin">
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Banco de dores</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-72 overflow-y-auto scrollbar-thin pr-1">
                 {painPointsBank.filter(pp => !dores.find(d => d.title === pp.title)).map(pp => (
                   <button
                     key={pp.id}
                     onClick={() => toggleBankDor(pp)}
-                    className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
+                    className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-muted/40 transition-all text-left group"
                   >
-                    <span>{pp.label}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{pp.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{pp.description}</p>
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
+                      {pp.label}
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium leading-tight">{pp.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{pp.description}</p>
+                    </div>
+                    <Plus className="h-4 w-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
               </div>
