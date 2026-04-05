@@ -124,8 +124,10 @@ export default function ProposalDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
-  const { updateProposal, deleteProposal } = useProposals();
+  const { updateProposal, deleteProposal, createNewVersion } = useProposals();
   const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
+  const [showVersionDialog, setShowVersionDialog] = useState(false);
+  const [pendingSaveSection, setPendingSaveSection] = useState<string | null>(null);
   const { data: painPointsBank = [], createPainPoint } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
   const { data: testimonialsBank = [], createTestimonial, updateTestimonial } = useTestimonials();
@@ -430,6 +432,26 @@ export default function ProposalDetails() {
     } catch {
       toast.error('Erro ao salvar alterações');
     }
+  };
+
+  const handleSaveClick = (section: string) => {
+    setPendingSaveSection(section);
+    setShowVersionDialog(true);
+  };
+
+  const handleVersionChoice = async (choice: 'update' | 'new') => {
+    setShowVersionDialog(false);
+    if (choice === 'update' && pendingSaveSection) {
+      await saveSection(pendingSaveSection);
+    } else if (choice === 'new') {
+      try {
+        const newProposal = await createNewVersion.mutateAsync(proposal.id);
+        navigate(`/orcamentos/${newProposal.id}`);
+      } catch {
+        // error handled by mutation
+      }
+    }
+    setPendingSaveSection(null);
   };
 
   const handleStatusChange = async (newStatus: string) => {
