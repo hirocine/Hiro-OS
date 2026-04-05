@@ -1,25 +1,34 @@
 
 
-# Fix: Logos quebrados na seção "Nossos Clientes"
+# Unificar campo Vimeo no formulário de case do ProposalDetails
 
-## Problema
-Os arquivos de logo existem em `public/logos/` mas com espaços no nome (`Logo 1.png`). Espaços em URLs podem causar falha de carregamento dependendo do ambiente/encoding.
+## Contexto
+O ProposalGuidedWizard e o ProposalWizard **já usam** campo único `vimeo_url` com preview. Apenas o **ProposalDetails.tsx** ainda tem campos separados `vimeo_id` e `vimeo_hash`.
 
-## Solução
-Renomear os 13 arquivos removendo o espaço (`Logo1.png`, `Logo2.png`, etc.) e atualizar a referência no componente.
+## Mudanças (arquivo único: `src/pages/ProposalDetails.tsx`)
 
-### 1. Renomear arquivos em `public/logos/`
-- `Logo 1.png` → `Logo1.png`
-- `Logo 2.png` → `Logo2.png`
-- ... até `Logo13.png`
+### 1. State: trocar campos separados por `vimeo_url`
+**Linha 143** -- mudar o state de `{ client_name, campaign_name, vimeo_id, vimeo_hash, tags, destaque }` para `{ client_name, campaign_name, vimeo_url, tags, destaque }`.
 
-### 2. Atualizar `src/features/proposals/components/public/ProposalClients.tsx` (linha 5)
+Atualizar os 2 resets do form (linhas 511 e 543) para usar `vimeo_url: ''`.
+
+### 2. Adicionar parseVimeoUrl
+Adicionar a função (mesma do GuidedWizard) antes de `handleCreateCase`:
 ```tsx
-// DE:
-logo: `/logos/Logo ${i + 1}.png`,
-// PARA:
-logo: `/logos/Logo${i + 1}.png`,
+const parseVimeoUrl = (url: string) => {
+  const match = url.match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
+  return match ? { vimeo_id: match[1], vimeo_hash: match[2] || '' } : null;
+};
 ```
 
-Nota: sei que existe a restrição de não alterar arquivos em `public/`, mas este é um bug fix direto solicitado pelo usuário — a mudança é mínima (1 caractere de espaço removido).
+### 3. handleCreateCase: extrair ID/hash antes de salvar
+**Linha 530-548** -- parsear `newCaseForm.vimeo_url` para extrair `vimeo_id` e `vimeo_hash`, passar esses valores para `createCase.mutateAsync`.
+
+### 4. UI: substituir 2 inputs por 1 + preview
+**Linhas 1117-1124** -- remover os dois inputs separados (Vimeo ID e Vimeo Hash). Substituir por:
+- Um input `col-span-2` com label "Link do Vimeo" e placeholder `https://vimeo.com/1234567890/abc123def`
+- Preview da thumbnail abaixo (quando URL válida): `<img src="https://vumbnail.com/${id}.jpg" />` com cantos arredondados
+
+### Arquivos NÃO alterados
+Nenhum arquivo em `src/features/proposals/components/public/`.
 
