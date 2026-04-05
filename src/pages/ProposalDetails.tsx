@@ -798,15 +798,18 @@ export default function ProposalDetails() {
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Valor sem desconto (R$)</Label>
+                  <Label className="text-xs">Valor sem desconto (R$) *</Label>
                   <Input
+                    className={investErrors.list_price ? 'border-destructive' : ''}
                     value={investForm.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investForm.list_price) : ''}
                     onChange={e => {
                       const raw = e.target.value.replace(/[^\d]/g, '');
                       setInvestForm(p => ({ ...p, list_price: Number(raw) / 100 }));
+                      setInvestErrors(p => ({ ...p, list_price: false }));
                     }}
                     placeholder="R$ 0,00"
                   />
+                  {investErrors.list_price && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
                 </div>
                 <div className="space-y-1.5"><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               </div>
