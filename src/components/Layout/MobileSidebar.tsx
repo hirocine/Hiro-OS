@@ -58,6 +58,7 @@ const adminNavigation: NavigationItem[] = [
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
       { name: 'Usuários', href: '/administracao/usuarios', icon: Users },
+      { name: 'Pendentes', href: '/administracao/pendentes', icon: UserCheck },
       { name: 'Logs de Auditoria', href: '/administracao/logs', icon: ScrollText },
       { name: 'Categorias', href: '/administracao/categorias', icon: Layers },
       { name: 'Notificações', href: '/administracao/notificacoes', icon: Bell },
