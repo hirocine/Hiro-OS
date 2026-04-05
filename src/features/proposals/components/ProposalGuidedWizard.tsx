@@ -830,18 +830,23 @@ export function ProposalGuidedWizard() {
                     key={c.id}
                     onClick={() => toggleCase(c.id)}
                     className={cn(
-                      'flex items-start gap-3 p-4 rounded-lg border transition-all text-left',
+                      'flex items-start gap-3 p-3 rounded-lg border transition-all text-left',
                       isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                     )}
                   >
-                    <Checkbox checked={isSelected} className="mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{c.client_name}</p>
-                      <p className="text-xs text-muted-foreground">{c.campaign_name}</p>
+                    <Checkbox checked={isSelected} className="mt-3" />
+                    <img
+                      src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                      alt={c.campaign_name}
+                      className="w-28 aspect-video rounded object-cover bg-muted flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{c.client_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c.campaign_name}</p>
                       {c.tags?.length > 0 && (
-                        <div className="flex gap-1 mt-1">
+                        <div className="flex gap-1 mt-1.5 flex-wrap">
                           {c.tags.map(tag => (
-                            <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                            <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">{tag}</Badge>
                           ))}
                         </div>
                       )}
@@ -853,6 +858,68 @@ export function ProposalGuidedWizard() {
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">Nenhum case cadastrado no banco.</p>
           )}
+
+          <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewCaseDialog(true)}>
+            <Plus className="h-4 w-4" /> Criar novo case
+          </Button>
+
+          {/* New Case Dialog */}
+          <Dialog open={showNewCaseDialog} onOpenChange={setShowNewCaseDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Novo Case</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Nome do Cliente *</Label>
+                  <Input value={newCase.client_name} onChange={e => setNewCase(p => ({ ...p, client_name: e.target.value }))} placeholder="Ex: Empresa X" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Nome da Campanha *</Label>
+                  <Input value={newCase.campaign_name} onChange={e => setNewCase(p => ({ ...p, campaign_name: e.target.value }))} placeholder="Ex: Campanha de Verão" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">URL do Vimeo *</Label>
+                  <Input value={newCase.vimeo_url} onChange={e => setNewCase(p => ({ ...p, vimeo_url: e.target.value }))} placeholder="https://vimeo.com/123456789" />
+                  {newCase.vimeo_url && parseVimeoUrl(newCase.vimeo_url) && (
+                    <img
+                      src={`https://vumbnail.com/${parseVimeoUrl(newCase.vimeo_url)!.vimeo_id}.jpg`}
+                      alt="Preview"
+                      className="w-full aspect-video rounded object-cover bg-muted mt-2"
+                    />
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Tags</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {CASE_TAG_OPTIONS.map(tag => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setNewCase(p => ({
+                          ...p,
+                          tags: p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
+                        }))}
+                        className={cn(
+                          'text-xs px-2.5 py-1 rounded-full border transition-colors',
+                          newCase.tags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'
+                        )}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setShowNewCaseDialog(false)}>Cancelar</Button>
+                <Button onClick={handleCreateCase} disabled={createCase.isPending}>
+                  {createCase.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                  Criar Case
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="flex justify-between">
             <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>

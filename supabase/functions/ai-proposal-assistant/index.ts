@@ -350,7 +350,7 @@ Retorne APENAS um JSON válido (sem markdown, sem backticks):
   ]
 }
 
-Liste CADA entregável separadamente. Se há 3 webcasts, são 3 itens (ou 1 item com quantidade 3). Se há 5 aulas EAD, é 1 item com quantidade 5. Não agrupe projetos diferentes num só entregável.`;
+Para entregáveis, agrupe itens do mesmo tipo em UM ÚNICO entregável com a quantidade correta. Exemplo: se o projeto tem 5 aulas EAD de 5 minutos cada, crie 1 entregável 'EAD - Aulas de Treinamento' com quantidade '5' e descrição '5 aulas de 5 minutos'. NÃO crie 5 entregáveis separados. Só separe entregáveis quando forem de natureza diferente (ex: webcast é diferente de EAD, que é diferente de vídeo institucional) ou quando tiverem especificações diferentes (ex: 2 aulas de 5min e 3 aulas de 10min).`;
 
       let text: string;
       if (useAnthropic) {
