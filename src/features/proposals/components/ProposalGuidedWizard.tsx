@@ -660,6 +660,7 @@ export function ProposalGuidedWizard() {
                 <span>Powered by Claude · Anthropic</span>
               </div>
             </>
+          )}
           </div>
         </div>
       )}
