@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send, Loader2 } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -305,10 +306,7 @@ export default function ProposalOverview() {
           {viewsLoading ? (
             <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : !views || views.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <EyeOff className="h-8 w-8 mb-2 opacity-40" />
-              <p className="text-sm">Nenhuma visualização registrada</p>
-            </div>
+            <EmptyState icon={EyeOff} title="Nenhuma visualização registrada" description="As visualizações aparecerão aqui quando o link for acessado." compact />
           ) : (
             <div>
               {views.map((view, i) => {
@@ -409,7 +407,7 @@ export default function ProposalOverview() {
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           ) : history.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Nenhuma alteração registrada ainda.</p>
+            <EmptyState icon={Clock} title="Nenhuma alteração registrada" description="O histórico de alterações aparecerá aqui automaticamente." compact />
           ) : (
             <div className="divide-y divide-border">
               {history.map((entry) => (
