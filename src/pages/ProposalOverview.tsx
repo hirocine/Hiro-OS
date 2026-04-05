@@ -328,6 +328,7 @@ export default function ProposalOverview() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{isCurrent ? 'Versão atual' : `Versão ${v.version}`}</span>
                         <Badge variant={vStatus.variant} className="text-xs px-2 py-0">{vStatus.label}</Badge>
+                        {!isCurrent && <Badge variant="destructive" className="text-xs px-2 py-0">Desabilitada</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Criada em {format(new Date(v.created_at), 'dd/MM/yyyy')}
@@ -339,9 +340,6 @@ export default function ProposalOverview() {
                       <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">Ativa agora</span>
                     ) : (
                       <>
-                        <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate(`/orcamentos/${v.slug}/overview`)}>
-                          Ver
-                        </Button>
                         <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleSetLatest(v.id)}>
                           Usar esta versão
                         </Button>
