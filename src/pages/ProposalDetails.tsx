@@ -735,11 +735,11 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={3} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
+                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação *</Label><Input className={clientErrors.whatsapp_number ? 'border-destructive' : ''} value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); setClientErrors(p => ({ ...p, whatsapp_number: false })); }} maxLength={20} placeholder="+55 (11) 95151-3862" />{clientErrors.whatsapp_number && <p className="text-xs text-destructive mt-1">Informe um número válido com DDD</p>}</div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Validade</Label>
                   <Popover>
