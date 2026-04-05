@@ -579,12 +579,6 @@ export function ProposalGuidedWizard() {
             <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
           </div>
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
-          <div className="text-center space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight">Vamos criar sua proposta</h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Cole o resumo da reunião gerado pelo Google Meet e deixe a IA fazer o trabalho pesado.
-            </p>
-          </div>
 
           {isLoadingAI ? (
             <div className="w-full max-w-2xl space-y-4 animate-fade-in">
