@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown } from 'lucide-react';
+import { Plus, ChevronDown, CheckSquare } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -299,8 +300,8 @@ export function TasksTable({
         {/* Empty state */}
         {sortedTasks.length === 0 && !showCreationRow && (
           <TableRow>
-            <TableCell colSpan={showAssignee ? 6 : 5} className="text-center py-8 text-muted-foreground">
-              Nenhuma tarefa encontrada
+            <TableCell colSpan={showAssignee ? 6 : 5}>
+              <EmptyState icon={CheckSquare} title="" description="Nenhuma tarefa encontrada." compact />
             </TableCell>
           </TableRow>
         )}

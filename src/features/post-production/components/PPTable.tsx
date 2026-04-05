@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil, Film } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -182,8 +183,8 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
 
         {sortedItems.length === 0 && (
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-              Nenhum vídeo na esteira
+            <TableCell colSpan={7}>
+              <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
             </TableCell>
           </TableRow>
         )}

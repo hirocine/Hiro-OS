@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Activity, ArrowRight } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -49,9 +50,7 @@ export function RecentActivityWidget() {
             ))}
           </div>
         ) : !activities || activities.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-4">
-            Nenhuma atividade recente
-          </p>
+          <EmptyState icon={Activity} title="" description="Nenhuma atividade recente." compact />
         ) : (
           <ScrollArea className="h-[260px] pr-4">
             <div className="space-y-3">
