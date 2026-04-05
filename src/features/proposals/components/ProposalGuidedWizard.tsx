@@ -854,12 +854,14 @@ export function ProposalGuidedWizard() {
               <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs">WhatsApp para Aprovação</Label>
-                  <Input value={whatsappNumber} onChange={e => { setWhatsappNumber(formatWhatsApp(e.target.value)); setStep1Errors(p => ({ ...p, whatsapp: false })); }} placeholder="+55 (11) 95151-3862" maxLength={20} className={step1Errors.whatsapp ? 'border-destructive' : ''} />
-                  {whatsappNumber.replace(/\D/g, '').length >= 12 && (
-                    <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 text-xs text-green-600 hover:text-green-700 px-2" onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')}>
-                      Testar WhatsApp →
-                    </Button>
-                  )}
+                  <div className="relative">
+                    <Input value={whatsappNumber} onChange={e => { setWhatsappNumber(formatWhatsApp(e.target.value)); setStep1Errors(p => ({ ...p, whatsapp: false })); }} placeholder="+55 (11) 95151-3862" maxLength={20} className={cn('pr-20', step1Errors.whatsapp ? 'border-destructive' : '')} />
+                    {whatsappNumber.replace(/\D/g, '').length >= 12 && (
+                      <button type="button" onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 hover:text-green-700 font-medium">
+                        Testar →
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Validade da Proposta</Label>
