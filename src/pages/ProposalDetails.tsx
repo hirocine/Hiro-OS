@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   ExternalLink, Building2, Calendar, DollarSign,
   User, Phone, FileText, MessageSquare, Trash2, Copy, MoreHorizontal, Upload, Save,
@@ -896,13 +897,7 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-6">
               {doresForm.length === 0 ? (
-                <div className="text-center py-8">
-                  <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhuma dor selecionada.</p>
-                  <Button variant="link" size="sm" onClick={openDoresBank} className="mt-1">
-                    Selecionar do banco de dores
-                  </Button>
-                </div>
+                <EmptyState icon={AlertTriangle} title="Nenhuma dor selecionada" description="Nenhuma dor selecionada." compact action={{ label: "Selecionar do banco de dores", onClick: openDoresBank }} />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {doresForm.map((dor, i) => (
@@ -1073,13 +1068,7 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-6">
               {casesForm.length === 0 ? (
-                <div className="text-center py-8">
-                  <Briefcase className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhum case selecionado.</p>
-                  <Button variant="link" size="sm" onClick={openCasesBank} className="mt-1">
-                    Selecionar do banco de cases
-                  </Button>
-                </div>
+                <EmptyState icon={Briefcase} title="Nenhum case selecionado" description="Nenhum case selecionado." compact action={{ label: "Selecionar do banco de cases", onClick: openCasesBank }} />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {casesForm.map((c, i) => (
@@ -1128,7 +1117,7 @@ export default function ProposalDetails() {
 
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
                 {filteredCasesBank.length === 0 && !showNewCase && (
-                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum case encontrado.</p>
+                  <EmptyState icon={Briefcase} title="Nenhum case encontrado" description="Nenhum case encontrado." compact />
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {filteredCasesBank.map(bc => {
@@ -1263,7 +1252,7 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-6 space-y-4">
               {outputForm.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma entrega adicionada.</p>
+                <EmptyState icon={Package} title="Nenhuma entrega" description="Nenhuma entrega adicionada." compact />
               )}
               {outputForm.map((ent, i) => (
                 <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
@@ -1424,11 +1413,7 @@ export default function ProposalDetails() {
                   </Button>
                 </div>
               ) : (
-                <div className="border border-dashed rounded-xl p-8 text-center text-muted-foreground">
-                  <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Nenhum depoimento selecionado</p>
-                  <p className="text-xs mt-1">Clique em "Selecionar do Banco" para escolher</p>
-                </div>
+                <EmptyState icon={MessageSquare} title="Nenhum depoimento selecionado" description="Clique em 'Selecionar do Banco' para escolher" compact />
               )}
             </CardContent>
           </Card>
@@ -1503,7 +1488,7 @@ export default function ProposalDetails() {
                           );
                         })}
                       {testimonialsBank.filter(t => !testimonialBankSearch || t.name.toLowerCase().includes(testimonialBankSearch.toLowerCase())).length === 0 && (
-                        <p className="text-sm text-muted-foreground text-center py-4">Nenhum depoimento encontrado</p>
+                        <EmptyState icon={MessageSquare} title="Nenhum depoimento encontrado" description="Nenhum depoimento encontrado." compact />
                       )}
                     </div>
                     <div className="border-t border-border pt-4 mt-4">
