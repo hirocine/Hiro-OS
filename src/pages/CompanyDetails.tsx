@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, Plus, ExternalLink, FileText } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
@@ -250,9 +251,7 @@ export default function CompanyDetails() {
               ))}
             </div>
           ) : notes.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhuma nota registrada
-            </p>
+            <EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
           ) : (
             <div className="space-y-4">
               {notes.map((note) => (
