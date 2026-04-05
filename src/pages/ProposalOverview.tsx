@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, User, Phone, FileText } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2 } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
 
@@ -27,6 +26,26 @@ function formatDuration(seconds: number | null): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.round(seconds % 60);
   return mins > 0 ? `${mins}min ${secs}s` : `${secs}s`;
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (!value) return '—';
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function parseUserAgent(ua: string | null): string {
+  if (!ua) return '';
+  const browser = ua.match(/Edg/i) ? 'Edge'
+    : ua.match(/Chrome/i) ? 'Chrome'
+    : ua.match(/Firefox/i) ? 'Firefox'
+    : ua.match(/Safari/i) ? 'Safari'
+    : 'Browser';
+  const os = ua.match(/Windows/i) ? 'Windows'
+    : ua.match(/Macintosh|Mac OS/i) ? 'macOS'
+    : ua.match(/iPhone|iPad/i) ? 'iOS'
+    : ua.match(/Android/i) ? 'Android'
+    : 'OS';
+  return `${browser} · ${os}`;
 }
 
 export default function ProposalOverview() {
@@ -122,7 +141,7 @@ export default function ProposalOverview() {
         </div>
       </Card>
 
-      {/* Section 2 — Client Data */}
+      {/* Section 2 — Dados do Cliente */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Dados do Cliente</CardTitle>
@@ -131,84 +150,111 @@ export default function ProposalOverview() {
           </Button>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="flex items-start gap-2">
-              <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div><p className="text-xs text-muted-foreground">Cliente</p><p>{proposal.client_name || '—'}</p></div>
+          <div className="grid grid-cols-2 gap-px bg-border rounded-lg overflow-hidden border">
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Cliente</p>
+              <p className="text-sm font-medium">{proposal.client_name || '—'}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div><p className="text-xs text-muted-foreground">Projeto</p><p>{proposal.project_name || '—'}</p></div>
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Projeto</p>
+              <p className="text-sm font-medium">{proposal.project_name || '—'}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div><p className="text-xs text-muted-foreground">Responsável</p><p>{proposal.client_responsible || '—'}</p></div>
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Responsável</p>
+              <p className="text-sm font-medium">{proposal.client_responsible || '—'}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div><p className="text-xs text-muted-foreground">WhatsApp</p><p>{proposal.whatsapp_number || '—'}</p></div>
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">WhatsApp</p>
+              <p className="text-sm font-medium">{proposal.whatsapp_number || '—'}</p>
             </div>
             {proposal.company_description && (
-              <div className="col-span-full flex items-start gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <div><p className="text-xs text-muted-foreground">Descrição da empresa</p><p className="text-muted-foreground">{proposal.company_description}</p></div>
+              <div className="bg-background p-3 col-span-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Descrição da empresa</p>
+                <p className="text-sm text-muted-foreground">{proposal.company_description}</p>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Section 3 — Views History */}
+      {/* Section 3 — Investimento */}
       <Card>
         <CardHeader className="pb-3">
+          <CardTitle className="text-base">Investimento</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 gap-px bg-border rounded-lg overflow-hidden border">
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Valor de tabela</p>
+              <p className="text-sm line-through text-muted-foreground">{formatCurrency(proposal.list_price)}</p>
+            </div>
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Desconto</p>
+              <p className="text-sm text-green-500">
+                {proposal.discount_pct ? `-${proposal.discount_pct}%` : '—'}
+              </p>
+            </div>
+            <div className="bg-background p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Valor final</p>
+              <p className="text-lg font-medium">{formatCurrency(proposal.final_value)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 4 — Histórico de Visualizações */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Histórico de Visualizações</CardTitle>
+          {views && views.length > 0 && (
+            <span className="text-xs text-muted-foreground">{views.length} registros</span>
+          )}
         </CardHeader>
         <CardContent className="pt-0">
           {viewsLoading ? (
-            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-10 w-full" />)}</div>
+            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : !views || views.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <EyeOff className="h-8 w-8 mb-2 opacity-40" />
               <p className="text-sm">Nenhuma visualização registrada</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data/Hora</TableHead>
-                    <TableHead>Dispositivo</TableHead>
-                    <TableHead>Tempo na página</TableHead>
-                    <TableHead>Referrer</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {views.map((view, i) => (
-                    <TableRow key={view.id} className={i % 2 === 0 ? '' : 'bg-muted/30'}>
-                      <TableCell className="text-sm">
+            <div>
+              {views.map((view, i) => {
+                const isMobile = view.device_type === 'mobile';
+                const uaInfo = parseUserAgent(view.user_agent);
+                return (
+                  <div
+                    key={view.id}
+                    className={`flex items-center gap-3 py-3 ${i < views.length - 1 ? 'border-b border-border' : ''}`}
+                  >
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isMobile ? 'bg-blue-500/10' : 'bg-green-500/10'}`}>
+                      {isMobile
+                        ? <Smartphone className="h-4 w-4 text-blue-500" />
+                        : <Monitor className="h-4 w-4 text-green-500" />
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium">{isMobile ? 'Mobile' : 'Desktop'}</span>
+                        {uaInfo && <span className="text-xs text-muted-foreground/60 ml-1">{uaInfo}</span>}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
                         {format(new Date(view.viewed_at), 'dd/MM/yyyy HH:mm')}
-                      </TableCell>
-                      <TableCell>
-                        {view.device_type === 'mobile' ? (
-                          <span className="flex items-center gap-1.5 text-sm"><Smartphone className="h-4 w-4" /> Mobile</span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 text-sm"><Monitor className="h-4 w-4" /> Desktop</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">{formatDuration(view.time_on_page_seconds)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
-                        {view.referrer || '—'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {formatDuration(view.time_on_page_seconds)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Section 4 — Placeholder */}
+      {/* Section 5 — Placeholder */}
       <Card>
         <CardContent className="p-6 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Histórico de alterações — em breve</p>
