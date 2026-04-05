@@ -189,6 +189,7 @@ export default function Auth() {
         <p className="text-white/20 text-xs">
           © {new Date().getFullYear()} Hiro Films. Todos os direitos reservados.
         </p>
+        </div>
       </div>
 
       {/* ── Painel direito (formulário) ── */}
