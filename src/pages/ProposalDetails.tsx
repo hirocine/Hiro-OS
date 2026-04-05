@@ -763,8 +763,6 @@ export default function ProposalDetails() {
                   </Popover>
                   {clientErrors.validity_date && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
                 </div>
-                  </Popover>
-                </div>
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
