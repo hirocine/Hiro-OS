@@ -139,8 +139,8 @@ export default function Companies() {
               ))
             ) : companies.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  Nenhuma empresa encontrada
+                <TableCell colSpan={5}>
+                  <EmptyState icon={Building2} title="Nenhuma empresa encontrada" description="Cadastre empresas fornecedoras" />
                 </TableCell>
               </TableRow>
             ) : (

@@ -420,16 +420,8 @@ export default function Projects() {
         {/* No projects found */}
         {allFilteredProjects.length === 0 && (
           <Card className="shadow-card">
-            <CardContent className="text-center py-12">
-              <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhuma retirada encontrada</h3>
-              <p className="text-muted-foreground mb-4">
-                Comece criando sua primeira retirada de equipamentos
-              </p>
-              <Button onClick={() => navigate('/retiradas/nova')}>
-                <Plus className="mr-2 h-4 w-4" />
-                Criar Retirada
-              </Button>
+            <CardContent className="py-4">
+              <EmptyState icon={Camera} title="Nenhuma retirada encontrada" description="Comece criando sua primeira retirada de equipamentos" action={{ label: "Criar Retirada", onClick: () => navigate('/retiradas/nova') }} />
             </CardContent>
           </Card>
         )}

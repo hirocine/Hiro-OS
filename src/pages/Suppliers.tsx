@@ -168,8 +168,8 @@ export default function Suppliers() {
               ))
             ) : suppliers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  Nenhum fornecedor encontrado
+                <TableCell colSpan={7}>
+                  <EmptyState icon={UserCheck} title="Nenhum fornecedor encontrado" description="Cadastre freelancers e prestadores de serviço" />
                 </TableCell>
               </TableRow>
             ) : (

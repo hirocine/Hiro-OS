@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -47,18 +47,18 @@ const adminNavigation: NavigationItem[] = [
   {
     name: 'Financeiro', href: '/financeiro', icon: LayoutDashboard, adminOnly: true,
     children: [
-      { name: 'Dashboard', href: '/financeiro/dashboard', icon: Users },
-      { name: 'Gestão de CAPEX', href: '/financeiro/capex', icon: Users },
+      { name: 'Dashboard', href: '/financeiro/dashboard', icon: BarChart3 },
+      { name: 'Gestão de CAPEX', href: '/financeiro/capex', icon: TrendingUp },
     ],
   },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
       { name: 'Usuários', href: '/administracao/usuarios', icon: Users },
-      { name: 'Logs de Auditoria', href: '/administracao/logs', icon: Users },
-      { name: 'Categorias', href: '/administracao/categorias', icon: Users },
-      { name: 'Notificações', href: '/administracao/notificacoes', icon: Users },
-      { name: 'Sistema', href: '/administracao/sistema', icon: Users },
+      { name: 'Logs de Auditoria', href: '/administracao/logs', icon: ScrollText },
+      { name: 'Categorias', href: '/administracao/categorias', icon: Layers },
+      { name: 'Notificações', href: '/administracao/notificacoes', icon: Bell },
+      { name: 'Sistema', href: '/administracao/sistema', icon: Cog },
     ],
   },
 ];
