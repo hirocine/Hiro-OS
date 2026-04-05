@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,7 +38,7 @@ const extractVimeoId = (raw: string): string => {
   const match = raw.match(/(\d{6,})/);
   return match ? match[1] : raw;
 };
-import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
+import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase, PaymentOption } from '../types';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
@@ -53,13 +54,6 @@ const FINALIZE_MESSAGES = [
   'Quase pronto...',
 ];
 
-// ── Payment presets ──
-const PAYMENT_PRESETS = [
-  { value: '50_50', label: '50% + 50%', text: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final' },
-  { value: '100_antecipado', label: '100% antecipado', text: '100% antecipado com 5% de desconto sobre o valor final' },
-  { value: '3x', label: '3x iguais', text: '3 parcelas iguais: 1ª no fechamento, 2ª na metade do projeto e 3ª na entrega do material final' },
-  { value: 'custom', label: 'Personalizado', text: '' },
-];
 
 // ── Steps config ──
 const STEPS = [
@@ -114,7 +108,11 @@ export function ProposalGuidedWizard() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [listPrice, setListPrice] = useState(0);
   const [discountPct, setDiscountPct] = useState(0);
-  const [paymentTerms, setPaymentTerms] = useState('50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final');
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
+    { titulo: 'À Vista', valor: '', descricao: '5% de desconto para pagamento único', destaque: 'Melhor custo', recomendado: false },
+    { titulo: '2x sem juros', valor: '', descricao: '50% no fechamento + 50% na entrega', destaque: '', recomendado: true },
+  ]);
+  const [paymentNotes, setPaymentNotes] = useState('');
   const [testimonialName, setTestimonialName] = useState('');
   const [testimonialRole, setTestimonialRole] = useState('');
   const [testimonialText, setTestimonialText] = useState('');
@@ -129,8 +127,6 @@ export function ProposalGuidedWizard() {
   // New testimonial dialog
   const [showNewTestimonialDialog, setShowNewTestimonialDialog] = useState(false);
   const [newTestimonial, setNewTestimonial] = useState({ name: '', role: '', text: '', image: '' });
-  // Payment preset
-  const [paymentPreset, setPaymentPreset] = useState('50_50');
   // PDF upload ref
   const pdfInputRef = useRef<HTMLInputElement>(null);
   // Track AI-filled fields
@@ -141,7 +137,17 @@ export function ProposalGuidedWizard() {
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
+  // Auto-calculate payment option values
+  useEffect(() => {
+    if (finalValue <= 0) return;
+    setPaymentOptions(prev => prev.map((opt, i) => ({
+      ...opt,
+      valor: i === 0
+        ? fmt(finalValue * 0.95)
+        : `2x ${fmt(finalValue / 2)}`,
+    })));
   const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
+
 
   // Rotate loading messages
   useEffect(() => {
@@ -484,7 +490,8 @@ export function ProposalGuidedWizard() {
         list_price: listPrice,
         base_value: finalValue,
         discount_pct: discountPct,
-        payment_terms: paymentTerms,
+        payment_terms: paymentNotes,
+        payment_options: paymentOptions,
         testimonial_name: testimonialName,
         testimonial_role: testimonialRole,
         testimonial_text: testimonialText,
@@ -1428,25 +1435,85 @@ export function ProposalGuidedWizard() {
                 <span className="text-xl font-bold">{fmt(finalValue)}</span>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Condições de Pagamento</Label>
-                <Select value={paymentPreset} onValueChange={(v) => {
-                  setPaymentPreset(v);
-                  const preset = PAYMENT_PRESETS.find(p => p.value === v);
-                  if (preset && v !== 'custom') setPaymentTerms(preset.text);
-                }}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_PRESETS.map(p => (
-                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs font-medium">Opções de Pagamento</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  {paymentOptions.map((opt, i) => (
+                    <Card key={i} className={cn(
+                      'transition-all',
+                      opt.recomendado && 'border-primary ring-1 ring-primary/20'
+                    )}>
+                      <CardContent className="pt-4 pb-4 space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Título</Label>
+                          <Input
+                            value={opt.titulo}
+                            onChange={e => {
+                              const updated = [...paymentOptions];
+                              updated[i] = { ...updated[i], titulo: e.target.value };
+                              setPaymentOptions(updated);
+                            }}
+                            placeholder="Ex: À Vista"
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="p-3 rounded-lg bg-muted text-center">
+                          <p className="text-xs text-muted-foreground mb-1">Valor calculado</p>
+                          <p className="text-xl font-bold">{opt.valor || '—'}</p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Descrição</Label>
+                          <Input
+                            value={opt.descricao}
+                            onChange={e => {
+                              const updated = [...paymentOptions];
+                              updated[i] = { ...updated[i], descricao: e.target.value };
+                              setPaymentOptions(updated);
+                            }}
+                            placeholder="Condições..."
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Badge / Destaque</Label>
+                          <Input
+                            value={opt.destaque || ''}
+                            onChange={e => {
+                              const updated = [...paymentOptions];
+                              updated[i] = { ...updated[i], destaque: e.target.value };
+                              setPaymentOptions(updated);
+                            }}
+                            placeholder="Ex: Melhor custo"
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between pt-1">
+                          <Label className="text-xs text-muted-foreground">Recomendado</Label>
+                          <Switch
+                            checked={opt.recomendado || false}
+                            onCheckedChange={() => {
+                              setPaymentOptions(prev => prev.map((o, idx) => ({
+                                ...o,
+                                recomendado: idx === i,
+                              })));
+                            }}
+                          />
+                        </div>
+                        {opt.recomendado && (
+                          <Badge className="text-xs">RECOMENDADO</Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Observações de pagamento</Label>
                 <Textarea
-                  value={paymentTerms}
-                  onChange={e => setPaymentTerms(e.target.value)}
+                  value={paymentNotes}
+                  onChange={e => setPaymentNotes(e.target.value)}
                   rows={3}
-                  readOnly={paymentPreset !== 'custom'}
-                  className={cn('scrollbar-thin', paymentPreset !== 'custom' && 'opacity-60')}
+                  placeholder="Condições adicionais, prazos, etc."
+                  className="scrollbar-thin"
                 />
               </div>
             </CardContent>
@@ -1564,6 +1631,13 @@ export function ProposalGuidedWizard() {
                 <div>
                   <p className="text-xs text-muted-foreground">Investimento</p>
                   <p className="text-sm font-bold">{fmt(finalValue)}</p>
+                  <div className="flex gap-2 mt-1 flex-wrap">
+                    {paymentOptions.map((opt, i) => (
+                      <Badge key={i} variant={opt.recomendado ? 'default' : 'outline'} className="text-xs">
+                        {opt.titulo}: {opt.valor}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </CardContent>

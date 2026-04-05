@@ -127,23 +127,25 @@ export function useProposals() {
         });
       }
 
-      // Build payment options (hardcoded)
-      const paymentOptions = [
-        {
-          titulo: 'À Vista',
-          valor: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue * 0.95),
-          descricao: '5% de desconto para pagamento único',
-          destaque: 'Melhor custo',
-          recomendado: false,
-        },
-        {
-          titulo: '2x sem juros',
-          valor: `2x ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue / 2)}`,
-          descricao: '50% no fechamento + 50% na entrega',
-          destaque: '',
-          recomendado: true,
-        },
-      ];
+      // Build payment options — use form data if provided, else fallback
+      const paymentOptions = form.payment_options && form.payment_options.length > 0
+        ? form.payment_options
+        : [
+            {
+              titulo: 'À Vista',
+              valor: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue * 0.95),
+              descricao: '5% de desconto para pagamento único',
+              destaque: 'Melhor custo',
+              recomendado: false,
+            },
+            {
+              titulo: '2x sem juros',
+              valor: `2x ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalValue / 2)}`,
+              descricao: '50% no fechamento + 50% na entrega',
+              destaque: '',
+              recomendado: true,
+            },
+          ];
 
       const { data, error } = await supabase
         .from('orcamentos')
