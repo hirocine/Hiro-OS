@@ -573,8 +573,8 @@ export function ProposalGuidedWizard() {
         <div className="space-y-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
               <h1 className="text-2xl font-semibold tracking-tight">Nova Proposta</h1>
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
           </div>
