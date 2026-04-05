@@ -826,20 +826,26 @@ export function ProposalGuidedWizard() {
               {casesBank.map(c => {
                 const isSelected = selectedCaseIds.includes(c.id);
                 return (
-                  <button
+                   <button
                     key={c.id}
                     onClick={() => toggleCase(c.id)}
                     className={cn(
-                      'flex items-start gap-3 p-3 rounded-lg border transition-all text-left',
+                      'relative flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
                       isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                     )}
                   >
-                    <Checkbox checked={isSelected} className="mt-3" />
-                    <img
-                      src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
-                      alt={c.campaign_name}
-                      className="w-28 aspect-video rounded object-cover bg-muted flex-shrink-0"
-                    />
+                    <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
+                    {c.vimeo_id ? (
+                      <img
+                        src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                        alt={c.campaign_name}
+                        className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <Video className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{c.client_name}</p>
                       <p className="text-xs text-muted-foreground truncate">{c.campaign_name}</p>
@@ -1145,21 +1151,6 @@ export function ProposalGuidedWizard() {
                 })}
               </div>
 
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setSelectedTestimonialId(null);
-                    setTestimonialName('');
-                    setTestimonialRole('');
-                    setTestimonialText('');
-                    setTestimonialImage('');
-                    goNext();
-                  }}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Pular sem depoimento →
-                </button>
-              </div>
             </>
           ) : (
             <Card>
