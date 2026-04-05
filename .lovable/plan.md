@@ -1,44 +1,52 @@
 
 
-# Fix: Insert em proposal_views não registrando
+# Fase 2 — Página Gerencial de Proposta (ProposalOverview)
 
-## Diagnóstico
-O código atual (linhas 38-49) faz o insert mas não verifica o `error` retornado pelo Supabase -- se falhar, segue silenciosamente. O insert pode estar falhando sem log.
+## Resumo
+Criar uma página intermediária de overview entre a listagem e a edição de propostas, com métricas de visualização, dados do cliente e histórico de views.
 
-## Mudança (arquivo único: `src/features/proposals/components/ProposalPublicPage.tsx`)
+## 1. Hook: `src/features/proposals/hooks/useProposalViews.ts`
+Query simples que busca todos os registros de `proposal_views` para um `proposal_id`, ordenados por `viewed_at` desc. Usa `as any` para contornar tipagem (tabela não está no types.ts gerado).
 
-### Linhas 36-54: Reescrever trackView com error handling explícito
+## 2. Nova página: `src/pages/ProposalOverview.tsx`
+Usa `useParams` para pegar o `id`, busca dados com `useProposalDetailsById` e views com `useProposalViews`.
 
-```tsx
-const trackView = async () => {
-  try {
-    // 1. Insert view record
-    const { data: viewData, error: viewError } = await supabase
-      .from('proposal_views' as any)
-      .insert({
-        proposal_id: proposal.id,
-        user_agent: navigator.userAgent,
-        device_type: deviceType,
-        referrer: document.referrer || null,
-      } as any)
-      .select('id')
-      .single();
+Layout com `ResponsiveContainer` + `BreadcrumbNav` (Orçamentos > Nome do Projeto):
 
-    if (viewError) {
-      console.error('View insert error:', viewError);
-    } else if (viewData) {
-      viewIdRef.current = (viewData as any).id;
-    }
+**Seção 1 — Header Card:**
+- Logo do cliente (Avatar com fallback Building2) + nome do projeto + cliente
+- Badge de status (reutilizar statusMap)
+- Datas: criação, envio, validade
+- Botões: "Editar Proposta" (`/orcamentos/${id}`), "Ver Proposta" (abre link público), "Copiar Link"
 
-    // 2. Increment count + update status
-    await supabase.rpc('increment_proposal_views' as any, { proposal_id: proposal.id });
-  } catch (err) {
-    console.error('Track view error:', err);
-  }
-};
-```
+**Seção 2 — Cards de métricas (grid 4 colunas):**
+- Total de visualizações (`views_count`)
+- Última visualização (primeiro item do array de views, formatado)
+- Tempo médio na página (média de `time_on_page_seconds`, formatado em min:seg)
+- Versão atual (placeholder "v1")
 
-A mudança principal: capturar e logar `viewError` explicitamente, em vez de ignorá-lo. Isso vai mostrar no console se o insert está falhando e por quê (ex: RLS, schema mismatch, etc).
+Usar o padrão StatsCard com `border-l-4` colorida.
 
-O resto do arquivo permanece inalterado.
+**Seção 3 — Dados do cliente:**
+Card com grid 2 colunas mostrando: cliente, projeto, responsável, whatsapp, descrição da empresa. Read-only. Link "Editar" que navega para `/orcamentos/${id}`.
+
+**Seção 4 — Histórico de visualizações:**
+Tabela com colunas: Data/Hora, Dispositivo (ícone Monitor/Smartphone), Tempo na página, Referrer. Dados do hook `useProposalViews`. Estado vazio se não há views.
+
+**Seção 5 — Placeholder:**
+Card simples com texto "Histórico de alterações — em breve" em muted.
+
+## 3. Rota em `App.tsx`
+Adicionar lazy import de `ProposalOverview` e rota `/orcamentos/:id/overview` dentro do bloco protegido, antes da rota `/orcamentos/:id`.
+
+## 4. Navegação no `ProposalCard.tsx`
+Linha 149: trocar `/orcamentos/${proposal.id}` para `/orcamentos/${proposal.id}/overview`.
+
+## Arquivos criados/modificados
+- **Novo:** `src/features/proposals/hooks/useProposalViews.ts`
+- **Novo:** `src/pages/ProposalOverview.tsx`
+- **Editado:** `src/App.tsx` (rota)
+- **Editado:** `src/features/proposals/components/ProposalCard.tsx` (navegação)
+
+Nenhum arquivo em `src/features/proposals/components/public/` será alterado.
 
