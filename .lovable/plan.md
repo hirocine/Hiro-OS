@@ -1,66 +1,66 @@
 
 
-# Fase 3 — Sistema de Versionamento de Propostas
+# Padronização Visual — Parte 1: Sidebar + Empty States + PageHeader
 
-## Resumo
-Adicionar versionamento a propostas: campos `version`, `parent_id`, `is_latest_version` na tabela `orcamentos`. O usuário pode criar nova versao (copia) ao editar, e versoes anteriores mostram banner na pagina publica.
+## 1. Sidebar icons (DesktopSidebar.tsx + MobileSidebar.tsx)
 
-## 1. Migration SQL (nova)
+Trocar icons nos `adminNavigation` sub-itens (ambos arquivos tem a mesma estrutura duplicada):
 
-```sql
-ALTER TABLE public.orcamentos ADD COLUMN IF NOT EXISTS version integer DEFAULT 1;
-ALTER TABLE public.orcamentos ADD COLUMN IF NOT EXISTS parent_id uuid REFERENCES public.orcamentos(id);
-ALTER TABLE public.orcamentos ADD COLUMN IF NOT EXISTS is_latest_version boolean DEFAULT true;
-CREATE INDEX IF NOT EXISTS idx_orcamentos_parent_id ON public.orcamentos(parent_id);
-```
+- `Dashboard` → `BarChart3` (era `Users`)
+- `Gestão de CAPEX` → `TrendingUp` (era `Users`)
+- `Logs de Auditoria` → `ScrollText` (era `Users`)
+- `Categorias` → `Layers` (era `Users`)
+- `Notificações` → `Bell` (era `Users`)
+- `Sistema` → `Cog` (era `Users`)
+- `Usuários` → mantém `Users`
 
-## 2. Tipos (`src/features/proposals/types/index.ts`)
-Adicionar `version: number`, `parent_id: string | null`, `is_latest_version: boolean` na interface `Proposal`.
+Atualizar imports: adicionar `BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog` e remover `Users` duplicado se não mais necessário (ainda usado em Fornecedores parent e Usuários).
 
-## 3. Hook `useProposals.ts`
-- Adicionar mutation `createNewVersion` que:
-  1. Busca proposta original
-  2. Calcula `nextVersion` buscando versao mais alta do grupo (parent_id ou id original)
-  3. Marca todas versoes anteriores como `is_latest_version: false`
-  4. Insere copia com novo slug (`-v{N}`), `version: nextVersion`, `parent_id`, `is_latest_version: true`, `status: 'draft'`, `views_count: 0`
-- Atualizar `mapProposal` para incluir os 3 novos campos
-- Exportar `createNewVersion` no return
+## 2. Empty States em 5 páginas
 
-## 4. Dialog de versão no `ProposalDetails.tsx`
-- Adicionar states: `showVersionDialog`, `pendingSaveAction`
-- Quando usuário clica salvar qualquer secao, em vez de salvar direto, abre Dialog:
-  - "Alterar esta versão" → executa save normalmente
-  - "Criar nova versão" → chama `createNewVersion`, navega para `/orcamentos/${newId}`
-- Importar `createNewVersion` de `useProposals`
+Substituir textos inline pelo componente `EmptyState` de `@/components/ui/empty-state`:
 
-## 5. ProposalOverview.tsx
-- Badge `v{version}` no header, ao lado do badge de status
-- Nova secao "Versões" (antes do placeholder de historico de alteracoes):
-  - Busca versoes com query: `or('id.eq.${parentId},parent_id.eq.${parentId}')` ordenado por `version`
-  - Lista: cada row com `v{N}`, data de criacao, badge de status, link para overview
-  - Versao atual destacada com fundo `bg-muted/50`
+**Proposals.tsx** (3 empty states, linhas 59, 84, 111):
+- Ativos: `icon={Receipt}` title="Nenhum orçamento ativo" description="Crie sua primeira proposta comercial" action com navigate
+- Aprovados: `icon={CheckCircle}` title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui"
+- Arquivados: `icon={Archive}` title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá"
 
-## 6. ProposalCard.tsx
-- Se `proposal.version > 1`, mostrar badge `v{version}` no card
+**Projects.tsx** (linhas 423-427):
+- Substituir `<h3>Nenhuma retirada encontrada</h3>` + texto + botão pelo `EmptyState` icon={Camera}
 
-## 7. ProposalPublicPage.tsx
-- Apos carregar a proposta, verificar `is_latest_version`
-- Se `false`, buscar slug da versao latest: query `orcamentos` com `parent_id.eq.${parentId},is_latest_version.eq.true`
-- Renderizar banner amarelo discreto no topo: "Esta é uma versão anterior. Ver versão atual →"
+**AVProjects.tsx** (linhas 66-70):
+- Substituir `<div>Nenhum projeto encontrado</div>` por `EmptyState` icon={Film}
 
-## 8. useProposalDetails.ts
-- Adicionar `version`, `parent_id`, `is_latest_version` no mapeamento de retorno
+**Companies.tsx** (linhas 141-145):
+- Substituir `<TableCell>Nenhuma empresa encontrada</TableCell>` por `EmptyState` icon={Building2} (dentro de TableCell com colSpan)
 
-## Arquivos criados/modificados
-- **Nova migration** SQL
-- `src/features/proposals/types/index.ts`
-- `src/features/proposals/hooks/useProposals.ts`
-- `src/features/proposals/hooks/useProposalDetails.ts`
-- `src/features/proposals/hooks/useProposalDetailsById.ts`
-- `src/pages/ProposalDetails.tsx`
-- `src/pages/ProposalOverview.tsx`
-- `src/features/proposals/components/ProposalCard.tsx`
-- `src/features/proposals/components/ProposalPublicPage.tsx`
+**Suppliers.tsx** (linhas 170-174):
+- Substituir `<TableCell>Nenhum fornecedor encontrado</TableCell>` por `EmptyState` icon={UserCheck}
 
-Nenhum arquivo em `src/features/proposals/components/public/` sera alterado.
+## 3. PageHeader em Profile.tsx
+
+Substituir o header manual (linhas 293-302) por `PageHeader` com:
+- title="Meu Perfil"
+- subtitle="Gerencie suas informações e preferências"
+- actions = botão "Salvar Alterações"
+
+## 4. Páginas de detalhe — sem mudanças
+
+- **CompanyDetails.tsx**: já tem h1 com `company.company_name` (linha 135). OK.
+- **SupplierDetails.tsx**: já tem h1 com `supplier.full_name` (linha 142). OK.
+- **TaskDetails.tsx**: já tem título editável inline (linha 186-190). OK.
+- **ProposalOverview.tsx**: já tem header card com nome do projeto. OK.
+- **ProposalDetails.tsx**: já tem breadcrumb + card. Manter como está.
+
+## Arquivos modificados
+- `src/components/Layout/DesktopSidebar.tsx` (icons)
+- `src/components/Layout/MobileSidebar.tsx` (icons)
+- `src/pages/Proposals.tsx` (3 empty states)
+- `src/pages/Projects.tsx` (1 empty state)
+- `src/pages/AVProjects.tsx` (1 empty state)
+- `src/pages/Companies.tsx` (1 empty state)
+- `src/pages/Suppliers.tsx` (1 empty state)
+- `src/pages/Profile.tsx` (PageHeader)
+
+Nenhum arquivo em `src/features/proposals/components/public/` será alterado.
 
