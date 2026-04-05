@@ -283,47 +283,54 @@ export default function ProposalOverview() {
 
       {/* Section 5 — Versões */}
       {versions.length > 1 && (
-        <Card>
+        <Card className="overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <GitBranch className="h-4 w-4" /> Versões
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <GitBranch className="h-4 w-4 text-muted-foreground" /> Versões
             </h3>
             <span className="text-xs text-muted-foreground">{versions.length} versões</span>
           </div>
-          <CardContent className="pt-0">
-            <div className="space-y-0">
-              {versions.map((v, i) => {
-                const isCurrent = v.id === proposal.id;
-                const vStatus = statusMap[v.status] || statusMap.draft;
-                return (
-                  <div
-                    key={v.id}
-                    className={`flex items-center justify-between py-2.5 px-2 rounded ${isCurrent ? 'bg-muted/50' : ''} ${i < versions.length - 1 ? 'border-b border-border' : ''}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">v{v.version}</Badge>
-                      <span className="text-sm">{format(new Date(v.created_at), 'dd/MM/yyyy')}</span>
-                      <Badge variant={vStatus.variant} className="text-xs">{vStatus.label}</Badge>
+          <div className="divide-y divide-border">
+            {versions.map((v) => {
+              const isCurrent = v.id === proposal.id;
+              const vStatus = statusMap[v.status] || statusMap.draft;
+              return (
+                <div
+                  key={v.id}
+                  className={`flex items-center justify-between px-6 py-4 ${isCurrent ? 'bg-muted/30' : 'hover:bg-muted/20 transition-colors'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                      v{v.version}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {isCurrent ? (
-                        <Badge variant="success">Atual</Badge>
-                      ) : (
-                        <>
-                          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
-                            Ver
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => handleSetLatest(v.id)}>
-                            Usar esta versão
-                          </Button>
-                        </>
-                      )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{isCurrent ? 'Versão atual' : `Versão ${v.version}`}</span>
+                        <Badge variant={vStatus.variant} className="text-xs px-2 py-0">{vStatus.label}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Criada em {format(new Date(v.created_at), 'dd/MM/yyyy')}
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
+                  <div className="flex items-center gap-2">
+                    {isCurrent ? (
+                      <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">Ativa agora</span>
+                    ) : (
+                      <>
+                        <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
+                          Ver
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleSetLatest(v.id)}>
+                          Usar esta versão
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Card>
       )}
 
