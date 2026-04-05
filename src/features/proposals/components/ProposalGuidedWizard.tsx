@@ -32,6 +32,7 @@ import { useProposalCases } from '../hooks/useProposalCases';
 import { useTestimonials } from '../hooks/useTestimonials';
 import { PageHeader } from '@/components/ui/page-header';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { copyToClipboard } from '@/lib/clipboard';
 
 const extractVimeoId = (raw: string): string => {
   if (!raw) return '';
