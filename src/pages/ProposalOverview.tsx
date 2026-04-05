@@ -354,11 +354,6 @@ export default function ProposalOverview() {
       )}
 
       {/* Section 6 — Placeholder */}
-      <Card>
-        <CardContent className="p-6 flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">Histórico de alterações — em breve</p>
-        </CardContent>
-      </Card>
     </ResponsiveContainer>
   );
 }
