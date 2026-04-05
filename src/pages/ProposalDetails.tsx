@@ -89,37 +89,37 @@ function formatWhatsApp(value: string): string {
 // Vimeo thumbnail component - defined at module level to avoid re-creation on every render
 function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (!videoId) return;
-    let cancelled = false;
-    const vimeoUrl = videoHash
-      ? `https://vimeo.com/${videoId}/${videoHash}`
-      : `https://vimeo.com/${videoId}`;
-    const oEmbedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(vimeoUrl)}&width=640`;
+    setFailed(false);
+    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
+  }, [videoId]);
 
-    setThumbUrl(null);
+  if (failed || !thumbUrl) {
+    return (
+      <div className={`bg-muted flex items-center justify-center ${className || ''}`}>
+        <Briefcase className="h-8 w-8 text-muted-foreground/30" />
+      </div>
+    );
+  }
 
-    fetch(oEmbedUrl)
-      .then(async (response) => {
-        if (!response.ok) throw new Error('Failed to load Vimeo thumbnail');
-        return response.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        setThumbUrl(data.thumbnail_url || `https://vumbnail.com/${videoId}.jpg`);
-      })
-      .catch(() => {
-        if (!cancelled) setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [videoId, videoHash]);
-
-  if (!thumbUrl) return <div className={`bg-muted flex items-center justify-center ${className || ''}`}><Briefcase className="h-8 w-8 text-muted-foreground/30" /></div>;
-  return <img src={thumbUrl} alt={alt || ''} className={`object-cover ${className || ''}`} loading="lazy" />;
+  return (
+    <img
+      src={thumbUrl}
+      alt={alt || ''}
+      className={`object-cover ${className || ''}`}
+      loading="lazy"
+      onError={() => {
+        if (thumbUrl.includes('vumbnail.com')) {
+          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
+        } else {
+          setFailed(true);
+        }
+      }}
+    />
+  );
 }
 
 export default function ProposalDetails() {
