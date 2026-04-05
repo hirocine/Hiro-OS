@@ -841,14 +841,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 2 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Objetivo do Projeto</h2>
-            <p className="text-sm text-muted-foreground">
-              {aiFilledFields.has('objetivo')
-                ? 'Com base no briefing, sugiro este objetivo. Edite como quiser:'
-                : 'Descreva o objetivo estratégico do projeto:'}
-            </p>
-          </div>
 
           <Card>
             <CardContent className="pt-6">
