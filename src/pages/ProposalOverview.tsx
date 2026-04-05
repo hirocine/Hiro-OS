@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, Calendar, User, Phone, FileText, Hash } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, User, Phone, FileText } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
