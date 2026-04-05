@@ -152,7 +152,7 @@ export default function ProposalDetails() {
   const [showTranscriptDialog, setShowTranscriptDialog] = useState(false);
   const [transcriptText, setTranscriptText] = useState('');
 
-  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '', company_description: '', validity_date: '' });
+  const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '+55 ', company_description: '', validity_date: '' });
   const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' });
@@ -162,6 +162,8 @@ export default function ProposalDetails() {
   const [outputSnapshot, setOutputSnapshot] = useState('');
   const [inclusoForm, setInclusoForm] = useState<InclusoCategory[]>([]);
   const [inclusoSnapshot, setInclusoSnapshot] = useState('');
+  const [clientErrors, setClientErrors] = useState({ project_number: false, whatsapp_number: false, validity_date: false });
+  const [investErrors, setInvestErrors] = useState({ list_price: false });
 
   // Populate forms when proposal loads
   useEffect(() => {
@@ -171,7 +173,7 @@ export default function ProposalDetails() {
       client_name: proposal.client_name || '',
       project_name: proposal.project_name || '',
       client_responsible: proposal.client_responsible || '',
-      whatsapp_number: formatWhatsApp(proposal.whatsapp_number || ''),
+      whatsapp_number: proposal.whatsapp_number ? formatWhatsApp(proposal.whatsapp_number) : '+55 ',
       company_description: proposal.company_description || '',
       validity_date: proposal.validity_date || '',
     });
@@ -361,6 +363,26 @@ export default function ProposalDetails() {
 
   const saveSection = async (section: string) => {
     try {
+      if (section === 'client') {
+        const errors = {
+          project_number: !clientForm.project_number.trim(),
+          whatsapp_number: clientForm.whatsapp_number.replace(/\D/g, '').length < 12,
+          validity_date: !clientForm.validity_date,
+        };
+        setClientErrors(errors);
+        if (Object.values(errors).some(Boolean)) {
+          toast.error('Preencha todos os campos obrigatórios');
+          return;
+        }
+      }
+      if (section === 'invest') {
+        const errors = { list_price: !investForm.list_price || investForm.list_price <= 0 };
+        setInvestErrors(errors);
+        if (Object.values(errors).some(Boolean)) {
+          toast.error('Preencha o valor do investimento');
+          return;
+        }
+      }
       let data: Record<string, any> = {};
       if (section === 'client') {
         const clientName = clientForm.client_name.trim();
@@ -713,16 +735,16 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={3} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação</Label><Input value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); }} maxLength={20} placeholder="+55 (11) 95151-3862" /></div>
+                <div className="space-y-1.5"><Label className="text-xs">WhatsApp para Aprovação *</Label><Input className={clientErrors.whatsapp_number ? 'border-destructive' : ''} value={clientForm.whatsapp_number} onChange={e => { setClientForm(p => ({ ...p, whatsapp_number: formatWhatsApp(e.target.value) })); setClientErrors(p => ({ ...p, whatsapp_number: false })); }} maxLength={20} placeholder="+55 (11) 95151-3862" />{clientErrors.whatsapp_number && <p className="text-xs text-destructive mt-1">Informe um número válido com DDD</p>}</div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Validade</Label>
+                  <Label className="text-xs">Validade *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''}`}>
+                      <Button variant="outline" className={`w-full justify-start text-left font-normal ${!clientForm.validity_date ? 'text-muted-foreground' : ''} ${clientErrors.validity_date ? 'border-destructive' : ''}`}>
                         <Calendar className="h-4 w-4 mr-2" />
                         {clientForm.validity_date
                           ? new Date(clientForm.validity_date + 'T12:00:00').toLocaleDateString('pt-BR')
@@ -733,12 +755,13 @@ export default function ProposalDetails() {
                       <CalendarComponent
                         mode="single"
                         selected={clientForm.validity_date ? new Date(clientForm.validity_date + 'T12:00:00') : undefined}
-                        onSelect={(date) => setClientForm(p => ({ ...p, validity_date: date ? date.toLocaleDateString('en-CA') : '' }))}
+                        onSelect={(date) => { setClientForm(p => ({ ...p, validity_date: date ? date.toLocaleDateString('en-CA') : '' })); setClientErrors(p => ({ ...p, validity_date: false })); }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
+                  {clientErrors.validity_date && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -775,15 +798,18 @@ export default function ProposalDetails() {
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Valor sem desconto (R$)</Label>
+                  <Label className="text-xs">Valor sem desconto (R$) *</Label>
                   <Input
+                    className={investErrors.list_price ? 'border-destructive' : ''}
                     value={investForm.list_price ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investForm.list_price) : ''}
                     onChange={e => {
                       const raw = e.target.value.replace(/[^\d]/g, '');
                       setInvestForm(p => ({ ...p, list_price: Number(raw) / 100 }));
+                      setInvestErrors(p => ({ ...p, list_price: false }));
                     }}
                     placeholder="R$ 0,00"
                   />
+                  {investErrors.list_price && <p className="text-xs text-destructive mt-1">Obrigatório</p>}
                 </div>
                 <div className="space-y-1.5"><Label className="text-xs">Desconto (%)</Label><Input type="number" value={investForm.discount_pct} onChange={e => setInvestForm(p => ({ ...p, discount_pct: Number(e.target.value) }))} /></div>
               </div>
