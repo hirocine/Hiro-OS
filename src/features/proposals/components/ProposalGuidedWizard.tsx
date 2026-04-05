@@ -646,7 +646,7 @@ export function ProposalGuidedWizard() {
                     </Button>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground text-center mt-2">
+                <p className="text-xs text-muted-foreground text-left mt-2">
                   No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
                 </p>
               </div>
