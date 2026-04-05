@@ -405,7 +405,26 @@ export default function Admin() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao') => {
+  const fetchPendingUsers = async () => {
+    setPendingLoading(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, created_at, position, department')
+      .eq('is_approved', false)
+      .order('created_at', { ascending: false });
+    setPendingUsers(data || []);
+    setPendingLoading(false);
+  };
+
+  const handleApproveUser = async (userId: string) => {
+    await supabase
+      .from('profiles')
+      .update({ is_approved: true } as any)
+      .eq('user_id', userId);
+    toast({ title: 'Usuário aprovado!', description: 'O usuário já pode acessar a plataforma.' });
+    fetchPendingUsers();
+  };
+
     try {
       logger.debug('Updating user role', { 
         module: 'admin',
