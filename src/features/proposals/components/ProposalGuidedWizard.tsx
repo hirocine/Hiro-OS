@@ -17,7 +17,8 @@ import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
   CalendarIcon, Plus, Trash2, MessageSquare, Video,
-  ListChecks, MessageSquareQuote, Paperclip, FileIcon, X
+  ListChecks, MessageSquareQuote, Paperclip, FileIcon, X,
+  Copy, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -133,6 +134,7 @@ export function ProposalGuidedWizard() {
   const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
 
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null);
+  const [generatedProposalId, setGeneratedProposalId] = useState<string | null>(null);
 
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -500,6 +502,7 @@ export function ProposalGuidedWizard() {
         testimonial_image: testimonialImage,
       });
       setGeneratedSlug(result.slug);
+      setGeneratedProposalId(result.id);
     } catch (err) {
       // handled by mutation
     }
@@ -516,26 +519,38 @@ export function ProposalGuidedWizard() {
   if (generatedSlug) {
     const publicUrl = `${window.location.origin}/orcamento/${generatedSlug}`;
     return (
-      <div className="max-w-lg mx-auto py-16 text-center space-y-6">
-        <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center mx-auto">
-          <Check className="h-8 w-8 text-success" />
+      <div className="max-w-3xl mx-auto space-y-6 w-full">
+        <PageHeader
+          title="Proposta Criada"
+          subtitle="O link público está pronto para compartilhar com o cliente"
+        />
+
+        <div className="rounded-xl border border-border overflow-hidden" style={{ height: '500px' }}>
+          <iframe
+            src={`/orcamento/${generatedSlug}?v=${Date.now()}`}
+            className="w-full h-full"
+            title="Preview da proposta"
+          />
         </div>
-        <h2 className="text-2xl font-bold text-foreground">Proposta Criada!</h2>
-        <p className="text-muted-foreground">O link público está pronto para compartilhar com o cliente.</p>
-        <div className="bg-muted rounded-lg p-4">
-          <p className="text-sm text-muted-foreground mb-1">Link da proposta:</p>
-          <p className="text-sm font-mono break-all text-foreground">{publicUrl}</p>
-        </div>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <Button variant="outline" onClick={() => navigator.clipboard.writeText(publicUrl).then(() => toast.success('Link copiado!'))}>
-            Copiar Link
-          </Button>
-          <Button onClick={() => window.open(`/orcamento/${generatedSlug}`, '_blank')}>
-            Ver Proposta
-          </Button>
-          <Button variant="secondary" onClick={() => navigate('/orcamentos')}>
-            Voltar
-          </Button>
+
+        <div className="flex flex-col items-end gap-3">
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => copyToClipboard(publicUrl).then(ok => ok && toast.success('Link copiado!'))}>
+              <Copy className="h-4 w-4 mr-1" /> Copiar Link
+            </Button>
+            {generatedProposalId && (
+              <Button variant="outline" onClick={() => navigate(`/orcamentos/${generatedProposalId}`)}>
+                Editar Proposta
+              </Button>
+            )}
+            <Button onClick={() => window.open(publicUrl, '_blank')}>
+              Ver Proposta <ExternalLink className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+          <a href={publicUrl} target="_blank" rel="noopener noreferrer"
+             className="text-xs font-mono text-muted-foreground hover:underline">
+            {publicUrl}
+          </a>
         </div>
       </div>
     );
