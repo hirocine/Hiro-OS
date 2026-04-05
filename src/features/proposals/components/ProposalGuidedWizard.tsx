@@ -655,13 +655,11 @@ export function ProposalGuidedWizard() {
                   </div>
                 </div>
               </div>
+              <div className="flex items-center justify-end gap-1.5 text-xs text-muted-foreground/50 mt-1">
+                <Sparkles className="h-3 w-3" />
+                <span>Powered by Claude · Anthropic</span>
+              </div>
             </>
-          )}
-
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
-            <Sparkles className="h-3 w-3" />
-            <span>Powered by Claude · Anthropic</span>
-          </div>
           </div>
         </div>
       )}
