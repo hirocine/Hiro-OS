@@ -33,7 +33,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { logger } from '@/lib/logger';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Loader2 } from 'lucide-react';
+
 
 // Action labels in Portuguese - Complete and user-friendly
 const ACTION_LABELS: Record<string, string> = {
@@ -213,7 +213,6 @@ const ROUTE_TO_TAB: Record<string, string> = {
   'categorias': 'categories',
   'notificacoes': 'notifications',
   'sistema': 'system',
-  'pendentes': 'pending',
 };
 
 const TAB_TO_ROUTE: Record<string, string> = {
@@ -222,7 +221,6 @@ const TAB_TO_ROUTE: Record<string, string> = {
   'categories': 'categorias',
   'notifications': 'notificacoes',
   'system': 'sistema',
-  'pending': 'pendentes',
 };
 
 const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
@@ -231,7 +229,6 @@ const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
   categories: { title: 'Gerenciamento de Categorias', subtitle: 'Gerencie categorias e subcategorias de equipamentos' },
   notifications: { title: 'Notificações do Sistema', subtitle: 'Configure notificações e alertas do sistema' },
   system: { title: 'Configurações do Sistema', subtitle: 'Gerencie configurações gerais do sistema' },
-  pending: { title: 'Usuários Pendentes', subtitle: 'Aprove novos usuários para liberar o acesso à plataforma.' },
 };
 
 export default function Admin() {
@@ -259,8 +256,6 @@ export default function Admin() {
   const [logFilter, setLogFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
   const [logSearchQuery, setLogSearchQuery] = useState('');
-  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
-  const [pendingLoading, setPendingLoading] = useState(false);
 
   // Use equipment hook for CSV functionality
   const { 
@@ -284,7 +279,6 @@ export default function Admin() {
       logger.debug('Starting data fetch...', { module: 'admin' });
       fetchUsers();
       fetchAuditLogs();
-      fetchPendingUsers();
     }
   }, [isAdmin, roleLoading, user]);
 
@@ -358,11 +352,20 @@ export default function Admin() {
         is_active: user.is_active ?? true
       }));
 
+      // Fetch approval status
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, is_approved');
+      const approvalMap: Record<string, boolean> = {};
+      (profiles || []).forEach((p: any) => { approvalMap[p.user_id] = p.is_approved ?? false; });
+
+      const usersWithApproval = usersData.map(u => ({ ...u, is_approved: approvalMap[u.id] ?? true }));
+
       logger.debug('Users fetched successfully', { 
         module: 'admin',
-        data: { count: usersData.length }
+        data: { count: usersWithApproval.length }
       });
-      setUsers(usersData);
+      setUsers(usersWithApproval);
     } catch (error) {
       logger.error('Error fetching users', { 
         module: 'admin',
@@ -405,16 +408,6 @@ export default function Admin() {
     }
   };
 
-  const fetchPendingUsers = async () => {
-    setPendingLoading(true);
-    const { data } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, created_at, position, department')
-      .eq('is_approved', false)
-      .order('created_at', { ascending: false });
-    setPendingUsers(data || []);
-    setPendingLoading(false);
-  };
 
   const handleApproveUser = async (userId: string) => {
     await supabase
@@ -422,7 +415,7 @@ export default function Admin() {
       .update({ is_approved: true } as any)
       .eq('user_id', userId);
     toast({ title: 'Usuário aprovado!', description: 'O usuário já pode acessar a plataforma.' });
-    fetchPendingUsers();
+    fetchUsers();
   };
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao') => {
@@ -602,7 +595,7 @@ export default function Admin() {
           // Refresh automático ao trocar de aba
           if (value === 'users') fetchUsers();
           if (value === 'logs') fetchAuditLogs();
-          if (value === 'pending') fetchPendingUsers();
+          
         }}
       >
         <TabsContent value="users" className="space-y-4 animate-fade-in">
@@ -639,6 +632,7 @@ export default function Admin() {
                       <TableHead>Departamento</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Aprovação</TableHead>
                       <TableHead>Último Acesso</TableHead>
                       <TableHead>Cadastrado</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
@@ -647,7 +641,7 @@ export default function Admin() {
                   <TableBody>
                     {loadingUsers ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={9} className="text-center py-8">
                           <div className="flex items-center justify-center space-x-2">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                             <span>Carregando usuários...</span>
@@ -656,7 +650,7 @@ export default function Admin() {
                       </TableRow>
                     ) : filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                           Nenhum usuário encontrado
                         </TableCell>
                       </TableRow>
@@ -683,6 +677,18 @@ export default function Admin() {
                           </TableCell>
                           <TableCell>
                             {getStatusBadge(tableUser.is_active, !!tableUser.email_confirmed_at)}
+                          </TableCell>
+                          <TableCell>
+                            {(tableUser as any).is_approved ? (
+                              <Badge variant="secondary" className="text-xs">Aprovado</Badge>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                                <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => handleApproveUser(tableUser.id)}>
+                                  Aprovar
+                                </Button>
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1 text-sm">
@@ -1014,46 +1020,6 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pending" className="space-y-4 animate-fade-in">
-          {pendingLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : pendingUsers.length === 0 ? (
-            <EmptyState
-              icon={UserCheck}
-              title="Nenhum usuário pendente"
-              description="Todos os usuários foram aprovados."
-            />
-          ) : (
-            <div className="space-y-3">
-              {pendingUsers.map((u) => (
-                <Card key={u.user_id}>
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div className="space-y-1">
-                      <p className="font-medium">{u.display_name || '—'}</p>
-                      <p className="text-sm text-muted-foreground">{u.email}</p>
-                      {(u.position || u.department) && (
-                        <p className="text-xs text-muted-foreground">
-                          {[u.position, u.department].filter(Boolean).join(' · ')}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {format(new Date(u.created_at), "dd/MM/yyyy 'às' HH:mm")}
-                      </span>
-                      <Button size="sm" onClick={() => handleApproveUser(u.user_id)}>
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Aprovar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
 
       </Tabs>
 
