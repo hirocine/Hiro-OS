@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -694,8 +694,7 @@ export default function ProposalDetails() {
         <div className="space-y-6">
           {/* Client Section */}
           <Card>
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Building2 className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Cliente e Projeto</CardTitle>
@@ -711,8 +710,7 @@ export default function ProposalDetails() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto</Label><Input value={clientForm.project_number} onChange={e => setClientForm(p => ({ ...p, project_number: e.target.value }))} placeholder="Ex: 001" maxLength={3} /></div>
@@ -763,8 +761,7 @@ export default function ProposalDetails() {
 
           {/* Investment Section */}
           <Card>
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><DollarSign className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Investimento</CardTitle>
@@ -774,8 +771,7 @@ export default function ProposalDetails() {
                     <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                   </Button>
                 )}
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -801,8 +797,7 @@ export default function ProposalDetails() {
 
           {/* Objective Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><FileText className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Objetivo</CardTitle>
@@ -812,8 +807,7 @@ export default function ProposalDetails() {
                     <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                   </Button>
                 )}
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2">
               <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={8} />
             </CardContent>
@@ -821,8 +815,7 @@ export default function ProposalDetails() {
 
           {/* Dores do Cliente Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><AlertTriangle className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Dores do Cliente</CardTitle>
@@ -846,8 +839,7 @@ export default function ProposalDetails() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2">
               {doresForm.length === 0 ? (
                 <div className="text-center py-8">
@@ -1009,8 +1001,7 @@ export default function ProposalDetails() {
 
           {/* Cases / Portfólio Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Briefcase className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Cases / Portfólio</CardTitle>
@@ -1025,8 +1016,7 @@ export default function ProposalDetails() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2">
               {casesForm.length === 0 ? (
                 <div className="text-center py-8">
@@ -1201,8 +1191,7 @@ export default function ProposalDetails() {
 
           {/* Entregas e Serviços Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Entregas (Output)</CardTitle>
@@ -1217,8 +1206,7 @@ export default function ProposalDetails() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2 space-y-4">
               {outputForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma entrega adicionada.</p>
@@ -1274,8 +1262,7 @@ export default function ProposalDetails() {
 
           {/* Serviços Inclusos Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Serviços Inclusos</CardTitle>
@@ -1285,8 +1272,7 @@ export default function ProposalDetails() {
                     <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
                   </Button>
                 )}
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {inclusoForm.map((cat, catIdx) => {
@@ -1347,8 +1333,7 @@ export default function ProposalDetails() {
 
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><MessageSquare className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Depoimento</CardTitle>
@@ -1363,8 +1348,7 @@ export default function ProposalDetails() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardHeader>
+            </div>
             <CardContent className="pt-2">
               {testimonialForm.testimonial_name ? (
                 <div className="border rounded-xl bg-muted/30 p-5 flex gap-4 items-start">
