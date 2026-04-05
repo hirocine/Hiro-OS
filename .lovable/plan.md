@@ -1,57 +1,53 @@
 
 
-# Replace inline empty states in ProjectDetails, CompanyDetails, SupplierDetails
+# Replace inline empty states in PPTable, RecentActivityWidget, TasksTable
 
-## File: `src/pages/ProjectDetails.tsx`
+## File: `src/features/post-production/components/PPTable.tsx`
 
 ### 1. Add imports
-- Add `History, FileText` to lucide-react import (line 11)
+- Add `Film` to lucide-react imports (if not present)
 - Add `import { EmptyState } from '@/components/ui/empty-state';`
 
-### 2. Replacements
-
-**Lines 767-770** — "Nenhum histórico disponível" block with Clock icon:
-Replace entire `<div>` with:
+### 2. Replacement (lines 184-188)
+Replace the `<TableRow>` containing "Nenhum vídeo na esteira" with:
 ```tsx
-<EmptyState icon={History} title="Nenhum histórico" description="Nenhum histórico disponível." compact />
-```
-
-**Lines 828-830** — "Nenhuma observação adicionada":
-Replace entire `<div>` with:
-```tsx
-<EmptyState icon={FileText} title="Nenhuma observação" description="Nenhuma observação adicionada." compact />
+<TableRow>
+  <TableCell colSpan={7}>
+    <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
+  </TableCell>
+</TableRow>
 ```
 
 ---
 
-## File: `src/pages/CompanyDetails.tsx`
+## File: `src/features/tasks/components/RecentActivityWidget.tsx`
 
 ### 1. Add imports
-- Add `FileText` to lucide-react import (line 3)
+- `Activity` should already be imported; verify
 - Add `import { EmptyState } from '@/components/ui/empty-state';`
 
-### 2. Replacement
-
-**Lines 253-255** — "Nenhuma nota registrada":
-Replace `<p>` with:
+### 2. Replacement (lines 52-54)
+Replace the `<p>` with:
 ```tsx
-<EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
+<EmptyState icon={Activity} title="" description="Nenhuma atividade recente." compact />
 ```
 
 ---
 
-## File: `src/pages/SupplierDetails.tsx`
+## File: `src/features/tasks/components/TasksTable.tsx`
 
 ### 1. Add imports
-- Add `FileText` to lucide-react import (line 3)
+- Add `CheckSquare` to lucide-react imports
 - Add `import { EmptyState } from '@/components/ui/empty-state';`
 
-### 2. Replacement
-
-**Lines 274-276** — "Nenhuma nota registrada":
-Replace `<p>` with:
+### 2. Replacement (lines 301-305)
+Replace the `<TableRow>` with:
 ```tsx
-<EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
+<TableRow>
+  <TableCell colSpan={showAssignee ? 6 : 5}>
+    <EmptyState icon={CheckSquare} title="" description="Nenhuma tarefa encontrada." compact />
+  </TableCell>
+</TableRow>
 ```
 
 No other changes.
