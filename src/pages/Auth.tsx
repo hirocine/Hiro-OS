@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Clock, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -26,6 +26,7 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [passwordValid, setPasswordValid] = useState(false);
   const [emailValid, setEmailValid] = useState(false);
+  const [showPendingScreen, setShowPendingScreen] = useState(false);
 
   const { user, loading: authLoading, signIn, signUp, signInWithGoogle } = useAuthContext();
   const { toast } = useToast();
@@ -52,6 +53,37 @@ export default function Auth() {
   }
 
   if (user) return null;
+
+  if (showPendingScreen) {
+    return (
+      <div className="min-h-screen flex" style={{ background: '#0a0a0a' }}>
+        <div className="hidden lg:block w-[60%]" style={{ borderRight: '1px solid #1a1a1a' }}>
+          <img src="/lovable-uploads/0023_DSC01650-Aprimorado-NR_HIRO_BACKSTAGE_290624.jpg" alt="" className="w-full h-full object-cover object-center opacity-60" />
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
+          <div className="w-full max-w-sm space-y-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+              <Clock className="h-6 w-6 text-white/60" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-white text-2xl font-bold">Conta criada!</h1>
+              <p className="text-white/40 text-sm leading-relaxed">
+                Sua conta está aguardando aprovação de um administrador.<br />
+                Você receberá acesso em breve.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-white/30 hover:text-white/60 text-sm transition-colors"
+              onClick={() => { setShowPendingScreen(false); setMode('login'); }}
+            >
+              Voltar para o login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +120,7 @@ export default function Auth() {
           setError(error.message);
         } else {
           toast({ title: 'Conta criada com sucesso!', description: 'Aguarde aprovação do administrador para acessar.' });
-          setMode('login');
+          setShowPendingScreen(true);
         }
       }
     } catch {
