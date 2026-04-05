@@ -10,6 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
@@ -27,8 +28,8 @@ import { usePainPoints } from '../hooks/usePainPoints';
 import { useProposalCases } from '../hooks/useProposalCases';
 import { useTestimonials } from '../hooks/useTestimonials';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem } from '../types';
-import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES } from '../types';
+import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
+import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS } from '../types';
 
 // ── Loading messages ──
 const ANALYZE_MESSAGES = [
