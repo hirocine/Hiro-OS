@@ -350,7 +350,9 @@ Retorne APENAS um JSON válido (sem markdown, sem backticks):
   ]
 }
 
-Para entregáveis, agrupe itens do mesmo tipo em UM ÚNICO entregável com a quantidade correta. Exemplo: se o projeto tem 5 aulas EAD de 5 minutos cada, crie 1 entregável 'EAD - Aulas de Treinamento' com quantidade '5' e descrição '5 aulas de 5 minutos'. NÃO crie 5 entregáveis separados. Só separe entregáveis quando forem de natureza diferente (ex: webcast é diferente de EAD, que é diferente de vídeo institucional) ou quando tiverem especificações diferentes (ex: 2 aulas de 5min e 3 aulas de 10min).`;
+Para entregáveis, agrupe itens do mesmo tipo em UM ÚNICO entregável com a quantidade correta. Exemplo: se o projeto tem 5 aulas EAD de 5 minutos cada, crie 1 entregável 'EAD - Aulas de Treinamento' com quantidade '5' e descrição '5 aulas de 5 minutos'. NÃO crie 5 entregáveis separados. Só separe entregáveis quando forem de natureza diferente (ex: webcast é diferente de EAD, que é diferente de vídeo institucional) ou quando tiverem especificações diferentes (ex: 2 aulas de 5min e 3 aulas de 10min).
+
+Para o campo 'icone', escolha o emoji mais relevante para cada entregável entre estas opções: 🎬 Cinema, 📱 Celular, 📷 Câmera, 📋 Checklist, 🎨 Arte, 🖼️ Imagem, 🎵 Música, 🖥️ Monitor, 🎙️ Microfone, 🎥 Filmadora, ✂️ Edição, 📐 Design, 🚀 Foguete, ⭐ Estrela, 💡 Ideia, 📦 Pacote, 🎯 Alvo, 📊 Gráfico, 🏆 Troféu, 🔥 Fogo, ⚡ Raio, 🎤 Karaokê, 📸 Flash, 🎞️ Película. Exemplo: para aulas EAD use 🎬, para vídeo institucional use 🎥, para webcast/live use 🖥️.`;
 
       let text: string;
       if (useAnthropic) {
