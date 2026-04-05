@@ -1,22 +1,58 @@
 
 
-# Replace inline empty states in TaskDetails.tsx
+# Replace inline empty states in ProjectDetails, CompanyDetails, SupplierDetails
 
-## File: `src/pages/TaskDetails.tsx`
+## File: `src/pages/ProjectDetails.tsx`
 
-### 1. Add imports (line 3 area)
-- Add `CheckSquare, MessageCircle` to lucide-react imports (`Link` conflicts with react-router, use `Link2` already imported or keep `ExternalLink`)
+### 1. Add imports
+- Add `History, FileText` to lucide-react import (line 11)
 - Add `import { EmptyState } from '@/components/ui/empty-state';`
 
-Note: `Link` from lucide-react may conflict with react-router. Will use `Link2` (already imported) for the external links empty state.
+### 2. Replacements
 
-### 2. Three replacements
+**Lines 767-770** — "Nenhum histórico disponível" block with Clock icon:
+Replace entire `<div>` with:
+```tsx
+<EmptyState icon={History} title="Nenhum histórico" description="Nenhum histórico disponível." compact />
+```
 
-| Line | Current | Replacement |
-|------|---------|-------------|
-| 329 | `<p className="text-muted-foreground text-sm">Nenhuma subtarefa</p>` | `<EmptyState icon={CheckSquare} title="Nenhuma subtarefa" description="Nenhuma subtarefa." compact />` |
-| 384 | `<p className="text-muted-foreground text-sm">Nenhum comentário</p>` | `<EmptyState icon={MessageCircle} title="Nenhum comentário" description="Nenhum comentário." compact />` |
-| 455 | `<p className="text-muted-foreground text-sm mb-4">Nenhum link externo</p>` | `<EmptyState icon={Link2} title="Nenhum link externo" description="Nenhum link externo." compact />` |
+**Lines 828-830** — "Nenhuma observação adicionada":
+Replace entire `<div>` with:
+```tsx
+<EmptyState icon={FileText} title="Nenhuma observação" description="Nenhuma observação adicionada." compact />
+```
 
-### 3. No other changes
+---
+
+## File: `src/pages/CompanyDetails.tsx`
+
+### 1. Add imports
+- Add `FileText` to lucide-react import (line 3)
+- Add `import { EmptyState } from '@/components/ui/empty-state';`
+
+### 2. Replacement
+
+**Lines 253-255** — "Nenhuma nota registrada":
+Replace `<p>` with:
+```tsx
+<EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
+```
+
+---
+
+## File: `src/pages/SupplierDetails.tsx`
+
+### 1. Add imports
+- Add `FileText` to lucide-react import (line 3)
+- Add `import { EmptyState } from '@/components/ui/empty-state';`
+
+### 2. Replacement
+
+**Lines 274-276** — "Nenhuma nota registrada":
+Replace `<p>` with:
+```tsx
+<EmptyState icon={FileText} title="Nenhuma nota" description="Nenhuma nota registrada." compact />
+```
+
+No other changes.
 
