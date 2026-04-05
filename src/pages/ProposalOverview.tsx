@@ -81,14 +81,53 @@ export default function ProposalOverview() {
       ]} />
 
       {/* Section 1 — Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 shrink-0">
-                {proposal.client_logo && <AvatarImage src={proposal.client_logo} alt={proposal.client_name || ''} />}
-                <AvatarFallback className="bg-muted"><Building2 className="h-7 w-7 text-muted-foreground" /></AvatarFallback>
-              </Avatar>
+      <Card className="overflow-hidden">
+        <div className="p-5 flex items-start gap-4">
+          <Avatar className="h-16 w-16 rounded-lg shrink-0">
+            {proposal.client_logo && <AvatarImage src={proposal.client_logo} alt={proposal.client_name || ''} className="rounded-lg" />}
+            <AvatarFallback className="bg-muted rounded-lg"><Building2 className="h-7 w-7 text-muted-foreground" /></AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {proposal.project_number && (
+                <span className="text-xs font-medium text-muted-foreground/70">Nº {proposal.project_number}</span>
+              )}
+              <h1 className="text-lg font-medium">{proposal.project_name}</h1>
+              <Badge variant={status.variant}>{status.label}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {proposal.client_name || '—'}
+              {proposal.client_responsible && ` · ${proposal.client_responsible}`}
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              {proposal.created_at && `Criada em ${format(new Date(proposal.created_at), 'dd/MM/yyyy')}`}
+              {proposal.sent_date && ` · Enviada em ${format(new Date(proposal.sent_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
+              {proposal.validity_date && ` · Válida até ${format(new Date(proposal.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
+            </p>
+          </div>
+        </div>
+        <div className="border-t border-border p-3 px-5 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Eye className="h-4 w-4" /> {totalViews} visualizações
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" /> Última: {lastView ? format(new Date(lastView.viewed_at), 'dd/MM HH:mm') : '—'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopyLink}>
+              <Copy className="mr-1.5 h-4 w-4" /> Copiar Link
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${id}`)}>
+              <Pencil className="mr-1.5 h-4 w-4" /> Editar
+            </Button>
+            <Button size="sm" onClick={handleOpenProposal}>
+              <ExternalLink className="mr-1.5 h-4 w-4" /> Ver Proposta
+            </Button>
+          </div>
+        </div>
+      </Card>
               <div>
                 {proposal.project_number && (
                   <p className="text-xs font-medium text-muted-foreground/70 mb-0.5">Nº {proposal.project_number}</p>
