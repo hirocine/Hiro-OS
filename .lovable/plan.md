@@ -1,47 +1,33 @@
 
 
-# Fix vertical alignment in ProposalDetails section headers
+# Validação de campos obrigatórios + WhatsApp pre-fill
 
-## Single file: `src/pages/ProposalDetails.tsx`
+## Arquivo: `src/pages/ProposalDetails.tsx`
 
-### Change
-Replace all 8 `<CardHeader className="pb-3 border-b border-border">` wrappers with a flat `<div className="flex items-center justify-between p-6 pb-3 border-b border-border">`, removing the nested inner `<div className="flex items-center justify-between">`.
+### 1. WhatsApp pre-fill
+- **Line 155**: Initial state `whatsapp_number: ''` → `whatsapp_number: '+55 '`
+- **Line 174**: `formatWhatsApp(proposal.whatsapp_number || '')` → `proposal.whatsapp_number ? formatWhatsApp(proposal.whatsapp_number) : '+55 '`
 
-This eliminates the `flex flex-col space-y-1.5` default from `CardHeader` that breaks the single-row layout.
-
-### Pattern
-
-**Before** (current, all 8 sections):
+### 2. Error state (after line ~164)
 ```tsx
-<CardHeader className="pb-3 border-b border-border">
-  <div className="flex items-center justify-between">
-    ...content...
-  </div>
-</CardHeader>
+const [clientErrors, setClientErrors] = useState({ project_number: false, whatsapp_number: false, validity_date: false });
+const [investErrors, setInvestErrors] = useState({ list_price: false });
 ```
 
-**After**:
-```tsx
-<div className="flex items-center justify-between p-6 pb-3 border-b border-border">
-  ...content...
-</div>
-```
+### 3. Validation in `saveSection` (line 362, before the `if (section === 'client')` data block)
+Add validation checks that call `toast.error` and `return` early if errors found. WhatsApp validation: digits < 12 chars means invalid.
 
-### Sections affected (8 total)
-1. **Cliente e Projeto** — line 697
-2. **Investimento** — line 766
-3. **Objetivo** — line 804
-4. **Dores do Cliente** — line 824
-5. **Cases / Portfólio** — line 1012
-6. **Entregas (Output)** — line 1204
-7. **Serviços Inclusos** — line 1277
-8. **Depoimento** — line 1350
+### 4. Visual error indicators on 4 fields
+- **Line 716** (Nº do Projeto input): add conditional `border-destructive` + error `<p>` below
+- **Line 720** (WhatsApp input): add conditional `border-destructive` + error `<p>` below
+- **Line 725** (Validade date picker button): add conditional `border-destructive` + error `<p>` after Popover
+- **Line 779** (Valor sem desconto input): add conditional `border-destructive` + error `<p>` below
 
-### Import cleanup
-Line 3: remove `CardHeader` from the import:
-```tsx
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-```
+### 5. Clear errors on change
+- project_number onChange (line 716): add `setClientErrors(p => ({ ...p, project_number: false }))`
+- whatsapp onChange (line 720): add `setClientErrors(p => ({ ...p, whatsapp_number: false }))`
+- validity_date onSelect (line 736): add `setClientErrors(p => ({ ...p, validity_date: false }))`
+- list_price onChange (line 783): add `setInvestErrors(p => ({ ...p, list_price: false }))`
 
-No logic, state, buttons, or content changes — only wrapper structure.
+No structural/styling changes beyond the error borders and messages.
 
