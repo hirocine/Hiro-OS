@@ -26,6 +26,7 @@ export function ProposalPublicPage() {
   const viewIdRef = useRef<string | null>(null);
   const entryTimeRef = useRef<number>(Date.now());
   const trackedRef = useRef(false);
+  const [latestSlug, setLatestSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!proposal || trackedRef.current) return;
@@ -196,4 +197,18 @@ export function ProposalPublicPage() {
     </div>
   );
 }
+  // Check if outdated version
+  useEffect(() => {
+    if (!proposal || proposal.is_latest_version !== false) return;
+    const parentId = proposal.parent_id || proposal.id;
+    supabase
+      .from('orcamentos')
+      .select('slug')
+      .eq('parent_id', parentId)
+      .eq('is_latest_version', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setLatestSlug((data as any).slug);
+      });
+  }, [proposal]);
 
