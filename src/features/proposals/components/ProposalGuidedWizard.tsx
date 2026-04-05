@@ -686,30 +686,24 @@ export function ProposalGuidedWizard() {
 
       {/* ── Sub-step: Questions (within step 0) ── */}
       {step === 0 && showQuestions && analyzeResultState && (
-        <div className="flex flex-col items-center min-h-[60vh] space-y-8 py-12">
+        <div className="flex flex-col space-y-6">
           {isLoadingAI ? (
-            <div className="w-full max-w-2xl space-y-4 py-12 animate-fade-in">
+            <div className="w-full space-y-4 py-12 animate-fade-in">
               <Skeleton className="h-14 rounded-lg" />
               <Skeleton className="h-14 rounded-lg" />
               <Skeleton className="h-14 rounded-lg" />
-              <Skeleton className="h-10 rounded-lg w-1/2 mx-auto" />
-              <p className="text-sm text-muted-foreground text-center animate-pulse">
+              <Skeleton className="h-10 rounded-lg w-1/2" />
+              <p className="text-sm text-muted-foreground animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
             <>
-              <div className="text-center space-y-3 max-w-lg animate-fade-in">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">Algumas dúvidas</h2>
-                <p className="text-sm text-muted-foreground">
-                  {analyzeResultState.confirmed.summary}
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground animate-fade-in">
+                {analyzeResultState.confirmed.summary}
+              </p>
 
-              <div className="w-full max-w-2xl space-y-4">
+              <div className="w-full space-y-4">
                 {analyzeResultState.questions.map((q, i) => (
                   <div
                     key={q.id}
@@ -752,21 +746,12 @@ export function ProposalGuidedWizard() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← Voltar ao briefing
-                </button>
-                <Button
-                  size="lg"
-                  onClick={handleContinueFromQuestions}
-                  disabled={!allQuestionsAnswered}
-                  className="gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Continuar
+              <div className="flex justify-between pt-6">
+                <Button variant="ghost" onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
+                </Button>
+                <Button onClick={handleContinueFromQuestions} disabled={!allQuestionsAnswered}>
+                  Continuar <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </>
