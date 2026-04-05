@@ -1,52 +1,28 @@
 
 
-# Replace VimeoThumbnail in ProposalDetails.tsx
+# Fix case thumbnails in ProposalGuidedWizard Step 4
 
-## What
-Replace the current `VimeoThumbnail` component (lines 90-123) that uses the Vimeo oEmbed API (which causes CORS errors) with a simpler version that uses `vumbnail.com` directly and falls back to Vimeo CDN via `<img onError>`.
+## Changes in `src/features/proposals/components/ProposalGuidedWizard.tsx`
 
-## Changes
+### 1. Add `Film` to lucide-react imports (line 20)
+Add `Film` alongside existing icons.
 
-### `src/pages/ProposalDetails.tsx`
+### 2. Add VimeoThumbnail component (after imports, before main component)
+Insert the provided `VimeoThumbnail` function component using `useState`, `useEffect`, `Film` icon, and vumbnail.com with Vimeo CDN fallback.
 
-**Lines 89-123** — Replace the entire `VimeoThumbnail` function with:
+### 3. Replace case thumbnail block (lines 1038-1063)
+Replace the current `{c.vimeo_id ? (<> <img ... onError> <div hidden fallback> </>) : (<div placeholder>)}` block with:
 
 ```tsx
-// Vimeo thumbnail component - defined at module level to avoid re-creation on every render
-function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    if (!videoId) return;
-    setFailed(false);
-    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
-  }, [videoId]);
-
-  if (failed || !thumbUrl) {
-    return (
-      <div className={`bg-muted flex items-center justify-center ${className || ''}`}>
-        <Briefcase className="h-8 w-8 text-muted-foreground/30" />
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={thumbUrl}
-      alt={alt || ''}
-      className={`object-cover ${className || ''}`}
-      loading="lazy"
-      onError={() => {
-        if (thumbUrl.includes('vumbnail.com')) {
-          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
-        } else {
-          setFailed(true);
-        }
-      }}
-    />
-  );
-}
+{c.vimeo_id ? (
+  <div className="w-24 h-16 rounded overflow-hidden shrink-0">
+    <VimeoThumbnail videoId={extractVimeoId(c.vimeo_id)} videoHash={c.vimeo_hash || undefined} alt={c.campaign_name} className="w-full h-full" />
+  </div>
+) : (
+  <div className="w-24 h-16 rounded bg-muted flex items-center justify-center shrink-0">
+    <Video className="h-6 w-6 text-muted-foreground" />
+  </div>
+)}
 ```
 
 No other changes.
