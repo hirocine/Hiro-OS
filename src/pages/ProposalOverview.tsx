@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send, Loader2, User } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch, Send, Loader2 } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,11 +100,26 @@ export default function ProposalOverview() {
           .select('id, action, user_email, created_at')
           .eq('table_name', 'orcamentos')
           .in('record_id', allIds)
-          .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false })
           .limit(50)
-          .then(({ data }) => {
-            setHistory(data || []);
-            setHistoryLoading(false);
+          .then(({ data: logs }) => {
+            const entries = logs || [];
+            const userIds = [...new Set(entries.map((e: any) => e.user_id).filter(Boolean))];
+            if (userIds.length === 0) {
+              setHistory(entries);
+              setHistoryLoading(false);
+              return;
+            }
+            supabase
+              .from('profiles')
+              .select('user_id, display_name, avatar_url')
+              .in('user_id', userIds)
+              .then(({ data: profiles }) => {
+                const profileMap: Record<string, any> = {};
+                (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+                setHistory(entries.map((e: any) => ({ ...e, profile: e.user_id ? profileMap[e.user_id] || null : null })));
+                setHistoryLoading(false);
+              });
           });
       });
   }, [proposal?.id]);
@@ -399,14 +414,17 @@ export default function ProposalOverview() {
             <div className="divide-y divide-border">
               {history.map((entry) => (
                 <div key={entry.id} className="flex items-start justify-between px-2 py-3 gap-4">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm">{entry.action}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{entry.user_email || 'Sistema'}</p>
-                    </div>
+                    <div className="flex items-start gap-3 min-w-0">
+                     <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+                       {entry.profile?.avatar_url && <AvatarImage src={entry.profile.avatar_url} alt={entry.profile.display_name || ''} />}
+                       <AvatarFallback className="text-xs">
+                         {(entry.profile?.display_name || entry.user_email || '?')[0].toUpperCase()}
+                       </AvatarFallback>
+                     </Avatar>
+                     <div className="min-w-0">
+                       <p className="text-sm">{entry.action}</p>
+                       <p className="text-xs text-muted-foreground mt-0.5">{entry.profile?.display_name || entry.user_email || 'Sistema'}</p>
+                     </div>
                   </div>
                   <span className="text-xs text-muted-foreground shrink-0 mt-1">
                     {format(new Date(entry.created_at), "dd/MM/yyyy 'às' HH:mm")}
