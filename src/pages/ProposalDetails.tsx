@@ -733,7 +733,7 @@ export default function ProposalDetails() {
                   )}
                 </div>
             </div>
-            <CardContent className="pt-2 space-y-4">
+            <CardContent className="pt-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={3} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
@@ -795,7 +795,7 @@ export default function ProposalDetails() {
                   </Button>
                 )}
             </div>
-            <CardContent className="pt-2 space-y-4">
+            <CardContent className="pt-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Valor sem desconto (R$) *</Label>
@@ -834,7 +834,7 @@ export default function ProposalDetails() {
                   </Button>
                 )}
             </div>
-            <CardContent className="pt-2">
+            <CardContent className="pt-6">
               <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={8} />
             </CardContent>
           </Card>
@@ -866,7 +866,7 @@ export default function ProposalDetails() {
                   )}
                 </div>
             </div>
-            <CardContent className="pt-2">
+            <CardContent className="pt-6">
               {doresForm.length === 0 ? (
                 <div className="text-center py-8">
                   <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
@@ -1043,7 +1043,7 @@ export default function ProposalDetails() {
                   )}
                 </div>
             </div>
-            <CardContent className="pt-2">
+            <CardContent className="pt-6">
               {casesForm.length === 0 ? (
                 <div className="text-center py-8">
                   <Briefcase className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
@@ -1233,7 +1233,7 @@ export default function ProposalDetails() {
                   )}
                 </div>
             </div>
-            <CardContent className="pt-2 space-y-4">
+            <CardContent className="pt-6 space-y-4">
               {outputForm.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Nenhuma entrega adicionada.</p>
               )}
@@ -1299,7 +1299,7 @@ export default function ProposalDetails() {
                   </Button>
                 )}
             </div>
-            <CardContent className="pt-2">
+            <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {inclusoForm.map((cat, catIdx) => {
                   const phaseEmoji = cat.categoria === 'Pré-produção' ? '📋' : cat.categoria === 'Gravação' ? '🎬' : '✂️';
@@ -1375,7 +1375,7 @@ export default function ProposalDetails() {
                   )}
                 </div>
             </div>
-            <CardContent className="pt-2">
+            <CardContent className="pt-6">
               {testimonialForm.testimonial_name ? (
                 <div className="border rounded-xl bg-muted/30 p-5 flex gap-4 items-start">
                   <Avatar className="h-14 w-14 shrink-0">
