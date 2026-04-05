@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +57,17 @@ const FINALIZE_MESSAGES = [
   'Quase pronto...',
 ];
 
+function formatWhatsApp(value: string): string {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length > 0 && !digits.startsWith('55')) digits = '55' + digits;
+  if (digits.length > 13) digits = digits.slice(0, 13);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `+${digits}`;
+  if (digits.length <= 4) return `+${digits.slice(0,2)} (${digits.slice(2)}`;
+  if (digits.length <= 9) return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4)}`;
+  return `+${digits.slice(0,2)} (${digits.slice(2,4)}) ${digits.slice(4,9)}-${digits.slice(9)}`;
+}
+
 
 // ── Steps config ──
 const STEPS = [
@@ -100,7 +112,7 @@ export function ProposalGuidedWizard() {
   const [projectName, setProjectName] = useState('');
   const [projectNumber, setProjectNumber] = useState('');
   const [clientResponsible, setClientResponsible] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('+55 ');
   const [companyDescription, setCompanyDescription] = useState('');
   const [objetivo, setObjetivo] = useState('');
   const [dores, setDores] = useState<DiagnosticoDor[]>([]);
@@ -563,7 +575,23 @@ export function ProposalGuidedWizard() {
   }
 
   // ── Step navigation ──
-  const goNext = () => setStep(prev => Math.min(prev + 1, STEPS.length - 1));
+  const goNext = async () => {
+    if (step === 1 && projectNumber.trim()) {
+      const { data: existing } = await supabase
+        .from('orcamentos')
+        .select('id, project_name, client_name')
+        .eq('project_number', projectNumber.trim())
+        .maybeSingle();
+      if (existing) {
+        toast.error(
+          `Nº ${projectNumber} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
+          { duration: 6000 }
+        );
+        return;
+      }
+    }
+    setStep(prev => Math.min(prev + 1, STEPS.length - 1));
+  };
   const goBack = () => setStep(prev => Math.max(prev - 1, 0));
 
   const isLoadingAI = isAnalyzing || isFinalizing || isEnriching;
@@ -791,7 +819,7 @@ export function ProposalGuidedWizard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nº do Projeto</Label>
-                  <Input value={projectNumber} onChange={e => setProjectNumber(e.target.value)} placeholder="Ex: 001" />
+                  <Input value={projectNumber} onChange={e => setProjectNumber(e.target.value)} placeholder="Ex: 001" maxLength={4} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center">Nome do Cliente {aiBadge('client_name')}</Label>
@@ -811,7 +839,7 @@ export function ProposalGuidedWizard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">WhatsApp para Aprovação</Label>
-                  <Input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+55 (11) 95151-3862" />
+                  <Input value={whatsappNumber} onChange={e => setWhatsappNumber(formatWhatsApp(e.target.value))} placeholder="+55 (11) 95151-3862" maxLength={20} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Validade da Proposta</Label>
