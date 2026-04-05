@@ -95,8 +95,8 @@ const App = () => (
                 <Route path="projetos-av/:id" element={<AVProjectDetails />} />
                 <Route path="orcamentos" element={<Proposals />} />
                 <Route path="orcamentos/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense>} />
-                <Route path="orcamentos/:id/overview" element={<ProposalOverview />} />
-                <Route path="orcamentos/:id" element={<ProposalDetails />} />
+                <Route path="orcamentos/:slug/overview" element={<ProposalOverview />} />
+                <Route path="orcamentos/:slug" element={<ProposalDetails />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
