@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Clock, CheckCircle, Archive, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Clock, CheckCircle, Archive, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { useProposals, ProposalCard } from '@/features/proposals';
@@ -56,7 +57,7 @@ export default function Proposals() {
           </CardHeader>
           <CardContent>
             {activeProposals.length > 0 ? renderGrid(activeProposals) : (
-              <p className="text-sm text-muted-foreground text-center py-6">Nenhum orçamento ativo</p>
+              <EmptyState icon={Receipt} title="Nenhum orçamento ativo" description="Crie sua primeira proposta comercial" action={{ label: "Nova Proposta", onClick: () => navigate('/orcamentos/novo') }} />
             )}
           </CardContent>
         </Card>
@@ -81,7 +82,7 @@ export default function Proposals() {
             <CollapsibleContent>
               <CardContent>
                 {approvedProposals.length > 0 ? renderGrid(approvedProposals) : (
-                  <p className="text-sm text-muted-foreground text-center py-6">Nenhum orçamento aprovado</p>
+                  <EmptyState icon={CheckCircle} title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui" />
                 )}
               </CardContent>
             </CollapsibleContent>
@@ -108,7 +109,7 @@ export default function Proposals() {
             <CollapsibleContent>
               <CardContent>
                 {archivedProposals.length > 0 ? renderGrid(archivedProposals) : (
-                  <p className="text-sm text-muted-foreground text-center py-6">Nenhum orçamento arquivado</p>
+                  <EmptyState icon={Archive} title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá" />
                 )}
               </CardContent>
             </CollapsibleContent>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, UserCheck } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { formatCurrency } from '@/lib/utils';
@@ -168,8 +169,8 @@ export default function Suppliers() {
               ))
             ) : suppliers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  Nenhum fornecedor encontrado
+                <TableCell colSpan={7}>
+                  <EmptyState icon={UserCheck} title="Nenhum fornecedor encontrado" description="Cadastre freelancers e prestadores de serviço" />
                 </TableCell>
               </TableRow>
             ) : (

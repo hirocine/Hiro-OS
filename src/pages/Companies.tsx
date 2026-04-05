@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Building2 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { WhatsAppIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 
@@ -139,8 +140,8 @@ export default function Companies() {
               ))
             ) : companies.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  Nenhuma empresa encontrada
+                <TableCell colSpan={5}>
+                  <EmptyState icon={Building2} title="Nenhuma empresa encontrada" description="Cadastre empresas fornecedoras" />
                 </TableCell>
               </TableRow>
             ) : (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Film, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -65,9 +66,7 @@ export default function AVProjects() {
 
     if (!projects?.length) {
       return (
-        <div className="text-center py-8 text-muted-foreground">
-          Nenhum projeto encontrado
-        </div>
+        <EmptyState icon={Film} title="Nenhum projeto encontrado" description="Projetos audiovisuais aparecerão aqui" />
       );
     }
 
