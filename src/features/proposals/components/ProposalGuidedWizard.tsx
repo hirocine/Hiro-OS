@@ -103,6 +103,9 @@ export function ProposalGuidedWizard() {
     () => JSON.parse(JSON.stringify(DEFAULT_INCLUSO_CATEGORIES))
   );
   const [selectedTestimonialId, setSelectedTestimonialId] = useState<string | null>(null);
+  // New case dialog
+  const [showNewCaseDialog, setShowNewCaseDialog] = useState(false);
+  const [newCase, setNewCase] = useState({ client_name: '', campaign_name: '', vimeo_url: '', tags: [] as string[], destaque: false });
   // Track AI-filled fields
   const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
 
@@ -236,6 +239,36 @@ export function ProposalGuidedWizard() {
       setSelectedCaseIds(selectedCaseIds.filter(x => x !== id));
     } else {
       setSelectedCaseIds([...selectedCaseIds, id]);
+    }
+  };
+
+  // ── Vimeo URL parser ──
+  const parseVimeoUrl = (url: string) => {
+    const match = url.match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
+    return match ? { vimeo_id: match[1], vimeo_hash: match[2] || '' } : null;
+  };
+
+  const handleCreateCase = async () => {
+    const parsed = parseVimeoUrl(newCase.vimeo_url);
+    if (!parsed || !newCase.client_name.trim() || !newCase.campaign_name.trim()) {
+      toast.error('Preencha todos os campos obrigatórios e insira uma URL válida do Vimeo.');
+      return;
+    }
+    try {
+      const result = await createCase.mutateAsync({
+        client_name: newCase.client_name,
+        campaign_name: newCase.campaign_name,
+        vimeo_id: parsed.vimeo_id,
+        vimeo_hash: parsed.vimeo_hash,
+        tags: newCase.tags,
+        destaque: newCase.destaque,
+      });
+      setSelectedCaseIds(prev => [...prev, result.id]);
+      setShowNewCaseDialog(false);
+      setNewCase({ client_name: '', campaign_name: '', vimeo_url: '', tags: [], destaque: false });
+      toast.success('Case criado com sucesso!');
+    } catch {
+      toast.error('Erro ao criar case');
     }
   };
 
