@@ -200,9 +200,8 @@ export function useProposals() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+  onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
-      toast.success('Proposta atualizada com sucesso!');
     },
     onError: (err: Error) => {
       toast.error('Erro ao atualizar proposta: ' + err.message);

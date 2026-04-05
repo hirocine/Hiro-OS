@@ -374,6 +374,22 @@ export default function ProposalDetails() {
           toast.error('Preencha todos os campos obrigatórios');
           return;
         }
+        if (clientForm.project_number.trim()) {
+          const { data: existing } = await supabase
+            .from('orcamentos')
+            .select('id, project_name, client_name')
+            .eq('project_number', clientForm.project_number.trim())
+            .neq('id', proposal.id)
+            .maybeSingle();
+          if (existing) {
+            toast.error(
+              `Nº ${clientForm.project_number} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
+              { duration: 6000 }
+            );
+            setClientErrors(p => ({ ...p, project_number: true }));
+            return;
+          }
+        }
       }
       if (section === 'invest') {
         const errors = { list_price: !investForm.list_price || investForm.list_price <= 0 };
@@ -735,7 +751,7 @@ export default function ProposalDetails() {
             </div>
             <CardContent className="pt-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={3} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
+                <div className="space-y-1.5"><Label className="text-xs">Nº do Projeto *</Label><Input className={clientErrors.project_number ? 'border-destructive' : ''} value={clientForm.project_number} onChange={e => { setClientForm(p => ({ ...p, project_number: e.target.value })); setClientErrors(p => ({ ...p, project_number: false })); }} placeholder="Ex: 001" maxLength={4} />{clientErrors.project_number && <p className="text-xs text-destructive mt-1">Obrigatório</p>}</div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Cliente</Label><Input value={clientForm.client_name} onChange={e => setClientForm(p => ({ ...p, client_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Nome do Projeto</Label><Input value={clientForm.project_name} onChange={e => setClientForm(p => ({ ...p, project_name: e.target.value }))} /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Responsável</Label><Input value={clientForm.client_responsible} onChange={e => setClientForm(p => ({ ...p, client_responsible: e.target.value }))} /></div>
