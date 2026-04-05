@@ -81,6 +81,17 @@ export default function ProposalOverview() {
       });
   }, [proposal]);
 
+  const handleSetLatest = async (versionId: string) => {
+    if (!proposal) return;
+    const parentId = proposal.parent_id || proposal.id;
+    await supabase.from('orcamentos').update({ is_latest_version: false } as any)
+      .or(`id.eq.${parentId},parent_id.eq.${parentId}`);
+    await supabase.from('orcamentos').update({ is_latest_version: true } as any)
+      .eq('id', versionId);
+    toast.success('Versão atualizada!');
+    navigate(`/orcamentos/${versionId}/overview`);
+  };
+
   const totalViews = proposal?.views_count || 0;
   const lastView = views && views.length > 0 ? views[0] : null;
 
@@ -273,12 +284,12 @@ export default function ProposalOverview() {
       {/* Section 5 — Versões */}
       {versions.length > 1 && (
         <Card>
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 className="text-base font-semibold flex items-center gap-2">
               <GitBranch className="h-4 w-4" /> Versões
-            </CardTitle>
+            </h3>
             <span className="text-xs text-muted-foreground">{versions.length} versões</span>
-          </CardHeader>
+          </div>
           <CardContent className="pt-0">
             <div className="space-y-0">
               {versions.map((v, i) => {
@@ -293,13 +304,21 @@ export default function ProposalOverview() {
                       <Badge variant="outline" className="text-xs">v{v.version}</Badge>
                       <span className="text-sm">{format(new Date(v.created_at), 'dd/MM/yyyy')}</span>
                       <Badge variant={vStatus.variant} className="text-xs">{vStatus.label}</Badge>
-                      {isCurrent && <span className="text-xs text-muted-foreground">(atual)</span>}
                     </div>
-                    {!isCurrent && (
-                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
-                        Ver
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {isCurrent ? (
+                        <Badge variant="success">Atual</Badge>
+                      ) : (
+                        <>
+                          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
+                            Ver
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => handleSetLatest(v.id)}>
+                            Usar esta versão
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 );
               })}
