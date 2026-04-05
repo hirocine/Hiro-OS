@@ -547,10 +547,26 @@ export function ProposalGuidedWizard() {
 
   const isLoadingAI = isAnalyzing || isFinalizing || isEnriching;
 
+  const stepSubtitles: Record<number, string> = {
+    0: showQuestions ? 'Algumas dúvidas sobre o briefing' : 'Cole o briefing e deixe a IA preencher',
+    1: 'Dados do Projeto',
+    2: 'Objetivo do Projeto',
+    3: 'Dores do Cliente',
+    4: 'Portfólio / Cases',
+    5: 'Entregáveis',
+    6: 'Serviços Inclusos',
+    7: 'Depoimento',
+    8: 'Investimento',
+    9: 'Revisão Final',
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 w-full">
+      {/* ── PageHeader fixo ── */}
+      {!generatedSlug && <PageHeader title="Nova Proposta" subtitle={stepSubtitles[step] || ''} />}
+
       {/* ── Stepper ── */}
-      {step > 0 && (
+      {(step > 0 || showQuestions) && !generatedSlug && (
         <div className="flex items-center gap-1 overflow-hidden" style={{ scrollbarWidth: 'none' }}>
           {STEPS.map((s, i) => {
             const Icon = s.icon;
@@ -581,13 +597,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 0 && !showQuestions && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Nova Proposta</h1>
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
-          </div>
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
 
           {isLoadingAI ? (
@@ -677,30 +686,24 @@ export function ProposalGuidedWizard() {
 
       {/* ── Sub-step: Questions (within step 0) ── */}
       {step === 0 && showQuestions && analyzeResultState && (
-        <div className="flex flex-col items-center min-h-[60vh] space-y-8 py-12">
+        <div className="flex flex-col space-y-6">
           {isLoadingAI ? (
-            <div className="w-full max-w-2xl space-y-4 py-12 animate-fade-in">
+            <div className="w-full space-y-4 py-12 animate-fade-in">
               <Skeleton className="h-14 rounded-lg" />
               <Skeleton className="h-14 rounded-lg" />
               <Skeleton className="h-14 rounded-lg" />
-              <Skeleton className="h-10 rounded-lg w-1/2 mx-auto" />
-              <p className="text-sm text-muted-foreground text-center animate-pulse">
+              <Skeleton className="h-10 rounded-lg w-1/2" />
+              <p className="text-sm text-muted-foreground animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
             <>
-              <div className="text-center space-y-3 max-w-lg animate-fade-in">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">Algumas dúvidas</h2>
-                <p className="text-sm text-muted-foreground">
-                  {analyzeResultState.confirmed.summary}
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground animate-fade-in">
+                {analyzeResultState.confirmed.summary}
+              </p>
 
-              <div className="w-full max-w-2xl space-y-4">
+              <div className="w-full space-y-4">
                 {analyzeResultState.questions.map((q, i) => (
                   <div
                     key={q.id}
@@ -743,21 +746,12 @@ export function ProposalGuidedWizard() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← Voltar ao briefing
-                </button>
-                <Button
-                  size="lg"
-                  onClick={handleContinueFromQuestions}
-                  disabled={!allQuestionsAnswered}
-                  className="gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Continuar
+              <div className="flex justify-between pt-6">
+                <Button variant="ghost" onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
+                </Button>
+                <Button onClick={handleContinueFromQuestions} disabled={!allQuestionsAnswered}>
+                  Continuar <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </>
@@ -770,14 +764,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 1 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Dados do Projeto</h2>
-            {!skippedBriefing && (
-              <p className="text-sm text-muted-foreground">
-                Identifiquei as informações do projeto. Confira se está tudo certo:
-              </p>
-            )}
-          </div>
 
           <Card>
             <CardContent className="pt-6 space-y-4">
@@ -855,14 +841,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 2 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Objetivo do Projeto</h2>
-            <p className="text-sm text-muted-foreground">
-              {aiFilledFields.has('objetivo')
-                ? 'Com base no briefing, sugiro este objetivo. Edite como quiser:'
-                : 'Descreva o objetivo estratégico do projeto:'}
-            </p>
-          </div>
 
           <Card>
             <CardContent className="pt-6">
@@ -885,21 +863,11 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 3 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Dores do Cliente</h2>
-                <p className="text-sm text-muted-foreground">
-                  {aiFilledFields.has('dores')
-                    ? 'Identifiquei essas dores a partir do briefing. Você pode editar ou selecionar do banco:'
-                    : 'Selecione até 3 dores do banco ou peça sugestões à IA:'}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" disabled={isSuggesting} onClick={handleSuggestDores}>
-                {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-                Sugerir com IA
-              </Button>
-            </div>
+          <div className="flex items-center justify-end">
+            <Button variant="outline" size="sm" disabled={isSuggesting} onClick={handleSuggestDores}>
+              {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+              Sugerir com IA
+            </Button>
           </div>
 
           {/* Selected dores */}
@@ -985,10 +953,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 4 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Portfólio / Cases</h2>
-            <p className="text-sm text-muted-foreground">Selecione cases do portfólio para incluir na proposta:</p>
-          </div>
 
           {casesBank.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1123,14 +1087,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 5 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Entregáveis</h2>
-            <p className="text-sm text-muted-foreground">
-              {aiFilledFields.has('entregaveis')
-                ? 'Identifiquei esses entregáveis no briefing. Ajuste e adicione mais:'
-                : 'Defina os entregáveis da proposta:'}
-            </p>
-          </div>
 
           <div className="space-y-3">
             {entregaveis.map((ent, i) => (
@@ -1173,10 +1129,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 6 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Serviços Inclusos</h2>
-            <p className="text-sm text-muted-foreground">Selecione os serviços inclusos nesta proposta</p>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {inclusoCategories.map((cat, catIdx) => {
@@ -1295,10 +1247,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 7 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Depoimento</h2>
-            <p className="text-sm text-muted-foreground">Escolha um depoimento de cliente para incluir na proposta</p>
-          </div>
 
           {testimonialsBank.length > 0 ? (
             <>
@@ -1415,10 +1363,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 8 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Investimento</h2>
-            <p className="text-sm text-muted-foreground">Defina os valores e condições de pagamento:</p>
-          </div>
 
           <Card>
             <CardContent className="pt-6 space-y-4">
@@ -1533,10 +1477,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 9 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Revisão Final</h2>
-            <p className="text-sm text-muted-foreground">Tudo pronto! Revise e crie sua proposta:</p>
-          </div>
 
           <div className="space-y-3">
             {/* Client */}
