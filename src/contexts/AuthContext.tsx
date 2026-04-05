@@ -90,25 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isInitialized.current = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        if (event === 'SIGNED_IN' && newSession?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_approved')
-            .eq('user_id', newSession.user.id)
-            .maybeSingle();
-
-          if (profile && profile.is_approved === false) {
-            await supabase.auth.signOut();
-            setSession(null);
-            setUser(null);
-            setLoading(false);
-            setRole(null);
-            setRoleLoading(false);
-            return;
-          }
-        }
-
+      (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         setLoading(false);
@@ -117,6 +99,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             fetchUserRole(newSession.user.id);
           }, 0);
+
+          // Check approval asynchronously without blocking the callback
+          if (event === 'SIGNED_IN') {
+            setTimeout(async () => {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_approved')
+                .eq('user_id', newSession.user.id)
+                .maybeSingle();
+
+              if (profile && profile.is_approved === false) {
+                await supabase.auth.signOut();
+                setSession(null);
+                setUser(null);
+                setRole(null);
+                setRoleLoading(false);
+              }
+            }, 0);
+          }
         } else {
           setRole(null);
           setRoleLoading(false);
