@@ -122,6 +122,9 @@ export default function ProposalOverview() {
               )}
               <h1 className="text-lg font-medium">{proposal.project_name}</h1>
               <Badge variant={status.variant}>{status.label}</Badge>
+              {proposal.version > 1 && (
+                <Badge variant="outline">v{proposal.version}</Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">
               {proposal.client_name || '—'}
