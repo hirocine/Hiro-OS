@@ -1,58 +1,51 @@
 
 
-# Add approval check in onAuthStateChange handler
+# Replace VimeoThumbnail in ProposalDetails.tsx
 
-## File: `src/contexts/AuthContext.tsx`
+## What
+Replace the current `VimeoThumbnail` component (lines 90-123) that uses the Vimeo oEmbed API (which causes CORS errors) with a simpler version that uses `vumbnail.com` directly and falls back to Vimeo CDN via `<img onError>`.
 
-### Change
-Replace the existing `onAuthStateChange` callback (lines ~87-102) with an async version that checks `is_approved` on `SIGNED_IN` events before setting session/user state.
+## Changes
 
-**Current** (sync callback):
+### `src/pages/ProposalDetails.tsx`
+
+**Lines 89-123** — Replace the entire `VimeoThumbnail` function with:
+
 ```tsx
-(event, newSession) => {
-  setSession(newSession);
-  setUser(newSession?.user ?? null);
-  setLoading(false);
-  if (newSession?.user) {
-    setTimeout(() => { fetchUserRole(newSession.user.id); }, 0);
-  } else {
-    setRole(null);
-    setRoleLoading(false);
-  }
-}
-```
+// Vimeo thumbnail component - defined at module level to avoid re-creation on every render
+function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
-**New** (async, with approval gate):
-```tsx
-async (event, newSession) => {
-  if (event === 'SIGNED_IN' && newSession?.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_approved')
-      .eq('user_id', newSession.user.id)
-      .maybeSingle();
+  useEffect(() => {
+    if (!videoId) return;
+    setFailed(false);
+    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
+  }, [videoId]);
 
-    if (profile && profile.is_approved === false) {
-      await supabase.auth.signOut();
-      setSession(null);
-      setUser(null);
-      setLoading(false);
-      setRole(null);
-      setRoleLoading(false);
-      return;
-    }
+  if (failed || !thumbUrl) {
+    return (
+      <div className={`bg-muted flex items-center justify-center ${className || ''}`}>
+        <Briefcase className="h-8 w-8 text-muted-foreground/30" />
+      </div>
+    );
   }
 
-  setSession(newSession);
-  setUser(newSession?.user ?? null);
-  setLoading(false);
-
-  if (newSession?.user) {
-    setTimeout(() => { fetchUserRole(newSession.user.id); }, 0);
-  } else {
-    setRole(null);
-    setRoleLoading(false);
-  }
+  return (
+    <img
+      src={thumbUrl}
+      alt={alt || ''}
+      className={`object-cover ${className || ''}`}
+      loading="lazy"
+      onError={() => {
+        if (thumbUrl.includes('vumbnail.com')) {
+          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
+        } else {
+          setFailed(true);
+        }
+      }}
+    />
+  );
 }
 ```
 
