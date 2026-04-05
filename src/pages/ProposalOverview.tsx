@@ -97,7 +97,7 @@ export default function ProposalOverview() {
         if (allIds.length === 0) { setHistoryLoading(false); return; }
         supabase
           .from('audit_logs')
-          .select('id, action, user_email, created_at')
+          .select('id, action, user_email, user_id, created_at')
           .eq('table_name', 'orcamentos')
           .in('record_id', allIds)
         .order('created_at', { ascending: false })
