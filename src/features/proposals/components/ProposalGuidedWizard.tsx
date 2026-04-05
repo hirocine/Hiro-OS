@@ -16,7 +16,7 @@ import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
   CalendarIcon, Plus, Trash2, MessageSquare, Video,
-  ListChecks, MessageSquareQuote, Paperclip
+  ListChecks, MessageSquareQuote, Paperclip, FileIcon, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -91,6 +91,8 @@ export function ProposalGuidedWizard() {
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [skippedBriefing, setSkippedBriefing] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
 
   // Sub-step state for questions within step 0
   const [showQuestions, setShowQuestions] = useState(false);
@@ -168,10 +170,25 @@ export function ProposalGuidedWizard() {
 
   // ── Handlers ──
   const handleAnalyzeBriefing = async () => {
-    if (!transcript.trim()) return;
+    if (!transcript.trim() && !attachedFile) return;
 
     try {
-      const result = await analyzeTranscript(transcript);
+      let combinedText = transcript.trim();
+      if (attachedFile) {
+        setIsExtractingPdf(true);
+        try {
+          const fileText = await extractTextFromFile(attachedFile);
+          combinedText = combinedText ? combinedText + '\n\n' + fileText : fileText;
+        } catch {
+          toast.error('Erro ao extrair texto do arquivo.');
+          setIsExtractingPdf(false);
+          return;
+        }
+        setIsExtractingPdf(false);
+      }
+      if (!combinedText.trim()) return;
+
+      const result = await analyzeTranscript(combinedText);
       if (!result) return;
 
       if (!result.questions || result.questions.length === 0) {
@@ -296,15 +313,37 @@ export function ProposalGuidedWizard() {
     }
   };
 
+  const extractTextFromFile = async (file: File): Promise<string> => {
+    if (file.name.toLowerCase().endsWith('.txt')) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string || '');
+        reader.readAsText(file);
+      });
+    }
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map((item: any) => item.str).join(' ') + '\n';
+    }
+    return text;
+  };
+
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      if (text) setTranscript(prev => prev ? prev + '\n\n' + text : text);
-    };
-    reader.readAsText(file);
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (ext === 'doc' || ext === 'docx') {
+      toast.error('Formato não suportado. Converta para PDF ou cole o texto.');
+      e.target.value = '';
+      return;
+    }
+    setAttachedFile(file);
     e.target.value = '';
   };
 
@@ -567,11 +606,23 @@ export function ProposalGuidedWizard() {
                     placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
                     className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none rounded-b-none"
                   />
+                  {attachedFile && (
+                    <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
+                      <FileIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-foreground truncate">{attachedFile.name}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        ({(attachedFile.size / 1024).toFixed(0)} KB)
+                      </span>
+                      <button onClick={() => setAttachedFile(null)} className="ml-auto shrink-0">
+                        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center justify-end gap-2 p-3 border-t border-border">
                     <input
                       ref={pdfInputRef}
                       type="file"
-                      accept=".pdf,.txt"
+                      accept=".pdf,.txt,.doc,.docx"
                       onChange={handlePdfUpload}
                       className="hidden"
                     />
@@ -587,7 +638,7 @@ export function ProposalGuidedWizard() {
                     <Button
                       size="sm"
                       onClick={handleAnalyzeBriefing}
-                      disabled={!transcript.trim()}
+                      disabled={(!transcript.trim() && !attachedFile) || isExtractingPdf}
                       className="gap-1.5"
                     >
                       <Sparkles className="h-3.5 w-3.5" />
