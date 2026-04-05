@@ -148,7 +148,7 @@ serve(async (req) => {
 
     const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    const useAnthropic = !!anthropicKey && !lovableKey;
+    const useAnthropic = !!anthropicKey;
 
     if (!anthropicKey && !lovableKey) {
       return new Response(
