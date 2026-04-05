@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Loader2, Package, DollarSign, Film, Wrench, CheckSquare } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -12,13 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { validateEmail, sanitizeInput } from '@/lib/validation';
 
-const TOOLS = [
-  { icon: Package,     label: 'Equipamentos' },
-  { icon: Film,        label: 'Esteira de Pós' },
-  { icon: DollarSign,  label: 'Orçamentos' },
-  { icon: Wrench,      label: 'Retiradas' },
-  { icon: CheckSquare, label: 'Projetos' },
-];
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -158,32 +151,6 @@ export default function Auth() {
           <span className="text-white font-semibold text-lg">Hiro OS®</span>
         </div>
 
-        {/* Centro: tagline */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <p className="text-white/20 text-xs uppercase tracking-widest font-medium">
-              Sistema Operacional
-            </p>
-            <h2 className="text-white text-3xl font-bold leading-tight">
-              Tudo que a Hiro Films<br />precisa, num só lugar.
-            </h2>
-          </div>
-
-          {/* Lista de ferramentas */}
-          <div className="space-y-2 pt-2">
-            {TOOLS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div
-                  className="h-7 w-7 rounded-md flex items-center justify-center shrink-0"
-                  style={{ background: '#161616' }}
-                >
-                  <Icon className="h-3.5 w-3.5 text-white/40" />
-                </div>
-                <span className="text-white/40 text-sm">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Rodapé */}
         <p className="text-white/20 text-xs">
@@ -193,8 +160,8 @@ export default function Auth() {
       </div>
 
       {/* ── Painel direito (formulário) ── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-sm space-y-8">
+      <div className="w-[420px] flex items-center justify-center p-6 lg:p-10">
+        <div className="w-full max-w-xs space-y-8">
 
           {/* Logo mobile (só aparece em telas pequenas) */}
           <div className="flex items-center gap-3 lg:hidden">
