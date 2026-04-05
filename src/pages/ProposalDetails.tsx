@@ -484,8 +484,9 @@ export default function ProposalDetails() {
     setShowVersionDialog(false);
     if (choice === 'update' && pendingSaveSection) {
       await saveSection(pendingSaveSection);
-    } else if (choice === 'new') {
+    } else if (choice === 'new' && pendingSaveSection) {
       try {
+        await saveSection(pendingSaveSection);
         const newProposal = await createNewVersion.mutateAsync(proposal.id);
         navigate(`/orcamentos/${newProposal.slug}`);
       } catch {
