@@ -1,38 +1,43 @@
 
-# Refactor internal proposal routes to use slug instead of UUID
 
-## Overview
-Replace UUID-based internal routing (`/orcamentos/:id`) with slug-based routing (`/orcamentos/:slug`) across 5 files. Public routes already use slug.
+# Fix WhatsApp formatting, project number maxLength, and uniqueness validation in ProposalGuidedWizard
 
-## Changes
+## File: `src/features/proposals/components/ProposalGuidedWizard.tsx`
 
-### 1. Create `src/features/proposals/hooks/useProposalDetailsBySlug.ts`
-Copy of `useProposalDetailsById` but queries `.eq('slug', slug)` instead of `.eq('id', id)`. Query key: `['proposal-by-slug', slug]`.
+### 1. Add `formatWhatsApp` helper (before the component, ~line 58)
+Add the formatting function that auto-prefixes `55` and applies the mask `+55 (XX) XXXXX-XXXX`.
 
-### 2. Update `src/features/proposals/index.ts`
-Add export for `useProposalDetailsBySlug`.
+### 2. Import supabase client (line 1 area)
+Add `import { supabase } from '@/integrations/supabase/client';` — needed for the uniqueness query.
 
-### 3. `src/App.tsx` (2 route changes)
-- `orcamentos/:id/overview` → `orcamentos/:slug/overview`
-- `orcamentos/:id` → `orcamentos/:slug`
+### 3. Update WhatsApp state and input
+- **Line 103**: Change `useState('')` to `useState('+55 ')` for `whatsappNumber`
+- **Line 814**: Change the Input to use `onChange={e => setWhatsappNumber(formatWhatsApp(e.target.value))}` and add `maxLength={20}`
 
-### 4. `src/features/proposals/components/ProposalCard.tsx` (3 navigate changes)
-Replace `proposal.id` with `proposal.slug` in all 3 navigate calls (lines 97, 139, 142).
+### 4. Add `maxLength={4}` to project number input (line 794)
 
-### 5. `src/pages/ProposalOverview.tsx`
-- `useParams` extracts `slug` instead of `id`
-- Use `useProposalDetailsBySlug(slug)` instead of `useProposalDetailsById(id)`
-- `useProposalViews` keeps using `proposal?.id` (it needs the UUID for the DB query) — move it after proposal is available or pass `proposal?.id`
-- Line 184 "Editar" button: `navigate(/orcamentos/${id})` → `navigate(/orcamentos/${proposal.slug})`
-- Line 341 versions "Ver": `navigate(/orcamentos/${v.id}/overview)` → `navigate(/orcamentos/${v.slug}/overview)`
-- `handleSetLatest`: after update, find target version from `versions` array to get its slug: `const target = versions.find(v => v.id === versionId); navigate(/orcamentos/${target?.slug}/overview)`
+### 5. Add uniqueness validation for project_number
+- **Line 566**: Change `goNext` from a simple arrow to an async function that checks the current step. For step 1 (dados), run the uniqueness query before advancing. For all other steps, advance normally.
 
-### 6. `src/pages/ProposalDetails.tsx`
-- `useParams` extracts `slug` instead of `id`
-- Use `useProposalDetailsBySlug(slug)` instead of `useProposalDetailsById(id)`
-- Line 487 (createNewVersion): `navigate(/orcamentos/${newProposal.id})` → `navigate(/orcamentos/${newProposal.slug})`
-- Line 652 breadcrumb: `proposal.id` → `proposal.slug`
-- All other `proposal.id` usages for Supabase mutations stay as-is (they need the UUID)
+```ts
+const goNext = async () => {
+  if (step === 1 && projectNumber.trim()) {
+    const { data: existing } = await supabase
+      .from('orcamentos')
+      .select('id, project_name, client_name')
+      .eq('project_number', projectNumber.trim())
+      .maybeSingle();
+    if (existing) {
+      toast.error(
+        `Nº ${projectNumber} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
+        { duration: 6000 }
+      );
+      return;
+    }
+  }
+  setStep(prev => Math.min(prev + 1, STEPS.length - 1));
+};
+```
 
-### Important note
-`useProposalViews(id)` in ProposalOverview needs the UUID, not the slug. It will change to `useProposalViews(proposal?.id)` — this means views won't load until proposal data arrives, which is fine since we already show a skeleton while loading.
+`toast` from sonner is already imported (line 26). No other changes.
+
