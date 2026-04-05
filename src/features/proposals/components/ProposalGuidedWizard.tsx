@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
   CalendarIcon, Plus, Trash2, MessageSquare, Video,
-  ListChecks, MessageSquareQuote
+  ListChecks, MessageSquareQuote, Paperclip
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -36,7 +37,7 @@ const extractVimeoId = (raw: string): string => {
   return match ? match[1] : raw;
 };
 import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase } from '../types';
-import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS } from '../types';
+import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
 const ANALYZE_MESSAGES = [
@@ -49,6 +50,14 @@ const FINALIZE_MESSAGES = [
   'Preparando os campos...',
   'Buscando dados da empresa...',
   'Quase pronto...',
+];
+
+// ── Payment presets ──
+const PAYMENT_PRESETS = [
+  { value: '50_50', label: '50% + 50%', text: '50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final' },
+  { value: '100_antecipado', label: '100% antecipado', text: '100% antecipado com 5% de desconto sobre o valor final' },
+  { value: '3x', label: '3x iguais', text: '3 parcelas iguais: 1ª no fechamento, 2ª na metade do projeto e 3ª na entrega do material final' },
+  { value: 'custom', label: 'Personalizado', text: '' },
 ];
 
 // ── Steps config ──
@@ -74,7 +83,7 @@ export function ProposalGuidedWizard() {
   } = useProposalAI();
   const { data: painPointsBank = [] } = usePainPoints();
   const { data: casesBank = [], createCase } = useProposalCases();
-  const { data: testimonialsBank = [] } = useTestimonials();
+  const { data: testimonialsBank = [], createTestimonial } = useTestimonials();
 
   // ── State ──
   const [step, setStep] = useState(0);
@@ -113,6 +122,13 @@ export function ProposalGuidedWizard() {
   // New case dialog
   const [showNewCaseDialog, setShowNewCaseDialog] = useState(false);
   const [newCase, setNewCase] = useState({ client_name: '', campaign_name: '', vimeo_url: '', tags: [] as string[], destaque: false });
+  // New testimonial dialog
+  const [showNewTestimonialDialog, setShowNewTestimonialDialog] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({ name: '', role: '', text: '', image: '' });
+  // Payment preset
+  const [paymentPreset, setPaymentPreset] = useState('50_50');
+  // PDF upload ref
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   // Track AI-filled fields
   const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
 
