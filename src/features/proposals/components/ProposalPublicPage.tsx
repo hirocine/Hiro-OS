@@ -112,22 +112,34 @@ export function ProposalPublicPage() {
     );
   }
 
+  if (proposal.is_latest_version === false) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white p-6">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-5 w-5 text-yellow-400" />
+          </div>
+          <h1 className="text-xl font-semibold">Esta versão foi substituída</h1>
+          <p className="text-white/50 text-sm">Uma nova versão desta proposta foi enviada. Por favor, acesse o link atualizado.</p>
+          {latestSlug && (
+            <Link
+              to={`/orcamento/${latestSlug}`}
+              className="inline-block mt-2 bg-white text-black text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-white/90 transition-colors"
+            >
+              Ver versão atual →
+            </Link>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="proposal-page min-h-screen bg-black text-[#f5f5f5] relative" data-proposal-version="v2">
       <GlowSpot className='right-[-200px] top-[1800px]' />
       <GlowSpot className='left-[-200px] top-[3200px]' />
       <GlowSpot className='right-[-100px] top-[4800px]' />
       <GlowSpot className='left-[-150px] top-[6200px]' />
-
-      {latestSlug && (
-        <div className="no-print bg-yellow-900/40 border-b border-yellow-700/30 text-yellow-200 text-center py-2 px-4 text-sm flex items-center justify-center gap-2">
-          <AlertTriangle className="h-4 w-4" />
-          Esta é uma versão anterior.{' '}
-          <Link to={`/orcamento/${latestSlug}`} className="underline font-medium hover:text-yellow-100">
-            Ver versão atual →
-          </Link>
-        </div>
-      )}
 
       <div className="no-print">
         <ProposalNavbar validityDate={proposal.validity_date} />
