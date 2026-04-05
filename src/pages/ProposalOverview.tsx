@@ -273,7 +273,45 @@ export default function ProposalOverview() {
         </CardContent>
       </Card>
 
-      {/* Section 5 — Placeholder */}
+      {/* Section 5 — Versões */}
+      {versions.length > 1 && (
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GitBranch className="h-4 w-4" /> Versões
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">{versions.length} versões</span>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-0">
+              {versions.map((v, i) => {
+                const isCurrent = v.id === proposal.id;
+                const vStatus = statusMap[v.status] || statusMap.draft;
+                return (
+                  <div
+                    key={v.id}
+                    className={`flex items-center justify-between py-2.5 px-2 rounded ${isCurrent ? 'bg-muted/50' : ''} ${i < versions.length - 1 ? 'border-b border-border' : ''}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">v{v.version}</Badge>
+                      <span className="text-sm">{format(new Date(v.created_at), 'dd/MM/yyyy')}</span>
+                      <Badge variant={vStatus.variant} className="text-xs">{vStatus.label}</Badge>
+                      {isCurrent && <span className="text-xs text-muted-foreground">(atual)</span>}
+                    </div>
+                    {!isCurrent && (
+                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
+                        Ver
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Section 6 — Placeholder */}
       <Card>
         <CardContent className="p-6 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Histórico de alterações — em breve</p>
