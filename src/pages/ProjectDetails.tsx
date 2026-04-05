@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download, LayoutList, Eye, ChevronUp } from 'lucide-react';
+import { Calendar, User, Package, Clock, Edit, Archive, CheckCircle, MoreHorizontal, Trash2, Plus, Truck, Building2, Download, LayoutList, Eye, ChevronUp, History, FileText } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { WithdrawalWorkflow } from '@/components/Projects/WithdrawalWorkflow';
@@ -764,10 +765,7 @@ export default function ProjectDetails() {
                 );
                 
                 return historyEvents.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Nenhum histórico disponível</p>
-                  </div>
+                  <EmptyState icon={History} title="Nenhum histórico" description="Nenhum histórico disponível." compact />
                 ) : (
                   <div className="space-y-4">
                     {historyEvents.map((event, index) => {
@@ -825,9 +823,7 @@ export default function ProjectDetails() {
               {project.notes ? (
                 <p className="whitespace-pre-wrap">{project.notes}</p>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Nenhuma observação adicionada</p>
-                </div>
+                <EmptyState icon={FileText} title="Nenhuma observação" description="Nenhuma observação adicionada." compact />
               )}
             </CardContent>
           </Card>
