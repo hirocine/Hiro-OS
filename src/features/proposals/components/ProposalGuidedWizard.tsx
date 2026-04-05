@@ -146,6 +146,8 @@ export function ProposalGuidedWizard() {
         ? fmt(finalValue * 0.95)
         : `2x ${fmt(finalValue / 2)}`,
     })));
+  }, [finalValue]);
+
   const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
 
 
