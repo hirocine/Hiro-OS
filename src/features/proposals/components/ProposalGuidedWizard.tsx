@@ -501,7 +501,7 @@ export function ProposalGuidedWizard() {
     <div className="max-w-3xl mx-auto space-y-6 w-full">
       {/* ── Stepper ── */}
       {step > 0 && (
-        <div className="flex items-center gap-1 overflow-x-auto pb-2">
+        <div className="flex items-center gap-1 overflow-hidden" style={{ scrollbarWidth: 'none' }}>
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             const isActive = i === step;
@@ -518,7 +518,7 @@ export function ProposalGuidedWizard() {
                 )}
                 disabled={i > step}
               >
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="hidden sm:inline">{s.label}</span>
               </button>
             );
