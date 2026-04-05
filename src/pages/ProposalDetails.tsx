@@ -467,6 +467,13 @@ export default function ProposalDetails() {
         };
       }
       await updateProposal.mutateAsync({ id: proposal.id, data });
+      if (proposal.status === 'draft') {
+        const today = new Date().toLocaleDateString('en-CA');
+        await supabase
+          .from('orcamentos')
+          .update({ status: 'sent', sent_date: today } as any)
+          .eq('id', proposal.id);
+      }
       await refetch();
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       toast.success('Alterações salvas!');
