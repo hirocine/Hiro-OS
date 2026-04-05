@@ -158,32 +158,6 @@ export default function Auth() {
           <span className="text-white font-semibold text-lg">Hiro OS®</span>
         </div>
 
-        {/* Centro: tagline */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <p className="text-white/20 text-xs uppercase tracking-widest font-medium">
-              Sistema Operacional
-            </p>
-            <h2 className="text-white text-3xl font-bold leading-tight">
-              Tudo que a Hiro Films<br />precisa, num só lugar.
-            </h2>
-          </div>
-
-          {/* Lista de ferramentas */}
-          <div className="space-y-2 pt-2">
-            {TOOLS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div
-                  className="h-7 w-7 rounded-md flex items-center justify-center shrink-0"
-                  style={{ background: '#161616' }}
-                >
-                  <Icon className="h-3.5 w-3.5 text-white/40" />
-                </div>
-                <span className="text-white/40 text-sm">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Rodapé */}
         <p className="text-white/20 text-xs">
@@ -193,8 +167,8 @@ export default function Auth() {
       </div>
 
       {/* ── Painel direito (formulário) ── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-sm space-y-8">
+      <div className="w-[420px] flex items-center justify-center p-6 lg:p-10">
+        <div className="w-full max-w-xs space-y-8">
 
           {/* Logo mobile (só aparece em telas pequenas) */}
           <div className="flex items-center gap-3 lg:hidden">
