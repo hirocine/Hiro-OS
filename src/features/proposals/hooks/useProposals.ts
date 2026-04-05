@@ -5,7 +5,7 @@ import type { Proposal, ProposalFormData, ProposalCase } from '../types';
 
 export function generateSlug(clientName: string, projectName: string): string {
   const year = new Date().getFullYear();
-  const raw = `hiro-${clientName}-${projectName}-${year}`;
+  const raw = `${clientName}-${projectName}-${year}`;
   return raw
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
