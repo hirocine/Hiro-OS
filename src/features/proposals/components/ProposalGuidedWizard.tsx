@@ -816,7 +816,7 @@ export function ProposalGuidedWizard() {
 
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Nº do Projeto</Label>
                   <Input value={projectNumber} onChange={e => setProjectNumber(e.target.value)} placeholder="Ex: 001" maxLength={4} />
@@ -826,7 +826,7 @@ export function ProposalGuidedWizard() {
                   <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Ex: Cacau Show" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center">Nome do Projeto {aiBadge('project_name')}</Label>
                   <Input value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="Ex: Campanha Natal 2026" />
@@ -836,7 +836,7 @@ export function ProposalGuidedWizard() {
                   <Input value={clientResponsible} onChange={e => setClientResponsible(e.target.value)} placeholder="Ex: João Silva" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 items-end">
                 <div className="space-y-1.5">
                   <Label className="text-xs">WhatsApp para Aprovação</Label>
                   <Input value={whatsappNumber} onChange={e => setWhatsappNumber(formatWhatsApp(e.target.value))} placeholder="+55 (11) 95151-3862" maxLength={20} />
