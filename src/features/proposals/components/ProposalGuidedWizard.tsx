@@ -530,7 +530,12 @@ export function ProposalGuidedWizard() {
           STEP 0 — BRIEFING (includes questions sub-step)
          ══════════════════════════════════════════════════════════════ */}
       {step === 0 && !showQuestions && (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 py-12">
+        <div className="space-y-6">
+          <PageHeader
+            title="Nova Proposta"
+            subtitle="Cole o briefing e deixe a IA preencher sua proposta"
+          />
+          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Sparkles className="h-6 w-6 text-primary" />
