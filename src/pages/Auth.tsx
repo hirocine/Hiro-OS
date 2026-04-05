@@ -87,7 +87,7 @@ export default function Auth() {
         if (error) {
           setError(error.message);
         } else {
-          toast({ title: 'Conta criada com sucesso!', description: 'Verifique seu email para confirmar a conta.' });
+          toast({ title: 'Conta criada com sucesso!', description: 'Aguarde aprovação do administrador para acessar.' });
           setMode('login');
         }
       }
