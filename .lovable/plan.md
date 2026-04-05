@@ -1,78 +1,71 @@
 
 
-# Redesenhar Step 8 (Investimento) — Cards de Pagamento
+# Padronização de layout do ProposalGuidedWizard.tsx
 
 ## Resumo
-Substituir o Select de presets + textarea por 2 cards editáveis de opção de pagamento com toggle "Recomendado" (comportamento radio). Valores calculados automaticamente.
+Reorganizar o layout do wizard para ter PageHeader fixo com subtítulo dinâmico, stepper sempre visível (exceto briefing sem perguntas), botões padronizados em todos os steps, e sub-step de perguntas alinhado à esquerda.
 
-## Mudanças
+## Mudanças (arquivo único: ProposalGuidedWizard.tsx)
 
-**Arquivo:** `src/features/proposals/components/ProposalGuidedWizard.tsx`
+### 1. Mapa de subtítulos + PageHeader fixo no topo
+Adicionar `stepSubtitles` logo antes do return (após `isLoadingAI`). No return, colocar `<PageHeader>` como primeiro filho, ANTES do stepper e dos blocos condicionais de step:
 
-### 1. State (linhas ~117, 132-133)
-- Remover `paymentTerms`, `paymentPreset` states
-- Adicionar:
 ```tsx
-const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
-  { titulo: 'À Vista', valor: '', descricao: '5% de desconto para pagamento único', destaque: 'Melhor custo', recomendado: false },
-  { titulo: '2x sem juros', valor: '', descricao: '50% no fechamento + 50% na entrega', destaque: '', recomendado: true },
-]);
-const [paymentNotes, setPaymentNotes] = useState('');
-```
-
-### 2. Cálculo automático dos valores
-Adicionar `useEffect` que recalcula quando `finalValue` muda:
-```tsx
-useEffect(() => {
-  setPaymentOptions(prev => prev.map((opt, i) => ({
-    ...opt,
-    valor: i === 0
-      ? fmt(finalValue * 0.95)
-      : `2x ${fmt(finalValue / 2)}`,
-  })));
-}, [finalValue]);
-```
-
-### 3. UI do Step 8 (linhas 1414-1453)
-Substituir o card com Select/Textarea por:
-- Manter os campos de Valor de Tabela, Desconto e Valor Final (já existem)
-- Abaixo, renderizar 2 cards lado a lado (grid-cols-2), cada um com:
-  - Input "Título"
-  - Valor calculado exibido (text-xl font-bold, read-only)
-  - Input "Descrição"
-  - Input "Badge/Destaque" (opcional)
-  - Switch + label "Recomendado" (toggle radio: ao ativar um, desativa o outro)
-- Abaixo dos cards, Textarea "Observações de pagamento" (livre)
-
-### 4. Toggle Recomendado (comportamento radio)
-```tsx
-const toggleRecomendado = (index: number) => {
-  setPaymentOptions(prev => prev.map((opt, i) => ({
-    ...opt,
-    recomendado: i === index,
-  })));
+const stepSubtitles: Record<number, string> = {
+  0: showQuestions ? 'Algumas dúvidas sobre o briefing' : 'Cole o briefing e deixe a IA preencher',
+  1: 'Dados do Projeto',
+  2: 'Objetivo do Projeto',
+  3: 'Dores do Cliente',
+  4: 'Portfólio / Cases',
+  5: 'Entregáveis',
+  6: 'Serviços Inclusos',
+  7: 'Depoimento',
+  8: 'Investimento',
+  9: 'Revisão Final',
 };
+
+// Primeiro elemento no return, antes do stepper:
+{!generatedSlug && <PageHeader title="Nova Proposta" subtitle={stepSubtitles[step] || ''} />}
 ```
 
-### 5. handleCreateProposal (linha ~487)
-- Remover `payment_terms: paymentTerms`
-- Adicionar `payment_terms: paymentNotes` (observações livres)
-- O `useProposals.createProposal` já constrói `payment_options` internamente, mas agora precisa usar os valores do wizard em vez de hardcoded
+### 2. Remover títulos redundantes
+- **Step 0 briefing** (L584-590): Remover o `<div className="space-y-1">` com `<h1>` e `<p>` (e o ícone Sparkles)
+- **Step 0 perguntas** (L693-701): Remover o `<div className="text-center space-y-3">` com MessageSquare, `<h2>Algumas dúvidas</h2>` e `<p>summary</p>`
+- **Step 1** (L773-780): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 2** (L858-865): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 3** (L890-891): Remover `<h2>` (manter o div que contém o botão "Sugerir com IA", mas sem o `<h2>` e `<p>`)
+- **Step 4** (L988-991): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 5** (L1126-1133): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 6** (L1176-1178): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 7** (L1298-1301): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 8** (L1418-1421): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
+- **Step 9** (L1536-1539): Remover `<div className="space-y-1">` com `<h2>` e `<p>`
 
-### 6. useProposals.ts — Aceitar payment_options do form
-- Adicionar `payment_options` ao `ProposalFormData` type
-- No `createProposal` mutationFn, usar `form.payment_options` se fornecido, em vez do cálculo hardcoded
+### 3. Stepper visibilidade expandida
+Alterar condição do stepper (L553) de `{step > 0 &&` para `{(step > 0 || showQuestions) && !generatedSlug && (`
 
-### 7. ProposalFormData type (types/index.ts)
-- Adicionar campo `payment_options?: PaymentOption[]`
+### 4. Sub-step de perguntas — alinhamento à esquerda + botões padronizados
+- Alterar o container (L680): remover `items-center`, usar alinhamento à esquerda
+- Mover o `summary` do `analyzeResultState.confirmed.summary` para um `<p>` simples alinhado à esquerda acima dos cards
+- Substituir os botões atuais (L746-762 — link "Voltar ao briefing" + botão Continuar centralizados) por:
+```tsx
+<div className="flex justify-between pt-6">
+  <Button variant="ghost" onClick={() => { setShowQuestions(false); setAnalyzeResultState(null); setAnswers({}); }}>
+    <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
+  </Button>
+  <Button onClick={handleContinueFromQuestions} disabled={!allQuestionsAnswered}>
+    Continuar <ArrowRight className="h-4 w-4 ml-1" />
+  </Button>
+</div>
+```
 
-### 8. Revisão (Step 9, linha 1562)
-- Atualizar o card de Investimento na revisão para mostrar as opções de pagamento
+### 5. Step 9 — botão "Criar Proposta"
+O botão direito no Step 9 já diz "Criar Proposta" (L1651-1659). Manter como está.
 
-### 9. Imports
-- Adicionar `Switch` de `@/components/ui/switch`
-- Adicionar `PaymentOption` do types
+### 6. Step 0 briefing — manter sem botões Voltar/Continuar
+O Step 0 (sem perguntas) mantém o layout atual centralizado com "Analisar" como ação principal. Sem mudança aqui.
 
-### 10. Cleanup
-- Remover constante `PAYMENT_PRESETS` (linhas 57-62)
+### Arquivos NÃO alterados
+- Nenhum arquivo em `src/features/proposals/components/public/`
+- Apenas `ProposalGuidedWizard.tsx` é modificado
 
