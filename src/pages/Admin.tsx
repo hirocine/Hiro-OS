@@ -425,6 +425,7 @@ export default function Admin() {
     fetchPendingUsers();
   };
 
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao') => {
     try {
       logger.debug('Updating user role', { 
         module: 'admin',
