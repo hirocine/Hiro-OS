@@ -593,7 +593,7 @@ export function ProposalGuidedWizard() {
           ) : (
             <>
               {attachedFile && (
-                <div className="w-full max-w-2xl mb-4">
+                <div className="w-full max-w-2xl mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/50 max-w-xs">
                     <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
                       <FileIcon className="h-5 w-5 text-muted-foreground" />
