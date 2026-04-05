@@ -1,53 +1,43 @@
 
 
-# Replace inline empty states in PPTable, RecentActivityWidget, TasksTable
+# Add approval check after login in AuthContext.tsx and update signup toast in Auth.tsx
 
-## File: `src/features/post-production/components/PPTable.tsx`
+## File: `src/contexts/AuthContext.tsx`
 
-### 1. Add imports
-- Add `Film` to lucide-react imports (if not present)
-- Add `import { EmptyState } from '@/components/ui/empty-state';`
+### 1. Add approval check (after line 184)
+After `if (error) { throw new AuthenticationError(error.message); }` (line 182-184), insert the approval check block:
 
-### 2. Replacement (lines 184-188)
-Replace the `<TableRow>` containing "Nenhum vídeo na esteira" with:
 ```tsx
-<TableRow>
-  <TableCell colSpan={7}>
-    <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
-  </TableCell>
-</TableRow>
+// Check if user is approved
+const { data: { user: currentUser } } = await supabase.auth.getUser();
+if (currentUser) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_approved')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  
+  if (profile && profile.is_approved === false) {
+    await supabase.auth.signOut();
+    throw new Error('Sua conta está aguardando aprovação de um administrador.');
+  }
+}
 ```
+
+This goes right before the closing `});` of `wrapAsync` on line 185.
 
 ---
 
-## File: `src/features/tasks/components/RecentActivityWidget.tsx`
+## File: `src/pages/Auth.tsx`
 
-### 1. Add imports
-- `Activity` should already be imported; verify
-- Add `import { EmptyState } from '@/components/ui/empty-state';`
-
-### 2. Replacement (lines 52-54)
-Replace the `<p>` with:
+### 2. Update signup success toast (line 90)
+Change:
 ```tsx
-<EmptyState icon={Activity} title="" description="Nenhuma atividade recente." compact />
+toast({ title: 'Conta criada com sucesso!', description: 'Verifique seu email para confirmar a conta.' });
 ```
-
----
-
-## File: `src/features/tasks/components/TasksTable.tsx`
-
-### 1. Add imports
-- Add `CheckSquare` to lucide-react imports
-- Add `import { EmptyState } from '@/components/ui/empty-state';`
-
-### 2. Replacement (lines 301-305)
-Replace the `<TableRow>` with:
+To:
 ```tsx
-<TableRow>
-  <TableCell colSpan={showAssignee ? 6 : 5}>
-    <EmptyState icon={CheckSquare} title="" description="Nenhuma tarefa encontrada." compact />
-  </TableCell>
-</TableRow>
+toast({ title: 'Conta criada com sucesso!', description: 'Aguarde aprovação do administrador para acessar.' });
 ```
 
 No other changes.
