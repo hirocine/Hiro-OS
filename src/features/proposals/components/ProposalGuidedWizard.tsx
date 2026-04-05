@@ -111,6 +111,7 @@ export function ProposalGuidedWizard() {
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
   const [entregaveis, setEntregaveis] = useState<EntregavelItem[]>([]);
   const [validityDate, setValidityDate] = useState<Date | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [listPrice, setListPrice] = useState(0);
   const [discountPct, setDiscountPct] = useState(0);
   const [paymentTerms, setPaymentTerms] = useState('50% no fechamento do projeto mediante contrato e os outros 50% na entrega do material final');
