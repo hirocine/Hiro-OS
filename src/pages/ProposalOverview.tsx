@@ -128,11 +128,8 @@ export default function ProposalOverview() {
           </div>
         </div>
       </Card>
-              <div>
-                {proposal.project_number && (
-                  <p className="text-xs font-medium text-muted-foreground/70 mb-0.5">Nº {proposal.project_number}</p>
-                )}
-                <h1 className="text-xl font-bold">{proposal.project_name}</h1>
+
+
                 <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <Badge variant={status.variant}>{status.label}</Badge>
