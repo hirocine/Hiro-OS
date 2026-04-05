@@ -23,6 +23,7 @@ export function useProposals() {
       const { data, error } = await supabase
         .from('orcamentos')
         .select('*')
+        .eq('is_latest_version', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
