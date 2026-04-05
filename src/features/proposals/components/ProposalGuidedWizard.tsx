@@ -83,6 +83,29 @@ const STEPS = [
   { key: 'revisao', label: 'Revisão', icon: Check },
 ];
 
+// Vimeo thumbnail component - defined at module level to avoid re-creation on every render
+function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: string; videoHash?: string; alt?: string; className?: string }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!videoId) return;
+    setFailed(false);
+    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
+  }, [videoId]);
+  if (failed || !thumbUrl) {
+    return <div className={`bg-muted flex items-center justify-center ${className || ''}`}><Film className="h-6 w-6 text-muted-foreground/30" /></div>;
+  }
+  return (
+    <img src={thumbUrl} alt={alt || ''} className={`object-cover ${className || ''}`} loading="lazy"
+      onError={() => {
+        if (thumbUrl.includes('vumbnail.com')) {
+          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
+        } else { setFailed(true); }
+      }}
+    />
+  );
+}
+
 export function ProposalGuidedWizard() {
   const navigate = useNavigate();
   const { createProposal } = useProposals();
@@ -1036,28 +1059,11 @@ export function ProposalGuidedWizard() {
                   >
                     <Checkbox checked={isSelected} className="absolute top-2 right-2 z-10" />
                     {c.vimeo_id ? (
-                      <>
-                        <img
-                          src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
-                          alt={c.campaign_name}
-                          className="w-28 aspect-video rounded-lg object-cover bg-muted flex-shrink-0"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            if (!target.dataset.fallback) {
-                              target.dataset.fallback = '1';
-                              target.src = `https://i.vimeocdn.com/video/${extractVimeoId(c.vimeo_id)}_640x360.jpg`;
-                            } else {
-                              target.style.display = 'none';
-                              (target.nextElementSibling as HTMLElement)?.classList.remove('hidden');
-                            }
-                          }}
-                        />
-                        <div className="hidden w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                          <Video className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                      </>
+                      <div className="w-24 h-16 rounded overflow-hidden shrink-0">
+                        <VimeoThumbnail videoId={extractVimeoId(c.vimeo_id)} videoHash={c.vimeo_hash || undefined} alt={c.campaign_name} className="w-full h-full" />
+                      </div>
                     ) : (
-                      <div className="w-28 aspect-video rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="w-24 h-16 rounded bg-muted flex items-center justify-center shrink-0">
                         <Video className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
