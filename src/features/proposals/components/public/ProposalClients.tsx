@@ -2,7 +2,7 @@ import { InfiniteSlider } from './InfiniteSlider'
 
 const clientLogos = Array.from({ length: 13 }, (_, i) => ({
   id: `c${i + 1}`,
-  logo: `/logos/Logo ${i + 1}.png`,
+  logo: `/logos/Logo${i + 1}.png`,
 }))
 
 export function ProposalClients() {
