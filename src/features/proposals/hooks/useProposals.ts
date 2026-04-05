@@ -164,7 +164,7 @@ export function useProposals() {
           list_price: listPrice || null,
           payment_terms: form.payment_terms.trim(),
           created_by: userData?.user?.id || null,
-          status: 'draft',
+          status: 'sent',
           objetivo: form.objetivo.trim() || null,
           diagnostico_dores: diagnosticoDores as any,
           payment_options: paymentOptions as any,
@@ -279,7 +279,8 @@ export function useProposals() {
           version: nextVersion,
           parent_id: parentId,
           is_latest_version: true,
-          status: 'draft',
+          status: 'sent',
+          sent_date: new Date().toLocaleDateString('en-CA'),
           views_count: 0,
         } as any)
         .select()
