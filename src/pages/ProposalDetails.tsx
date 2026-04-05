@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
+import { useProposalDetailsBySlug } from '@/features/proposals/hooks/useProposalDetailsBySlug';
 import { useProposals, generateSlug } from '@/features/proposals/hooks/useProposals';
 import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
@@ -121,9 +121,9 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
 }
 
 export default function ProposalDetails() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
+  const { data: proposal, isLoading, refetch } = useProposalDetailsBySlug(slug);
   const { updateProposal, deleteProposal, createNewVersion } = useProposals();
   const { enrichClient, parseTranscript, suggestPainPoints, isEnriching, isParsing, isSuggesting } = useProposalAI();
   const [showVersionDialog, setShowVersionDialog] = useState(false);
@@ -484,7 +484,7 @@ export default function ProposalDetails() {
     } else if (choice === 'new') {
       try {
         const newProposal = await createNewVersion.mutateAsync(proposal.id);
-        navigate(`/orcamentos/${newProposal.id}`);
+        navigate(`/orcamentos/${newProposal.slug}`);
       } catch {
         // error handled by mutation
       }
@@ -649,7 +649,7 @@ export default function ProposalDetails() {
         <div className="flex items-center justify-between">
           <BreadcrumbNav items={[
             { label: 'Orçamentos', href: '/orcamentos' },
-            { label: proposal.project_name || 'Sem nome', href: `/orcamentos/${proposal.id}/overview` },
+            { label: proposal.project_name || 'Sem nome', href: `/orcamentos/${proposal.slug}/overview` },
             { label: 'Edição' },
           ]} className="mb-0" />
           <div className="flex items-center gap-2">

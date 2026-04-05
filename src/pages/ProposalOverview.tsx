@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
+import { useProposalDetailsBySlug } from '@/features/proposals/hooks/useProposalDetailsBySlug';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,10 +51,10 @@ function parseUserAgent(ua: string | null): string {
 }
 
 export default function ProposalOverview() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);
-  const { data: views, isLoading: viewsLoading } = useProposalViews(id);
+  const { data: proposal, isLoading, refetch } = useProposalDetailsBySlug(slug);
+  const { data: views, isLoading: viewsLoading } = useProposalViews(proposal?.id);
   const [versions, setVersions] = useState<any[]>([]);
 
   const publicUrl = proposal ? `${window.location.origin}/orcamento/${proposal.slug}` : '';
@@ -89,7 +89,8 @@ export default function ProposalOverview() {
     await supabase.from('orcamentos').update({ is_latest_version: true } as any)
       .eq('id', versionId);
     toast.success('Versão atualizada!');
-    navigate(`/orcamentos/${versionId}/overview`);
+    const target = versions.find(v => v.id === versionId);
+    navigate(`/orcamentos/${target?.slug}/overview`);
   };
 
   const handleSendToClient = async () => {
@@ -181,7 +182,7 @@ export default function ProposalOverview() {
             <Button variant="outline" size="sm" onClick={handleCopyLink}>
               <Copy className="mr-1.5 h-4 w-4" /> Copiar Link
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${id}`)}>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${proposal.slug}`)}>
               <Pencil className="mr-1.5 h-4 w-4" /> Editar
             </Button>
             <Button size="sm" onClick={handleOpenProposal}>
@@ -338,7 +339,7 @@ export default function ProposalOverview() {
                       <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">Ativa agora</span>
                     ) : (
                       <>
-                        <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
+                        <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate(`/orcamentos/${v.slug}/overview`)}>
                           Ver
                         </Button>
                         <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleSetLatest(v.id)}>
