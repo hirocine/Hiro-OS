@@ -572,14 +572,12 @@ export function ProposalGuidedWizard() {
       {step === 0 && !showQuestions && (
         <div className="space-y-6">
           <PageHeader
+            icon={<Sparkles className="h-6 w-6 text-primary" />}
             title="Nova Proposta"
             subtitle="Cole o briefing e deixe a IA preencher sua proposta"
           />
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
           <div className="text-center space-y-3">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
             <h1 className="text-3xl font-bold tracking-tight">Vamos criar sua proposta</h1>
             <p className="text-muted-foreground max-w-md mx-auto">
               Cole o resumo da reunião gerado pelo Google Meet e deixe a IA fazer o trabalho pesado.
