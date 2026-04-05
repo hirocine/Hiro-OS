@@ -694,7 +694,7 @@ export default function ProposalDetails() {
         <div className="space-y-6">
           {/* Client Section */}
           <Card>
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Building2 className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Cliente e Projeto</CardTitle>
@@ -761,7 +761,7 @@ export default function ProposalDetails() {
 
           {/* Investment Section */}
           <Card>
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><DollarSign className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Investimento</CardTitle>
@@ -797,7 +797,7 @@ export default function ProposalDetails() {
 
           {/* Objective Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><FileText className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Objetivo</CardTitle>
@@ -815,7 +815,7 @@ export default function ProposalDetails() {
 
           {/* Dores do Cliente Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><AlertTriangle className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Dores do Cliente</CardTitle>
@@ -1001,7 +1001,7 @@ export default function ProposalDetails() {
 
           {/* Cases / Portfólio Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Briefcase className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Cases / Portfólio</CardTitle>
@@ -1191,7 +1191,7 @@ export default function ProposalDetails() {
 
           {/* Entregas e Serviços Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Entregas (Output)</CardTitle>
@@ -1262,7 +1262,7 @@ export default function ProposalDetails() {
 
           {/* Serviços Inclusos Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Serviços Inclusos</CardTitle>
@@ -1333,7 +1333,7 @@ export default function ProposalDetails() {
 
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between p-6 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-md bg-muted"><MessageSquare className="h-4 w-4 text-foreground/70" /></div>
                   <CardTitle className="text-sm font-semibold tracking-tight">Depoimento</CardTitle>
