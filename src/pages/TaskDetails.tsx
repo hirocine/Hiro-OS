@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText } from 'lucide-react';
+import { Trash2, Plus, Send, Link2, ExternalLink, HardDrive, Cloud, FileText, CheckSquare, MessageCircle } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
@@ -326,7 +327,7 @@ export default function TaskDetails() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">Nenhuma subtarefa</p>
+                <EmptyState icon={CheckSquare} title="Nenhuma subtarefa" description="Nenhuma subtarefa." compact />
               )}
 
               <form onSubmit={handleAddSubtask} className="mt-3">
@@ -381,7 +382,7 @@ export default function TaskDetails() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">Nenhum comentário</p>
+                <EmptyState icon={MessageCircle} title="Nenhum comentário" description="Nenhum comentário." compact />
               )}
 
               <form onSubmit={handleAddComment} className="mt-3">
@@ -452,7 +453,7 @@ export default function TaskDetails() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm mb-4">Nenhum link externo</p>
+                <EmptyState icon={Link2} title="Nenhum link externo" description="Nenhum link externo." compact />
               )}
 
               <form onSubmit={handleAddLink} className="space-y-3">
