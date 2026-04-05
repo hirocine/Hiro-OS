@@ -1,21 +1,16 @@
 
 
-# 2 ajustes: RLS pública + slug mais curto
+# Adicionar botão "Voltar para Orçamentos" na tela de sucesso
 
-## 1. Migration: policy de leitura pública na tabela `orcamentos`
-Criar migration com `CREATE POLICY "Allow public read by slug"` para permitir SELECT sem autenticação.
+## Mudança
 
-## 2. Encurtar slug
-**Arquivo:** `src/features/proposals/hooks/useProposals.ts`, linha 8
+**Arquivo:** `src/features/proposals/components/ProposalGuidedWizard.tsx`
 
-Trocar:
-```tsx
-const raw = `hiro-${clientName}-${projectName}-${year}`;
-```
-Por:
-```tsx
-const raw = `${clientName}-${projectName}-${year}`;
-```
+Na linha 537, antes da div de ações alinhada à direita, adicionar uma row com layout `flex justify-between items-start`:
+- Esquerda: botão "Voltar para Orçamentos" (variant="outline", com ícone ArrowLeft) que navega para `/orcamentos`
+- Direita: os 3 botões existentes (Copiar Link, Editar Proposta, Ver Proposta)
 
-Nenhum arquivo em `src/features/proposals/components/public/` será alterado.
+O link mono fica abaixo, alinhado à direita como está.
+
+Verificar se `ArrowLeft` já está nos imports de lucide-react.
 
