@@ -1,16 +1,16 @@
 
 
-# Fix Auth.tsx right panel layout
+# Redirecionar "Editar" do ProposalCard para a página intermediária (Overview)
 
-## File: `src/pages/Auth.tsx`
+## Problema
+No `ProposalCard.tsx`, o botão "Editar" navega diretamente para `/orcamentos/:id` (página de edição). O usuário quer que ele vá primeiro para a página intermediária de Overview (`/orcamentos/:id/overview`), de onde já existe um botão "Editar" que leva à edição.
 
-### 3 find-and-replace changes:
+## Mudança
 
-1. **Right panel container**: `className="w-[420px] flex items-center justify-center p-6 lg:p-10"` → `className="flex-1 flex items-center justify-center p-8 lg:p-16"`
+### Arquivo: `src/features/proposals/components/ProposalCard.tsx`
 
-2. **Form wrapper**: `className="w-full max-w-xs space-y-8"` → `className="w-full max-w-sm space-y-8"`
+1. **Botão "Editar" (linha 139)**: trocar `/orcamentos/${proposal.id}` por `/orcamentos/${proposal.id}/overview`
+2. **MenuItem "Editar" no dropdown (linha 97)**: mesma troca — `/orcamentos/${proposal.id}` por `/orcamentos/${proposal.id}/overview`
 
-3. **Left panel width**: `w-[52%]` → `w-[60%]`
-
-No other changes.
+Nenhuma outra mudança. A página de Overview já tem o botão "Editar" que leva para `/orcamentos/:id`.
 
