@@ -848,6 +848,7 @@ export type Database = {
           updated_at: string
           validity_date: string | null
           video_url: string | null
+          views_count: number | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -886,6 +887,7 @@ export type Database = {
           updated_at?: string
           validity_date?: string | null
           video_url?: string | null
+          views_count?: number | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -924,6 +926,7 @@ export type Database = {
           updated_at?: string
           validity_date?: string | null
           video_url?: string | null
+          views_count?: number | null
           whatsapp_number?: string | null
         }
         Relationships: []
@@ -1321,6 +1324,47 @@ export type Database = {
           text?: string
         }
         Relationships: []
+      }
+      proposal_views: {
+        Row: {
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          proposal_id: string
+          referrer: string | null
+          time_on_page_seconds: number | null
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          proposal_id: string
+          referrer?: string | null
+          time_on_page_seconds?: number | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          proposal_id?: string
+          referrer?: string | null
+          time_on_page_seconds?: number | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_views_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_filters: {
         Row: {
@@ -2291,6 +2335,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_proposal_views: {
+        Args: { proposal_id: string }
+        Returns: undefined
       }
       is_storage_device: { Args: { _equipment_id: string }; Returns: boolean }
       log_audit_entry: {

@@ -35,6 +35,7 @@ export interface Proposal {
   cases: CaseItem[];
   whatsapp_number: string | null;
   company_description: string | null;
+  views_count: number;
 }
 
 export interface ScopeItem {
