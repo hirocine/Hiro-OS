@@ -137,9 +137,17 @@ export default function Auth() {
 
       {/* ── Painel esquerdo ── */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[52%] p-12"
+        className="hidden lg:flex flex-col justify-between w-[52%] p-12 relative overflow-hidden"
         style={{ borderRight: '1px solid #1a1a1a' }}
       >
+        <img
+          src="/lovable-uploads/0023_DSC01650-Aprimorado-NR_HIRO_BACKSTAGE_290624.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.85) 100%)' }} />
+        <div className="relative z-10 flex flex-col justify-between h-full">
         {/* Logo + nome */}
         <div className="flex items-center gap-3">
           <img
