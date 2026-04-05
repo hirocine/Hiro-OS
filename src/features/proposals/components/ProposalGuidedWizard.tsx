@@ -1373,7 +1373,25 @@ export function ProposalGuidedWizard() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Condições de Pagamento</Label>
-                <Textarea value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} rows={3} />
+                <Select value={paymentPreset} onValueChange={(v) => {
+                  setPaymentPreset(v);
+                  const preset = PAYMENT_PRESETS.find(p => p.value === v);
+                  if (preset && v !== 'custom') setPaymentTerms(preset.text);
+                }}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_PRESETS.map(p => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Textarea
+                  value={paymentTerms}
+                  onChange={e => setPaymentTerms(e.target.value)}
+                  rows={3}
+                  readOnly={paymentPreset !== 'custom'}
+                  className={cn('scrollbar-thin', paymentPreset !== 'custom' && 'opacity-60')}
+                />
               </div>
             </CardContent>
           </Card>
@@ -1422,11 +1440,11 @@ export function ProposalGuidedWizard() {
             {/* Dores */}
             <Card className="cursor-pointer hover:bg-muted/30" onClick={() => setStep(3)}>
               <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-muted-foreground">Dores ({dores.length})</p>
-                  <div className="flex gap-1 mt-1">
+                  <div className="flex flex-wrap gap-2 mt-1">
                     {dores.map((d, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">{d.label} {d.title}</Badge>
+                      <Badge key={i} variant="outline" className="text-xs whitespace-nowrap">{d.label} {d.title}</Badge>
                     ))}
                     {dores.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma dor selecionada</p>}
                   </div>
