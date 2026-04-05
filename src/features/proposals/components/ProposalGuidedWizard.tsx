@@ -614,15 +614,18 @@ export function ProposalGuidedWizard() {
       {step === 0 && showQuestions && analyzeResultState && (
         <div className="flex flex-col items-center min-h-[60vh] space-y-8 py-12">
           {isLoadingAI ? (
-            <div className="flex flex-col items-center gap-3 py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground animate-pulse">
+            <div className="w-full max-w-2xl space-y-4 py-12 animate-fade-in">
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg w-1/2 mx-auto" />
+              <p className="text-sm text-muted-foreground text-center animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
             <>
-              <div className="text-center space-y-3 max-w-lg">
+              <div className="text-center space-y-3 max-w-lg animate-fade-in">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <MessageSquare className="h-5 w-5 text-primary" />
                 </div>
@@ -637,7 +640,7 @@ export function ProposalGuidedWizard() {
                   <div
                     key={q.id}
                     className="animate-in fade-in slide-in-from-bottom-4"
-                    style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'backwards' }}
+                    style={{ opacity: 0, animationDelay: `${i * 200}ms`, animationFillMode: 'forwards' }}
                   >
                     <Card>
                       <CardContent className="pt-5 pb-5 space-y-3">
