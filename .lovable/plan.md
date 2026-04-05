@@ -1,88 +1,37 @@
 
 
-# Fix PDF upload — extract text with pdfjs-dist + file chip UI
+# Redesenhar chip do arquivo anexado — estilo Claude
 
-## Files changed
+## Arquivo: `src/features/proposals/components/ProposalGuidedWizard.tsx`
 
-1. `src/features/proposals/components/ProposalGuidedWizard.tsx`
+### Mudança
 
-## Changes
+Move the file chip from inside the textarea container (lines 609-620) to **above** the textarea container (between `<>` on line 600 and the `<div className="w-full max-w-2xl">` on line 601).
 
-### 1. Install `pdfjs-dist`
+**Remove** lines 609-620 (the current chip inside the textarea border).
 
-Run `npm install pdfjs-dist` (or add to package.json).
+**Add** before line 601, the new Claude-style card:
 
-### 2. New state + imports
-
-- Import `FileIcon, X` from lucide-react
-- Add state: `attachedFile: File | null` (default null)
-- Add state: `isExtractingPdf: boolean` (default false)
-
-### 3. Replace `handlePdfUpload` (lines 299-309)
-
-New logic:
-- Accept `.pdf, .txt, .doc, .docx`
-- If `.doc` or `.docx`: show toast "Formato não suportado. Converta para PDF ou cole o texto." and return
-- If `.txt`: store in `attachedFile` state only (don't read yet)
-- If `.pdf`: store in `attachedFile` state only (don't read yet)
-- Reset input value
-
-### 4. New helper: `extractTextFromFile(file: File): Promise<string>`
-
-```ts
-const extractTextFromFile = async (file: File): Promise<string> => {
-  if (file.name.endsWith('.txt')) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string || '');
-      reader.readAsText(file);
-    });
-  }
-  // PDF extraction with pdfjs-dist
-  const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map((item: any) => item.str).join(' ') + '\n';
-  }
-  return text;
-};
-```
-
-### 5. Update `handleAnalyzeBriefing` (line 170-174)
-
-Before calling `analyzeTranscript`:
-- If `attachedFile` exists, set `isExtractingPdf = true`, call `extractTextFromFile`, concatenate with textarea text, then proceed
-- Set `isExtractingPdf = false` after extraction
-- Pass combined text to `analyzeTranscript`
-
-### 6. Update "Analisar" button disabled state (line 590)
-
-Change from `disabled={!transcript.trim()}` to `disabled={!transcript.trim() && !attachedFile}` — allow analyzing with just a file attached.
-
-### 7. File chip UI (between textarea and button bar, lines 569-570)
-
-After the textarea and before the button row, add conditionally:
 ```tsx
 {attachedFile && (
-  <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
-    <FileIcon className="h-4 w-4 text-muted-foreground" />
-    <span className="text-xs text-foreground truncate">{attachedFile.name}</span>
-    <span className="text-xs text-muted-foreground">
-      ({(attachedFile.size / 1024).toFixed(0)} KB)
-    </span>
-    <button onClick={() => setAttachedFile(null)} className="ml-auto">
-      <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-    </button>
+  <div className="w-full max-w-2xl">
+    <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/50 max-w-xs">
+      <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
+        <FileIcon className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{attachedFile.name}</p>
+        <p className="text-xs text-muted-foreground">
+          {(attachedFile.size / (1024 * 1024)).toFixed(2)}MB · {attachedFile.name.split('.').pop()?.toUpperCase()}
+        </p>
+      </div>
+      <button onClick={() => setAttachedFile(null)} className="flex-shrink-0 p-1 rounded-md hover:bg-muted">
+        <X className="h-4 w-4 text-muted-foreground" />
+      </button>
+    </div>
   </div>
 )}
 ```
 
-### 8. Update file input accept attribute (line 574)
-
-Change from `.pdf,.txt` to `.pdf,.txt,.doc,.docx`
+The button bar (Anexar + Analisar) stays clean without the chip. No other files changed.
 
