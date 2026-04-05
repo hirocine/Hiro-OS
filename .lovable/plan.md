@@ -1,25 +1,25 @@
 
 
-# Fix question cards not appearing in ProposalGuidedWizard
+# Reverter prioridade da API na edge function ai-proposal-assistant
 
-## Problem
-Line 698 sets `opacity: 0` inline with `animationFillMode: 'forwards'`. The `animate-in` class from tailwindcss-animate doesn't override the inline `opacity: 0`, so cards stay invisible.
+## Problema
+A última mudança inverteu a prioridade: Lovable Gateway virou principal e Anthropic virou fallback. Mas o Anthropic é necessário como principal porque é o único que suporta `web_search_20250305` para enriquecer dados do cliente.
 
-## Fix — single line change
+## Mudança
 
-**File:** `src/features/proposals/components/ProposalGuidedWizard.tsx`, line 697-698
+**Arquivo:** `supabase/functions/ai-proposal-assistant/index.ts`
 
-Replace:
-```tsx
-className="animate-in fade-in slide-in-from-bottom-4"
-style={{ opacity: 0, animationDelay: `${i * 200}ms`, animationFillMode: 'forwards' }}
+Alterar a lógica de `useAnthropic`:
+
+```typescript
+// DE (atual):
+const useAnthropic = !!anthropicKey && !lovableKey;
+
+// PARA:
+const useAnthropic = !!anthropicKey;
 ```
 
-With:
-```tsx
-className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-style={{ animationDelay: `${i * 200}ms`, animationFillMode: 'both' }}
-```
+Se `ANTHROPIC_API_KEY` existe, usa Anthropic. Lovable Gateway só é usado se a key não existir.
 
-`animationFillMode: 'both'` applies the animation's initial state (opacity 0 from `fade-in`) before it starts and preserves the final state after it ends — no inline `opacity: 0` needed.
+Uma única linha alterada. Nenhum outro arquivo modificado.
 
