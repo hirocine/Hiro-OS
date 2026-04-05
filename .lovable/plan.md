@@ -1,43 +1,60 @@
 
 
-# Fix WhatsApp formatting, project number maxLength, and uniqueness validation in ProposalGuidedWizard
+# Add validation, WhatsApp test button, and textarea height to ProposalGuidedWizard Step 1
 
 ## File: `src/features/proposals/components/ProposalGuidedWizard.tsx`
 
-### 1. Add `formatWhatsApp` helper (before the component, ~line 58)
-Add the formatting function that auto-prefixes `55` and applies the mask `+55 (XX) XXXXX-XXXX`.
+### 1. Add `step1Errors` state (after line 108, in state section)
+```ts
+const [step1Errors, setStep1Errors] = useState({ projectNumber: false, clientName: false, projectName: false, whatsapp: false, validityDate: false });
+```
 
-### 2. Import supabase client (line 1 area)
-Add `import { supabase } from '@/integrations/supabase/client';` — needed for the uniqueness query.
-
-### 3. Update WhatsApp state and input
-- **Line 103**: Change `useState('')` to `useState('+55 ')` for `whatsappNumber`
-- **Line 814**: Change the Input to use `onChange={e => setWhatsappNumber(formatWhatsApp(e.target.value))}` and add `maxLength={20}`
-
-### 4. Add `maxLength={4}` to project number input (line 794)
-
-### 5. Add uniqueness validation for project_number
-- **Line 566**: Change `goNext` from a simple arrow to an async function that checks the current step. For step 1 (dados), run the uniqueness query before advancing. For all other steps, advance normally.
-
+### 2. Update `goNext` (line 578-594)
+Insert validation block before the existing uniqueness check:
 ```ts
 const goNext = async () => {
-  if (step === 1 && projectNumber.trim()) {
-    const { data: existing } = await supabase
-      .from('orcamentos')
-      .select('id, project_name, client_name')
-      .eq('project_number', projectNumber.trim())
-      .maybeSingle();
-    if (existing) {
-      toast.error(
-        `Nº ${projectNumber} já existe (${(existing as any).client_name} — ${(existing as any).project_name}). Considere criar uma nova versão desse orçamento.`,
-        { duration: 6000 }
-      );
+  if (step === 1) {
+    const errors = {
+      projectNumber: !projectNumber.trim(),
+      clientName: !clientName.trim(),
+      projectName: !projectName.trim(),
+      whatsapp: whatsappNumber.replace(/\D/g, '').length < 12,
+      validityDate: !validityDate,
+    };
+    setStep1Errors(errors);
+    if (Object.values(errors).some(Boolean)) {
+      toast.error('Preencha todos os campos obrigatórios');
       return;
     }
+    // existing uniqueness check follows...
   }
   setStep(prev => Math.min(prev + 1, STEPS.length - 1));
 };
 ```
+Move the existing `projectNumber.trim()` uniqueness check inside the `step === 1` block, after the validation passes.
 
-`toast` from sonner is already imported (line 26). No other changes.
+### 3. Add error borders and clear-on-change to each Step 1 field
+
+- **Line 822** (projectNumber Input): Add `className={step1Errors.projectNumber ? 'border-destructive' : ''}` and update onChange to also clear error
+- **Line 826** (clientName Input): Same pattern
+- **Line 832** (projectName Input): Same pattern
+- **Line 842** (whatsapp Input): Same pattern
+- **Line 848** (validityDate Button trigger): Add `border-destructive` to className when `step1Errors.validityDate`; clear error in onSelect
+
+### 4. Add WhatsApp test button (after line 842)
+```tsx
+{whatsappNumber.replace(/\D/g, '').length >= 12 && (
+  <Button type="button" variant="ghost" size="sm"
+    className="mt-1 h-7 text-xs text-green-600 hover:text-green-700 px-2"
+    onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank')}>
+    Testar WhatsApp →
+  </Button>
+)}
+```
+
+### 5. Change textarea rows (line 874)
+Change `rows={3}` to `rows={4}`.
+
+### 6. Remove disabled from Continuar button (line 881)
+Remove `disabled={!clientName.trim() || !projectName.trim()}` — validation now handles this in `goNext`.
 
