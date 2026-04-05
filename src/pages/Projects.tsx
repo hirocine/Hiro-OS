@@ -7,7 +7,8 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveButton } from '@/components/ui/responsive-button';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList, FileEdit } from 'lucide-react';
+import { Plus, Clock, CheckCircle, Archive, Package, ChevronDown, ChevronRight, ClipboardList, FileEdit, Camera } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useProjects } from '@/features/projects';
 import { useEquipmentProjectSync } from '@/hooks/useEquipmentProjectSync';
 import { useWithdrawalDraft } from '@/hooks/useWithdrawalDraft';

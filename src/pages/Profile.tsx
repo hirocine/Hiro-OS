@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { PageHeader } from '@/components/ui/page-header';
 import { Loader2, KeyRound } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
