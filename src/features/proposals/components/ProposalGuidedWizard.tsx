@@ -547,10 +547,26 @@ export function ProposalGuidedWizard() {
 
   const isLoadingAI = isAnalyzing || isFinalizing || isEnriching;
 
+  const stepSubtitles: Record<number, string> = {
+    0: showQuestions ? 'Algumas dúvidas sobre o briefing' : 'Cole o briefing e deixe a IA preencher',
+    1: 'Dados do Projeto',
+    2: 'Objetivo do Projeto',
+    3: 'Dores do Cliente',
+    4: 'Portfólio / Cases',
+    5: 'Entregáveis',
+    6: 'Serviços Inclusos',
+    7: 'Depoimento',
+    8: 'Investimento',
+    9: 'Revisão Final',
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 w-full">
+      {/* ── PageHeader fixo ── */}
+      {!generatedSlug && <PageHeader title="Nova Proposta" subtitle={stepSubtitles[step] || ''} />}
+
       {/* ── Stepper ── */}
-      {step > 0 && (
+      {(step > 0 || showQuestions) && !generatedSlug && (
         <div className="flex items-center gap-1 overflow-hidden" style={{ scrollbarWidth: 'none' }}>
           {STEPS.map((s, i) => {
             const Icon = s.icon;
