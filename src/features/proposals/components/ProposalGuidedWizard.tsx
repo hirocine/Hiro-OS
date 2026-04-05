@@ -137,7 +137,17 @@ export function ProposalGuidedWizard() {
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-  const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
+  // Auto-calculate payment option values
+  useEffect(() => {
+    if (finalValue <= 0) return;
+    setPaymentOptions(prev => prev.map((opt, i) => ({
+      ...opt,
+      valor: i === 0
+        ? fmt(finalValue * 0.95)
+        : `2x ${fmt(finalValue / 2)}`,
+    })));
+  }, [finalValue]);
+
 
   // Rotate loading messages
   useEffect(() => {
