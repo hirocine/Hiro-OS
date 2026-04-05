@@ -1270,28 +1270,73 @@ export function ProposalGuidedWizard() {
                 })}
               </div>
 
+              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
+                <Plus className="h-4 w-4" /> Criar novo depoimento
+              </Button>
             </>
           ) : (
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+            <>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-sm text-muted-foreground">Nenhum depoimento cadastrado. Preencha manualmente:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nome</Label>
+                      <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Cargo</Label>
+                      <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Depoimento</Label>
+                    <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button variant="outline" className="w-full gap-2" onClick={() => setShowNewTestimonialDialog(true)}>
+                <Plus className="h-4 w-4" /> Criar novo depoimento
+              </Button>
+            </>
+          )}
+
+          {/* New Testimonial Dialog */}
+          <Dialog open={showNewTestimonialDialog} onOpenChange={setShowNewTestimonialDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Novo Depoimento</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Nome</Label>
-                    <Input value={testimonialName} onChange={e => setTestimonialName(e.target.value)} placeholder="Ex: João Silva" />
+                    <Label className="text-xs">Nome *</Label>
+                    <Input value={newTestimonial.name} onChange={e => setNewTestimonial(p => ({ ...p, name: e.target.value }))} placeholder="Ex: João Silva" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Cargo</Label>
-                    <Input value={testimonialRole} onChange={e => setTestimonialRole(e.target.value)} placeholder="Ex: CEO, Empresa X" />
+                    <Input value={newTestimonial.role} onChange={e => setNewTestimonial(p => ({ ...p, role: e.target.value }))} placeholder="Ex: CEO, Empresa X" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Depoimento</Label>
-                  <Textarea value={testimonialText} onChange={e => setTestimonialText(e.target.value)} rows={3} placeholder="O que o cliente disse..." />
+                  <Label className="text-xs">Depoimento *</Label>
+                  <Textarea value={newTestimonial.text} onChange={e => setNewTestimonial(p => ({ ...p, text: e.target.value }))} rows={3} placeholder="O que o cliente disse..." className="scrollbar-thin" />
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">URL da foto (opcional)</Label>
+                  <Input value={newTestimonial.image} onChange={e => setNewTestimonial(p => ({ ...p, image: e.target.value }))} placeholder="https://..." />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setShowNewTestimonialDialog(false)}>Cancelar</Button>
+                <Button onClick={handleCreateTestimonial} disabled={createTestimonial.isPending}>
+                  {createTestimonial.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                  Criar Depoimento
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="flex justify-between">
             <Button variant="ghost" onClick={goBack}><ArrowLeft className="h-4 w-4 mr-1" /> Voltar</Button>
