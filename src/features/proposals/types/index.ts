@@ -36,6 +36,9 @@ export interface Proposal {
   whatsapp_number: string | null;
   company_description: string | null;
   views_count: number;
+  version: number;
+  parent_id: string | null;
+  is_latest_version: boolean;
 }
 
 export interface ScopeItem {

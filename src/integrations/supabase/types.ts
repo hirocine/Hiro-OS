@@ -827,9 +827,11 @@ export type Database = {
           entregaveis: Json | null
           final_value: number | null
           id: string
+          is_latest_version: boolean | null
           list_price: number | null
           moodboard_images: Json | null
           objetivo: string | null
+          parent_id: string | null
           payment_options: Json | null
           payment_terms: string | null
           project_name: string | null
@@ -847,6 +849,7 @@ export type Database = {
           timeline: Json | null
           updated_at: string
           validity_date: string | null
+          version: number | null
           video_url: string | null
           views_count: number | null
           whatsapp_number: string | null
@@ -866,9 +869,11 @@ export type Database = {
           entregaveis?: Json | null
           final_value?: number | null
           id?: string
+          is_latest_version?: boolean | null
           list_price?: number | null
           moodboard_images?: Json | null
           objetivo?: string | null
+          parent_id?: string | null
           payment_options?: Json | null
           payment_terms?: string | null
           project_name?: string | null
@@ -886,6 +891,7 @@ export type Database = {
           timeline?: Json | null
           updated_at?: string
           validity_date?: string | null
+          version?: number | null
           video_url?: string | null
           views_count?: number | null
           whatsapp_number?: string | null
@@ -905,9 +911,11 @@ export type Database = {
           entregaveis?: Json | null
           final_value?: number | null
           id?: string
+          is_latest_version?: boolean | null
           list_price?: number | null
           moodboard_images?: Json | null
           objetivo?: string | null
+          parent_id?: string | null
           payment_options?: Json | null
           payment_terms?: string | null
           project_name?: string | null
@@ -925,11 +933,20 @@ export type Database = {
           timeline?: Json | null
           updated_at?: string
           validity_date?: string | null
+          version?: number | null
           video_url?: string | null
           views_count?: number | null
           whatsapp_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_accesses: {
         Row: {

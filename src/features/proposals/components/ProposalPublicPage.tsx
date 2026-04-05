@@ -1,8 +1,8 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { ProposalNavbar } from './public/ProposalNavbar';
 import { ProposalHero } from './public/ProposalHero';
 import { ProposalClients } from './public/ProposalClients';
@@ -26,6 +26,7 @@ export function ProposalPublicPage() {
   const viewIdRef = useRef<string | null>(null);
   const entryTimeRef = useRef<number>(Date.now());
   const trackedRef = useRef(false);
+  const [latestSlug, setLatestSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!proposal || trackedRef.current) return;
@@ -81,6 +82,21 @@ export function ProposalPublicPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [proposal]);
 
+  // Check if outdated version
+  useEffect(() => {
+    if (!proposal || proposal.is_latest_version !== false) return;
+    const parentId = proposal.parent_id || proposal.id;
+    supabase
+      .from('orcamentos')
+      .select('slug')
+      .eq('parent_id', parentId)
+      .eq('is_latest_version', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setLatestSlug((data as any).slug);
+      });
+  }, [proposal]);
+
   if (isLoading) {
     return null;
   }
@@ -102,6 +118,16 @@ export function ProposalPublicPage() {
       <GlowSpot className='left-[-200px] top-[3200px]' />
       <GlowSpot className='right-[-100px] top-[4800px]' />
       <GlowSpot className='left-[-150px] top-[6200px]' />
+
+      {latestSlug && (
+        <div className="no-print bg-yellow-900/40 border-b border-yellow-700/30 text-yellow-200 text-center py-2 px-4 text-sm flex items-center justify-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          Esta é uma versão anterior.{' '}
+          <Link to={`/orcamento/${latestSlug}`} className="underline font-medium hover:text-yellow-100">
+            Ver versão atual →
+          </Link>
+        </div>
+      )}
 
       <div className="no-print">
         <ProposalNavbar validityDate={proposal.validity_date} />
@@ -196,4 +222,3 @@ export function ProposalPublicPage() {
     </div>
   );
 }
-

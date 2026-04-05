@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Clock, Monitor, Smartphone, ExternalLink, Pencil, Copy, Building2, GitBranch } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProposalDetailsById } from '@/features/proposals/hooks/useProposalDetailsById';
 import { useProposalViews } from '@/features/proposals/hooks/useProposalViews';
+import { supabase } from '@/integrations/supabase/client';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -53,6 +55,7 @@ export default function ProposalOverview() {
   const navigate = useNavigate();
   const { data: proposal, isLoading } = useProposalDetailsById(id);
   const { data: views, isLoading: viewsLoading } = useProposalViews(id);
+  const [versions, setVersions] = useState<any[]>([]);
 
   const publicUrl = proposal ? `${window.location.origin}/orcamento/${proposal.slug}` : '';
   const status = proposal ? (statusMap[proposal.status] || statusMap.draft) : statusMap.draft;
@@ -64,6 +67,19 @@ export default function ProposalOverview() {
   const handleOpenProposal = () => {
     if (proposal) window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank');
   };
+  // Fetch versions
+  useEffect(() => {
+    if (!proposal) return;
+    const parentId = proposal.parent_id || proposal.id;
+    supabase
+      .from('orcamentos')
+      .select('id, version, status, created_at, slug')
+      .or(`id.eq.${parentId},parent_id.eq.${parentId}`)
+      .order('version' as any, { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 1) setVersions(data);
+      });
+  }, [proposal]);
 
   const totalViews = proposal?.views_count || 0;
   const lastView = views && views.length > 0 ? views[0] : null;
@@ -106,6 +122,9 @@ export default function ProposalOverview() {
               )}
               <h1 className="text-lg font-medium">{proposal.project_name}</h1>
               <Badge variant={status.variant}>{status.label}</Badge>
+              {proposal.version > 1 && (
+                <Badge variant="outline">v{proposal.version}</Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">
               {proposal.client_name || '—'}
@@ -254,7 +273,45 @@ export default function ProposalOverview() {
         </CardContent>
       </Card>
 
-      {/* Section 5 — Placeholder */}
+      {/* Section 5 — Versões */}
+      {versions.length > 1 && (
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GitBranch className="h-4 w-4" /> Versões
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">{versions.length} versões</span>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-0">
+              {versions.map((v, i) => {
+                const isCurrent = v.id === proposal.id;
+                const vStatus = statusMap[v.status] || statusMap.draft;
+                return (
+                  <div
+                    key={v.id}
+                    className={`flex items-center justify-between py-2.5 px-2 rounded ${isCurrent ? 'bg-muted/50' : ''} ${i < versions.length - 1 ? 'border-b border-border' : ''}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">v{v.version}</Badge>
+                      <span className="text-sm">{format(new Date(v.created_at), 'dd/MM/yyyy')}</span>
+                      <Badge variant={vStatus.variant} className="text-xs">{vStatus.label}</Badge>
+                      {isCurrent && <span className="text-xs text-muted-foreground">(atual)</span>}
+                    </div>
+                    {!isCurrent && (
+                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate(`/orcamentos/${v.id}/overview`)}>
+                        Ver
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Section 6 — Placeholder */}
       <Card>
         <CardContent className="p-6 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Histórico de alterações — em breve</p>

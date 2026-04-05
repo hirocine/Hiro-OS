@@ -33,6 +33,9 @@ export function useProposalDetails(slug: string | undefined) {
         cases: Array.isArray((data as any).cases) ? (data as any).cases : [],
         whatsapp_number: (data as any).whatsapp_number || null,
         views_count: (data as any).views_count || 0,
+        version: (data as any).version || 1,
+        parent_id: (data as any).parent_id || null,
+        is_latest_version: (data as any).is_latest_version !== false,
       } as unknown as Proposal;
     },
     enabled: !!slug,

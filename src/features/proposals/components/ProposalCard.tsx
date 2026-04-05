@@ -103,6 +103,11 @@ export function ProposalCard({ proposal, onDelete }: Props) {
           <Badge variant={status.variant} className="text-xs px-2 py-0.5">
             {status.label}
           </Badge>
+          {proposal.version > 1 && (
+            <Badge variant="outline" className="text-xs px-2 py-0.5">
+              v{proposal.version}
+            </Badge>
+          )}
           {daysLeft > 0 ? (
             <Badge variant="outline" className="text-xs px-2 py-0.5 text-success border-success/30">
               {daysLeft} dias restantes

@@ -243,7 +243,61 @@ export function useProposals() {
     },
   });
 
-  return { ...query, createProposal, createDraft, updateProposal, deleteProposal };
+  const createNewVersion = useMutation({
+    mutationFn: async (originalId: string) => {
+      const { data: original, error: fetchError } = await supabase
+        .from('orcamentos')
+        .select('*')
+        .eq('id', originalId)
+        .single();
+      if (fetchError || !original) throw new Error('Proposta não encontrada');
+
+      const parentId = (original as any).parent_id || original.id;
+
+      const { data: versions } = await supabase
+        .from('orcamentos')
+        .select('version')
+        .or(`id.eq.${parentId},parent_id.eq.${parentId}`)
+        .order('version' as any, { ascending: false })
+        .limit(1);
+
+      const nextVersion = ((versions as any)?.[0]?.version || 1) + 1;
+
+      await supabase
+        .from('orcamentos')
+        .update({ is_latest_version: false } as any)
+        .or(`id.eq.${parentId},parent_id.eq.${parentId}`);
+
+      const { id, created_at, updated_at, slug, version, is_latest_version, views_count, ...rest } = original as any;
+      const newSlug = `${slug.replace(/-v\d+$/, '')}-v${nextVersion}`;
+
+      const { data: newProposal, error } = await supabase
+        .from('orcamentos')
+        .insert({
+          ...rest,
+          slug: newSlug,
+          version: nextVersion,
+          parent_id: parentId,
+          is_latest_version: true,
+          status: 'draft',
+          views_count: 0,
+        } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return mapProposal(newProposal);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      toast.success('Nova versão criada!');
+    },
+    onError: (err: Error) => {
+      toast.error('Erro ao criar versão: ' + err.message);
+    },
+  });
+
+  return { ...query, createProposal, createDraft, updateProposal, deleteProposal, createNewVersion };
 }
 
 function mapProposal(row: any): Proposal {
@@ -259,5 +313,8 @@ function mapProposal(row: any): Proposal {
     payment_options: Array.isArray(row.payment_options) ? row.payment_options : [],
     entregaveis: Array.isArray(row.entregaveis) ? row.entregaveis : [],
     cases: Array.isArray(row.cases) ? row.cases : [],
+    version: row.version || 1,
+    parent_id: row.parent_id || null,
+    is_latest_version: row.is_latest_version !== false,
   };
 }

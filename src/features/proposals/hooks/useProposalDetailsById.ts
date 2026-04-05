@@ -25,6 +25,9 @@ export function useProposalDetailsById(id: string | undefined) {
         payment_options: Array.isArray((data as any).payment_options) ? (data as any).payment_options : [],
         entregaveis: Array.isArray((data as any).entregaveis) ? (data as any).entregaveis : [],
         cases: Array.isArray((data as any).cases) ? (data as any).cases : [],
+        version: (data as any).version || 1,
+        parent_id: (data as any).parent_id || null,
+        is_latest_version: (data as any).is_latest_version !== false,
       } as unknown as Proposal;
     },
     enabled: !!id,
