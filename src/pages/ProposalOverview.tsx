@@ -186,7 +186,7 @@ export default function ProposalOverview() {
           <div className="grid grid-cols-3 gap-px bg-border rounded-lg overflow-hidden border">
             <div className="bg-background p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Valor de tabela</p>
-              <p className="text-sm line-through text-muted-foreground">{formatCurrency(proposal.list_price)}</p>
+              <p className={`text-sm text-muted-foreground ${proposal.discount_pct ? 'line-through' : ''}`}>{formatCurrency(proposal.list_price)}</p>
             </div>
             <div className="bg-background p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Desconto</p>
@@ -196,7 +196,7 @@ export default function ProposalOverview() {
             </div>
             <div className="bg-background p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 mb-0.5">Valor final</p>
-              <p className="text-lg font-medium">{formatCurrency(proposal.final_value)}</p>
+              <p className="text-xl font-bold">{formatCurrency(proposal.final_value)}</p>
             </div>
           </div>
         </CardContent>
