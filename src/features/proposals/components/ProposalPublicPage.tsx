@@ -59,10 +59,16 @@ export function ProposalPublicPage() {
     const handleBeforeUnload = () => {
       if (!viewIdRef.current) return;
       const seconds = Math.round((Date.now() - entryTimeRef.current) / 1000);
-      navigator.sendBeacon(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/proposal_views?id=eq.${viewIdRef.current}`,
-        JSON.stringify({ time_on_page_seconds: seconds })
-      );
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/proposal_views?id=eq.${viewIdRef.current}`;
+      const blob = new Blob([JSON.stringify({ time_on_page_seconds: seconds })], { type: 'application/json' });
+      const headers = {
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      };
+      // sendBeacon doesn't support custom headers, use fetch with keepalive
+      fetch(url, { method: 'PATCH', headers, body: JSON.stringify({ time_on_page_seconds: seconds }), keepalive: true }).catch(() => {});
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
