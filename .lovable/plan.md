@@ -1,66 +1,40 @@
 
 
-# Padronização Visual — Parte 1: Sidebar + Empty States + PageHeader
+# Visual Polish: ProposalDetails Section Headers
 
-## 1. Sidebar icons (DesktopSidebar.tsx + MobileSidebar.tsx)
+## Single file: `src/pages/ProposalDetails.tsx`
 
-Trocar icons nos `adminNavigation` sub-itens (ambos arquivos tem a mesma estrutura duplicada):
+All changes are styling-only. No logic changes.
 
-- `Dashboard` → `BarChart3` (era `Users`)
-- `Gestão de CAPEX` → `TrendingUp` (era `Users`)
-- `Logs de Auditoria` → `ScrollText` (era `Users`)
-- `Categorias` → `Layers` (era `Users`)
-- `Notificações` → `Bell` (era `Users`)
-- `Sistema` → `Cog` (era `Users`)
-- `Usuários` → mantém `Users`
+### 4 changes per section, applied to all 8 sections:
 
-Atualizar imports: adicionar `BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog` e remover `Users` duplicado se não mais necessário (ainda usado em Fornecedores parent e Usuários).
+**A. Icon container** — wrap each bare icon:
+```
+// Before:
+<Building2 className="h-4 w-4 text-muted-foreground" />
+// After:
+<div className="p-1.5 rounded-md bg-muted"><Building2 className="h-4 w-4 text-foreground/70" /></div>
+```
 
-## 2. Empty States em 5 páginas
+**B. CardHeader border** — add `border-b border-border` to every `<CardHeader className="pb-3">` → `<CardHeader className="pb-3 border-b border-border">`
 
-Substituir textos inline pelo componente `EmptyState` de `@/components/ui/empty-state`:
+**C. Move save button into CardHeader** — for each section, the conditional `{xDirty && <CardFooter>...<Button>Salvar</Button></CardFooter>}` gets removed; the save button moves inline into the CardHeader's right-side flex container. Sections that already have action buttons (Dores, Cases, Entregas, Depoimento, Client) get the save button appended to their existing button group. Sections without action buttons (Investment, Objective, Serviços) get a new right-side area with just the conditional save button.
 
-**Proposals.tsx** (3 empty states, linhas 59, 84, 111):
-- Ativos: `icon={Receipt}` title="Nenhum orçamento ativo" description="Crie sua primeira proposta comercial" action com navigate
-- Aprovados: `icon={CheckCircle}` title="Nenhum orçamento aprovado" description="Orçamentos aprovados pelo cliente aparecerão aqui"
-- Arquivados: `icon={Archive}` title="Nenhum orçamento arquivado" description="Orçamentos expirados serão movidos para cá"
+**D. CardTitle size** — all `<CardTitle className="text-base">` → `<CardTitle className="text-sm font-semibold tracking-tight">`
 
-**Projects.tsx** (linhas 423-427):
-- Substituir `<h3>Nenhuma retirada encontrada</h3>` + texto + botão pelo `EmptyState` icon={Camera}
+### Section-by-section summary:
 
-**AVProjects.tsx** (linhas 66-70):
-- Substituir `<div>Nenhum projeto encontrado</div>` por `EmptyState` icon={Film}
+| Section | Line range | Icon | Has action buttons | Dirty flag |
+|---------|-----------|------|--------------------|------------|
+| Cliente e Projeto | 696-762 | Building2 | Importar Transcrição | clientDirty |
+| Investimento | 764-800 | DollarSign | none | investDirty |
+| Objetivo | 802-820 | FileText | none | diagDirty |
+| Dores do Cliente | 822-886 | AlertTriangle | Sugerir IA + Adicionar | doresDirty |
+| Cases / Portfólio | 1012-1071 | Briefcase | Adicionar Cases | casesDirty |
+| Entregas (Output) | 1205-1276 | Package | Adicionar | outputDirty |
+| Serviços Inclusos | 1278-1349 | Package | none | inclusoDirty |
+| Depoimento | 1351-1399 | MessageSquare | Selecionar do Banco | testimonialDirty |
 
-**Companies.tsx** (linhas 141-145):
-- Substituir `<TableCell>Nenhuma empresa encontrada</TableCell>` por `EmptyState` icon={Building2} (dentro de TableCell com colSpan)
-
-**Suppliers.tsx** (linhas 170-174):
-- Substituir `<TableCell>Nenhum fornecedor encontrado</TableCell>` por `EmptyState` icon={UserCheck}
-
-## 3. PageHeader em Profile.tsx
-
-Substituir o header manual (linhas 293-302) por `PageHeader` com:
-- title="Meu Perfil"
-- subtitle="Gerencie suas informações e preferências"
-- actions = botão "Salvar Alterações"
-
-## 4. Páginas de detalhe — sem mudanças
-
-- **CompanyDetails.tsx**: já tem h1 com `company.company_name` (linha 135). OK.
-- **SupplierDetails.tsx**: já tem h1 com `supplier.full_name` (linha 142). OK.
-- **TaskDetails.tsx**: já tem título editável inline (linha 186-190). OK.
-- **ProposalOverview.tsx**: já tem header card com nome do projeto. OK.
-- **ProposalDetails.tsx**: já tem breadcrumb + card. Manter como está.
-
-## Arquivos modificados
-- `src/components/Layout/DesktopSidebar.tsx` (icons)
-- `src/components/Layout/MobileSidebar.tsx` (icons)
-- `src/pages/Proposals.tsx` (3 empty states)
-- `src/pages/Projects.tsx` (1 empty state)
-- `src/pages/AVProjects.tsx` (1 empty state)
-- `src/pages/Companies.tsx` (1 empty state)
-- `src/pages/Suppliers.tsx` (1 empty state)
-- `src/pages/Profile.tsx` (PageHeader)
-
-Nenhum arquivo em `src/features/proposals/components/public/` será alterado.
+### Import cleanup
+- Remove `CardFooter` from the import on line 3 (no longer used by any section).
 
