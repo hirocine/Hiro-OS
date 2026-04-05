@@ -146,7 +146,7 @@ export function ProposalCard({ proposal, onDelete }: Props) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/orcamentos/${proposal.id}`)}
+          onClick={() => navigate(`/orcamentos/${proposal.id}/overview`)}
           className="w-full h-8 text-xs group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
         >
           <ExternalLink className="mr-1.5 h-3 w-3" />
