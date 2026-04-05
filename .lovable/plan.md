@@ -1,42 +1,21 @@
 
+Update only `src/pages/ProposalOverview.tsx`.
 
-# Add user profile data (avatar + display name) to audit history
+1. Replace the body of the existing history `useEffect` with the provided multi-version fetch flow:
+   - keep the current `useEffect(() => { ... }, [proposal?.id])` wrapper
+   - early return when `!proposal?.id`
+   - derive `parentId = proposal.parent_id || proposal.id`
+   - fetch all related version IDs from `orcamentos`
+   - query `audit_logs` with `.in('record_id', allIds)` and select `id, action, user_email, user_id, created_at`
+   - collect unique `user_id`s, fetch matching `profiles`, and merge each log entry with `profile`
+   - keep `setHistoryLoading(false)` in all exit paths
 
-## File: `src/pages/ProposalOverview.tsx`
+2. Ensure the history row render matches the requested avatar/name behavior:
+   - inside `Avatar`, render `<AvatarImage src={entry.profile.avatar_url} />` when `avatar_url` exists
+   - use fallback text `{(entry.profile?.display_name || entry.user_email || '?')[0].toUpperCase()}`
+   - use subtitle `{entry.profile?.display_name || entry.user_email || 'Sistema'}`
 
-### Key finding
-The `profiles` table has no `email` column -- but `audit_logs` has `user_id`. We'll join on `user_id` instead of email.
+3. Do not change anything else in the page.
 
-### 1. Update history fetch (lines 98-108)
-After fetching audit logs, collect unique `user_id` values and query `profiles` by `user_id`:
-
-```ts
-.then(({ data: logs }) => {
-  const entries = logs || [];
-  const userIds = [...new Set(entries.map((e: any) => e.user_id).filter(Boolean))];
-  if (userIds.length === 0) {
-    setHistory(entries);
-    setHistoryLoading(false);
-    return;
-  }
-  supabase
-    .from('profiles')
-    .select('user_id, display_name, avatar_url')
-    .in('user_id', userIds)
-    .then(({ data: profiles }) => {
-      const profileMap: Record<string, any> = {};
-      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
-      setHistory(entries.map((e: any) => ({ ...e, profile: e.user_id ? profileMap[e.user_id] || null : null })));
-      setHistoryLoading(false);
-    });
-});
-```
-
-### 2. Update history entry render (lines 402-408)
-Replace the generic `User` icon div with an `Avatar` component showing the profile photo or initials fallback. Replace email text with display name (falling back to email).
-
-### 3. Remove `User` from lucide imports (line 5)
-Check if `User` is used elsewhere in the file first -- it's not, so remove it.
-
-Avatar/AvatarImage/AvatarFallback are already imported (line 11).
-
+Technical note:
+The current effect is still broken because the `audit_logs` query omits `user_id`, so profile lookup never receives any IDs. Replacing the effect body with the provided version fixes both “all versions” history loading and profile enrichment.
