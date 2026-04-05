@@ -1,43 +1,33 @@
 
 
-# Add "Enviar ao Cliente" button to ProposalOverview
+# Fix project_number saving and add uniqueness validation
 
-## File: `src/pages/ProposalOverview.tsx`
+## File 1: `src/features/proposals/hooks/useProposals.ts`
 
-### Verification
-`useProposalDetailsById` returns `useQuery(...)` directly, so `refetch` is already available — no hook changes needed.
+**Line 205**: Remove the toast from `updateProposal.onSuccess` — the calling code already shows its own feedback.
 
-### Changes
-
-1. **Line 5 — Add `Send` to lucide imports**
-
-2. **Line 56 — Add `refetch` to destructure**: change to `const { data: proposal, isLoading, refetch } = useProposalDetailsById(id);`
-
-3. **Before the return (~after `handleSetLatest`)** — Add handler:
 ```ts
-const handleSendToClient = async () => {
-  const today = new Date().toLocaleDateString('en-CA');
-  const { error } = await supabase
-    .from('orcamentos')
-    .update({ status: 'sent', sent_date: today } as any)
-    .eq('id', proposal.id);
-  if (error) {
-    toast.error('Erro ao enviar proposta');
-  } else {
-    toast.success('Proposta enviada ao cliente!');
-    refetch();
-  }
-};
+// Before
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['proposals'] });
+  toast.success('Proposta atualizada com sucesso!');
+},
+
+// After
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['proposals'] });
+},
 ```
 
-4. **Line 160 — Add button before "Copiar Link"**, only when draft:
-```tsx
-{proposal.status === 'draft' && (
-  <Button size="sm" onClick={handleSendToClient}>
-    <Send className="mr-1.5 h-4 w-4" /> Enviar ao Cliente
-  </Button>
-)}
-```
+## File 2: `src/pages/ProposalDetails.tsx`
+
+### Change 1: Add uniqueness check (after line 376, before the closing `}` of the client validation block)
+
+Insert a new block that queries Supabase for any other proposal with the same `project_number`. If found, show a descriptive error toast and set the field error state, then return early.
+
+### Change 2: maxLength update (line 738)
+
+Change `maxLength={3}` to `maxLength={4}` on the project_number Input.
 
 No other changes.
 
