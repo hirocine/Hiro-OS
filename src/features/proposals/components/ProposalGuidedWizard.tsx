@@ -953,10 +953,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 4 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Portfólio / Cases</h2>
-            <p className="text-sm text-muted-foreground">Selecione cases do portfólio para incluir na proposta:</p>
-          </div>
 
           {casesBank.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1091,14 +1087,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 5 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Entregáveis</h2>
-            <p className="text-sm text-muted-foreground">
-              {aiFilledFields.has('entregaveis')
-                ? 'Identifiquei esses entregáveis no briefing. Ajuste e adicione mais:'
-                : 'Defina os entregáveis da proposta:'}
-            </p>
-          </div>
 
           <div className="space-y-3">
             {entregaveis.map((ent, i) => (
@@ -1141,10 +1129,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 6 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Serviços Inclusos</h2>
-            <p className="text-sm text-muted-foreground">Selecione os serviços inclusos nesta proposta</p>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {inclusoCategories.map((cat, catIdx) => {
@@ -1263,10 +1247,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 7 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Depoimento</h2>
-            <p className="text-sm text-muted-foreground">Escolha um depoimento de cliente para incluir na proposta</p>
-          </div>
 
           {testimonialsBank.length > 0 ? (
             <>
@@ -1383,10 +1363,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 8 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Investimento</h2>
-            <p className="text-sm text-muted-foreground">Defina os valores e condições de pagamento:</p>
-          </div>
 
           <Card>
             <CardContent className="pt-6 space-y-4">
@@ -1501,10 +1477,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 9 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Revisão Final</h2>
-            <p className="text-sm text-muted-foreground">Tudo pronto! Revise e crie sua proposta:</p>
-          </div>
 
           <div className="space-y-3">
             {/* Client */}
