@@ -55,6 +55,7 @@ export default function ProposalOverview() {
   const navigate = useNavigate();
   const { data: proposal, isLoading } = useProposalDetailsById(id);
   const { data: views, isLoading: viewsLoading } = useProposalViews(id);
+  const [versions, setVersions] = useState<any[]>([]);
 
   const publicUrl = proposal ? `${window.location.origin}/orcamento/${proposal.slug}` : '';
   const status = proposal ? (statusMap[proposal.status] || statusMap.draft) : statusMap.draft;
@@ -66,6 +67,19 @@ export default function ProposalOverview() {
   const handleOpenProposal = () => {
     if (proposal) window.open(`/orcamento/${proposal.slug}?v=${Date.now()}`, '_blank');
   };
+  // Fetch versions
+  useEffect(() => {
+    if (!proposal) return;
+    const parentId = proposal.parent_id || proposal.id;
+    supabase
+      .from('orcamentos')
+      .select('id, version, status, created_at, slug')
+      .or(`id.eq.${parentId},parent_id.eq.${parentId}`)
+      .order('version' as any, { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 1) setVersions(data);
+      });
+  }, [proposal]);
 
   const totalViews = proposal?.views_count || 0;
   const lastView = views && views.length > 0 ? views[0] : null;
