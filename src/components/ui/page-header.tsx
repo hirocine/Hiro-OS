@@ -15,14 +15,11 @@ export function PageHeader({
   actions, 
   className 
 }: PageHeaderProps) {
-  const { isMobile, getContainerPadding } = useResponsiveLayout();
+  const { isMobile } = useResponsiveLayout();
 
   return (
-    <div className={cn(
-      "flex flex-col gap-4 md:gap-6 mb-6 md:mb-8",
-      className
-    )}>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div className={cn("mb-6 md:mb-8", className)}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h1 className={cn(
             "font-bold tracking-tight text-foreground text-left",
@@ -32,7 +29,7 @@ export function PageHeader({
           </h1>
           {subtitle && (
             <div className="mt-1 text-sm text-muted-foreground leading-relaxed">
-              {typeof subtitle === 'string' ? subtitle : subtitle}
+              {subtitle}
             </div>
           )}
         </div>
