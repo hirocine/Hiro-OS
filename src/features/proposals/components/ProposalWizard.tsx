@@ -617,7 +617,7 @@ export function ProposalWizard() {
                         <Checkbox checked={isSelected} className="shrink-0" />
                         {c.vimeo_id && (
                           <img
-                            src={`https://vumbnail.com/${c.vimeo_id}.jpg`}
+                            src={`https://vumbnail.com/${extractVimeoId(c.vimeo_id)}.jpg`}
                             alt={c.campaign_name}
                             className="w-24 h-14 object-cover rounded shrink-0 bg-muted"
                           />
