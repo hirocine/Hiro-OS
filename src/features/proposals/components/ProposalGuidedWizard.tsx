@@ -541,43 +541,66 @@ export function ProposalGuidedWizard() {
             </p>
           </div>
 
-          <div className="w-full max-w-2xl space-y-3">
-            <Textarea
-              value={transcript}
-              onChange={e => setTranscript(e.target.value)}
-              placeholder="Cole aqui o resumo da reunião do Google Meet..."
-              className="min-h-[240px] text-sm"
-            />
-            <p className="text-xs text-muted-foreground text-center">
-              No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
-            </p>
-          </div>
-
           {isLoadingAI ? (
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground animate-pulse">
+            <div className="w-full max-w-2xl space-y-4 animate-fade-in">
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg w-2/3 mx-auto" />
+              <p className="text-sm text-muted-foreground text-center animate-pulse">
                 {activeLoadingMessages[loadingMsg % activeLoadingMessages.length]}
               </p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <Button
-                size="lg"
-                onClick={handleAnalyzeBriefing}
-                disabled={!transcript.trim()}
-                className="gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                Analisar Briefing
-              </Button>
+            <>
+              <div className="w-full max-w-2xl">
+                <div className="relative rounded-xl border border-border bg-background p-1">
+                  <Textarea
+                    value={transcript}
+                    onChange={e => setTranscript(e.target.value)}
+                    placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
+                    className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none"
+                  />
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    <input
+                      ref={pdfInputRef}
+                      type="file"
+                      accept=".pdf,.txt"
+                      onChange={handlePdfUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => pdfInputRef.current?.click()}
+                    >
+                      <Paperclip className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Anexar</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleAnalyzeBriefing}
+                      disabled={!transcript.trim()}
+                      className="gap-1.5"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Analisar
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
+                </p>
+              </div>
+
               <button
                 onClick={() => { setSkippedBriefing(true); setStep(1); }}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Quero preencher manualmente →
               </button>
-            </div>
+            </>
           )}
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
