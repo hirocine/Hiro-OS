@@ -182,6 +182,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw new AuthenticationError(error.message);
       }
+
+      // Check if user is approved
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_approved')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+        
+        if (profile && profile.is_approved === false) {
+          await supabase.auth.signOut();
+          throw new Error('Sua conta está aguardando aprovação de um administrador.');
+        }
+      }
     });
 
     return result.error 
