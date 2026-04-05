@@ -1596,16 +1596,18 @@ export default function ProposalDetails() {
 
         {/* Transcript Dialog */}
         <Dialog open={showTranscriptDialog} onOpenChange={setShowTranscriptDialog}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Importar Transcrição</DialogTitle>
             </DialogHeader>
-            <Textarea
-              value={transcriptText}
-              onChange={e => setTranscriptText(e.target.value)}
-              rows={10}
-              placeholder="Cole aqui a transcrição da reunião de briefing..."
-            />
+            <div className="flex-1 overflow-hidden">
+              <Textarea
+                value={transcriptText}
+                onChange={e => setTranscriptText(e.target.value)}
+                className="h-[40vh] resize-none"
+                placeholder="Cole aqui a transcrição da reunião de briefing..."
+              />
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowTranscriptDialog(false)}>Cancelar</Button>
               <Button disabled={isParsing || !transcriptText.trim()} onClick={async () => {
