@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -694,16 +694,23 @@ export default function ProposalDetails() {
         <div className="space-y-6">
           {/* Client Section */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">Cliente e Projeto</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><Building2 className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Cliente e Projeto</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
-                  {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-                  Importar Transcrição
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" disabled={isParsing} onClick={() => { setTranscriptText(''); setShowTranscriptDialog(true); }}>
+                    {isParsing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Importar Transcrição
+                  </Button>
+                  {clientDirty && (
+                    <Button size="sm" onClick={() => handleSaveClick('client')} disabled={updateProposal.isPending}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
@@ -752,21 +759,21 @@ export default function ProposalDetails() {
                 <Textarea value={clientForm.company_description} onChange={e => setClientForm(p => ({ ...p, company_description: e.target.value }))} rows={4} />
               </div>
             </CardContent>
-            {clientDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('client')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Investment Section */}
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Investimento</CardTitle>
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><DollarSign className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Investimento</CardTitle>
+                </div>
+                {investDirty && (
+                  <Button size="sm" onClick={() => handleSaveClick('invest')} disabled={updateProposal.isPending}>
+                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
@@ -790,42 +797,35 @@ export default function ProposalDetails() {
               </div>
               <div className="space-y-1.5"><Label className="text-xs">Condições de Pagamento</Label><Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={4} /></div>
             </CardContent>
-            {investDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('invest')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Objective Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Objetivo</CardTitle>
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><FileText className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Objetivo</CardTitle>
+                </div>
+                {diagDirty && (
+                  <Button size="sm" onClick={() => handleSaveClick('diag')} disabled={updateProposal.isPending}>
+                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-2">
               <Textarea value={diagForm.objetivo} onChange={e => setDiagForm({ objetivo: e.target.value })} rows={8} />
             </CardContent>
-            {diagDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('diag')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Dores do Cliente Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">Dores do Cliente</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><AlertTriangle className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Dores do Cliente</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" disabled={isSuggesting} onClick={async () => {
@@ -840,6 +840,11 @@ export default function ProposalDetails() {
                   <Button variant="outline" size="sm" onClick={openDoresBank}>
                     <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dores
                   </Button>
+                  {doresDirty && (
+                    <Button size="sm" onClick={() => handleSaveClick('dores')} disabled={updateProposal.isPending}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -876,13 +881,6 @@ export default function ProposalDetails() {
                 </div>
               )}
             </CardContent>
-            {doresDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('dores')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Dores Bank Dialog */}
@@ -1011,15 +1009,22 @@ export default function ProposalDetails() {
 
           {/* Cases / Portfólio Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">Cases / Portfólio</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><Briefcase className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Cases / Portfólio</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={openCasesBank}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Cases
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={openCasesBank}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Cases
+                  </Button>
+                  {casesDirty && (
+                    <Button size="sm" onClick={() => handleSaveClick('cases')} disabled={updateProposal.isPending}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-2">
@@ -1035,7 +1040,6 @@ export default function ProposalDetails() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {casesForm.map((c, i) => (
                     <div key={i} className="group relative border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
-                      {/* Remove button - top right */}
                       <button
                         onClick={() => removeCase(i)}
                         className="absolute top-2 right-2 z-10 p-1 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 text-white hover:text-destructive transition-all"
@@ -1061,13 +1065,6 @@ export default function ProposalDetails() {
                 </div>
               )}
             </CardContent>
-            {casesDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('cases')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Cases Bank Dialog */}
@@ -1204,15 +1201,22 @@ export default function ProposalDetails() {
 
           {/* Entregas e Serviços Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">Entregas (Output)</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Entregas (Output)</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" onClick={addEntregavel}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={addEntregavel}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+                  </Button>
+                  {outputDirty && (
+                    <Button size="sm" onClick={() => handleSaveClick('output')} disabled={updateProposal.isPending}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-2 space-y-4">
@@ -1266,21 +1270,21 @@ export default function ProposalDetails() {
                 </div>
               ))}
             </CardContent>
-            {outputDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('output')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Entregáveis
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Serviços Inclusos Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Serviços Inclusos</CardTitle>
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Serviços Inclusos</CardTitle>
+                </div>
+                {inclusoDirty && (
+                  <Button size="sm" onClick={() => handleSaveClick('incluso')} disabled={updateProposal.isPending}>
+                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-2">
@@ -1339,26 +1343,26 @@ export default function ProposalDetails() {
                 })}
               </div>
             </CardContent>
-            {inclusoDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('incluso')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">Depoimento</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-muted"><MessageSquare className="h-4 w-4 text-foreground/70" /></div>
+                  <CardTitle className="text-sm font-semibold tracking-tight">Depoimento</CardTitle>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => { setShowTestimonialBank(true); setTestimonialBankSearch(''); }}>
-                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Selecionar do Banco
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setShowTestimonialBank(true); setTestimonialBankSearch(''); }}>
+                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Selecionar do Banco
+                  </Button>
+                  {testimonialDirty && (
+                    <Button size="sm" onClick={() => handleSaveClick('testimonial')} disabled={updateProposal.isPending}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-2">
@@ -1389,13 +1393,6 @@ export default function ProposalDetails() {
                 </div>
               )}
             </CardContent>
-            {testimonialDirty && (
-              <CardFooter className="pt-0 pb-4 px-6">
-                <Button size="sm" onClick={() => handleSaveClick('testimonial')} disabled={updateProposal.isPending}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              </CardFooter>
-            )}
           </Card>
 
           {/* Testimonial Bank Dialog */}
