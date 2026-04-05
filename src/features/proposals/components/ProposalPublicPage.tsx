@@ -35,7 +35,8 @@ export function ProposalPublicPage() {
 
     const trackView = async () => {
       try {
-        const { data } = await supabase
+        // 1. Insert view record
+        const { data: viewData, error: viewError } = await supabase
           .from('proposal_views' as any)
           .insert({
             proposal_id: proposal.id,
@@ -46,11 +47,16 @@ export function ProposalPublicPage() {
           .select('id')
           .single();
 
-        if (data) viewIdRef.current = (data as any).id;
+        if (viewError) {
+          console.error('View insert error:', viewError);
+        } else if (viewData) {
+          viewIdRef.current = (viewData as any).id;
+        }
 
+        // 2. Increment count + update status
         await supabase.rpc('increment_proposal_views' as any, { proposal_id: proposal.id });
-      } catch (e) {
-        console.error('Failed to track view:', e);
+      } catch (err) {
+        console.error('Track view error:', err);
       }
     };
 
