@@ -611,7 +611,8 @@ export default function ProposalDetails() {
         <div className="flex items-center justify-between">
           <BreadcrumbNav items={[
             { label: 'Orçamentos', href: '/orcamentos' },
-            { label: isNewProposal ? 'Nova Proposta' : (proposal.project_name || 'Sem nome') },
+            { label: proposal.project_name || 'Sem nome', href: `/orcamentos/${proposal.id}/overview` },
+            { label: 'Edição' },
           ]} className="mb-0" />
           <div className="flex items-center gap-2">
             <DropdownMenu>
