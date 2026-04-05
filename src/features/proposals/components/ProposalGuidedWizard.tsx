@@ -574,9 +574,9 @@ export function ProposalGuidedWizard() {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight">Nova Proposta</h1>
-              <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
+            <p className="text-sm text-muted-foreground">Cole o briefing e deixe a IA preencher sua proposta</p>
           </div>
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 py-8">
 
@@ -618,45 +618,43 @@ export function ProposalGuidedWizard() {
                     placeholder="Cole aqui o resumo da reunião do Google Meet, transcrição ou briefing do projeto..."
                     className="min-h-[280px] text-sm border-0 focus-visible:ring-0 scrollbar-thin resize-none rounded-b-none"
                   />
-                  <div className="flex items-center justify-end gap-2 p-3 border-t border-border">
-                    <input
-                      ref={pdfInputRef}
-                      type="file"
-                      accept=".pdf,.txt,.doc,.docx"
-                      onChange={handlePdfUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
-                      onClick={() => pdfInputRef.current?.click()}
+                   <div className="flex items-center justify-between p-3 border-t border-border">
+                    <button
+                      onClick={() => { setSkippedBriefing(true); setStep(1); }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      <Paperclip className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Anexar</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleAnalyzeBriefing}
-                      disabled={(!transcript.trim() && !attachedFile) || isExtractingPdf}
-                      className="gap-1.5"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Analisar
-                    </Button>
+                      Preencher manualmente →
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={pdfInputRef}
+                        type="file"
+                        accept=".pdf,.txt,.doc,.docx"
+                        onChange={handlePdfUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                        onClick={() => pdfInputRef.current?.click()}
+                      >
+                        <Paperclip className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Anexar</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleAnalyzeBriefing}
+                        disabled={(!transcript.trim() && !attachedFile) || isExtractingPdf}
+                        className="gap-1.5"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Analisar
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground text-left mt-2">
-                  No Google Meet, vá em Transcrições → Resumo e copie o conteúdo completo
-                </p>
               </div>
-
-              <button
-                onClick={() => { setSkippedBriefing(true); setStep(1); }}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Quero preencher manualmente →
-              </button>
             </>
           )}
 
