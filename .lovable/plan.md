@@ -1,25 +1,22 @@
 
 
-# Replace inline empty states with EmptyState component in ProposalDetails.tsx
+# Replace inline empty states in TaskDetails.tsx
 
-## Changes in `src/pages/ProposalDetails.tsx`
+## File: `src/pages/TaskDetails.tsx`
 
-### 1. Add import
-Add `import { EmptyState } from '@/components/ui/empty-state';` near top imports.
+### 1. Add imports (line 3 area)
+- Add `CheckSquare, MessageCircle` to lucide-react imports (`Link` conflicts with react-router, use `Link2` already imported or keep `ExternalLink`)
+- Add `import { EmptyState } from '@/components/ui/empty-state';`
 
-### 2. Six replacements
+Note: `Link` from lucide-react may conflict with react-router. Will use `Link2` (already imported) for the external links empty state.
 
-| Lines | Current text | Replacement |
-|-------|-------------|-------------|
-| 899-905 | `<div>` with AlertTriangle icon + "Nenhuma dor selecionada." + Button | `<EmptyState icon={AlertTriangle} title="Nenhuma dor selecionada" description="Nenhuma dor selecionada." compact action={{ label: "Selecionar do banco de dores", onClick: openDoresBank }} />` |
-| 1076-1082 | `<div>` with Briefcase icon + "Nenhum case selecionado." + Button | `<EmptyState icon={Briefcase} title="Nenhum case selecionado" description="Nenhum case selecionado." compact action={{ label: "Selecionar do banco de cases", onClick: openCasesBank }} />` |
-| 1131 | `<p>Nenhum case encontrado.</p>` | `<EmptyState icon={Briefcase} title="Nenhum case encontrado" description="Nenhum case encontrado." compact />` |
-| 1265-1266 | `<p>Nenhuma entrega adicionada.</p>` | `<EmptyState icon={Package} title="Nenhuma entrega" description="Nenhuma entrega adicionada." compact />` |
-| 1427-1431 | `<div>` with MessageSquare icon + "Nenhum depoimento selecionado" | `<EmptyState icon={MessageSquare} title="Nenhum depoimento selecionado" description="Clique em 'Selecionar do Banco' para escolher" compact />` |
-| 1506 | `<p>Nenhum depoimento encontrado</p>` | `<EmptyState icon={MessageSquare} title="Nenhum depoimento encontrado" description="Nenhum depoimento encontrado." compact />` |
+### 2. Three replacements
 
-### 3. Icon imports
-Verify `Package` is imported from lucide-react (for entregas). AlertTriangle, Briefcase, MessageSquare should already be imported.
+| Line | Current | Replacement |
+|------|---------|-------------|
+| 329 | `<p className="text-muted-foreground text-sm">Nenhuma subtarefa</p>` | `<EmptyState icon={CheckSquare} title="Nenhuma subtarefa" description="Nenhuma subtarefa." compact />` |
+| 384 | `<p className="text-muted-foreground text-sm">Nenhum comentário</p>` | `<EmptyState icon={MessageCircle} title="Nenhum comentário" description="Nenhum comentário." compact />` |
+| 455 | `<p className="text-muted-foreground text-sm mb-4">Nenhum link externo</p>` | `<EmptyState icon={Link2} title="Nenhum link externo" description="Nenhum link externo." compact />` |
 
-No other changes.
+### 3. No other changes
 
