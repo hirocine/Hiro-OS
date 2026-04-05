@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Loader2, Package, DollarSign, Film, Wrench, CheckSquare } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -12,13 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { validateEmail, sanitizeInput } from '@/lib/validation';
 
-const TOOLS = [
-  { icon: Package,     label: 'Equipamentos' },
-  { icon: Film,        label: 'Esteira de Pós' },
-  { icon: DollarSign,  label: 'Orçamentos' },
-  { icon: Wrench,      label: 'Retiradas' },
-  { icon: CheckSquare, label: 'Projetos' },
-];
 
 export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
