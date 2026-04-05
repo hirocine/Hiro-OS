@@ -863,12 +863,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 3 && (
         <div className="space-y-6">
-          <div className="flex items-center justify-end">
-            <Button variant="outline" size="sm" disabled={isSuggesting} onClick={handleSuggestDores}>
-              {isSuggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-              Sugerir com IA
-            </Button>
-          </div>
 
           {/* Selected dores */}
           {dores.length > 0 && (
