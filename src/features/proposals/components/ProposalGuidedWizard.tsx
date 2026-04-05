@@ -764,14 +764,6 @@ export function ProposalGuidedWizard() {
          ══════════════════════════════════════════════════════════════ */}
       {step === 1 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Dados do Projeto</h2>
-            {!skippedBriefing && (
-              <p className="text-sm text-muted-foreground">
-                Identifiquei as informações do projeto. Confira se está tudo certo:
-              </p>
-            )}
-          </div>
 
           <Card>
             <CardContent className="pt-6 space-y-4">
