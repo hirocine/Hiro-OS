@@ -295,6 +295,43 @@ export function ProposalGuidedWizard() {
     }
   };
 
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (text) setTranscript(prev => prev ? prev + '\n\n' + text : text);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleCreateTestimonial = async () => {
+    if (!newTestimonial.name.trim() || !newTestimonial.text.trim()) {
+      toast.error('Preencha nome e depoimento.');
+      return;
+    }
+    try {
+      const result = await createTestimonial.mutateAsync({
+        name: newTestimonial.name,
+        role: newTestimonial.role,
+        text: newTestimonial.text,
+        image: newTestimonial.image || null,
+      });
+      setSelectedTestimonialId(result.id);
+      setTestimonialName(result.name);
+      setTestimonialRole(result.role);
+      setTestimonialText(result.text);
+      setTestimonialImage(result.image || '');
+      setShowNewTestimonialDialog(false);
+      setNewTestimonial({ name: '', role: '', text: '', image: '' });
+      toast.success('Depoimento criado com sucesso!');
+    } catch {
+      toast.error('Erro ao criar depoimento');
+    }
+  };
+
   const addEntregavel = () => setEntregaveis([...entregaveis, { titulo: '', descricao: '', quantidade: '1', icone: '🎬' }]);
   const removeEntregavel = (idx: number) => setEntregaveis(entregaveis.filter((_, i) => i !== idx));
   const updateEntregavel = (idx: number, field: keyof EntregavelItem, value: string) => {
