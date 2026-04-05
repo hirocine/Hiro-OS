@@ -556,6 +556,7 @@ export function ProposalGuidedWizard() {
              className="text-xs font-mono text-muted-foreground hover:underline">
             {publicUrl}
           </a>
+          </div>
         </div>
       </div>
     );
