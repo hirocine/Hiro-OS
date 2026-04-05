@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Loader2, ArrowRight, ArrowLeft, Check,
   Building2, Target, FileText, Package, DollarSign,
-  CalendarIcon, Plus, Trash2, MessageSquare, Video,
+  CalendarIcon, Plus, Trash2, MessageSquare, Video, Film,
   ListChecks, MessageSquareQuote, Paperclip, FileIcon, X,
   Copy, ExternalLink
 } from 'lucide-react';
