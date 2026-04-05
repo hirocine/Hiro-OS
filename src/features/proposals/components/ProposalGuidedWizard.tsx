@@ -66,7 +66,7 @@ export function ProposalGuidedWizard() {
     isEnriching, isParsing, isSuggesting, isAnalyzing, isFinalizing,
   } = useProposalAI();
   const { data: painPointsBank = [] } = usePainPoints();
-  const { data: casesBank = [] } = useProposalCases();
+  const { data: casesBank = [], createCase } = useProposalCases();
   const { data: testimonialsBank = [] } = useTestimonials();
 
   // ── State ──
