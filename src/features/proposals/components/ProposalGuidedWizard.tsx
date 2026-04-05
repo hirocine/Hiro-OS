@@ -635,7 +635,7 @@ export function ProposalGuidedWizard() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
                       onClick={() => pdfInputRef.current?.click()}
                     >
                       <Paperclip className="h-3.5 w-3.5" />
