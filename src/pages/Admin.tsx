@@ -32,6 +32,8 @@ import { exportEquipmentToCSV } from '@/lib/csvExporter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { logger } from '@/lib/logger';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Loader2 } from 'lucide-react';
 
 // Action labels in Portuguese - Complete and user-friendly
 const ACTION_LABELS: Record<string, string> = {
@@ -211,6 +213,7 @@ const ROUTE_TO_TAB: Record<string, string> = {
   'categorias': 'categories',
   'notificacoes': 'notifications',
   'sistema': 'system',
+  'pendentes': 'pending',
 };
 
 const TAB_TO_ROUTE: Record<string, string> = {
@@ -219,6 +222,7 @@ const TAB_TO_ROUTE: Record<string, string> = {
   'categories': 'categorias',
   'notifications': 'notificacoes',
   'system': 'sistema',
+  'pending': 'pendentes',
 };
 
 const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
@@ -227,6 +231,7 @@ const TAB_HEADERS: Record<string, { title: string; subtitle: string }> = {
   categories: { title: 'Gerenciamento de Categorias', subtitle: 'Gerencie categorias e subcategorias de equipamentos' },
   notifications: { title: 'Notificações do Sistema', subtitle: 'Configure notificações e alertas do sistema' },
   system: { title: 'Configurações do Sistema', subtitle: 'Gerencie configurações gerais do sistema' },
+  pending: { title: 'Usuários Pendentes', subtitle: 'Aprove novos usuários para liberar o acesso à plataforma.' },
 };
 
 export default function Admin() {
@@ -254,6 +259,8 @@ export default function Admin() {
   const [logFilter, setLogFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
   const [logSearchQuery, setLogSearchQuery] = useState('');
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
 
   // Use equipment hook for CSV functionality
   const { 
@@ -277,6 +284,7 @@ export default function Admin() {
       logger.debug('Starting data fetch...', { module: 'admin' });
       fetchUsers();
       fetchAuditLogs();
+      fetchPendingUsers();
     }
   }, [isAdmin, roleLoading, user]);
 
@@ -574,6 +582,7 @@ export default function Admin() {
           // Refresh automático ao trocar de aba
           if (value === 'users') fetchUsers();
           if (value === 'logs') fetchAuditLogs();
+          if (value === 'pending') fetchPendingUsers();
         }}
       >
         <TabsContent value="users" className="space-y-4 animate-fade-in">
@@ -983,6 +992,47 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4 animate-fade-in">
+          {pendingLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : pendingUsers.length === 0 ? (
+            <EmptyState
+              icon={UserCheck}
+              title="Nenhum usuário pendente"
+              description="Todos os usuários foram aprovados."
+            />
+          ) : (
+            <div className="space-y-3">
+              {pendingUsers.map((u) => (
+                <Card key={u.user_id}>
+                  <CardContent className="flex items-center justify-between py-4">
+                    <div className="space-y-1">
+                      <p className="font-medium">{u.display_name || '—'}</p>
+                      <p className="text-sm text-muted-foreground">{u.email}</p>
+                      {(u.position || u.department) && (
+                        <p className="text-xs text-muted-foreground">
+                          {[u.position, u.department].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {format(new Date(u.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                      </span>
+                      <Button size="sm" onClick={() => handleApproveUser(u.user_id)}>
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Aprovar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
       </Tabs>
