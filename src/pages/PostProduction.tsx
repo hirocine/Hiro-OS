@@ -37,7 +37,7 @@ export default function PostProduction() {
   };
 
   return (
-    <ResponsiveContainer maxWidth="7xl">
+    <ResponsiveContainer maxWidth="7xl" className="animate-fade-in">
       <PageHeader
         title="Esteira de Pós"
         subtitle="Controle da fila de pós-produção"
