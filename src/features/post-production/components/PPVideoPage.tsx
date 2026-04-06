@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, Pencil } from 'lucide-react';
+import { ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, Pencil, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format, formatDistanceToNow, differenceInDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -234,51 +235,153 @@ export function PPVideoPage({ item, onBack }: Props) {
       <div className="animate-fade-in space-y-6">
         {/* ===== HEADER ===== */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg font-semibold truncate">{composedTitle || 'Novo Vídeo'}</h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''} · criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2 shrink-0">
+          <BreadcrumbNav items={[
+            { label: 'Esteira de Pós', href: '/esteira-de-pos' },
+            { label: composedTitle || 'Vídeo' },
+          ]} />
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}>
-              <Pencil className="h-4 w-4 mr-1.5" /> Editar
+              <Pencil className="h-4 w-4 mr-2" /> Editar
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-1" /> Excluir
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
-              <Save className="h-4 w-4 mr-1" /> Salvar
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* ===== SUMMARY CARD ===== */}
+        {/* ===== RICH SUMMARY CARD ===== */}
         <Card>
           <CardContent className="p-5">
+            {/* Top row: title + badges */}
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h2 className="text-xl font-semibold">{composedTitle || 'Novo Vídeo'}</h2>
-                  {latestVersion && (
-                    <Badge variant="outline" className="text-xs">
-                      v{latestVersion.version_number} · {latestVersion.status === 'em_revisao' ? 'Em revisão' : latestVersion.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
-                    </Badge>
-                  )}
-                </div>
+                <h2 className="text-xl font-semibold">{composedTitle || 'Novo Vídeo'}</h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {latestVersion && (
+                  <Badge variant="outline" className="text-xs">
+                    v{latestVersion.version_number}
+                  </Badge>
+                )}
                 <PPStatusBadge status={form.status} />
                 <PPPriorityBadge priority={form.priority} />
               </div>
+            </div>
+
+            {/* Divider */}
+            <Separator className="my-5" />
+
+            {/* Bottom grid: quick-edit fields */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Status */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Etapa</Label>
+                <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
+                  <SelectTrigger className="h-9">
+                    <PPStatusBadge status={form.status} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(PP_STATUS_CONFIG).map(v => (
+                      <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Priority */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Prioridade</Label>
+                <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+                  <SelectTrigger className="h-9">
+                    <PPPriorityBadge priority={form.priority} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                      <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Editor */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Editor</Label>
+                <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+                  <SelectTrigger className="h-9">
+                    {selectedEditor ? (
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                          <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
+                      </div>
+                    ) : (
+                      <SelectValue placeholder="Selecionar editor" />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={getUserAvatarUrl(u)} />
+                            <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{u.display_name || u.email}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Prazo */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Prazo</Label>
+                <DateField label="" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
+              </div>
+
+              {/* Início */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Início</Label>
+                <DateField label="" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
+              </div>
+
+              {/* Entregue em */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Entregue em</Label>
+                <p className="text-sm font-medium mt-1">
+                  {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
+                </p>
+              </div>
+
+              {/* Tempo na etapa */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Tempo na etapa</Label>
+                <p className="text-sm font-medium mt-1">
+                  {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
+                </p>
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div className="flex justify-end mt-5">
+              <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
+                <Save className="h-4 w-4 mr-1.5" /> Salvar alterações
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -389,99 +492,6 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* ===== INFORMAÇÕES (full width) ===== */}
-        <Card>
-          <SectionHeader icon={Info} title="Informações" />
-          <CardContent className="pt-6 space-y-4">
-            {/* Status */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
-              <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
-                <SelectTrigger className="h-9">
-                  <PPStatusBadge status={form.status} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(PP_STATUS_CONFIG).map(v => (
-                    <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
-              <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                <SelectTrigger className="h-9">
-                  <PPPriorityBadge priority={form.priority} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                    <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Editor */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
-              <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-                <SelectTrigger className="h-9">
-                  {selectedEditor ? (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                        <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
-                      </Avatar>
-                      <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
-                    </div>
-                  ) : (
-                    <SelectValue placeholder="Selecionar editor" />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map(u => (
-                    <SelectItem key={u.id} value={u.id}>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={getUserAvatarUrl(u)} />
-                          <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">{u.display_name || u.email}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator />
-
-            {/* Dates */}
-            <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
-            <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
-
-            {/* Delivered date (read-only) */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
-              <p className="text-sm mt-1">
-                {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
-              </p>
-            </div>
-
-            <Separator />
-
-            {/* Time in stage */}
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
-              <p className="text-sm mt-1 font-medium">
-                {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
-              </p>
-            </div>
           </CardContent>
         </Card>
 
