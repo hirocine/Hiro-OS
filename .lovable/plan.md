@@ -1,21 +1,22 @@
 
 
-# Refine dropdown, select, and popover visuals
+# Fix dropdown menu item visual inconsistencies
 
-Update classNames in 3 UI component files for a cleaner, more refined look — rounder corners (`rounded-xl`/`rounded-lg`), subtler borders (`border-border/60`), better shadows (`shadow-lg`), tighter padding, and muted hover states (`focus:bg-muted/70`).
+## Changes in `src/components/ui/dropdown-menu.tsx`
 
-## 1. `src/components/ui/select.tsx`
-- **SelectTrigger**: `h-9`, `rounded-lg`, add `focus:ring-1 focus:ring-primary/20 focus:border-primary/40`, add `transition-colors`
-- **SelectContent**: `rounded-xl`, `border-border/60`, `shadow-lg`, `p-1`
-- **SelectItem**: `rounded-lg`, `focus:bg-muted/70 focus:text-foreground`, add `transition-colors`, remove min-height
+### 1. DropdownMenuCheckboxItem
+- Replace className with the standard item style: `rounded-lg px-2 py-2 min-h-[36px] gap-2 focus:bg-muted/70 focus:text-foreground transition-colors`
+- Remove `absolute left-2` wrapper span — move `ItemIndicator` (Check icon) after `{children}` with `ml-auto`
 
-## 2. `src/components/ui/dropdown-menu.tsx`
-- **DropdownMenuContent**: `rounded-xl`, `border-border/60`, `shadow-lg`, add entry/exit animations, remove `backdrop-blur-sm`
-- **DropdownMenuItem**: `rounded-lg`, `focus:bg-muted/70 focus:text-foreground`, `min-h-[36px]`, `gap-2`
-- **DropdownMenuSubTrigger**: `rounded-lg`, `focus:bg-muted/70`, `gap-2`, remove `inset` logic from className
+### 2. DropdownMenuRadioItem
+- Same className update as CheckboxItem
+- Move `ItemIndicator` (Circle icon) after `{children}` with `ml-auto`
 
-## 3. `src/components/ui/popover.tsx`
-- **PopoverContent**: `rounded-xl`, `border-border/60`, `shadow-lg`
+### 3. DropdownMenuLabel
+- Remove `inset && "pl-8"` — keep `px-2 py-1.5` (already correct, just remove the inset override)
 
-All changes are className-only replacements. No logic or structure changes.
+### 4. DropdownMenuItem
+- Add `data-[state=checked]:font-medium` to existing className
+
+No other files changed.
 
