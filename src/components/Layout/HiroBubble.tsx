@@ -61,12 +61,17 @@ export function HiroBubble() {
   const { role, roleLoading } = useAuthContext();
   const { messages, isLoading, sendMessage, clearMessages } = useAIAssistant();
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const hasAccess = !roleLoading && (role === "admin" || role === "producao");
   const hasMessages = messages.length > 0;
+
+  useEffect(() => {
+    if (open) setVisible(true);
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -81,6 +86,11 @@ export function HiroBubble() {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => setOpen(false), 250);
+  };
 
   if (!hasAccess) return null;
 
@@ -98,7 +108,7 @@ export function HiroBubble() {
   return (
     <>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => open ? handleClose() : setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
         aria-label="Assistente Hiro"
       >
@@ -108,10 +118,14 @@ export function HiroBubble() {
         }
       </button>
 
-      {open && (
+      {(open || visible) && (
         <div
-          className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-          style={{ height: hasMessages ? "520px" : "auto" }}
+          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-[250ms] ease-out ${
+            visible && open
+              ? 'opacity-100 translate-y-0 scale-100'
+              : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
+          }`}
+          style={{ height: hasMessages ? "520px" : "auto", transformOrigin: "bottom right" }}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 shrink-0">
             <div className="flex items-center gap-2">
@@ -129,7 +143,7 @@ export function HiroBubble() {
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
               )}
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOpen(false)}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClose}>
                 <X className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
