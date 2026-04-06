@@ -180,7 +180,10 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
         {sortedItems.map(item => (
           <TableRow key={item.id} className="hover:bg-muted/50">
             <TableCell style={{ textAlign: 'left' }}>
-              <span className="text-sm font-medium truncate block">{item.title}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium truncate block">{item.title}</span>
+                <PipelineProgress status={item.status} />
+              </div>
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <span className="text-sm text-muted-foreground truncate block">
