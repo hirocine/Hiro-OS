@@ -149,7 +149,8 @@ function EventDetailPopover({ event, onClose }: { event: RecordingEvent; onClose
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
