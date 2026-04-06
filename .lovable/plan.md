@@ -1,27 +1,20 @@
 
 
-# Add drag-and-drop to PPKanban
+# Replace InlineSelectCell with DropdownMenu for status in PPTable
 
-## Changes in `src/features/post-production/components/PPKanban.tsx`
+## Changes in `src/features/post-production/components/PPTable.tsx`
 
-### Imports
-Add `useState` and dnd-kit imports:
-```tsx
-import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
-```
+### 1. Add imports
+- `DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger` from `@/components/ui/dropdown-menu`
+- `ChevronDown, Check` from `lucide-react`
+- `Badge` from `@/components/ui/badge`
+- `PP_STATUS_COLUMNS` from `../types`
 
-### DraggableCard wrapper
-Create a `DraggableCard` component that wraps `KanbanCard` with `useDraggable({ id: item.id, data: { item } })`. Apply `opacity-50 scale-95 cursor-grabbing` when `isDragging`, otherwise `cursor-grab transition-all duration-200`.
+### 2. Add StatusDropdown component
+Define a `StatusDropdown` component before `PPTable` that renders a `DropdownMenu` with `Badge` as trigger showing current status + chevron, and menu items for each status from `PP_STATUS_COLUMNS`. Includes auto-set logic for `delivered_date` and `start_date`.
 
-### DroppableColumn wrapper
-Create a `DroppableColumn` component using `useDroppable({ id: status })`. When `isOver`, apply `ring-2 ring-primary/30 bg-primary/5` to the column container.
+### 3. Replace InlineSelectCell for status (lines 142-154)
+Replace the `InlineSelectCell` block with `<StatusDropdown item={item} onUpdate={handleStatusChange} />` where `handleStatusChange` handles the date auto-sets and calls `updateItem.mutate`.
 
-### DndContext + DragOverlay
-- Wrap the columns flex container with `DndContext` using `closestCenter` collision detection
-- Track `activeItem` state via `onDragStart`
-- `onDragEnd`: extract `over.id` as the new `PPStatus`, if different from the item's current status, call `updateItem.mutate({ id, updates: { status } })`
-- Render `DragOverlay` with a clone of the active card for the ghost effect
-
-### No other files changed
+Note: `updateItem` is already available in the component (line 35). No new mutation hook needed.
 
