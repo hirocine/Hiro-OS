@@ -94,6 +94,7 @@ interface Props {
 }
 
 export function PPVideoPage({ item, onBack }: Props) {
+  const navigate = useNavigate();
   const { updateItem, deleteItem } = usePostProductionMutations();
   const { versions, addVersion, latestVersion } = usePPVersions(item.id);
   const { comments, addComment } = usePPComments(item.id);
