@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Video, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Video, ExternalLink, X, Calendar, MapPin, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, addWeeks, subMonths, subWeeks, addDays,
   isSameMonth, isToday, parseISO, eachDayOfInterval, startOfDay,
-  isSameDay, isSameWeek, isWithinInterval, endOfDay
+  isSameDay, isSameWeek, endOfDay
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -20,12 +20,12 @@ const TYPE_CONFIG = {
   OTHER: { label: 'Evento',     className: 'bg-muted text-muted-foreground border-0' },
 };
 
-const DOT_COLORS: Record<string, string> = {
-  REC: 'bg-destructive',
-  PRE: 'bg-muted-foreground/50',
-  VT: 'bg-warning',
-  EDIT: 'bg-secondary-foreground/50',
-  OTHER: 'bg-muted-foreground/30',
+const PILL_COLORS: Record<string, string> = {
+  REC: 'bg-destructive/15 text-destructive font-medium',
+  PRE: 'bg-muted text-muted-foreground',
+  VT: 'bg-warning/15 text-warning font-medium',
+  EDIT: 'bg-secondary text-secondary-foreground',
+  OTHER: 'bg-muted text-muted-foreground',
 };
 
 function getEventsForDay(day: Date, events: RecordingEvent[]): RecordingEvent[] {
@@ -70,14 +70,97 @@ function groupEventsForList(events: RecordingEvent[], today: Date) {
   return groups.filter(g => g.events.length > 0);
 }
 
+function EventDetailPopover({ event, onClose }: { event: RecordingEvent; onClose: () => void }) {
+  const type = getEventType(event.summary);
+  const title = getEventTitle(event.summary);
+  const config = TYPE_CONFIG[type];
+
+  const startDate = event.allDay
+    ? format(parseISO(event.start), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    : format(parseISO(event.start), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+
+  const endDate = event.end
+    ? (event.allDay
+      ? format(parseISO(event.end), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+      : format(parseISO(event.end), "HH:mm", { locale: ptBR }))
+    : null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/20" />
+      <div
+        className="relative bg-background border border-border rounded-2xl shadow-2xl w-[340px] max-w-[90vw] overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className={`h-1 w-full ${type === 'REC' ? 'bg-destructive' : type === 'VT' ? 'bg-warning' : 'bg-muted-foreground/30'}`} />
+
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex-1 min-w-0">
+              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${config.className}`}>
+                {config.label}
+              </span>
+              <h3 className="text-base font-semibold leading-tight">{title}</h3>
+            </div>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm">{startDate}</p>
+                {event.allDay ? (
+                  <p className="text-xs text-muted-foreground">Dia todo</p>
+                ) : endDate ? (
+                  <p className="text-xs text-muted-foreground">até {endDate}</p>
+                ) : null}
+              </div>
+            </div>
+
+            {event.location && (
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="text-sm">{event.location}</p>
+              </div>
+            )}
+
+            {event.description && (
+              <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground line-clamp-4">{event.description}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-border">
+            <a
+              href="https://calendar.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Abrir no Google Calendar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RecordingsCalendar() {
   const [view, setView] = useState<'month' | 'week' | 'list'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
 
   const { timeMin, timeMax } = useMemo(() => {
     let start: Date, end: Date;
     if (view === 'month') {
-      start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 });
+      start = startOfMonth(currentDate);
       end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 });
     } else if (view === 'week') {
       start = startOfWeek(currentDate, { weekStartsOn: 0 });
@@ -128,8 +211,8 @@ export function RecordingsCalendar() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
-              <Video className="h-5 w-5 text-green-500" />
+            <div className="p-2 rounded-lg bg-destructive/10">
+              <Video className="h-5 w-5 text-destructive" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Agenda de Gravações</h3>
@@ -140,7 +223,6 @@ export function RecordingsCalendar() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Navigation */}
             {view !== 'list' && (
               <div className="flex items-center gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
@@ -153,7 +235,6 @@ export function RecordingsCalendar() {
               </div>
             )}
 
-            {/* View switcher */}
             <div className="flex items-center bg-muted rounded-lg p-0.5">
               {(['month', 'week', 'list'] as const).map(v => (
                 <button
@@ -182,17 +263,17 @@ export function RecordingsCalendar() {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-px">
+            <div className="grid grid-cols-7">
               {calendarDays.map(day => {
-                const dayEvents = getEventsForDay(day, events);
-                const today = isToday(day);
                 const sameMonth = isSameMonth(day, currentDate);
+                const dayEvents = sameMonth ? getEventsForDay(day, events) : [];
+                const today = isToday(day);
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[80px] p-1 rounded-lg transition-colors hover:bg-muted/40 cursor-pointer ${
-                      today ? 'ring-1 ring-primary bg-primary/5' : ''
-                    } ${!sameMonth ? 'opacity-40' : ''}`}
+                    className={`min-h-[80px] p-1.5 border border-border/50 transition-colors hover:bg-muted/30 cursor-pointer ${
+                      today ? 'bg-primary/5 ring-1 ring-inset ring-primary' : ''
+                    } ${!sameMonth ? 'opacity-30 bg-muted/20' : ''}`}
                   >
                     <span className={`text-xs block mb-0.5 ${today ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
@@ -203,10 +284,10 @@ export function RecordingsCalendar() {
                         return (
                           <div
                             key={e.id}
-                            className="text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded truncate bg-muted/60"
+                            onClick={(ev) => { ev.stopPropagation(); setSelectedEvent(e); }}
+                            className={`text-[10px] px-1.5 py-0.5 rounded truncate w-full cursor-pointer ${PILL_COLORS[type]}`}
                           >
-                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${DOT_COLORS[type]}`} />
-                            <span className="truncate">{getEventTitle(e.summary)}</span>
+                            {getEventTitle(e.summary)}
                           </div>
                         );
                       })}
@@ -238,7 +319,11 @@ export function RecordingsCalendar() {
                       const type = getEventType(e.summary);
                       const borderColor = type === 'REC' ? 'border-l-destructive' : type === 'VT' ? 'border-l-warning' : type === 'EDIT' ? 'border-l-secondary-foreground/50' : 'border-l-muted-foreground/50';
                       return (
-                        <div key={e.id} className={`rounded-lg p-2 bg-muted/40 border-l-2 ${borderColor}`}>
+                        <div
+                          key={e.id}
+                          onClick={() => setSelectedEvent(e)}
+                          className={`rounded-lg p-2 bg-muted/40 border-l-2 ${borderColor} cursor-pointer hover:bg-muted/60 transition-colors`}
+                        >
                           <p className="text-xs font-medium truncate">{getEventTitle(e.summary)}</p>
                           <p className="text-[10px] text-muted-foreground">
                             {e.allDay ? 'Dia todo' : format(parseISO(e.start), 'HH:mm')}
@@ -274,7 +359,7 @@ export function RecordingsCalendar() {
                       <div
                         key={e.id}
                         className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40 cursor-pointer transition-colors border-b border-border last:border-0"
-                        onClick={() => window.open('https://calendar.google.com', '_blank')}
+                        onClick={() => setSelectedEvent(e)}
                       >
                         <div className="w-10 text-center shrink-0">
                           <div className="text-2xl font-semibold leading-none">{format(d, 'd')}</div>
@@ -299,6 +384,9 @@ export function RecordingsCalendar() {
             )}
           </div>
         )}
+
+        {/* Event Detail Popover */}
+        {selectedEvent && <EventDetailPopover event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
 
         {/* Footer */}
         <div className="mt-4 pt-3 border-t border-border flex justify-end">
