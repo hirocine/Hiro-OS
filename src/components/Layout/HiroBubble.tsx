@@ -37,9 +37,11 @@ function MessageContent({ content }: { content: string }) {
 
         return (
           <div key={lineIdx} className="flex items-start gap-2 flex-wrap">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} className="flex-1 min-w-0">
-              {cleanLine}
-            </ReactMarkdown>
+            <div className="flex-1 min-w-0">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {cleanLine}
+              </ReactMarkdown>
+            </div>
             {path && (
               <button
                 onClick={() => navigate(path)}
