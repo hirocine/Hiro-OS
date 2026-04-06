@@ -1,30 +1,26 @@
 
 
-# Add quick filter chips to Post-Production page
+# Create PP Versions and PP Comments hooks
 
-## Single file change: `src/pages/PostProduction.tsx`
+Two new hook files for the post-production feature, leveraging existing `pp_versions` and `pp_comments` tables.
 
-### 1. Imports
-- Add `useMemo` to the React import
-- Add `PPPriority`, `PP_PRIORITY_CONFIG` from `@/features/post-production/types`
+## Files to create
 
-### 2. State
-Add after existing `search` state:
-- `filterEditor: string | null` (default `null`)
-- `filterPriority: PPPriority | null` (default `null`)
+### 1. `src/features/post-production/hooks/usePPVersions.ts`
+- `PPVersion` interface matching the `pp_versions` table schema
+- `usePPVersions(itemId)` hook with:
+  - Query: fetch versions ordered by `version_number` desc
+  - `addVersion` mutation: auto-increments version number, archives previous versions, inserts new with `em_revisao` status
+  - `updateVersionStatus` mutation: updates a version's status
+  - `latestVersion` computed value
+  - Toast feedback on success/error
 
-### 3. Derived data
-- Compute `editors` array via `useMemo` from unique `editor_name` values in `items`
-- Update `filteredItems` to also check `filterEditor` and `filterPriority`
+### 2. `src/features/post-production/hooks/usePPComments.ts`
+- `PPComment` interface matching the `pp_comments` table schema
+- `usePPComments(itemId)` hook with:
+  - Query: fetch comments ordered by `created_at` desc
+  - `addComment` mutation: inserts comment with current user's name from auth metadata
+  - Toast on error
 
-### 4. UI — Filter chips row
-Insert between the search `<div>` and the `<Tabs>` component:
-- A `flex flex-wrap gap-2 items-center` row containing:
-  - Priority chips (urgente, alta, media, baixa) — toggle on/off, filled style when active
-  - Separator dot when editors exist
-  - Editor chips (first name only) — toggle on/off
-  - "Limpar x" button when any filter is active
-- Chip styles: `rounded-full border text-xs px-3 py-1.5`, active = `bg-foreground text-background`, inactive = `bg-background text-muted-foreground`
-
-No other files changed.
+Both hooks use `@tanstack/react-query` for caching/invalidation, `supabase` client for data access, and `sonner` for toasts. No other files changed.
 
