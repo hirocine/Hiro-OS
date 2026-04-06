@@ -183,7 +183,7 @@ export function PPVideoPage({ item, onBack }: Props) {
   // --- Date Picker Helper ---
   const DateField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
     <div>
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-xs text-muted-foreground block mb-1.5">{label}</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !value && "text-muted-foreground")}>
@@ -212,36 +212,27 @@ export function PPVideoPage({ item, onBack }: Props) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 max-w-7xl mx-auto">
       {/* ===== HEADER ===== */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-10 -mx-6 -mt-6 px-6 py-4 bg-background/95 backdrop-blur border-b flex items-center justify-between gap-4 mb-2">
+        <div className="flex items-center gap-3 min-w-0">
           <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-semibold truncate">{composedTitle || 'Novo Vídeo'}</h1>
-              {latestVersion && (
-                <Badge variant="outline" className="shrink-0 text-xs gap-1">
-                  v{latestVersion.version_number}
-                  <span className="text-muted-foreground">·</span>
-                  {latestVersion.status === 'em_revisao' ? 'Em revisão' : latestVersion.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mt-0.5">
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold truncate">{composedTitle || 'Novo Vídeo'}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''} · criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
             </p>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-1" /> Excluir
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
-              Salvar
-            </Button>
-          </div>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="destructive" size="sm" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4 mr-1" /> Excluir
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
+            Salvar
+          </Button>
         </div>
       </div>
 
@@ -252,22 +243,22 @@ export function PPVideoPage({ item, onBack }: Props) {
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Macro steps */}
-          <div className="flex items-center gap-0">
+          <div className="flex items-center w-full">
             {MACRO_STEPS.map((step, i) => {
               const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
               const isDone = i < currentIdx;
               const isActive = i === currentIdx;
               return (
-                <div key={step.key} className="flex items-center">
+                <div key={step.key} className="flex items-center flex-1">
                   <button
                     onClick={() => {
                       setForm(prev => ({ ...prev, status: step.key }));
                       setSubStepIndex(0);
                     }}
-                    className="flex flex-col items-center gap-1 group"
+                    className="flex-1 flex flex-col items-center gap-1 group"
                   >
                     <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors border-2",
+                      "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
                       isDone && "bg-primary text-primary-foreground border-primary",
                       isActive && "bg-primary/10 text-primary border-primary",
                       !isDone && !isActive && "bg-muted text-muted-foreground border-transparent",
@@ -275,7 +266,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                       {isDone ? <Check className="h-4 w-4" /> : i + 1}
                     </div>
                     <span className={cn(
-                      "text-[11px] whitespace-nowrap transition-colors",
+                      "text-xs whitespace-nowrap transition-colors",
                       isActive ? "text-foreground font-medium" : "text-muted-foreground",
                     )}>
                       {step.label}
@@ -283,7 +274,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                   </button>
                   {i < MACRO_STEPS.length - 1 && (
                     <div className={cn(
-                      "h-0.5 w-8 mx-1 rounded-full mt-[-16px]",
+                      "h-0.5 flex-1 mx-2 rounded-full mt-[-16px]",
                       i < currentIdx ? "bg-primary" : "bg-border",
                     )} />
                   )}
@@ -368,126 +359,29 @@ export function PPVideoPage({ item, onBack }: Props) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label htmlFor="vp-client" className="text-xs">Empresa</Label>
+                  <Label htmlFor="vp-client" className="text-xs text-muted-foreground block mb-1.5">Empresa</Label>
                   <Input id="vp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" className="h-9" />
                 </div>
                 <div>
-                  <Label htmlFor="vp-project" className="text-xs">Projeto</Label>
+                  <Label htmlFor="vp-project" className="text-xs text-muted-foreground block mb-1.5">Projeto</Label>
                   <Input id="vp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" className="h-9" />
                 </div>
                 <div>
-                  <Label htmlFor="vp-suffix" className="text-xs">Sufixo</Label>
+                  <Label htmlFor="vp-suffix" className="text-xs text-muted-foreground block mb-1.5">Sufixo</Label>
                   <Input id="vp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" className="h-9" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs">Título gerado</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Título gerado</Label>
                 <Input value={composedTitle} readOnly disabled className="bg-muted text-muted-foreground cursor-not-allowed h-9" />
               </div>
               <div>
-                <Label htmlFor="vp-notes" className="text-xs">Observações</Label>
+                <Label htmlFor="vp-notes" className="text-xs text-muted-foreground block mb-1.5">Observações</Label>
                 <Textarea id="vp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
               </div>
             </CardContent>
           </Card>
 
-          {/* Atividade & Versões */}
-          <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Atividade & Versões</CardTitle>
-              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setAddingVersion(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Add version inline form */}
-              {addingVersion && (
-                <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
-                  <Input
-                    placeholder="URL do Frame.io"
-                    value={newVersionUrl}
-                    onChange={e => setNewVersionUrl(e.target.value)}
-                    className="flex-1 h-8 text-sm"
-                    onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
-                  />
-                  <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
-                    Adicionar
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
-                    Cancelar
-                  </Button>
-                </div>
-              )}
-
-              {/* Timeline */}
-              <div className="space-y-3">
-                {timelineItems.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma atividade ainda.</p>
-                )}
-                {timelineItems.map((ti, idx) => (
-                  <div key={idx} className="flex gap-3 items-start">
-                    {ti.type === 'version' ? (
-                      <>
-                        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                          v{ti.data.version_number}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
-                            <Badge variant="outline" className="text-[10px] h-5">
-                              {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
-                            </Badge>
-                            <a
-                              href={ti.data.frame_io_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline flex items-center gap-0.5"
-                            >
-                              Frame.io <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </div>
-                          {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
-                          <p className="text-[11px] text-muted-foreground mt-1">
-                            {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
-                          {getInitials(ti.data.user_name)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
-                          <p className="text-[11px] text-muted-foreground mt-1">
-                            {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Comment input */}
-              <Separator />
-              <div className="flex gap-2 items-center">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
-                  {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
-                </div>
-                <Input
-                  placeholder="Adicionar comentário..."
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAddComment()}
-                  className="flex-1 h-9 text-sm"
-                />
-                <Button size="icon" variant="ghost" onClick={handleAddComment} disabled={!comment.trim()} className="h-9 w-9 shrink-0">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Right column — Informações */}
@@ -499,7 +393,7 @@ export function PPVideoPage({ item, onBack }: Props) {
             <CardContent className="space-y-4">
               {/* Status */}
               <div>
-                <Label className="text-xs text-muted-foreground">Etapa</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
                 <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
                   <SelectTrigger className="h-9">
                     <PPStatusBadge status={form.status} />
@@ -514,7 +408,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Priority */}
               <div>
-                <Label className="text-xs text-muted-foreground">Prioridade</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
                 <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
                   <SelectTrigger className="h-9">
                     <PPPriorityBadge priority={form.priority} />
@@ -529,7 +423,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Editor */}
               <div>
-                <Label className="text-xs text-muted-foreground">Editor</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
                 <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
                   <SelectTrigger className="h-9">
                     {selectedEditor ? (
@@ -568,7 +462,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Delivered date (read-only) */}
               <div>
-                <Label className="text-xs text-muted-foreground">Entregue em</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
                 <p className="text-sm mt-1">
                   {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
                 </p>
@@ -578,7 +472,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
               {/* Time in stage */}
               <div>
-                <Label className="text-xs text-muted-foreground">Tempo na etapa atual</Label>
+                <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
                 <p className="text-sm mt-1 font-medium">
                   {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
                 </p>
