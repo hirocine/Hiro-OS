@@ -56,6 +56,7 @@ serve(async (req) => {
       location: e.location || null,
       description: e.description || null,
       colorId: e.colorId || null,
+      htmlLink: e.htmlLink || null,
     }));
 
     return new Response(JSON.stringify({ events }), {

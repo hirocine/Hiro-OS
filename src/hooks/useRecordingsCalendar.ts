@@ -10,6 +10,7 @@ export interface RecordingEvent {
   location: string | null;
   description: string | null;
   colorId: string | null;
+  htmlLink: string | null;
 }
 
 const RECORDINGS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-recordings`;
