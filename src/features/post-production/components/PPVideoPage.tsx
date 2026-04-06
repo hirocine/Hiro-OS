@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, FileText } from 'lucide-react';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { format, formatDistanceToNow, differenceInDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -68,6 +69,21 @@ function getUserAvatarUrl(user: { avatar_url?: string | null; user_metadata?: { 
 function getInitials(name: string | null | undefined): string {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+}
+
+// --- Section Header Helper ---
+function SectionHeader({ icon: Icon, title, actions }: { icon: React.ElementType; title: string; actions?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 rounded-md bg-muted">
+          <Icon className="h-4 w-4 text-foreground/70" />
+        </div>
+        <CardTitle className="text-sm font-semibold tracking-tight">{title}</CardTitle>
+      </div>
+      {actions}
+    </div>
+  );
 }
 
 // --- Component ---
@@ -182,7 +198,7 @@ export function PPVideoPage({ item, onBack }: Props) {
 
   // --- Date Picker Helper ---
   const DateField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
-    <div>
+    <div className="space-y-1.5">
       <Label className="text-xs text-muted-foreground block mb-1.5">{label}</Label>
       <Popover>
         <PopoverTrigger asChild>
@@ -212,373 +228,395 @@ export function PPVideoPage({ item, onBack }: Props) {
   );
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
-      {/* ===== HEADER ===== */}
-      <div className="sticky top-0 z-10 -mx-6 -mt-6 px-6 py-4 bg-background/95 backdrop-blur border-b flex items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold truncate">{composedTitle || 'Novo Vídeo'}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''} · criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-1" /> Excluir
-          </Button>
-          <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
-            Salvar
-          </Button>
-        </div>
-      </div>
-
-      {/* ===== PIPELINE ===== */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Pipeline de Produção</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {/* Macro steps */}
-          <div className="flex items-center w-full">
-            {MACRO_STEPS.map((step, i) => {
-              const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
-              const isDone = i < currentIdx;
-              const isActive = i === currentIdx;
-              return (
-                <div key={step.key} className="flex items-center flex-1">
-                  <button
-                    onClick={() => {
-                      setForm(prev => ({ ...prev, status: step.key }));
-                      setSubStepIndex(0);
-                    }}
-                    className="flex-1 flex flex-col items-center gap-1 group"
-                  >
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
-                      isDone && "bg-primary text-primary-foreground border-primary",
-                      isActive && "bg-primary/10 text-primary border-primary",
-                      !isDone && !isActive && "bg-muted text-muted-foreground border-transparent",
-                    )}>
-                      {isDone ? <Check className="h-4 w-4" /> : i + 1}
-                    </div>
-                    <span className={cn(
-                      "text-xs whitespace-nowrap transition-colors",
-                      isActive ? "text-foreground font-medium" : "text-muted-foreground",
-                    )}>
-                      {step.label}
-                    </span>
-                  </button>
-                  {i < MACRO_STEPS.length - 1 && (
-                    <div className={cn(
-                      "h-0.5 flex-1 mx-2 rounded-full mt-[-16px]",
-                      i < currentIdx ? "bg-primary" : "bg-border",
-                    )} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Sub-steps */}
-          {SUB_STEPS[form.status]?.length > 0 && (
-            <div className="space-y-3 pt-2 border-t">
-              <p className="text-xs font-medium text-muted-foreground">
-                Sub-etapas · {MACRO_STEPS.find(s => s.key === form.status)?.label}
+    <ResponsiveContainer maxWidth="7xl">
+      <div className="animate-fade-in space-y-6">
+        {/* ===== HEADER ===== */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold truncate">{composedTitle || 'Novo Vídeo'}</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''} · criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
               </p>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {SUB_STEPS[form.status].map((sub, i) => {
-                  const isDone = i < subStepIndex;
-                  const isActive = i === subStepIndex;
-                  return (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <button onClick={() => handleSubStepClick(i)} className="flex items-center gap-1.5 group">
-                        <div className={cn(
-                          "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium transition-colors",
-                          isDone && "bg-primary text-primary-foreground",
-                          isActive && "bg-primary/20 text-primary ring-1 ring-primary",
-                          !isDone && !isActive && "bg-muted text-muted-foreground",
-                        )}>
-                          {isDone ? <Check className="h-3 w-3" /> : i + 1}
-                        </div>
-                        <span className={cn(
-                          "text-xs transition-colors",
-                          isActive ? "text-foreground font-medium" : "text-muted-foreground",
-                        )}>
-                          {sub}
-                        </span>
-                      </button>
-                      {i < SUB_STEPS[form.status].length - 1 && (
-                        <div className={cn("h-px w-4 rounded-full", i < subStepIndex ? "bg-primary/40" : "bg-border")} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-muted-foreground">
-                  {subStepIndex} de {SUB_STEPS[form.status].length} concluídas
-                </span>
-                {(() => {
-                  const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
-                  const nextStep = MACRO_STEPS[currentIdx + 1];
-                  const allDone = subStepIndex >= SUB_STEPS[form.status].length;
-                  return nextStep ? (
-                    <Button size="sm" variant={allDone ? 'default' : 'outline'} onClick={handleAdvanceStage} className="text-xs h-7">
-                      Avançar para {nextStep.label} →
-                    </Button>
-                  ) : null;
-                })()}
-              </div>
             </div>
-          )}
-
-          {/* Na Fila: just start button */}
-          {form.status === 'fila' && (
-            <div className="pt-2 border-t">
-              <Button size="sm" onClick={handleAdvanceStage} className="text-xs h-7">
-                Iniciar Edição →
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ===== TWO COLUMN LAYOUT ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Dados do Vídeo */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Dados do Vídeo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label htmlFor="vp-client" className="text-xs text-muted-foreground block mb-1.5">Empresa</Label>
-                  <Input id="vp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" className="h-9" />
-                </div>
-                <div>
-                  <Label htmlFor="vp-project" className="text-xs text-muted-foreground block mb-1.5">Projeto</Label>
-                  <Input id="vp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" className="h-9" />
-                </div>
-                <div>
-                  <Label htmlFor="vp-suffix" className="text-xs text-muted-foreground block mb-1.5">Sufixo</Label>
-                  <Input id="vp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" className="h-9" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Título gerado</Label>
-                <Input value={composedTitle} readOnly disabled className="bg-muted text-muted-foreground cursor-not-allowed h-9" />
-              </div>
-              <div>
-                <Label htmlFor="vp-notes" className="text-xs text-muted-foreground block mb-1.5">Observações</Label>
-                <Textarea id="vp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
-              </div>
-            </CardContent>
-          </Card>
-
-        </div>
-
-        {/* Right column — Informações */}
-        <div>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Informações</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Status */}
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
-                <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
-                  <SelectTrigger className="h-9">
-                    <PPStatusBadge status={form.status} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_STATUS_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Priority */}
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
-                <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                  <SelectTrigger className="h-9">
-                    <PPPriorityBadge priority={form.priority} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Editor */}
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
-                <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-                  <SelectTrigger className="h-9">
-                    {selectedEditor ? (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                          <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
-                      </div>
-                    ) : (
-                      <SelectValue placeholder="Selecionar editor" />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={getUserAvatarUrl(u)} />
-                            <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{u.display_name || u.email}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator />
-
-              {/* Dates */}
-              <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
-              <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
-
-              {/* Delivered date (read-only) */}
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
-                <p className="text-sm mt-1">
-                  {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
-                </p>
-              </div>
-
-              <Separator />
-
-              {/* Time in stage */}
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
-                <p className="text-sm mt-1 font-medium">
-                  {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* ===== FULL-WIDTH: Atividade & Versões ===== */}
-      <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Atividade & Versões</CardTitle>
-          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setAddingVersion(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Add version inline form */}
-          {addingVersion && (
-            <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
-              <Input
-                placeholder="URL do Frame.io"
-                value={newVersionUrl}
-                onChange={e => setNewVersionUrl(e.target.value)}
-                className="flex-1 h-8 text-sm"
-                onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
-              />
-              <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
-                Adicionar
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
-                Cancelar
-              </Button>
-            </div>
-          )}
-
-          {/* Timeline */}
-          <div className="space-y-3">
-            {timelineItems.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma atividade ainda.</p>
-            )}
-            {timelineItems.map((ti, idx) => (
-              <div key={idx} className="flex gap-3 items-start">
-                {ti.type === 'version' ? (
-                  <>
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                      v{ti.data.version_number}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
-                        <Badge variant="outline" className="text-[10px] h-5">
-                          {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
-                        </Badge>
-                        <a
-                          href={ti.data.frame_io_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline flex items-center gap-0.5"
-                        >
-                          Frame.io <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                      {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
-                      {getInitials(ti.data.user_name)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
           </div>
-
-          {/* Comment input */}
-          <Separator />
-          <div className="flex gap-2 items-center">
-            <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
-              {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
-            </div>
-            <Input
-              placeholder="Adicionar comentário..."
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAddComment()}
-              className="flex-1 h-9 text-sm"
-            />
-            <Button size="icon" variant="ghost" onClick={handleAddComment} disabled={!comment.trim()} className="h-9 w-9 shrink-0">
-              <Send className="h-4 w-4" />
+          <div className="flex gap-2 shrink-0">
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
+              <Trash2 className="h-4 w-4 mr-1" /> Excluir
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={!form.client_name.trim()}>
+              <Save className="h-4 w-4 mr-1" /> Salvar
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+        {/* ===== SUMMARY CARD ===== */}
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-xl font-semibold">{composedTitle || 'Novo Vídeo'}</h2>
+                  {latestVersion && (
+                    <Badge variant="outline" className="text-xs">
+                      v{latestVersion.version_number} · {latestVersion.status === 'em_revisao' ? 'Em revisão' : latestVersion.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <PPStatusBadge status={form.status} />
+                <PPPriorityBadge priority={form.priority} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ===== PIPELINE ===== */}
+        <Card>
+          <SectionHeader icon={Clapperboard} title="Pipeline de Produção" />
+          <CardContent className="pt-6 space-y-5">
+            {/* Macro steps */}
+            <div className="flex items-center w-full">
+              {MACRO_STEPS.map((step, i) => {
+                const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
+                const isDone = i < currentIdx;
+                const isActive = i === currentIdx;
+                return (
+                  <div key={step.key} className="flex items-center flex-1">
+                    <button
+                      onClick={() => {
+                        setForm(prev => ({ ...prev, status: step.key }));
+                        setSubStepIndex(0);
+                      }}
+                      className="flex-1 flex flex-col items-center gap-1 group"
+                    >
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
+                        isDone && "bg-primary text-primary-foreground border-primary",
+                        isActive && "bg-primary/10 text-primary border-primary",
+                        !isDone && !isActive && "bg-muted text-muted-foreground border-transparent",
+                      )}>
+                        {isDone ? <Check className="h-4 w-4" /> : i + 1}
+                      </div>
+                      <span className={cn(
+                        "text-xs whitespace-nowrap transition-colors",
+                        isActive ? "text-foreground font-medium" : "text-muted-foreground",
+                      )}>
+                        {step.label}
+                      </span>
+                    </button>
+                    {i < MACRO_STEPS.length - 1 && (
+                      <div className={cn(
+                        "h-0.5 flex-1 mx-2 rounded-full mt-[-16px]",
+                        i < currentIdx ? "bg-primary" : "bg-border",
+                      )} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Sub-steps */}
+            {SUB_STEPS[form.status]?.length > 0 && (
+              <div className="space-y-3 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Sub-etapas · {MACRO_STEPS.find(s => s.key === form.status)?.label}
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {SUB_STEPS[form.status].map((sub, i) => {
+                    const isDone = i < subStepIndex;
+                    const isActive = i === subStepIndex;
+                    return (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <button onClick={() => handleSubStepClick(i)} className="flex items-center gap-1.5 group">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium transition-colors",
+                            isDone && "bg-primary text-primary-foreground",
+                            isActive && "bg-primary/20 text-primary ring-1 ring-primary",
+                            !isDone && !isActive && "bg-muted text-muted-foreground",
+                          )}>
+                            {isDone ? <Check className="h-3 w-3" /> : i + 1}
+                          </div>
+                          <span className={cn(
+                            "text-xs transition-colors",
+                            isActive ? "text-foreground font-medium" : "text-muted-foreground",
+                          )}>
+                            {sub}
+                          </span>
+                        </button>
+                        {i < SUB_STEPS[form.status].length - 1 && (
+                          <div className={cn("h-px w-4 rounded-full", i < subStepIndex ? "bg-primary/40" : "bg-border")} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-muted-foreground">
+                    {subStepIndex} de {SUB_STEPS[form.status].length} concluídas
+                  </span>
+                  {(() => {
+                    const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
+                    const nextStep = MACRO_STEPS[currentIdx + 1];
+                    const allDone = subStepIndex >= SUB_STEPS[form.status].length;
+                    return nextStep ? (
+                      <Button size="sm" variant={allDone ? 'default' : 'outline'} onClick={handleAdvanceStage} className="text-xs h-7">
+                        Avançar para {nextStep.label} →
+                      </Button>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Na Fila: just start button */}
+            {form.status === 'fila' && (
+              <div className="pt-2 border-t">
+                <Button size="sm" onClick={handleAdvanceStage} className="text-xs h-7">
+                  Iniciar Edição →
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ===== TWO COLUMN LAYOUT ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column — Dados do Vídeo */}
+          <div className="lg:col-span-2">
+            <Card>
+              <SectionHeader icon={FileText} title="Dados do Vídeo" />
+              <CardContent className="pt-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vp-client" className="text-xs text-muted-foreground block mb-1.5">Empresa</Label>
+                    <Input id="vp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" className="h-9" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vp-project" className="text-xs text-muted-foreground block mb-1.5">Projeto</Label>
+                    <Input id="vp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" className="h-9" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vp-suffix" className="text-xs text-muted-foreground block mb-1.5">Sufixo</Label>
+                    <Input id="vp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" className="h-9" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Título gerado</Label>
+                  <Input value={composedTitle} readOnly disabled className="bg-muted text-muted-foreground cursor-not-allowed h-9" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="vp-notes" className="text-xs text-muted-foreground block mb-1.5">Observações</Label>
+                  <Textarea id="vp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right column — Informações */}
+          <div>
+            <Card>
+              <SectionHeader icon={Info} title="Informações" />
+              <CardContent className="pt-6 space-y-4">
+                {/* Status */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
+                  <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
+                    <SelectTrigger className="h-9">
+                      <PPStatusBadge status={form.status} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(PP_STATUS_CONFIG).map(v => (
+                        <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
+                  <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+                    <SelectTrigger className="h-9">
+                      <PPPriorityBadge priority={form.priority} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                        <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Editor */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
+                  <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+                    <SelectTrigger className="h-9">
+                      {selectedEditor ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                            <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
+                        </div>
+                      ) : (
+                        <SelectValue placeholder="Selecionar editor" />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map(u => (
+                        <SelectItem key={u.id} value={u.id}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage src={getUserAvatarUrl(u)} />
+                              <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm">{u.display_name || u.email}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Separator />
+
+                {/* Dates */}
+                <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
+                <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
+
+                {/* Delivered date (read-only) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
+                  <p className="text-sm mt-1">
+                    {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Time in stage */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
+                  <p className="text-sm mt-1 font-medium">
+                    {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* ===== FULL-WIDTH: Atividade & Versões ===== */}
+        <Card>
+          <SectionHeader
+            icon={MessageSquare}
+            title="Atividade & Versões"
+            actions={
+              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setAddingVersion(true)}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
+              </Button>
+            }
+          />
+          <CardContent className="pt-6 space-y-4">
+            {/* Add version inline form */}
+            {addingVersion && (
+              <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
+                <Input
+                  placeholder="URL do Frame.io"
+                  value={newVersionUrl}
+                  onChange={e => setNewVersionUrl(e.target.value)}
+                  className="flex-1 h-8 text-sm"
+                  onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
+                />
+                <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
+                  Adicionar
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
+                  Cancelar
+                </Button>
+              </div>
+            )}
+
+            {/* Timeline */}
+            <div className="space-y-3">
+              {timelineItems.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma atividade ainda.</p>
+              )}
+              {timelineItems.map((ti, idx) => (
+                <div key={idx} className="flex gap-3 items-start">
+                  {ti.type === 'version' ? (
+                    <>
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                        v{ti.data.version_number}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
+                          <Badge variant="outline" className="text-[10px] h-5">
+                            {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
+                          </Badge>
+                          <a
+                            href={ti.data.frame_io_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline flex items-center gap-0.5"
+                          >
+                            Frame.io <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                        {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                        {getInitials(ti.data.user_name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Comment input */}
+            <Separator />
+            <div className="flex gap-2 items-center">
+              <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
+              </div>
+              <Input
+                placeholder="Adicionar comentário..."
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddComment()}
+                className="flex-1 h-9 text-sm"
+              />
+              <Button size="icon" variant="ghost" onClick={handleAddComment} disabled={!comment.trim()} className="h-9 w-9 shrink-0">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ResponsiveContainer>
   );
 }
