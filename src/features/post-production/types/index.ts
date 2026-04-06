@@ -34,6 +34,8 @@ export interface PostProductionItem {
   start_date: string | null;
   delivered_date: string | null;
   notes: string | null;
+  sub_status: string | null;
+  sub_status_index: number | null;
   created_by: string;
   created_at: string;
   updated_at: string;

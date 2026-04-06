@@ -5,3 +5,4 @@ export { PPStatsCards } from './PPStatsCards';
 export { PPStatusBadge } from './PPStatusBadge';
 export { PPPriorityBadge } from './PPPriorityBadge';
 export { PPDialog } from './PPDialog';
+export { PPVideoPage } from './PPVideoPage';
