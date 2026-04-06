@@ -42,7 +42,7 @@ function findEquipmentMatch(filename: string, equipments: any[]) {
     const words = normalizedFilename.split(/[-_\s]+/)
     const equipmentWords = eq.name.toLowerCase().split(/\s+/)
     return words.some(word => 
-      word.length > 2 && equipmentWords.some(eqWord => 
+      word.length > 2 && equipmentWords.some((eqWord: string) => 
         eqWord.includes(word) || word.includes(eqWord)
       )
     )
@@ -149,7 +149,7 @@ serve(async (req) => {
         results.push({
           filename,
           status: 'error',
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           match: null
         })
       }
@@ -172,7 +172,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in process-equipment-images function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
