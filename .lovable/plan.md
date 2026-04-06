@@ -1,29 +1,35 @@
 
 
-# Animate the bubble icon on click
+# Create TodayWidgets and update Home page
 
-## What
-Add a spin/rotate transition to the icon inside the floating button when toggling open/close, so the Sparkles icon rotates into the ChevronDown and vice versa.
+## New file: `src/components/Home/TodayWidgets.tsx`
 
-## Changes in `src/components/Layout/HiroBubble.tsx`
+Three side-by-side cards in a `grid grid-cols-1 md:grid-cols-3 gap-4` layout.
 
-### Lines 110-118 — Replace the button content
-Instead of conditionally rendering two different icons, render both icons with absolute positioning and use CSS transitions to rotate/fade between them:
+### Data sources
+- **Entregas hoje**: `usePostProduction()` from `@/features/post-production/hooks/usePostProduction` -- filter `items` where `item.due_date === today` and `item.status !== 'entregue'`, sort by `PP_PRIORITY_ORDER[priority]` desc
+- **Minhas tarefas**: `useTasks()` from `@/features/tasks/hooks/useTasks` -- filter `tasks` where status not in `['concluida','arquivada']` and `assignees?.some(a => a.user_id === user?.id)`. Sort: due_date === today first. Get `user` from `useAuthContext()`
+- **Gravacoes do dia**: `useProjects()` from `@/features/projects/hooks/useProjects` -- filter `projects` where `startDate === today` and `status === 'active'`
 
-```tsx
-<button
-  onClick={() => open ? handleClose() : setOpen(true)}
-  className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
-  aria-label="Assistente Hiro"
->
-  <div className="relative w-6 h-6">
-    <Sparkles className={`h-6 w-6 absolute inset-0 transition-all duration-300 ${open ? 'opacity-0 rotate-90 scale-75' : 'opacity-100 rotate-0 scale-100'}`} />
-    <ChevronDown className={`h-6 w-6 absolute inset-0 transition-all duration-300 ${open ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-75'}`} />
-  </div>
-</button>
-```
+Today string: `new Date().toLocaleDateString('en-CA')` (YYYY-MM-DD)
 
-This creates a smooth crossfade with rotation when toggling — Sparkles rotates out while ChevronDown rotates in, and vice versa.
+### Card design (shared pattern per widget)
+- `<Card>` with `hover:shadow-md transition-shadow cursor-pointer group` + `onClick={() => navigate(path)}`
+- Header row: icon in colored rounded container (blue/amber/green) + label + `<ArrowRight>` with `opacity-50 group-hover:opacity-100 transition-opacity`
+- Big number `text-3xl font-bold` + subtitle `text-sm text-muted-foreground`
+- `<Separator />` then up to 3 items: colored dot + truncated title + right-aligned badge (priority for deliveries, date for tasks, first name for recordings)
+- Empty: muted text like "Nenhuma entrega para hoje"
+- Use `format`, `parseISO` from `date-fns` for date formatting
 
-No other changes.
+### Icons
+- Deliveries: `Film` (blue)
+- Tasks: `CheckSquare` (amber)  
+- Recordings: `Video` (green)
+
+## Update: `src/pages/Home.tsx`
+
+1. Remove `AIAssistant` import and usage
+2. Add `import TodayWidgets from "@/components/Home/TodayWidgets"`
+3. Order: `<HeroBanner />` then `<TodayWidgets />` then `<TeamDirectory />`
+4. Loading skeleton: add `<div className="grid grid-cols-1 md:grid-cols-3 gap-4">` with 3 skeleton cards (h-48) between banner and team skeletons
 
