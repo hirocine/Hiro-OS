@@ -61,6 +61,7 @@ export function HiroBubble() {
   const { role, roleLoading } = useAuthContext();
   const { messages, isLoading, sendMessage, clearMessages } = useAIAssistant();
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
