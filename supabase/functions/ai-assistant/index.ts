@@ -32,6 +32,12 @@ Quando mencionar um item específico, sempre inclua ao final da linha:
 - Projeto: [LINK:/retiradas]
 - Tarefa: [LINK:/tarefas]
 - Equipamento: [LINK:/inventario]
+- Fornecedor: [LINK:/fornecedores]
+- Política: [LINK:/politicas]
+- Plataforma: [LINK:/plataformas]
+- Esteira de Pós: [LINK:/pos-producao]
+- Armazenamento/SSD: [LINK:/armazenamento]
+- Projeto AV: [LINK:/projetos-av]
 
 IMPORTANTE: Nunca invente dados. Se não encontrar, diga claramente.`;
 
@@ -103,6 +109,69 @@ const tools: Anthropic.Tool[] = [
       type: "object",
       properties: {
         days: { type: "number", description: "Quantos dias à frente verificar (padrão: 7)" }
+      }
+    }
+  },
+  {
+    name: "search_suppliers",
+    description: "Busca fornecedores e freelancers cadastrados por nome, especialidade ou tipo.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nome ou especialidade do fornecedor" },
+        role: { type: "string", description: "Função principal: ex. Cinegrafista, Editor, Fotógrafo" }
+      }
+    }
+  },
+  {
+    name: "search_policies",
+    description: "Busca políticas e documentos internos da empresa por título ou categoria.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Título ou assunto da política" }
+      }
+    }
+  },
+  {
+    name: "search_platform_accesses",
+    description: "Busca acessos e credenciais de plataformas cadastradas. NUNCA mostre senhas — mostre apenas que existe o acesso.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nome da plataforma ou serviço" }
+      }
+    }
+  },
+  {
+    name: "get_post_production_queue",
+    description: "Lista os vídeos na esteira de pós-produção, seus status e editores responsáveis.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Filtrar por título ou editor" },
+        status: { type: "string", description: "Status do vídeo na esteira" }
+      }
+    }
+  },
+  {
+    name: "get_ssds_status",
+    description: "Mostra o status dos SSDs — quais estão livres, em uso ou com quem estão.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Filtrar por nome do SSD" }
+      }
+    }
+  },
+  {
+    name: "search_av_projects",
+    description: "Busca projetos audiovisuais por título, empresa ou status.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Título ou empresa do projeto" },
+        status: { type: "string", description: "Status do projeto" }
       }
     }
   }
@@ -283,6 +352,89 @@ serve(async (req) => {
 
           return (data as any[]).map(p =>
             `- **${p.project_name}** (${p.client_name}) · Vence: ${new Date(p.validity_date + "T12:00:00").toLocaleDateString("pt-BR")} · ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(p.final_value || 0)} [LINK:/orcamentos/${p.slug}/overview]`
+          ).join("\n");
+        }
+
+        if (toolName === "search_suppliers") {
+          let q = supabase.from("suppliers").select("full_name, primary_role, secondary_role, whatsapp, instagram, daily_rate, expertise, is_active, rating");
+          if (toolInput.query) q = q.or(`full_name.ilike.%${toolInput.query}%,primary_role.ilike.%${toolInput.query}%,expertise.ilike.%${toolInput.query}%`);
+          if (toolInput.role) q = q.ilike("primary_role", `%${toolInput.role}%`);
+          q = q.eq("is_active", true).limit(15);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum fornecedor encontrado.";
+          return (data as any[]).map(s =>
+            `- **${s.full_name}** · ${s.primary_role || "—"}${s.secondary_role ? ` / ${s.secondary_role}` : ""} · Diária: ${s.daily_rate ? `R$ ${Number(s.daily_rate).toLocaleString("pt-BR")}` : "—"} · ⭐ ${s.rating || "—"} [LINK:/fornecedores]`
+          ).join("\n");
+        }
+
+        if (toolName === "search_policies") {
+          let q = supabase.from("company_policies").select("title, category, content");
+          if (toolInput.query) q = q.or(`title.ilike.%${toolInput.query}%,category.ilike.%${toolInput.query}%`);
+          q = q.limit(10);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhuma política encontrada.";
+          return (data as any[]).map(p =>
+            `- **${p.title}** · Categoria: ${p.category || "—"} [LINK:/politicas]`
+          ).join("\n");
+        }
+
+        if (toolName === "search_platform_accesses") {
+          let q = supabase.from("platform_accesses").select("platform_name, username, platform_url, category, is_active");
+          if (toolInput.query) q = q.ilike("platform_name", `%${toolInput.query}%`);
+          q = q.eq("is_active", true).limit(15);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhuma plataforma encontrada.";
+          return (data as any[]).map(p =>
+            `- **${p.platform_name}** · Login: ${p.username || "cadastrado"} · ${p.platform_url || ""} [LINK:/plataformas]`
+          ).join("\n");
+        }
+
+        if (toolName === "get_post_production_queue") {
+          let q = supabase.from("post_production_queue").select("title, status, editor_name, client_name, project_name, due_date, priority");
+          if (toolInput.query) q = q.or(`title.ilike.%${toolInput.query}%,editor_name.ilike.%${toolInput.query}%`);
+          if (toolInput.status) q = q.eq("status", toolInput.status);
+          q = q.order("created_at", { ascending: false }).limit(20);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum vídeo na esteira.";
+          return (data as any[]).map(v =>
+            `- **${v.title}** · ${v.status} · Editor: ${v.editor_name || "—"} · Cliente: ${v.client_name || "—"} · Prazo: ${v.due_date ? new Date(v.due_date + "T12:00:00").toLocaleDateString("pt-BR") : "—"} · Prioridade: ${v.priority} [LINK:/pos-producao]`
+          ).join("\n");
+        }
+
+        if (toolName === "get_ssds_status") {
+          let q = supabase.from("equipments")
+            .select("id, name, simplified_status, capacity, ssd_number")
+            .eq("category", "Armazenamento");
+          if (toolInput.query) q = q.ilike("name", `%${toolInput.query}%`);
+          q = q.limit(20);
+          const { data: ssds, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!ssds?.length) return "Nenhum SSD encontrado no inventário.";
+          const { data: allocations } = await supabase.from("ssd_allocations")
+            .select("ssd_id, project_name, allocated_gb");
+          return (ssds as any[]).map(s => {
+            const ssdAllocs = (allocations || []).filter((a: any) => a.ssd_id === s.id);
+            const usedGb = ssdAllocs.reduce((sum: number, a: any) => sum + (Number(a.allocated_gb) || 0), 0);
+            const totalGb = s.capacity ? Number(s.capacity) * 1000 : null;
+            const projects = ssdAllocs.map((a: any) => a.project_name).join(", ");
+            return `- **${s.name}**${s.ssd_number ? ` (#${s.ssd_number})` : ""} · ${projects ? `Em uso: ${projects} (${usedGb} GB)` : "Livre"}${totalGb ? ` · Capacidade: ${totalGb} GB` : ""} [LINK:/armazenamento]`;
+          }).join("\n");
+        }
+
+        if (toolName === "search_av_projects") {
+          let q = supabase.from("audiovisual_projects").select("id, name, company, status, deadline, responsible_user_name");
+          if (toolInput.query) q = q.or(`name.ilike.%${toolInput.query}%,company.ilike.%${toolInput.query}%`);
+          if (toolInput.status) q = q.eq("status", toolInput.status);
+          q = q.order("created_at", { ascending: false }).limit(10);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum projeto AV encontrado.";
+          return (data as any[]).map(p =>
+            `- **${p.name}** · ${p.company || "—"} · Status: ${p.status} · Responsável: ${p.responsible_user_name || "—"}${p.deadline ? ` · Prazo: ${new Date(p.deadline + "T12:00:00").toLocaleDateString("pt-BR")}` : ""} [LINK:/projetos-av]`
           ).join("\n");
         }
 
