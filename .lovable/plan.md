@@ -1,33 +1,23 @@
 
 
-# Fix Build Errors
+# Fix AI assistant not showing all proposals
 
-## Overview
-Fix 7 TypeScript errors across 4 edge functions and 1 component. These are pre-existing issues unrelated to the ai-assistant deploy.
+## Problem
+The `search_proposals` tool correctly returns both proposals (sent + new_version), but the AI model's interpretation of "ativas" excludes "new_version" status because the prompt doesn't clarify that all `is_latest_version=true` proposals are current/relevant.
 
-## Changes
+## Fix in `supabase/functions/ai-assistant/index.ts`
 
-### 1. `supabase/functions/invite-user/index.ts` (line 158)
-Change `error.message` to `error instanceof Error ? error.message : 'Internal server error'`
+### 1. Update SYSTEM_PROMPT (line 10-31)
+Add a section clarifying proposal statuses:
 
-### 2. `supabase/functions/manage-password/index.ts` (line 130)
-Change `error.message` to `error instanceof Error ? error.message : 'Unknown error'`
-
-### 3. `supabase/functions/manage-user/index.ts` (line 143)
-Change `error.message` to `error instanceof Error ? error.message : 'Internal server error'`
-
-### 4. `supabase/functions/process-equipment-images/index.ts` (3 fixes)
-- **Line 45**: Add type annotation `(eqWord: string) =>` instead of `eqWord =>`
-- **Line 152**: Change `error.message` to `error instanceof Error ? error.message : 'Unknown error'`
-- **Line 175**: Same `error instanceof Error` pattern
-
-### 5. `src/components/Layout/HiroBubble.tsx` (line 40)
-Remove `className` from `<ReactMarkdown>` (not a valid prop in newer versions). Wrap it in a `<div className="flex-1 min-w-0">` instead:
-```tsx
-<div className="flex-1 min-w-0">
-  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-    {cleanLine}
-  </ReactMarkdown>
-</div>
 ```
+PROPOSTAS / ORÇAMENTOS:
+- Todas as propostas retornadas pela ferramenta já são a versão mais recente (is_latest_version=true)
+- Status "new_version" significa que esta proposta FOI CRIADA como nova versão de uma anterior — ela É a versão atual e deve ser considerada ativa
+- Quando o usuário perguntar por propostas "ativas", inclua TODOS os status exceto "expired" (arquivada) e "draft" (rascunho), ou seja: sent, opened, approved, new_version
+```
+
+### 2. Redeploy the edge function
+
+No other changes.
 
