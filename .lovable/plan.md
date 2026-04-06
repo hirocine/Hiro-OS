@@ -1,51 +1,29 @@
 
 
-# Add 6 new tools to ai-assistant edge function
+# Animate the bubble icon on click
 
-## Overview
-Add tools for suppliers, policies, platform accesses, post-production queue, SSDs, and AV projects. Several column names in the proposed code don't match the actual database schema and need correction.
+## What
+Add a spin/rotate transition to the icon inside the floating button when toggling open/close, so the Sparkles icon rotates into the ChevronDown and vice versa.
 
-## Schema corrections needed
+## Changes in `src/components/Layout/HiroBubble.tsx`
 
-| Tool | Proposed | Actual |
-|------|----------|--------|
-| search_suppliers | `name, specialty, type, email, phone` | `full_name, primary_role, secondary_role, whatsapp, instagram` — no `is_active` filter needed (check if column exists) |
-| search_policies | `is_active` filter | Column doesn't exist — remove filter |
-| search_platform_accesses | `login_email, url` | `username, platform_url` — no `login_email` column |
-| get_post_production_queue | `deadline` | `due_date` |
-| get_ssds_status | `equipment_id, responsible_name, status` on ssd_allocations | `ssd_id, project_name, allocated_gb` — no responsible or status columns |
-| search_av_projects | table `av_projects`, columns `title, client_name` | table `audiovisual_projects`, columns `name, company` |
+### Lines 110-118 — Replace the button content
+Instead of conditionally rendering two different icons, render both icons with absolute positioning and use CSS transitions to rotate/fade between them:
 
-## Changes in `supabase/functions/ai-assistant/index.ts`
-
-### 1. Update SYSTEM_PROMPT links section (line ~34)
-Add after existing links:
-```
-- Fornecedor: [LINK:/fornecedores]
-- Política: [LINK:/politicas]
-- Plataforma: [LINK:/plataformas]
-- Esteira de Pós: [LINK:/pos-producao]
-- Armazenamento/SSD: [LINK:/armazenamento]
-- Projeto AV: [LINK:/projetos-av]
+```tsx
+<button
+  onClick={() => open ? handleClose() : setOpen(true)}
+  className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+  aria-label="Assistente Hiro"
+>
+  <div className="relative w-6 h-6">
+    <Sparkles className={`h-6 w-6 absolute inset-0 transition-all duration-300 ${open ? 'opacity-0 rotate-90 scale-75' : 'opacity-100 rotate-0 scale-100'}`} />
+    <ChevronDown className={`h-6 w-6 absolute inset-0 transition-all duration-300 ${open ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-75'}`} />
+  </div>
+</button>
 ```
 
-### 2. Add 6 tool definitions to the `tools` array
-Add the 6 tools as specified by the user, with corrected descriptions where needed.
+This creates a smooth crossfade with rotation when toggling — Sparkles rotates out while ChevronDown rotates in, and vice versa.
 
-### 3. Add 6 tool implementations in `executeTool`
-All corrected to match actual schema:
-
-**search_suppliers**: Query `suppliers` table with `full_name, primary_role, secondary_role, whatsapp, daily_rate, expertise, is_active`. Filter by `full_name.ilike` and `primary_role.ilike`.
-
-**search_policies**: Query `company_policies` with `title, category, content`. No `is_active` filter.
-
-**search_platform_accesses**: Query `platform_accesses` with `platform_name, username, platform_url, category, is_active`. Never expose `encrypted_password`.
-
-**get_post_production_queue**: Query `post_production_queue` with `title, status, editor_name, client_name, project_name, due_date, priority`. Use `due_date` not `deadline`.
-
-**get_ssds_status**: Query `equipments` where `category = 'Armazenamento'` + client-side drive filter. Then query `ssd_allocations` with `ssd_id, project_name, allocated_gb` to show usage per SSD.
-
-**search_av_projects**: Query `audiovisual_projects` with `id, name, company, status, deadline, responsible_user_name`. Use `name` and `company` for search.
-
-### 4. Redeploy edge function
+No other changes.
 
