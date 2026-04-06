@@ -1,6 +1,7 @@
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { HeroBanner } from "@/components/Home/HeroBanner";
 import TodayWidgets from "@/components/Home/TodayWidgets";
+import { RecordingsCalendar } from "@/components/Home/RecordingsCalendar";
 import { TeamDirectory } from "@/components/Home/TeamDirectory";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
@@ -19,6 +20,8 @@ export default function Home() {
             <div className="h-48 bg-muted rounded-lg animate-pulse" />
             <div className="h-48 bg-muted rounded-lg animate-pulse" />
           </div>
+          <div className="h-[500px] bg-muted rounded-lg animate-pulse" />
+          <div className="h-64 bg-muted rounded-lg animate-pulse" />
           <div className="h-64 bg-muted rounded-lg animate-pulse" />
         </div>
       </ResponsiveContainer>
@@ -30,6 +33,7 @@ export default function Home() {
       <div className="space-y-6">
         <HeroBanner />
         <TodayWidgets />
+        <RecordingsCalendar />
         <TeamDirectory />
       </div>
     </ResponsiveContainer>
