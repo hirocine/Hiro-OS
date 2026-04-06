@@ -1,20 +1,21 @@
 
 
-# Replace InlineSelectCell with DropdownMenu for status in PPTable
+# Refine dropdown, select, and popover visuals
 
-## Changes in `src/features/post-production/components/PPTable.tsx`
+Update classNames in 3 UI component files for a cleaner, more refined look — rounder corners (`rounded-xl`/`rounded-lg`), subtler borders (`border-border/60`), better shadows (`shadow-lg`), tighter padding, and muted hover states (`focus:bg-muted/70`).
 
-### 1. Add imports
-- `DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger` from `@/components/ui/dropdown-menu`
-- `ChevronDown, Check` from `lucide-react`
-- `Badge` from `@/components/ui/badge`
-- `PP_STATUS_COLUMNS` from `../types`
+## 1. `src/components/ui/select.tsx`
+- **SelectTrigger**: `h-9`, `rounded-lg`, add `focus:ring-1 focus:ring-primary/20 focus:border-primary/40`, add `transition-colors`
+- **SelectContent**: `rounded-xl`, `border-border/60`, `shadow-lg`, `p-1`
+- **SelectItem**: `rounded-lg`, `focus:bg-muted/70 focus:text-foreground`, add `transition-colors`, remove min-height
 
-### 2. Add StatusDropdown component
-Define a `StatusDropdown` component before `PPTable` that renders a `DropdownMenu` with `Badge` as trigger showing current status + chevron, and menu items for each status from `PP_STATUS_COLUMNS`. Includes auto-set logic for `delivered_date` and `start_date`.
+## 2. `src/components/ui/dropdown-menu.tsx`
+- **DropdownMenuContent**: `rounded-xl`, `border-border/60`, `shadow-lg`, add entry/exit animations, remove `backdrop-blur-sm`
+- **DropdownMenuItem**: `rounded-lg`, `focus:bg-muted/70 focus:text-foreground`, `min-h-[36px]`, `gap-2`
+- **DropdownMenuSubTrigger**: `rounded-lg`, `focus:bg-muted/70`, `gap-2`, remove `inset` logic from className
 
-### 3. Replace InlineSelectCell for status (lines 142-154)
-Replace the `InlineSelectCell` block with `<StatusDropdown item={item} onUpdate={handleStatusChange} />` where `handleStatusChange` handles the date auto-sets and calls `updateItem.mutate`.
+## 3. `src/components/ui/popover.tsx`
+- **PopoverContent**: `rounded-xl`, `border-border/60`, `shadow-lg`
 
-Note: `updateItem` is already available in the component (line 35). No new mutation hook needed.
+All changes are className-only replacements. No logic or structure changes.
 
