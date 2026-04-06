@@ -33,6 +33,7 @@ export default function Home() {
       <div className="space-y-6">
         <HeroBanner />
         <TodayWidgets />
+        <RecordingsCalendar />
         <TeamDirectory />
       </div>
     </ResponsiveContainer>
