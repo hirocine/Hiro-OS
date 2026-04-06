@@ -1,43 +1,38 @@
 
 
-# Split PPVideoPage into View + Edit pages
+# Rewrite PPVideoPage layout with BreadcrumbNav header and rich summary card
 
-## 4 files to change
+## Single file: `src/features/post-production/components/PPVideoPage.tsx`
 
-### FILE 1 — CREATE `src/features/post-production/components/PPVideoEditForm.tsx`
-New component with Props: `{ item: PostProductionItem; onBack: () => void }`.
+All logic, hooks, state, handlers, helpers unchanged. Only JSX restructure.
 
-- Copy helpers from PPVideoPage: `parseTitle`, `composeTitle`, `getUserAvatarUrl`, `getInitials`, `SectionHeader`, `DateField`
-- Same hooks: `usePostProductionMutations`, `useUsers`
-- Same form state (client_name, project_name, suffix, editor_id, status, priority, due_date, start_date, notes)
-- Add `isDirty` computed by comparing form values to original item values
-- `handleSave`: calls `updateItem.mutate(...)` then `onBack()`
+### Import changes
+- Add: `BreadcrumbNav` from `@/components/ui/breadcrumb-nav`
+- Add: `DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger` from `@/components/ui/dropdown-menu`
+- Add: `MoreHorizontal` from `lucide-react` (Pencil already imported)
+- Keep: `Save, Trash2` (Save used in summary card save button, Trash2 in dropdown)
+- `useNavigate` already imported
 
-Layout (matching ProposalDetails card pattern):
-```
-ResponsiveContainer maxWidth="7xl"
-  Header: back button + breadcrumb ("Esteira de Pós" > composedTitle) + no action buttons in header
-  Card "Dados do Vídeo" (SectionHeader with FileText icon, save button in header when isDirty):
-    - 3-col grid: Empresa, Projeto, Sufixo inputs
-    - Título gerado (readonly)
-    - Observações textarea
-  Card "Informações" (SectionHeader with Info icon, save button when isDirty):
-    - 2-col grid: Etapa select, Prioridade select, Editor select, Prazo, Início date pickers
-```
+### 1. Header — BreadcrumbNav + dropdown (lines 236-259)
+Replace with ProposalDetails pattern:
+- `BreadcrumbNav` with items: `Esteira de Pós` (href `/esteira-de-pos`) > `composedTitle || 'Vídeo'`
+- Right side: "Editar" outline button navigating to edit page, then a `DropdownMenu` with `MoreHorizontal` trigger containing "Excluir" as destructive item
 
-### FILE 2 — CREATE `src/pages/PPVideoEditDetail.tsx`
-Same structure as `PPVideoDetail.tsx`:
-- `useParams` for `:id`, `useNavigate(-1)` for onBack
-- `usePostProduction()` to find item
-- Loading skeleton, redirect if not found
-- Renders `<PPVideoEditForm item={item} onBack={...} />`
+### 2. Summary Card — replace current + delete Informações card (lines 262-486)
+Replace the current simple summary card AND the entire Informações card with one rich summary card containing:
+- **Top row**: title + version badge on left; status + priority badges on right
+- **Separator**
+- **Bottom grid** (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4`): Status select, Priority select, Editor select, Prazo DateField, Início DateField, Entregue em (read-only), Tempo na etapa (read-only) — each in `space-y-1.5` div
+- **Footer row**: right-aligned Save button (shown always, disabled when `!form.client_name.trim()`)
 
-### FILE 3 — MODIFY `src/App.tsx`
-- Add lazy import: `const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"))`
-- Add route after `esteira-de-pos/:id`: `<Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />`
+### 3. Pipeline Card — unchanged (lines 287-393)
 
-### FILE 4 — MODIFY `src/features/post-production/components/PPVideoPage.tsx`
-Two changes only:
-1. **Header**: Add `useNavigate` import, add `const navigate = useNavigate()`. Before the "Excluir" button, add an "Editar" button with `Pencil` icon that navigates to `/esteira-de-pos/${item.id}/editar`. Import `Pencil` from lucide-react.
-2. **Remove "Dados do Vídeo" card and grid wrapper**: Delete lines 390-421 (the grid open, left column, and Dados do Vídeo card). Remove the grid wrapper `<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">` and the right column `<div>` wrapper — render the Informações `<Card>` directly (full width, no grid). The Informações card content (lines 425-516) stays unchanged but becomes a standalone card. Also remove the `FileText` import if no longer used.
+### 4. Delete the standalone Informações card (lines 395-486)
+All its content is now in the summary card.
+
+### 5. Atividade & Versões — unchanged (lines 488-587)
+
+### Technical notes
+- The `onBack` prop is no longer used in the header (BreadcrumbNav handles navigation). Keep prop in interface for compatibility but don't render a back button.
+- `DropdownMenuSeparator` not needed (only one item in dropdown).
 
