@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Video, ExternalLink, X, Calendar, MapPin, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -85,11 +86,11 @@ function EventDetailPopover({ event, onClose }: { event: RecordingEvent; onClose
       : format(parseISO(event.end), "HH:mm", { locale: ptBR }))
     : null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/20" />
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
-        className="relative bg-background border border-border rounded-2xl shadow-2xl w-[340px] max-w-[90vw] overflow-hidden"
+        className="relative bg-background border border-border rounded-2xl shadow-2xl w-[360px] max-w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         <div className={`h-1 w-full ${type === 'REC' ? 'bg-destructive' : type === 'VT' ? 'bg-warning' : 'bg-muted-foreground/30'}`} />
