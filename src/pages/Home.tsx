@@ -20,6 +20,8 @@ export default function Home() {
             <div className="h-48 bg-muted rounded-lg animate-pulse" />
             <div className="h-48 bg-muted rounded-lg animate-pulse" />
           </div>
+          <div className="h-[500px] bg-muted rounded-lg animate-pulse" />
+          <div className="h-64 bg-muted rounded-lg animate-pulse" />
           <div className="h-64 bg-muted rounded-lg animate-pulse" />
         </div>
       </ResponsiveContainer>
