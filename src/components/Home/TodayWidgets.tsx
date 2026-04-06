@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePostProduction } from '@/features/post-production/hooks/usePostProduction';
 import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from '@/features/post-production/types';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
-import { useProjects } from '@/features/projects/hooks/useProjects';
+import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 const today = new Date().toLocaleDateString('en-CA');
@@ -17,7 +17,7 @@ export default function TodayWidgets() {
   const { user } = useAuthContext();
   const { items } = usePostProduction();
   const { tasks } = useTasks();
-  const { projects } = useProjects();
+  const { data: recordingEvents = [], isLoading: recordingsLoading } = useRecordingsToday();
 
   // Entregas hoje
   const todayDeliveries = items
@@ -34,7 +34,7 @@ export default function TodayWidgets() {
     });
 
   // Gravações do dia
-  const todayRecordings = projects.filter(p => p.startDate === today && p.status === 'active');
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,20 +144,20 @@ export default function TodayWidgets() {
             <ArrowRight className="h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="mb-3">
-            <span className="text-3xl font-bold">{todayRecordings.length}</span>
-            <p className="text-sm text-muted-foreground">gravação(ões) agendada(s)</p>
+            <span className="text-3xl font-bold">{recordingEvents.length}</span>
+            <p className="text-sm text-muted-foreground">{recordingEvents.length === 1 ? 'gravação agendada' : 'gravações agendadas'}</p>
           </div>
-          {todayRecordings.length > 0 ? (
+          {recordingEvents.length > 0 ? (
             <>
               <Separator className="mb-3" />
               <div className="space-y-2">
-                {todayRecordings.slice(0, 3).map(proj => (
-                  <div key={proj.id} className="flex items-center gap-2">
+                {recordingEvents.slice(0, 3).map(e => (
+                  <div key={e.id} className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-                    <span className="text-sm truncate flex-1">{proj.name}</span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">
-                      {proj.responsibleName?.split(' ')[0] || '—'}
-                    </span>
+                    <span className="text-sm truncate flex-1">{getEventTitle(e.summary)}</span>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 text-muted-foreground">
+                      {e.allDay ? 'Dia todo' : new Date(e.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -165,7 +165,7 @@ export default function TodayWidgets() {
           ) : (
             <>
               <Separator className="mb-3" />
-              <p className="text-sm text-muted-foreground">Nenhuma gravação agendada</p>
+              <p className="text-sm text-muted-foreground">{recordingsLoading ? 'Carregando...' : 'Nenhuma gravação hoje'}</p>
             </>
           )}
         </CardContent>
