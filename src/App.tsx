@@ -40,6 +40,7 @@ const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
 const ProposalOverview = lazy(() => import("./pages/ProposalOverview"));
 const NewProposal = lazy(() => import("./pages/NewProposal"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
+const PPVideoDetail = lazy(() => import("./pages/PPVideoDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -98,6 +99,7 @@ const App = () => (
                 <Route path="orcamentos/:slug/overview" element={<ProposalOverview />} />
                 <Route path="orcamentos/:slug" element={<ProposalDetails />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
+                <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
                 <Route path="perfil" element={<Profile />} />
                 <Route path="administracao" element={<Navigate to="/administracao/usuarios" replace />} />
                 <Route path="administracao/usuarios" element={<Admin />} />

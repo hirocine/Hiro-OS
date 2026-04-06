@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Pencil, Film, ChevronDown, Check } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -85,6 +86,7 @@ interface PPTableProps {
 export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableProps) {
   const { updateItem } = usePostProductionMutations();
   const { users } = useUsers();
+  const navigate = useNavigate();
 
   const [sortBy, setSortBy] = useState<PPSortableField>('due_date');
   const [sortOrder, setSortOrder] = useState<PPSortOrder>('asc');
@@ -180,8 +182,11 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
         {sortedItems.map(item => (
           <TableRow key={item.id} className="hover:bg-muted/50">
             <TableCell style={{ textAlign: 'left' }}>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium truncate block">{item.title}</span>
+              <div
+                className="flex flex-col gap-1 cursor-pointer group"
+                onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+              >
+                <span className="text-sm font-medium truncate block group-hover:text-primary transition-colors">{item.title}</span>
                 <PipelineProgress status={item.status} />
               </div>
             </TableCell>
