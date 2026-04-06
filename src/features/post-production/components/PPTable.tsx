@@ -53,6 +53,28 @@ function StatusDropdown({ item, onUpdate }: { item: PostProductionItem; onUpdate
   );
 }
 
+const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'entregue'];
+
+function PipelineProgress({ status }: { status: PPStatus }) {
+  const currentIndex = PIPELINE_STEPS.indexOf(status);
+  return (
+    <div className="flex items-center gap-0.5">
+      {PIPELINE_STEPS.map((step, i) => (
+        <div
+          key={step}
+          className={`h-1 rounded-full transition-all ${
+            i < currentIndex
+              ? 'w-3 bg-primary/40'
+              : i === currentIndex
+              ? 'w-4 bg-primary'
+              : 'w-3 bg-muted-foreground/20'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface PPTableProps {
   items: PostProductionItem[];
   isLoading?: boolean;
@@ -158,7 +180,10 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
         {sortedItems.map(item => (
           <TableRow key={item.id} className="hover:bg-muted/50">
             <TableCell style={{ textAlign: 'left' }}>
-              <span className="text-sm font-medium truncate block">{item.title}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium truncate block">{item.title}</span>
+                <PipelineProgress status={item.status} />
+              </div>
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <span className="text-sm text-muted-foreground truncate block">
