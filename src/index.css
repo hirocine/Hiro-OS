@@ -8,6 +8,7 @@ All colors MUST be HSL.
 
 /* === Scroll strategy: html owns vertical scroll, nothing else === */
 html {
+  font-size: 90%;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
