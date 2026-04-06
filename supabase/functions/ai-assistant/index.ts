@@ -355,6 +355,89 @@ serve(async (req) => {
           ).join("\n");
         }
 
+        if (toolName === "search_suppliers") {
+          let q = supabase.from("suppliers").select("full_name, primary_role, secondary_role, whatsapp, instagram, daily_rate, expertise, is_active, rating");
+          if (toolInput.query) q = q.or(`full_name.ilike.%${toolInput.query}%,primary_role.ilike.%${toolInput.query}%,expertise.ilike.%${toolInput.query}%`);
+          if (toolInput.role) q = q.ilike("primary_role", `%${toolInput.role}%`);
+          q = q.eq("is_active", true).limit(15);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum fornecedor encontrado.";
+          return (data as any[]).map(s =>
+            `- **${s.full_name}** · ${s.primary_role || "—"}${s.secondary_role ? ` / ${s.secondary_role}` : ""} · Diária: ${s.daily_rate ? `R$ ${Number(s.daily_rate).toLocaleString("pt-BR")}` : "—"} · ⭐ ${s.rating || "—"} [LINK:/fornecedores]`
+          ).join("\n");
+        }
+
+        if (toolName === "search_policies") {
+          let q = supabase.from("company_policies").select("title, category, content");
+          if (toolInput.query) q = q.or(`title.ilike.%${toolInput.query}%,category.ilike.%${toolInput.query}%`);
+          q = q.limit(10);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhuma política encontrada.";
+          return (data as any[]).map(p =>
+            `- **${p.title}** · Categoria: ${p.category || "—"} [LINK:/politicas]`
+          ).join("\n");
+        }
+
+        if (toolName === "search_platform_accesses") {
+          let q = supabase.from("platform_accesses").select("platform_name, username, platform_url, category, is_active");
+          if (toolInput.query) q = q.ilike("platform_name", `%${toolInput.query}%`);
+          q = q.eq("is_active", true).limit(15);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhuma plataforma encontrada.";
+          return (data as any[]).map(p =>
+            `- **${p.platform_name}** · Login: ${p.username || "cadastrado"} · ${p.platform_url || ""} [LINK:/plataformas]`
+          ).join("\n");
+        }
+
+        if (toolName === "get_post_production_queue") {
+          let q = supabase.from("post_production_queue").select("title, status, editor_name, client_name, project_name, due_date, priority");
+          if (toolInput.query) q = q.or(`title.ilike.%${toolInput.query}%,editor_name.ilike.%${toolInput.query}%`);
+          if (toolInput.status) q = q.eq("status", toolInput.status);
+          q = q.order("created_at", { ascending: false }).limit(20);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum vídeo na esteira.";
+          return (data as any[]).map(v =>
+            `- **${v.title}** · ${v.status} · Editor: ${v.editor_name || "—"} · Cliente: ${v.client_name || "—"} · Prazo: ${v.due_date ? new Date(v.due_date + "T12:00:00").toLocaleDateString("pt-BR") : "—"} · Prioridade: ${v.priority} [LINK:/pos-producao]`
+          ).join("\n");
+        }
+
+        if (toolName === "get_ssds_status") {
+          let q = supabase.from("equipments")
+            .select("id, name, simplified_status, capacity, ssd_number")
+            .eq("category", "Armazenamento");
+          if (toolInput.query) q = q.ilike("name", `%${toolInput.query}%`);
+          q = q.limit(20);
+          const { data: ssds, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!ssds?.length) return "Nenhum SSD encontrado no inventário.";
+          const { data: allocations } = await supabase.from("ssd_allocations")
+            .select("ssd_id, project_name, allocated_gb");
+          return (ssds as any[]).map(s => {
+            const ssdAllocs = (allocations || []).filter((a: any) => a.ssd_id === s.id);
+            const usedGb = ssdAllocs.reduce((sum: number, a: any) => sum + (Number(a.allocated_gb) || 0), 0);
+            const totalGb = s.capacity ? Number(s.capacity) * 1000 : null;
+            const projects = ssdAllocs.map((a: any) => a.project_name).join(", ");
+            return `- **${s.name}**${s.ssd_number ? ` (#${s.ssd_number})` : ""} · ${projects ? `Em uso: ${projects} (${usedGb} GB)` : "Livre"}${totalGb ? ` · Capacidade: ${totalGb} GB` : ""} [LINK:/armazenamento]`;
+          }).join("\n");
+        }
+
+        if (toolName === "search_av_projects") {
+          let q = supabase.from("audiovisual_projects").select("id, name, company, status, deadline, responsible_user_name");
+          if (toolInput.query) q = q.or(`name.ilike.%${toolInput.query}%,company.ilike.%${toolInput.query}%`);
+          if (toolInput.status) q = q.eq("status", toolInput.status);
+          q = q.order("created_at", { ascending: false }).limit(10);
+          const { data, error } = await q;
+          if (error) return `Erro: ${error.message}`;
+          if (!data?.length) return "Nenhum projeto AV encontrado.";
+          return (data as any[]).map(p =>
+            `- **${p.name}** · ${p.company || "—"} · Status: ${p.status} · Responsável: ${p.responsible_user_name || "—"}${p.deadline ? ` · Prazo: ${new Date(p.deadline + "T12:00:00").toLocaleDateString("pt-BR")}` : ""} [LINK:/projetos-av]`
+          ).join("\n");
+        }
+
         return "Ferramenta não reconhecida.";
       } catch (err) {
         return `Erro: ${err}`;
