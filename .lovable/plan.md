@@ -1,35 +1,24 @@
 
 
-# Create TodayWidgets and update Home page
+# Replace recordings data source with useRecordingsToday
 
-## New file: `src/components/Home/TodayWidgets.tsx`
+## Changes in `src/components/Home/TodayWidgets.tsx`
 
-Three side-by-side cards in a `grid grid-cols-1 md:grid-cols-3 gap-4` layout.
+### 1. Import (line 10)
+Replace `import { useProjects } from '@/features/projects/hooks/useProjects'` with:
+```tsx
+import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar';
+```
 
-### Data sources
-- **Entregas hoje**: `usePostProduction()` from `@/features/post-production/hooks/usePostProduction` -- filter `items` where `item.due_date === today` and `item.status !== 'entregue'`, sort by `PP_PRIORITY_ORDER[priority]` desc
-- **Minhas tarefas**: `useTasks()` from `@/features/tasks/hooks/useTasks` -- filter `tasks` where status not in `['concluida','arquivada']` and `assignees?.some(a => a.user_id === user?.id)`. Sort: due_date === today first. Get `user` from `useAuthContext()`
-- **Gravacoes do dia**: `useProjects()` from `@/features/projects/hooks/useProjects` -- filter `projects` where `startDate === today` and `status === 'active'`
+### 2. Data source (lines 20, 36-37)
+Remove `const { projects } = useProjects();` and `const todayRecordings = ...`. Replace with:
+```tsx
+const { data: recordingEvents = [], isLoading: recordingsLoading } = useRecordingsToday();
+```
 
-Today string: `new Date().toLocaleDateString('en-CA')` (YYYY-MM-DD)
-
-### Card design (shared pattern per widget)
-- `<Card>` with `hover:shadow-md transition-shadow cursor-pointer group` + `onClick={() => navigate(path)}`
-- Header row: icon in colored rounded container (blue/amber/green) + label + `<ArrowRight>` with `opacity-50 group-hover:opacity-100 transition-opacity`
-- Big number `text-3xl font-bold` + subtitle `text-sm text-muted-foreground`
-- `<Separator />` then up to 3 items: colored dot + truncated title + right-aligned badge (priority for deliveries, date for tasks, first name for recordings)
-- Empty: muted text like "Nenhuma entrega para hoje"
-- Use `format`, `parseISO` from `date-fns` for date formatting
-
-### Icons
-- Deliveries: `Film` (blue)
-- Tasks: `CheckSquare` (amber)  
-- Recordings: `Video` (green)
-
-## Update: `src/pages/Home.tsx`
-
-1. Remove `AIAssistant` import and usage
-2. Add `import TodayWidgets from "@/components/Home/TodayWidgets"`
-3. Order: `<HeroBanner />` then `<TodayWidgets />` then `<TeamDirectory />`
-4. Loading skeleton: add `<div className="grid grid-cols-1 md:grid-cols-3 gap-4">` with 3 skeleton cards (h-48) between banner and team skeletons
+### 3. Recordings widget (lines 146-170)
+- Count: `recordingEvents.length`
+- Subtitle: `recordingEvents.length === 1 ? "gravação agendada" : "gravações agendadas"`
+- List: map `recordingEvents.slice(0, 3)` showing `getEventTitle(e.summary)` as title, time badge (`e.allDay ? "Dia todo" : new Date(e.start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })`)
+- Empty text: `recordingsLoading ? "Carregando..." : "Nenhuma gravação hoje"`
 
