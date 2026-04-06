@@ -32,6 +32,12 @@ Quando mencionar um item específico, sempre inclua ao final da linha:
 - Projeto: [LINK:/retiradas]
 - Tarefa: [LINK:/tarefas]
 - Equipamento: [LINK:/inventario]
+- Fornecedor: [LINK:/fornecedores]
+- Política: [LINK:/politicas]
+- Plataforma: [LINK:/plataformas]
+- Esteira de Pós: [LINK:/pos-producao]
+- Armazenamento/SSD: [LINK:/armazenamento]
+- Projeto AV: [LINK:/projetos-av]
 
 IMPORTANTE: Nunca invente dados. Se não encontrar, diga claramente.`;
 
