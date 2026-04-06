@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, Pencil } from 'lucide-react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,6 +94,7 @@ interface Props {
 }
 
 export function PPVideoPage({ item, onBack }: Props) {
+  const navigate = useNavigate();
   const { updateItem, deleteItem } = usePostProductionMutations();
   const { versions, addVersion, latestVersion } = usePPVersions(item.id);
   const { comments, addComment } = usePPComments(item.id);
@@ -244,6 +246,9 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}>
+              <Pencil className="h-4 w-4 mr-1.5" /> Editar
+            </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-1" /> Excluir
             </Button>
@@ -387,134 +392,98 @@ export function PPVideoPage({ item, onBack }: Props) {
           </CardContent>
         </Card>
 
-        {/* ===== TWO COLUMN LAYOUT ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column — Dados do Vídeo */}
-          <div className="lg:col-span-2">
-            <Card>
-              <SectionHeader icon={FileText} title="Dados do Vídeo" />
-              <CardContent className="pt-6 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="vp-client" className="text-xs text-muted-foreground block mb-1.5">Empresa</Label>
-                    <Input id="vp-client" value={form.client_name} onChange={e => setForm(prev => ({ ...prev, client_name: e.target.value }))} placeholder="Ex: Cacau Show" className="h-9" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="vp-project" className="text-xs text-muted-foreground block mb-1.5">Projeto</Label>
-                    <Input id="vp-project" value={form.project_name} onChange={e => setForm(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Ex: Campanha de Natal" className="h-9" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="vp-suffix" className="text-xs text-muted-foreground block mb-1.5">Sufixo</Label>
-                    <Input id="vp-suffix" value={form.suffix} onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))} placeholder="Ex: Criativo 1" className="h-9" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Título gerado</Label>
-                  <Input value={composedTitle} readOnly disabled className="bg-muted text-muted-foreground cursor-not-allowed h-9" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="vp-notes" className="text-xs text-muted-foreground block mb-1.5">Observações</Label>
-                  <Textarea id="vp-notes" value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {/* ===== INFORMAÇÕES (full width) ===== */}
+        <Card>
+          <SectionHeader icon={Info} title="Informações" />
+          <CardContent className="pt-6 space-y-4">
+            {/* Status */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
+              <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
+                <SelectTrigger className="h-9">
+                  <PPStatusBadge status={form.status} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(PP_STATUS_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Right column — Informações */}
-          <div>
-            <Card>
-              <SectionHeader icon={Info} title="Informações" />
-              <CardContent className="pt-6 space-y-4">
-                {/* Status */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Etapa</Label>
-                  <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
-                    <SelectTrigger className="h-9">
-                      <PPStatusBadge status={form.status} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(PP_STATUS_CONFIG).map(v => (
-                        <SelectItem key={v} value={v}><PPStatusBadge status={v as PPStatus} /></SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Priority */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
+              <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+                <SelectTrigger className="h-9">
+                  <PPPriorityBadge priority={form.priority} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(PP_PRIORITY_CONFIG).map(v => (
+                    <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Priority */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Prioridade</Label>
-                  <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                    <SelectTrigger className="h-9">
-                      <PPPriorityBadge priority={form.priority} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                        <SelectItem key={v} value={v}><PPPriorityBadge priority={v as PPPriority} /></SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Editor */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
+              <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+                <SelectTrigger className="h-9">
+                  {selectedEditor ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
+                        <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Selecionar editor" />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={getUserAvatarUrl(u)} />
+                          <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{u.display_name || u.email}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Editor */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Editor</Label>
-                  <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-                    <SelectTrigger className="h-9">
-                      {selectedEditor ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                            <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
-                          </Avatar>
-                          <span className="truncate text-sm">{selectedEditor.display_name || selectedEditor.email}</span>
-                        </div>
-                      ) : (
-                        <SelectValue placeholder="Selecionar editor" />
-                      )}
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map(u => (
-                        <SelectItem key={u.id} value={u.id}>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-5 w-5">
-                              <AvatarImage src={getUserAvatarUrl(u)} />
-                              <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{u.display_name || u.email}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <Separator />
 
-                <Separator />
+            {/* Dates */}
+            <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
+            <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
 
-                {/* Dates */}
-                <DateField label="Prazo" value={form.due_date} onChange={v => setForm(prev => ({ ...prev, due_date: v }))} />
-                <DateField label="Início" value={form.start_date} onChange={v => setForm(prev => ({ ...prev, start_date: v }))} />
+            {/* Delivered date (read-only) */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
+              <p className="text-sm mt-1">
+                {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
+              </p>
+            </div>
 
-                {/* Delivered date (read-only) */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Entregue em</Label>
-                  <p className="text-sm mt-1">
-                    {item.delivered_date ? format(parseISO(item.delivered_date), 'dd/MM/yyyy') : '—'}
-                  </p>
-                </div>
+            <Separator />
 
-                <Separator />
-
-                {/* Time in stage */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
-                  <p className="text-sm mt-1 font-medium">
-                    {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            {/* Time in stage */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground block mb-1.5">Tempo na etapa atual</Label>
+              <p className="text-sm mt-1 font-medium">
+                {daysInStage === 0 ? 'Hoje' : `${daysInStage} dia${daysInStage !== 1 ? 's' : ''}`}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* ===== FULL-WIDTH: Atividade & Versões ===== */}
         <Card>
