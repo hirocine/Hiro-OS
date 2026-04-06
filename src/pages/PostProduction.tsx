@@ -71,7 +71,49 @@ export default function PostProduction() {
               placeholder="Buscar vídeo, projeto, editor..."
               className="pl-9"
             />
-          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {(['urgente', 'alta', 'media', 'baixa'] as PPPriority[]).map(p => (
+            <button
+              key={p}
+              onClick={() => setFilterPriority(filterPriority === p ? null : p)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                filterPriority === p
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+              }`}
+            >
+              {PP_PRIORITY_CONFIG[p].label}
+            </button>
+          ))}
+
+          {editors.length > 0 && <span className="text-muted-foreground/40">·</span>}
+
+          {editors.map(editor => (
+            <button
+              key={editor}
+              onClick={() => setFilterEditor(filterEditor === editor ? null : editor)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                filterEditor === editor
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+              }`}
+            >
+              {editor.split(' ')[0]}
+            </button>
+          ))}
+
+          {(filterEditor || filterPriority) && (
+            <button
+              onClick={() => { setFilterEditor(null); setFilterPriority(null); }}
+              className="text-xs px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Limpar ×
+            </button>
+          )}
+        </div>
         </div>
 
         <Tabs defaultValue="tabela">
