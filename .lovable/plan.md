@@ -1,22 +1,30 @@
 
 
-# Fix dropdown menu item visual inconsistencies
+# Add quick filter chips to Post-Production page
 
-## Changes in `src/components/ui/dropdown-menu.tsx`
+## Single file change: `src/pages/PostProduction.tsx`
 
-### 1. DropdownMenuCheckboxItem
-- Replace className with the standard item style: `rounded-lg px-2 py-2 min-h-[36px] gap-2 focus:bg-muted/70 focus:text-foreground transition-colors`
-- Remove `absolute left-2` wrapper span — move `ItemIndicator` (Check icon) after `{children}` with `ml-auto`
+### 1. Imports
+- Add `useMemo` to the React import
+- Add `PPPriority`, `PP_PRIORITY_CONFIG` from `@/features/post-production/types`
 
-### 2. DropdownMenuRadioItem
-- Same className update as CheckboxItem
-- Move `ItemIndicator` (Circle icon) after `{children}` with `ml-auto`
+### 2. State
+Add after existing `search` state:
+- `filterEditor: string | null` (default `null`)
+- `filterPriority: PPPriority | null` (default `null`)
 
-### 3. DropdownMenuLabel
-- Remove `inset && "pl-8"` — keep `px-2 py-1.5` (already correct, just remove the inset override)
+### 3. Derived data
+- Compute `editors` array via `useMemo` from unique `editor_name` values in `items`
+- Update `filteredItems` to also check `filterEditor` and `filterPriority`
 
-### 4. DropdownMenuItem
-- Add `data-[state=checked]:font-medium` to existing className
+### 4. UI — Filter chips row
+Insert between the search `<div>` and the `<Tabs>` component:
+- A `flex flex-wrap gap-2 items-center` row containing:
+  - Priority chips (urgente, alta, media, baixa) — toggle on/off, filled style when active
+  - Separator dot when editors exist
+  - Editor chips (first name only) — toggle on/off
+  - "Limpar x" button when any filter is active
+- Chip styles: `rounded-full border text-xs px-3 py-1.5`, active = `bg-foreground text-background`, inactive = `bg-background text-muted-foreground`
 
 No other files changed.
 
