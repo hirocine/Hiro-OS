@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePostProduction } from '@/features/post-production/hooks/usePostProduction';
 import { PP_PRIORITY_ORDER, PP_PRIORITY_CONFIG } from '@/features/post-production/types';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
-import { useProjects } from '@/features/projects/hooks/useProjects';
+import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 const today = new Date().toLocaleDateString('en-CA');
@@ -17,7 +17,7 @@ export default function TodayWidgets() {
   const { user } = useAuthContext();
   const { items } = usePostProduction();
   const { tasks } = useTasks();
-  const { projects } = useProjects();
+  const { data: recordingEvents = [], isLoading: recordingsLoading } = useRecordingsToday();
 
   // Entregas hoje
   const todayDeliveries = items
@@ -34,7 +34,7 @@ export default function TodayWidgets() {
     });
 
   // Gravações do dia
-  const todayRecordings = projects.filter(p => p.startDate === today && p.status === 'active');
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
