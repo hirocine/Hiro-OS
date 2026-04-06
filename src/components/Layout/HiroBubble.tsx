@@ -14,29 +14,17 @@ const SUGGESTIONS = [
   "Tarefas urgentes",
 ];
 
-// Parse [LINK:/path] markers from text and render as buttons
 function MessageContent({ content }: { content: string }) {
   const navigate = useNavigate();
-  const linkRegex = /\[LINK:([^\]]+)\]/g;
-
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match;
-
-  // Split text into lines, process each line for links
   const lines = content.split("\n");
 
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-li:my-0.5">
       {lines.map((line, lineIdx) => {
-        const linkMatches: Array<{ index: number; path: string; full: string }> = [];
-        let m;
-        const regex = /\[LINK:([^\]]+)\]/g;
-        while ((m = regex.exec(line)) !== null) {
-          linkMatches.push({ index: m.index, path: m[1], full: m[0] });
-        }
+        const linkRegex = /\[LINK:([^\]]+)\]/g;
+        const hasLink = linkRegex.test(line);
 
-        if (linkMatches.length === 0) {
+        if (!hasLink) {
           return (
             <ReactMarkdown key={lineIdx} remarkPlugins={[remarkGfm]}>
               {line}
@@ -44,21 +32,22 @@ function MessageContent({ content }: { content: string }) {
           );
         }
 
-        // Line has links — render text + button
+        const path = line.match(/\[LINK:([^\]]+)\]/)?.[1] || "";
         const cleanLine = line.replace(/\[LINK:[^\]]+\]/g, "").trim();
-        const path = linkMatches[0].path;
 
         return (
           <div key={lineIdx} className="flex items-start gap-2 flex-wrap">
             <ReactMarkdown remarkPlugins={[remarkGfm]} className="flex-1 min-w-0">
               {cleanLine}
             </ReactMarkdown>
-            <button
-              onClick={() => navigate(path)}
-              className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors font-medium whitespace-nowrap"
-            >
-              Ver →
-            </button>
+            {path && (
+              <button
+                onClick={() => navigate(path)}
+                className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors font-medium whitespace-nowrap"
+              >
+                Ver →
+              </button>
+            )}
           </div>
         );
       })}
@@ -74,10 +63,9 @@ export function HiroBubble() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Only show for admin and producao
-  if (roleLoading || (role !== "admin" && role !== "producao")) return null;
+  const hasAccess = !roleLoading && (role === "admin" || role === "producao");
+  const hasMessages = messages.length > 0;
 
-  // Auto-scroll
   useEffect(() => {
     if (open) {
       setTimeout(() => {
@@ -86,12 +74,13 @@ export function HiroBubble() {
     }
   }, [messages, open]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
+
+  if (!hasAccess) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,23 +93,11 @@ export function HiroBubble() {
     if (!isLoading) sendMessage(s);
   };
 
-  const hasMessages = messages.length > 0;
-
   return (
     <>
-      {/* Bubble button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className={`
-          fixed bottom-6 right-6 z-50
-          w-14 h-14 rounded-full
-          bg-primary text-primary-foreground
-          shadow-lg hover:shadow-xl
-          flex items-center justify-center
-          transition-all duration-300
-          hover:scale-105 active:scale-95
-          ${open ? "rotate-0" : ""}
-        `}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
         aria-label="Assistente Hiro"
       >
         {open
@@ -129,18 +106,11 @@ export function HiroBubble() {
         }
       </button>
 
-      {/* Chat popup */}
       {open && (
-        <div className="
-          fixed bottom-24 right-6 z-50
-          w-[380px] max-w-[calc(100vw-2rem)]
-          bg-background border border-border
-          rounded-2xl shadow-2xl
-          flex flex-col overflow-hidden
-          animate-in slide-in-from-bottom-4 fade-in duration-200
-        " style={{ height: hasMessages ? "520px" : "auto" }}>
-
-          {/* Header */}
+        <div
+          className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          style={{ height: hasMessages ? "520px" : "auto" }}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
@@ -163,7 +133,6 @@ export function HiroBubble() {
             </div>
           </div>
 
-          {/* Messages */}
           {hasMessages && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {messages.map((msg, i) => (
@@ -173,13 +142,11 @@ export function HiroBubble() {
                       <Sparkles className="h-3.5 w-3.5 text-primary" />
                     </div>
                   )}
-                  <div className={`
-                    max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm
-                    ${msg.role === "user"
+                  <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                    msg.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-muted rounded-tl-sm"
-                    }
-                  `}>
+                  }`}>
                     {msg.role === "assistant"
                       ? <MessageContent content={msg.content} />
                       : <p>{msg.content}</p>
@@ -203,7 +170,6 @@ export function HiroBubble() {
             </div>
           )}
 
-          {/* Suggestions (only when no messages) */}
           {!hasMessages && (
             <div className="px-4 pt-4 pb-2">
               <p className="text-xs text-muted-foreground mb-2 font-medium">Sugestões:</p>
@@ -222,7 +188,6 @@ export function HiroBubble() {
             </div>
           )}
 
-          {/* Input */}
           <div className="px-4 py-3 border-t border-border shrink-0">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
