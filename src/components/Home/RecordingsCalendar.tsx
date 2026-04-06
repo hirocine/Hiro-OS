@@ -271,7 +271,7 @@ export function RecordingsCalendar() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[80px] p-1.5 border border-border/50 transition-colors hover:bg-muted/30 cursor-pointer ${
+                    className={`min-h-[80px] p-1.5 className={`min-h-[80px] p-1.5 border border-border/20 transition-colors hover:bg-muted/30 cursor-pointer ${ transition-colors hover:bg-muted/30 cursor-pointer ${
                       today ? 'bg-primary/5 ring-1 ring-inset ring-primary' : ''
                     } ${!sameMonth ? 'opacity-30 bg-muted/20' : ''}`}
                   >
