@@ -64,10 +64,10 @@ export function InlineSelectCell({
                   <CommandItem 
                     key={option.value} 
                     onSelect={() => handleValueChange(option.value)}
-                    className="cursor-pointer"
+                    className="cursor-pointer flex items-center justify-between"
                   >
-                    <Check className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")} />
                     {renderOption ? renderOption(option.value) : option.label}
+                    <Check className={cn("h-4 w-4 ml-auto shrink-0", value === option.value ? "opacity-100" : "opacity-0")} />
                   </CommandItem>
                 ))}
               </CommandGroup>

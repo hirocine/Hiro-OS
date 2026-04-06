@@ -107,10 +107,10 @@ export function InlineAssigneeCell({
               <CommandGroup>
                 <CommandItem 
                   onSelect={handleClear}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex items-center justify-between"
                 >
-                  <Check className={cn("mr-2 h-4 w-4", value.length === 0 ? "opacity-100" : "opacity-0")} />
                   Nenhum
+                  <Check className={cn("h-4 w-4 ml-auto shrink-0", value.length === 0 ? "opacity-100" : "opacity-0")} />
                 </CommandItem>
                 {users.map((user) => {
                   const isSelected = value.includes(user.id);
@@ -123,9 +123,8 @@ export function InlineAssigneeCell({
                     <CommandItem 
                       key={user.id} 
                       onSelect={() => handleToggle(user.id)}
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center justify-between"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
                       <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
                           <AvatarImage src={userData.url || undefined} />
@@ -133,6 +132,7 @@ export function InlineAssigneeCell({
                         </Avatar>
                         <span>{userData.displayName || user.email}</span>
                       </div>
+                      <Check className={cn("h-4 w-4 ml-auto shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
                     </CommandItem>
                   );
                 })}
