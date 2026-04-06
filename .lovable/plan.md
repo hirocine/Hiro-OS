@@ -1,32 +1,27 @@
 
 
-# Add weather and next recording overlay to HeroBanner
+# Add drag-and-drop to PPKanban
 
-## Changes in `src/components/Home/HeroBanner.tsx`
+## Changes in `src/features/post-production/components/PPKanban.tsx`
 
-### 1. Imports (lines 1-8)
-Add:
+### Imports
+Add `useState` and dnd-kit imports:
 ```tsx
-import { useQuery } from '@tanstack/react-query';
-import { useRecordingsCalendar, getEventTitle } from '@/hooks/useRecordingsCalendar';
-import { parseISO, differenceInDays, differenceInHours } from 'date-fns';
+import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 ```
 
-### 2. Hooks (after line 17)
-Add weather query (Open-Meteo, Barueri coords), recordings query (next 365 days), and `nextRec` derived value.
+### DraggableCard wrapper
+Create a `DraggableCard` component that wraps `KanbanCard` with `useDraggable({ id: item.id, data: { item } })`. Apply `opacity-50 scale-95 cursor-grabbing` when `isDragging`, otherwise `cursor-grab transition-all duration-200`.
 
-### 3. Helper functions (after `getScale`)
-Add `getWeatherIcon(code)` and `getCountdown(dateStr)` inside the component.
+### DroppableColumn wrapper
+Create a `DroppableColumn` component using `useDroppable({ id: status })`. When `isOver`, apply `ring-2 ring-primary/30 bg-primary/5` to the column container.
 
-### 4. Overlay JSX (after line 107, inside the Content div)
-Add a bottom-aligned row with:
-- **Next recording**: camera emoji + "Próxima gravação" label + event title (truncated) + countdown
-- **Weather**: current temp + icon + "Barueri" label, separator, tomorrow forecast with precipitation %
+### DndContext + DragOverlay
+- Wrap the columns flex container with `DndContext` using `closestCenter` collision detection
+- Track `activeItem` state via `onDragStart`
+- `onDragEnd`: extract `over.id` as the new `PPStatus`, if different from the item's current status, call `updateItem.mutate({ id, updates: { status } })`
+- Render `DragOverlay` with a clone of the active card for the ghost effect
 
-The overlay uses `flex items-end` positioning, white/translucent text with `backdrop-blur` pills, and `text-xs`/`text-sm` sizing. Only renders when data is available.
-
-### Technical detail
-- Content div changes from `justify-center` to `justify-between` to push the greeting up and info bar down
-- Weather data cached 30min, recordings use existing hook
-- No other files changed
+### No other files changed
 
