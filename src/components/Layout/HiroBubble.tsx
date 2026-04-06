@@ -70,6 +70,10 @@ export function HiroBubble() {
   const hasMessages = messages.length > 0;
 
   useEffect(() => {
+    if (open) setVisible(true);
+  }, [open]);
+
+  useEffect(() => {
     if (open) {
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,6 +86,11 @@ export function HiroBubble() {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => setOpen(false), 250);
+  };
 
   if (!hasAccess) return null;
 
