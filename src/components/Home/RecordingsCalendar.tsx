@@ -158,6 +158,7 @@ export function RecordingsCalendar() {
   const [view, setView] = useState<'month' | 'week' | 'list'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<RecordingEvent | null>(null);
+  const [animKey, setAnimKey] = useState(0);
 
   const { timeMin, timeMax } = useMemo(() => {
     let start: Date, end: Date;
@@ -241,7 +242,7 @@ export function RecordingsCalendar() {
               {(['month', 'week', 'list'] as const).map(v => (
                 <button
                   key={v}
-                  onClick={() => setView(v)}
+                  onClick={() => { setView(v); setAnimKey(k => k + 1); }}
                   className={`text-xs px-2.5 py-1 rounded-md transition-all ${
                     view === v
                       ? 'bg-background text-foreground shadow-sm'
@@ -255,6 +256,7 @@ export function RecordingsCalendar() {
           </div>
         </div>
 
+        <div key={animKey} className="animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
         {/* Month View */}
         {view === 'month' && (
           <div>
@@ -386,6 +388,8 @@ export function RecordingsCalendar() {
             )}
           </div>
         )}
+
+        </div>
 
         {/* Event Detail Popover */}
         {selectedEvent && <EventDetailPopover event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
