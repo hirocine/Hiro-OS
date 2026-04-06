@@ -1020,6 +1020,8 @@ export type Database = {
           project_name: string | null
           start_date: string | null
           status: string
+          sub_status: string | null
+          sub_status_index: number | null
           title: string
           updated_at: string
         }
@@ -1038,6 +1040,8 @@ export type Database = {
           project_name?: string | null
           start_date?: string | null
           status?: string
+          sub_status?: string | null
+          sub_status_index?: number | null
           title: string
           updated_at?: string
         }
@@ -1056,6 +1060,8 @@ export type Database = {
           project_name?: string | null
           start_date?: string | null
           status?: string
+          sub_status?: string | null
+          sub_status_index?: number | null
           title?: string
           updated_at?: string
         }
@@ -1065,6 +1071,82 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "audiovisual_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pp_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          item_id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          item_id: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pp_comments_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "post_production_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pp_versions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          frame_io_url: string
+          id: string
+          item_id: string
+          notes: string | null
+          status: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          frame_io_url: string
+          id?: string
+          item_id: string
+          notes?: string | null
+          status?: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          frame_io_url?: string
+          id?: string
+          item_id?: string
+          notes?: string | null
+          status?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pp_versions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "post_production_queue"
             referencedColumns: ["id"]
           },
         ]
