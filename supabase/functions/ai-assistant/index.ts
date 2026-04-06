@@ -111,6 +111,69 @@ const tools: Anthropic.Tool[] = [
         days: { type: "number", description: "Quantos dias à frente verificar (padrão: 7)" }
       }
     }
+  },
+  {
+    name: "search_suppliers",
+    description: "Busca fornecedores e freelancers cadastrados por nome, especialidade ou tipo.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nome ou especialidade do fornecedor" },
+        role: { type: "string", description: "Função principal: ex. Cinegrafista, Editor, Fotógrafo" }
+      }
+    }
+  },
+  {
+    name: "search_policies",
+    description: "Busca políticas e documentos internos da empresa por título ou categoria.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Título ou assunto da política" }
+      }
+    }
+  },
+  {
+    name: "search_platform_accesses",
+    description: "Busca acessos e credenciais de plataformas cadastradas. NUNCA mostre senhas — mostre apenas que existe o acesso.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nome da plataforma ou serviço" }
+      }
+    }
+  },
+  {
+    name: "get_post_production_queue",
+    description: "Lista os vídeos na esteira de pós-produção, seus status e editores responsáveis.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Filtrar por título ou editor" },
+        status: { type: "string", description: "Status do vídeo na esteira" }
+      }
+    }
+  },
+  {
+    name: "get_ssds_status",
+    description: "Mostra o status dos SSDs — quais estão livres, em uso ou com quem estão.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Filtrar por nome do SSD" }
+      }
+    }
+  },
+  {
+    name: "search_av_projects",
+    description: "Busca projetos audiovisuais por título, empresa ou status.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Título ou empresa do projeto" },
+        status: { type: "string", description: "Status do projeto" }
+      }
+    }
   }
 ];
 
