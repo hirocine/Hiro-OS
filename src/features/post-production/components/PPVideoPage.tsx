@@ -481,6 +481,104 @@ export function PPVideoPage({ item, onBack }: Props) {
           </Card>
         </div>
       </div>
+
+      {/* ===== FULL-WIDTH: Atividade & Versões ===== */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Atividade & Versões</CardTitle>
+          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setAddingVersion(true)}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add version inline form */}
+          {addingVersion && (
+            <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
+              <Input
+                placeholder="URL do Frame.io"
+                value={newVersionUrl}
+                onChange={e => setNewVersionUrl(e.target.value)}
+                className="flex-1 h-8 text-sm"
+                onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
+              />
+              <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
+                Adicionar
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
+                Cancelar
+              </Button>
+            </div>
+          )}
+
+          {/* Timeline */}
+          <div className="space-y-3">
+            {timelineItems.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma atividade ainda.</p>
+            )}
+            {timelineItems.map((ti, idx) => (
+              <div key={idx} className="flex gap-3 items-start">
+                {ti.type === 'version' ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                      v{ti.data.version_number}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
+                        <Badge variant="outline" className="text-[10px] h-5">
+                          {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
+                        </Badge>
+                        <a
+                          href={ti.data.frame_io_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-0.5"
+                        >
+                          Frame.io <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                      {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                      {getInitials(ti.data.user_name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Comment input */}
+          <Separator />
+          <div className="flex gap-2 items-center">
+            <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold shrink-0">
+              {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
+            </div>
+            <Input
+              placeholder="Adicionar comentário..."
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddComment()}
+              className="flex-1 h-9 text-sm"
+            />
+            <Button size="icon" variant="ghost" onClick={handleAddComment} disabled={!comment.trim()} className="h-9 w-9 shrink-0">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
