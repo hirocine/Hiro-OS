@@ -72,6 +72,14 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
   const [sortBy, setSortBy] = useState<PPSortableField>('due_date');
   const [sortOrder, setSortOrder] = useState<PPSortOrder>('asc');
 
+  const handleStatusChange = (id: string, status: PPStatus) => {
+    const item = items.find(i => i.id === id);
+    const updates: Partial<PostProductionItem> = { status };
+    if (status === 'entregue') updates.delivered_date = new Date().toISOString().split('T')[0];
+    if (status === 'edicao' && !item?.start_date) updates.start_date = new Date().toISOString().split('T')[0];
+    updateItem.mutate({ id, updates });
+  };
+
   const parseLocalDate = (dateStr: string): Date => {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
@@ -174,18 +182,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
               />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
-              <InlineSelectCell
-                value={item.status}
-                options={Object.entries(PP_STATUS_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
-                onSave={v => {
-                  const updates: Partial<PostProductionItem> = { status: v as PPStatus };
-                  if (v === 'entregue') updates.delivered_date = new Date().toISOString().split('T')[0];
-                  if (v === 'edicao' && !item.start_date) updates.start_date = new Date().toISOString().split('T')[0];
-                  updateItem.mutate({ id: item.id, updates });
-                }}
-                renderValue={v => <PPStatusBadge status={v as PPStatus} />}
-                renderOption={v => <PPStatusBadge status={v as PPStatus} />}
-              />
+              <StatusDropdown item={item} onUpdate={handleStatusChange} />
             </TableCell>
             <TableCell style={{ textAlign: 'left' }}>
               <InlineSelectCell
