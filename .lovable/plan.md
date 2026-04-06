@@ -1,24 +1,49 @@
 
 
-# Replace recordings data source with useRecordingsToday
+# Create RecordingsCalendar component and add to Home page
 
-## Changes in `src/components/Home/TodayWidgets.tsx`
+## New file: `src/components/Home/RecordingsCalendar.tsx`
 
-### 1. Import (line 10)
-Replace `import { useProjects } from '@/features/projects/hooks/useProjects'` with:
-```tsx
-import { useRecordingsToday, getEventTitle } from '@/hooks/useRecordingsCalendar';
-```
+Full calendar component with 3 views (Mês, Semana, Todos) reading from `useRecordingsCalendar`.
 
-### 2. Data source (lines 20, 36-37)
-Remove `const { projects } = useProjects();` and `const todayRecordings = ...`. Replace with:
-```tsx
-const { data: recordingEvents = [], isLoading: recordingsLoading } = useRecordingsToday();
-```
+### Structure
 
-### 3. Recordings widget (lines 146-170)
-- Count: `recordingEvents.length`
-- Subtitle: `recordingEvents.length === 1 ? "gravação agendada" : "gravações agendadas"`
-- List: map `recordingEvents.slice(0, 3)` showing `getEventTitle(e.summary)` as title, time badge (`e.allDay ? "Dia todo" : new Date(e.start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })`)
-- Empty text: `recordingsLoading ? "Carregando..." : "Nenhuma gravação hoje"`
+**State**: `view` (month/week/list), `currentDate` (Date for navigation)
+
+**Date ranges per view**:
+- Month: `startOfMonth` to `endOfMonth`
+- Week: `startOfWeek` to `endOfWeek` (weekStartsOn: 0)
+- List: today to +60 days
+
+**TYPE_CONFIG** map for badge styling per event type (REC/PRE/VT/EDIT/OTHER) with dot colors.
+
+**Helper**: `getEventsForDay(day, events)` — checks if day falls between event start/end, handling both all-day (date strings) and timed events.
+
+### Card layout
+- Header: Video icon (green bg) + "Agenda de Gravações" title + event count + period label
+- Navigation: chevron left/right + period label centered
+- View switcher: 3 buttons (Mês/Semana/Todos) in muted rounded container
+
+### Month view
+- 7-column grid with Dom-Sáb header
+- Day cells: min-h-[80px], today gets `ring-1 ring-primary bg-primary/5`, other-month days `opacity-40`
+- Events as small pills with colored dot + truncated title, max 2 visible + "+N mais"
+
+### Week view
+- 7-column header with day name + number, today column highlighted
+- Stacked event cards with `border-l-2` colored by type, title + time info
+
+### List view
+- Events grouped by "Esta semana", "Próxima semana", "Este mês", "Próximos meses"
+- Each row: date block (big day number + month abbrev) + divider + title/meta + type badge
+- Click opens Google Calendar
+
+### Footer
+Link to Google Calendar with ExternalLink icon
+
+## Update: `src/pages/Home.tsx`
+
+- Import `RecordingsCalendar`
+- Add `<RecordingsCalendar />` between `<TodayWidgets />` and `<TeamDirectory />`
+- Add `<div className="h-[500px] bg-muted rounded-lg animate-pulse" />` to loading skeleton between widgets and team skeletons
 
