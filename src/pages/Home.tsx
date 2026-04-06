@@ -1,6 +1,7 @@
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { HeroBanner } from "@/components/Home/HeroBanner";
 import TodayWidgets from "@/components/Home/TodayWidgets";
+import { RecordingsCalendar } from "@/components/Home/RecordingsCalendar";
 import { TeamDirectory } from "@/components/Home/TeamDirectory";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
