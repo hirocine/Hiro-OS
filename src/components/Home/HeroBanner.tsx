@@ -6,6 +6,9 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BannerCropperDialog } from "./BannerCropperDialog";
 import defaultBanner from "/images/default-banner.jpg";
+import { useQuery } from '@tanstack/react-query';
+import { useRecordingsCalendar, getEventTitle } from '@/hooks/useRecordingsCalendar';
+import { parseISO, differenceInDays, differenceInHours } from 'date-fns';
 
 export function HeroBanner() {
   const { user, isAdmin } = useAuthContext();
