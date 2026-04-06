@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react';
-import { Pencil, Film } from 'lucide-react';
+import { Pencil, Film, ChevronDown, Check } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PPSortableHeader } from './PPSortableHeader';
-import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
+import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
 import { PPStatusBadge } from './PPStatusBadge';
 import { PPPriorityBadge } from './PPPriorityBadge';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
@@ -22,7 +24,39 @@ import {
   PP_STATUS_ORDER,
   PP_PRIORITY_CONFIG,
   PP_STATUS_CONFIG,
+  PP_STATUS_COLUMNS,
 } from '../types';
+
+function StatusDropdown({ item, onUpdate }: { item: PostProductionItem; onUpdate: (id: string, status: PPStatus) => void }) {
+  const config = PP_STATUS_CONFIG[item.status];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+        <Badge
+          variant="outline"
+          className={`cursor-pointer hover:opacity-80 transition-opacity gap-1 ${config.bgColor} ${config.color}`}
+        >
+          {config.label}
+          <ChevronDown className="h-3 w-3 opacity-60" />
+        </Badge>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" onClick={e => e.stopPropagation()}>
+        {PP_STATUS_COLUMNS.map(status => (
+          <DropdownMenuItem
+            key={status}
+            onClick={() => onUpdate(item.id, status)}
+            className={`gap-2 ${item.status === status ? 'font-medium' : ''}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${PP_STATUS_CONFIG[status].bgColor.split(' ')[0]}`} />
+            {PP_STATUS_CONFIG[status].label}
+            {item.status === status && <Check className="h-3 w-3 ml-auto" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 interface PPTableProps {
   items: PostProductionItem[];
