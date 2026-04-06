@@ -20,7 +20,6 @@ FORMATAÇÃO:
 - Use markdown com moderação
 - Para listas de resultados, use bullet points limpos
 - Para valores financeiros, sempre formate como "R$ X.XXX,XX"
-- Quando retornar propostas/projetos/equipamentos, inclua [LINK:/caminho] no final para navegação
 
 LINKS NAVEGÁVEIS:
 Quando mencionar um item específico, sempre inclua ao final da linha:
@@ -29,17 +28,12 @@ Quando mencionar um item específico, sempre inclua ao final da linha:
 - Tarefa: [LINK:/tarefas]
 - Equipamento: [LINK:/inventario]
 
-EXEMPLO DE RESPOSTA:
-"Encontrei 2 orçamentos para a Mascavo:
-- **EAD Mascavo** · R$ 68.000 · Enviada [LINK:/orcamentos/ead-mascavo/overview]
-- **Social Mascavo** · R$ 32.000 · Aprovada [LINK:/orcamentos/social-mascavo/overview]"
-
 IMPORTANTE: Nunca invente dados. Se não encontrar, diga claramente.`;
 
 const tools: Anthropic.Tool[] = [
   {
     name: "search_proposals",
-    description: "Busca orçamentos/propostas por cliente, nome do projeto ou status. Use quando o usuário perguntar sobre orçamentos, propostas, valores de projetos.",
+    description: "Busca orçamentos/propostas por cliente, nome do projeto ou status.",
     input_schema: {
       type: "object",
       properties: {
@@ -84,7 +78,7 @@ const tools: Anthropic.Tool[] = [
   },
   {
     name: "get_platform_summary",
-    description: "Retorna um resumo geral da plataforma: contagens de equipamentos, projetos ativos, tarefas pendentes, orçamentos ativos.",
+    description: "Retorna um resumo geral da plataforma: orçamentos, equipamentos, projetos, tarefas.",
     input_schema: { type: "object", properties: {} }
   },
   {
@@ -143,7 +137,7 @@ serve(async (req) => {
       try {
         if (toolName === "search_proposals") {
           let q = supabase.from("orcamentos").select(
-            "id, slug, project_name, client_name, final_value, status, validity_date, sent_date, version, is_latest_version"
+            "id, slug, project_name, client_name, final_value, status, validity_date, version, is_latest_version"
           ).eq("is_latest_version", true);
 
           if (toolInput.query) {
@@ -153,7 +147,7 @@ serve(async (req) => {
           q = q.order("created_at", { ascending: false }).limit(10);
 
           const { data, error } = await q;
-          if (error) return `Erro ao buscar orçamentos: ${error.message}`;
+          if (error) return `Erro: ${error.message}`;
           if (!data?.length) return "Nenhum orçamento encontrado.";
 
           const statusLabels: Record<string, string> = {
@@ -161,14 +155,14 @@ serve(async (req) => {
             approved: "Aprovada", expired: "Arquivada", new_version: "Nova Versão"
           };
 
-          return data.map(p =>
+          return data.map((p: any) =>
             `- **${p.project_name}** (${p.client_name}) · ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(p.final_value || 0)} · ${statusLabels[p.status] || p.status}${p.version > 1 ? ` · v${p.version}` : ""} · Validade: ${p.validity_date ? new Date(p.validity_date + "T12:00:00").toLocaleDateString("pt-BR") : "—"} [LINK:/orcamentos/${p.slug}/overview]`
           ).join("\n");
         }
 
         if (toolName === "search_equipment") {
           let q = supabase.from("equipments").select(
-            "name, brand, category, subcategory, simplified_status, status, value, serial_number"
+            "name, brand, category, subcategory, simplified_status, status, value"
           );
           if (toolInput.query) {
             q = q.or(`name.ilike.%${toolInput.query}%,brand.ilike.%${toolInput.query}%,category.ilike.%${toolInput.query}%`);
@@ -180,14 +174,14 @@ serve(async (req) => {
           if (error) return `Erro: ${error.message}`;
           if (!data?.length) return "Nenhum equipamento encontrado.";
 
-          return data.map(e =>
-            `- **${e.name}** (${e.brand}) · ${e.category}/${e.subcategory} · Status: ${e.simplified_status || e.status} · R$ ${e.value?.toLocaleString("pt-BR") || "N/A"} [LINK:/inventario]`
+          return (data as any[]).map(e =>
+            `- **${e.name}** (${e.brand}) · ${e.category} · Status: ${e.simplified_status || e.status} · R$ ${e.value?.toLocaleString("pt-BR") || "N/A"} [LINK:/inventario]`
           ).join("\n");
         }
 
         if (toolName === "search_projects") {
           let q = supabase.from("projects").select(
-            "id, name, status, step, start_date, expected_end_date, responsible_name, equipment_count"
+            "id, name, status, step, start_date, responsible_name, equipment_count"
           ).order("created_at", { ascending: false });
 
           if (toolInput.query) {
@@ -200,14 +194,14 @@ serve(async (req) => {
           if (error) return `Erro: ${error.message}`;
           if (!data?.length) return "Nenhum projeto encontrado.";
 
-          return data.map(p =>
-            `- **${p.name}** · ${p.status} · Etapa: ${p.step || "—"} · Responsável: ${p.responsible_name || "—"} · ${p.equipment_count || 0} equipamentos [LINK:/retiradas]`
+          return (data as any[]).map(p =>
+            `- **${p.name}** · ${p.status} · Responsável: ${p.responsible_name || "—"} · ${p.equipment_count || 0} equipamentos [LINK:/retiradas]`
           ).join("\n");
         }
 
         if (toolName === "search_tasks") {
           let q = supabase.from("tasks").select(
-            "id, title, status, priority, due_date, department"
+            "id, title, status, priority, due_date"
           ).order("created_at", { ascending: false });
 
           if (toolInput.query) q = q.ilike("title", `%${toolInput.query}%`);
@@ -219,36 +213,36 @@ serve(async (req) => {
           if (error) return `Erro: ${error.message}`;
           if (!data?.length) return "Nenhuma tarefa encontrada.";
 
-          return data.map(t =>
+          return (data as any[]).map(t =>
             `- **${t.title}** · ${t.status} · Prioridade: ${t.priority || "—"} · Prazo: ${t.due_date ? new Date(t.due_date).toLocaleDateString("pt-BR") : "Sem prazo"} [LINK:/tarefas]`
           ).join("\n");
         }
 
         if (toolName === "get_platform_summary") {
           const [proposals, equipment, projects, tasks, loans] = await Promise.all([
-            supabase.from("orcamentos").select("id, status, final_value", { count: "exact" }).eq("is_latest_version", true),
-            supabase.from("equipments").select("id, simplified_status", { count: "exact" }),
-            supabase.from("projects").select("id, status", { count: "exact" }).eq("status", "active"),
-            supabase.from("tasks").select("id, status, priority", { count: "exact" }).in("status", ["pendente", "em_progresso"]),
-            supabase.from("loans").select("id", { count: "exact" }).eq("status", "active"),
+            supabase.from("orcamentos").select("id, status, final_value").eq("is_latest_version", true),
+            supabase.from("equipments").select("id, simplified_status"),
+            supabase.from("projects").select("id, status").eq("status", "active"),
+            supabase.from("tasks").select("id, status, priority").in("status", ["pendente", "em_progresso"]),
+            supabase.from("loans").select("id").eq("status", "active"),
           ]);
 
-          const activeProposals = (proposals.data || []).filter(p => ["sent", "opened", "new_version"].includes(p.status));
-          const totalPipeline = activeProposals.reduce((sum, p) => sum + (p.final_value || 0), 0);
-          const urgentTasks = (tasks.data || []).filter(t => t.priority === "urgente").length;
-          const availableEquipment = (equipment.data || []).filter(e => e.simplified_status === "available").length;
+          const activeProposals = (proposals.data || []).filter((p: any) => ["sent", "opened", "new_version"].includes(p.status));
+          const totalPipeline = activeProposals.reduce((sum: number, p: any) => sum + (p.final_value || 0), 0);
+          const urgentTasks = (tasks.data || []).filter((t: any) => t.priority === "urgente").length;
+          const availableEquipment = (equipment.data || []).filter((e: any) => e.simplified_status === "available").length;
 
           return `**Resumo do Hiro OS® agora:**
 - 📋 Orçamentos ativos: ${activeProposals.length} · Pipeline: ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalPipeline)}
-- 📦 Equipamentos disponíveis: ${availableEquipment} de ${equipment.count || 0} total
-- 🎬 Projetos/Retiradas ativas: ${projects.count || 0}
-- ✅ Tarefas pendentes: ${tasks.count || 0} (${urgentTasks} urgentes)
-- 🔄 Empréstimos ativos: ${loans.count || 0}`;
+- 📦 Equipamentos disponíveis: ${availableEquipment} de ${(equipment.data || []).length} total
+- 🎬 Projetos/Retiradas ativas: ${(projects.data || []).length}
+- ✅ Tarefas pendentes: ${(tasks.data || []).length} (${urgentTasks} urgentes)
+- 🔄 Empréstimos ativos: ${(loans.data || []).length}`;
         }
 
         if (toolName === "get_active_loans") {
           let q = supabase.from("loans").select(
-            "equipment_name, borrower_name, loan_date, expected_return_date, project, status"
+            "equipment_name, borrower_name, loan_date, expected_return_date, project"
           ).eq("status", "active").order("loan_date", { ascending: false });
 
           if (toolInput.query) {
@@ -259,7 +253,7 @@ serve(async (req) => {
           if (error) return `Erro: ${error.message}`;
           if (!data?.length) return "Nenhum equipamento emprestado no momento.";
 
-          return data.map(l =>
+          return (data as any[]).map(l =>
             `- **${l.equipment_name}** → ${l.borrower_name} · Projeto: ${l.project || "—"} · Devolução: ${l.expected_return_date ? new Date(l.expected_return_date).toLocaleDateString("pt-BR") : "—"} [LINK:/inventario]`
           ).join("\n");
         }
@@ -282,17 +276,18 @@ serve(async (req) => {
           if (error) return `Erro: ${error.message}`;
           if (!data?.length) return `Nenhum orçamento vence nos próximos ${days} dias.`;
 
-          return data.map(p =>
+          return (data as any[]).map(p =>
             `- **${p.project_name}** (${p.client_name}) · Vence: ${new Date(p.validity_date + "T12:00:00").toLocaleDateString("pt-BR")} · ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(p.final_value || 0)} [LINK:/orcamentos/${p.slug}/overview]`
           ).join("\n");
         }
 
         return "Ferramenta não reconhecida.";
       } catch (err) {
-        return `Erro ao executar ferramenta: ${err}`;
+        return `Erro: ${err}`;
       }
     };
 
+    // Agentic loop
     const anthropicMessages: Anthropic.MessageParam[] = messages.map((m: any) => ({
       role: m.role,
       content: m.content
@@ -314,24 +309,29 @@ serve(async (req) => {
         messages: loopMessages,
       });
 
-      for (const block of response.content) {
-        if (block.type === "text") {
-          finalText += block.text;
-        }
+      const currentText = response.content
+        .filter((b: any) => b.type === "text")
+        .map((b: any) => b.text)
+        .join("");
+
+      if (response.stop_reason === "end_turn") {
+        finalText = currentText;
+        break;
       }
 
-      if (response.stop_reason === "end_turn") break;
-
       if (response.stop_reason === "tool_use") {
-        const toolUseBlocks = response.content.filter(b => b.type === "tool_use");
-        if (!toolUseBlocks.length) break;
+        const toolUseBlocks = response.content.filter((b: any) => b.type === "tool_use");
+        if (!toolUseBlocks.length) {
+          finalText = currentText;
+          break;
+        }
 
         loopMessages.push({ role: "assistant", content: response.content });
 
         const toolResults: Anthropic.ToolResultBlockParam[] = [];
         for (const block of toolUseBlocks) {
           if (block.type !== "tool_use") continue;
-          const result = await executeTool(block.name, block.input);
+          const result = await executeTool((block as any).name, (block as any).input);
           toolResults.push({
             type: "tool_result",
             tool_use_id: block.id,
@@ -340,8 +340,8 @@ serve(async (req) => {
         }
 
         loopMessages.push({ role: "user", content: toolResults });
-        finalText = "";
       } else {
+        finalText = currentText;
         break;
       }
     }
