@@ -1,49 +1,34 @@
 
 
-# Create RecordingsCalendar component and add to Home page
+# Fix and improve RecordingsCalendar — 5 changes
 
-## New file: `src/components/Home/RecordingsCalendar.tsx`
+## Changes in `src/components/Home/RecordingsCalendar.tsx`
 
-Full calendar component with 3 views (Mês, Semana, Todos) reading from `useRecordingsCalendar`.
+### 1. Fix timeMin for month view (line 80)
+Change `startOfWeek(startOfMonth(currentDate))` to `startOfMonth(currentDate)` so events from previous month filler days aren't fetched. Filler cells will render empty.
 
-### Structure
+### 2. Icon color (line 131-132)
+Replace `bg-green-500/10` with `bg-destructive/10` and `text-green-500` with `text-destructive`.
 
-**State**: `view` (month/week/list), `currentDate` (Date for navigation)
+### 3. Colored event pills in month view (lines 200-212)
+Remove the dot element. Replace the pill className with type-specific colored backgrounds using a `PILL_COLORS` map:
+- REC: `bg-destructive/15 text-destructive font-medium`
+- PRE: `bg-muted text-muted-foreground`
+- VT: `bg-warning/15 text-warning font-medium`
+- EDIT: `bg-secondary text-secondary-foreground`
+- OTHER: `bg-muted text-muted-foreground`
 
-**Date ranges per view**:
-- Month: `startOfMonth` to `endOfMonth`
-- Week: `startOfWeek` to `endOfWeek` (weekStartsOn: 0)
-- List: today to +60 days
+Each pill: `text-[10px] px-1.5 py-0.5 rounded truncate w-full cursor-pointer`
 
-**TYPE_CONFIG** map for badge styling per event type (REC/PRE/VT/EDIT/OTHER) with dot colors.
+### 4. Day cell borders (lines 191-195)
+Replace current className with: `min-h-[80px] p-1.5 border border-border/50 transition-colors hover:bg-muted/30 cursor-pointer` + today ring + other-month `opacity-30 bg-muted/20`.
 
-**Helper**: `getEventsForDay(day, events)` — checks if day falls between event start/end, handling both all-day (date strings) and timed events.
-
-### Card layout
-- Header: Video icon (green bg) + "Agenda de Gravações" title + event count + period label
-- Navigation: chevron left/right + period label centered
-- View switcher: 3 buttons (Mês/Semana/Todos) in muted rounded container
-
-### Month view
-- 7-column grid with Dom-Sáb header
-- Day cells: min-h-[80px], today gets `ring-1 ring-primary bg-primary/5`, other-month days `opacity-40`
-- Events as small pills with colored dot + truncated title, max 2 visible + "+N mais"
-
-### Week view
-- 7-column header with day name + number, today column highlighted
-- Stacked event cards with `border-l-2` colored by type, title + time info
-
-### List view
-- Events grouped by "Esta semana", "Próxima semana", "Este mês", "Próximos meses"
-- Each row: date block (big day number + month abbrev) + divider + title/meta + type badge
-- Click opens Google Calendar
-
-### Footer
-Link to Google Calendar with ExternalLink icon
-
-## Update: `src/pages/Home.tsx`
-
-- Import `RecordingsCalendar`
-- Add `<RecordingsCalendar />` between `<TodayWidgets />` and `<TeamDirectory />`
-- Add `<div className="h-[500px] bg-muted rounded-lg animate-pulse" />` to loading skeleton between widgets and team skeletons
+### 5. Event detail popover
+- Add imports: `X, Calendar, MapPin, FileText` from lucide-react
+- Add state: `selectedEvent`
+- Create `EventDetailPopover` internal component with overlay modal showing: color bar top, type badge, title, date/time, location, description, Google Calendar link
+- Wire `onClick={() => setSelectedEvent(event)}` on all event pills (month), cards (week), and rows (list)
+- Render `{selectedEvent && <EventDetailPopover ... />}` before closing `</CardContent>`
+- Remove the `window.open` from list view click (replaced by popover)
+- Remove `DOT_COLORS` constant (no longer used)
 
