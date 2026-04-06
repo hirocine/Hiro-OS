@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check, Save, Clapperboard, Info, MessageSquare, Pencil } from 'lucide-react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
