@@ -271,13 +271,13 @@ export function RecordingsCalendar() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[80px] p-1.5 border border-border/20 transition-colors hover:bg-muted/30 cursor-pointer ${
-                      today ? 'bg-primary/5 ring-1 ring-inset ring-primary' : ''
-                    } ${!sameMonth ? 'opacity-30 bg-muted/20' : ''}`}
+                    className={`min-h-[80px] p-1.5 border border-border/20 transition-colors hover:bg-muted/30 cursor-pointer ${!sameMonth ? 'opacity-30 bg-muted/20' : ''}`}
                   >
-                    <span className={`text-xs block mb-0.5 ${today ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
-                      {format(day, 'd')}
-                    </span>
+                    {today ? (
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-medium mb-0.5">{format(day, 'd')}</span>
+                    ) : (
+                      <span className="text-xs block mb-0.5 text-muted-foreground">{format(day, 'd')}</span>
+                    )}
                     <div className="space-y-0.5">
                       {dayEvents.slice(0, 2).map(e => {
                         const type = getEventType(e.summary);
