@@ -32,14 +32,9 @@ function StatusDropdown({ item, onUpdate }: { item: PostProductionItem; onUpdate
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-        <Badge
-          variant="outline"
-          className={`cursor-pointer hover:opacity-80 transition-opacity gap-1 ${config.bgColor} ${config.color}`}
-        >
-          {config.label}
-          <ChevronDown className="h-3 w-3 opacity-60" />
-        </Badge>
+      <DropdownMenuTrigger onClick={e => e.stopPropagation()} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity gap-1 ${config.bgColor} ${config.color}`}>
+        {config.label}
+        <ChevronDown className="h-3 w-3 opacity-60" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" onClick={e => e.stopPropagation()}>
         {PP_STATUS_COLUMNS.map(status => (
