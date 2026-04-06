@@ -53,6 +53,28 @@ function StatusDropdown({ item, onUpdate }: { item: PostProductionItem; onUpdate
   );
 }
 
+const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'entregue'];
+
+function PipelineProgress({ status }: { status: PPStatus }) {
+  const currentIndex = PIPELINE_STEPS.indexOf(status);
+  return (
+    <div className="flex items-center gap-0.5">
+      {PIPELINE_STEPS.map((step, i) => (
+        <div
+          key={step}
+          className={`h-1 rounded-full transition-all ${
+            i < currentIndex
+              ? 'w-3 bg-primary/40'
+              : i === currentIndex
+              ? 'w-4 bg-primary'
+              : 'w-3 bg-muted-foreground/20'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface PPTableProps {
   items: PostProductionItem[];
   isLoading?: boolean;
