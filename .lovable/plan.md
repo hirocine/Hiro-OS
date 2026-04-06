@@ -1,60 +1,43 @@
 
 
-# Rewrite PPVideoPage layout to match ProposalDetails pattern
+# Split PPVideoPage into View + Edit pages
 
-## Single file: `src/features/post-production/components/PPVideoPage.tsx`
+## 4 files to change
 
-All existing logic, hooks, state, handlers remain unchanged. Only the JSX layout and imports change.
+### FILE 1 — CREATE `src/features/post-production/components/PPVideoEditForm.tsx`
+New component with Props: `{ item: PostProductionItem; onBack: () => void }`.
 
-### Import changes
-- Add `ResponsiveContainer` from `@/components/ui/responsive-container`
-- Add `Save`, `Clapperboard`, `Info`, `MessageSquare` from `lucide-react`
-- Remove `Separator` import (no longer used in section headers)
+- Copy helpers from PPVideoPage: `parseTitle`, `composeTitle`, `getUserAvatarUrl`, `getInitials`, `SectionHeader`, `DateField`
+- Same hooks: `usePostProductionMutations`, `useUsers`
+- Same form state (client_name, project_name, suffix, editor_id, status, priority, due_date, start_date, notes)
+- Add `isDirty` computed by comparing form values to original item values
+- `handleSave`: calls `updateItem.mutate(...)` then `onBack()`
 
-### 1. Root wrapper
-Replace `<div className="space-y-6 p-6 max-w-7xl mx-auto">` with:
-```tsx
-<ResponsiveContainer maxWidth="7xl">
-  <div className="animate-fade-in space-y-6">
+Layout (matching ProposalDetails card pattern):
+```
+ResponsiveContainer maxWidth="7xl"
+  Header: back button + breadcrumb ("Esteira de Pós" > composedTitle) + no action buttons in header
+  Card "Dados do Vídeo" (SectionHeader with FileText icon, save button in header when isDirty):
+    - 3-col grid: Empresa, Projeto, Sufixo inputs
+    - Título gerado (readonly)
+    - Observações textarea
+  Card "Informações" (SectionHeader with Info icon, save button when isDirty):
+    - 2-col grid: Etapa select, Prioridade select, Editor select, Prazo, Início date pickers
 ```
 
-### 2. Header — non-sticky, matching ProposalDetails
-Replace the sticky header with a simple flex row:
-- Left: ghost back button + title (`text-lg font-semibold`) + subtitle (client/project/date)
-- Right: Destructive delete button + Save button (with `<Save>` icon)
-- No `sticky`, no `backdrop-blur`, no negative margins
+### FILE 2 — CREATE `src/pages/PPVideoEditDetail.tsx`
+Same structure as `PPVideoDetail.tsx`:
+- `useParams` for `:id`, `useNavigate(-1)` for onBack
+- `usePostProduction()` to find item
+- Loading skeleton, redirect if not found
+- Renders `<PPVideoEditForm item={item} onBack={...} />`
 
-### 3. Summary Card (new, after header)
-A `<Card>` with `<CardContent className="p-5">` containing:
-- Left: composed title as `h1 text-xl font-semibold`, latest version badge if exists
-- Below title: `text-sm text-muted-foreground` with client/project info
-- Right: status + priority badges
+### FILE 3 — MODIFY `src/App.tsx`
+- Add lazy import: `const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"))`
+- Add route after `esteira-de-pos/:id`: `<Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />`
 
-### 4. Pipeline Card — section header pattern
-Replace `<CardHeader>` with the ProposalDetails border-b header:
-```tsx
-<div className="flex items-center px-6 py-4 border-b border-border">
-  <div className="flex items-center gap-3">
-    <div className="p-1.5 rounded-md bg-muted">
-      <Clapperboard className="h-4 w-4 text-foreground/70" />
-    </div>
-    <CardTitle className="text-sm font-semibold tracking-tight">Pipeline de Produção</CardTitle>
-  </div>
-</div>
-```
-Pipeline content moves to `<CardContent className="pt-6 space-y-5">`.
-
-### 5. Two-column grid — section header pattern for both cards
-- **Dados do Vídeo** card: same border-b header with `FileText` icon
-- **Informações** card: same border-b header with `Info` icon
-- Both use `<CardContent className="pt-6 space-y-4">`
-- Each field wrapped in `<div className="space-y-1.5">`
-
-### 6. Atividade & Versões — full width, below grid
-Same border-b header with `MessageSquare` icon and "Adicionar versão" button on the right. Content in `<CardContent className="pt-6 space-y-4">`.
-
-### Technical notes
-- `FileText` is already available in lucide-react
-- The `DateField` helper and all handlers remain identical
-- Closing tags: `</div></ResponsiveContainer>` at the end
+### FILE 4 — MODIFY `src/features/post-production/components/PPVideoPage.tsx`
+Two changes only:
+1. **Header**: Add `useNavigate` import, add `const navigate = useNavigate()`. Before the "Excluir" button, add an "Editar" button with `Pencil` icon that navigates to `/esteira-de-pos/${item.id}/editar`. Import `Pencil` from lucide-react.
+2. **Remove "Dados do Vídeo" card and grid wrapper**: Delete lines 390-421 (the grid open, left column, and Dados do Vídeo card). Remove the grid wrapper `<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">` and the right column `<div>` wrapper — render the Informações `<Card>` directly (full width, no grid). The Informações card content (lines 425-516) stays unchanged but becomes a standalone card. Also remove the `FileText` import if no longer used.
 
