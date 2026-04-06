@@ -246,6 +246,9 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}>
+              <Pencil className="h-4 w-4 mr-1.5" /> Editar
+            </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-1" /> Excluir
             </Button>
