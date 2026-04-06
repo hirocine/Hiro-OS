@@ -1,29 +1,60 @@
 
 
-# Redesign PPVideoPage layout
+# Rewrite PPVideoPage layout to match ProposalDetails pattern
 
 ## Single file: `src/features/post-production/components/PPVideoPage.tsx`
 
-### 1. Root padding (line 215)
-Change `<div className="space-y-6">` to `<div className="space-y-6 p-6 max-w-7xl mx-auto">`
+All existing logic, hooks, state, handlers remain unchanged. Only the JSX layout and imports change.
 
-### 2. Sticky header (lines 217-246)
-Replace the current header with a sticky bar: `sticky top-0 z-10 -mx-6 -mt-6 px-6 py-4 bg-background/95 backdrop-blur border-b flex items-center justify-between gap-4 mb-2`. Title becomes `text-lg`, subtitle becomes `text-xs`.
+### Import changes
+- Add `ResponsiveContainer` from `@/components/ui/responsive-container`
+- Add `Save`, `Clapperboard`, `Info`, `MessageSquare` from `lucide-react`
+- Remove `Separator` import (no longer used in section headers)
 
-### 3. Pipeline steps full width (lines 255-293)
-- Outer div: `flex items-center gap-0` → `flex items-center w-full`
-- Each step wrapper: add `flex-1 flex flex-col items-center`
-- Circle: `w-8 h-8` → `w-10 h-10`, text `text-xs` → `text-sm`
-- Step label: `text-[11px]` → `text-xs`
-- Connector: `w-8 mx-1` → `flex-1 mx-2`
+### 1. Root wrapper
+Replace `<div className="space-y-6 p-6 max-w-7xl mx-auto">` with:
+```tsx
+<ResponsiveContainer maxWidth="7xl">
+  <div className="animate-fade-in space-y-6">
+```
 
-### 4. All Labels — add `block mb-1.5`
-Every `<Label className="text-xs">` and `<Label className="text-xs text-muted-foreground">` gets `block mb-1.5` added. Also applies to the DateField helper's Label.
+### 2. Header — non-sticky, matching ProposalDetails
+Replace the sticky header with a simple flex row:
+- Left: ghost back button + title (`text-lg font-semibold`) + subtitle (client/project/date)
+- Right: Destructive delete button + Save button (with `<Save>` icon)
+- No `sticky`, no `backdrop-blur`, no negative margins
 
-### 5. Move "Atividade & Versões" to full width
-- Remove the Atividade card (lines 394-490) from inside the left column `lg:col-span-2`
-- Place it after the closing `</div>` of the grid as a standalone full-width `<Card>`
-- Left column only keeps "Dados do Vídeo"
+### 3. Summary Card (new, after header)
+A `<Card>` with `<CardContent className="p-5">` containing:
+- Left: composed title as `h1 text-xl font-semibold`, latest version badge if exists
+- Below title: `text-sm text-muted-foreground` with client/project info
+- Right: status + priority badges
 
-No logic changes. No other files.
+### 4. Pipeline Card — section header pattern
+Replace `<CardHeader>` with the ProposalDetails border-b header:
+```tsx
+<div className="flex items-center px-6 py-4 border-b border-border">
+  <div className="flex items-center gap-3">
+    <div className="p-1.5 rounded-md bg-muted">
+      <Clapperboard className="h-4 w-4 text-foreground/70" />
+    </div>
+    <CardTitle className="text-sm font-semibold tracking-tight">Pipeline de Produção</CardTitle>
+  </div>
+</div>
+```
+Pipeline content moves to `<CardContent className="pt-6 space-y-5">`.
+
+### 5. Two-column grid — section header pattern for both cards
+- **Dados do Vídeo** card: same border-b header with `FileText` icon
+- **Informações** card: same border-b header with `Info` icon
+- Both use `<CardContent className="pt-6 space-y-4">`
+- Each field wrapped in `<div className="space-y-1.5">`
+
+### 6. Atividade & Versões — full width, below grid
+Same border-b header with `MessageSquare` icon and "Adicionar versão" button on the right. Content in `<CardContent className="pt-6 space-y-4">`.
+
+### Technical notes
+- `FileText` is already available in lucide-react
+- The `DateField` helper and all handlers remain identical
+- Closing tags: `</div></ResponsiveContainer>` at the end
 
