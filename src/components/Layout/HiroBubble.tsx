@@ -108,7 +108,7 @@ export function HiroBubble() {
   return (
     <>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => open ? handleClose() : setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
         aria-label="Assistente Hiro"
       >
@@ -118,10 +118,14 @@ export function HiroBubble() {
         }
       </button>
 
-      {open && (
+      {(open || visible) && (
         <div
-          className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-          style={{ height: hasMessages ? "520px" : "auto" }}
+          className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-[250ms] ease-out ${
+            visible && open
+              ? 'opacity-100 translate-y-0 scale-100'
+              : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
+          }`}
+          style={{ height: hasMessages ? "520px" : "auto", transformOrigin: "bottom right" }}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 shrink-0">
             <div className="flex items-center gap-2">
