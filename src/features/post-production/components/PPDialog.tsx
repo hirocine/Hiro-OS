@@ -75,6 +75,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   const isCreating = !item;
 
   const [form, setForm] = useState(defaultForm);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [dueDateOpen, setDueDateOpen] = useState(false);
 
   useEffect(() => {
     if (item) {
