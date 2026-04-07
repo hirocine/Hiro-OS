@@ -38,12 +38,12 @@ function PipelineProgress({ status }: { status: PPStatus }) {
         {PIPELINE_STEPS.map((_, i) => (
           <div
             key={i}
-            className={`h-[3px] rounded-full transition-colors ${
+            className={`rounded-full transition-colors ${
               i < currentIndex
-                ? 'bg-primary'
+                ? 'h-[3px] bg-primary'
                 : i === currentIndex
-                ? 'bg-primary/40'
-                : 'bg-muted-foreground/20'
+                ? 'h-[4px] bg-primary/60'
+                : 'h-[2px] bg-muted-foreground/20'
             }`}
           />
         ))}
