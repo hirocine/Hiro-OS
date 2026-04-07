@@ -366,21 +366,21 @@ export function PPVideoPage({ item, onBack }: Props) {
                   <div
                     key={step.key}
                     className={cn(
-                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-200 text-center cursor-default',
-                      isDone && 'bg-muted/50 border-border/50',
-                      isActive && 'bg-primary/8 border-primary/40',
-                      !isDone && !isActive && 'bg-transparent border-border/30 opacity-50 hover:opacity-70',
+                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-300 text-center cursor-default',
+                      isDone && 'bg-transparent border-transparent opacity-35',
+                      isActive && 'bg-primary/10 border-primary shadow-sm',
+                      !isDone && !isActive && 'bg-transparent border-border/30 opacity-40 cursor-default',
                     )}
                   >
                     <span className={cn(
-                      'text-[10px] font-medium',
+                      'text-[11px] font-semibold',
                       isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground'
                     )}>
                       {isDone ? '✓' : i + 1}
                     </span>
                     <span className={cn(
-                      'text-xs font-medium leading-tight',
-                      isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground'
+                      'text-xs leading-tight',
+                      isDone ? 'text-muted-foreground font-normal' : isActive ? 'text-primary font-semibold' : 'text-muted-foreground font-normal'
                     )}>
                       {step.label}
                     </span>
@@ -401,21 +401,26 @@ export function PPVideoPage({ item, onBack }: Props) {
                         key={i}
                         onClick={() => handleSubStepClick(i)}
                         className={cn(
-                          'flex items-center gap-1.5 transition-colors',
-                          isDone && 'text-muted-foreground',
-                          isActive && 'text-primary',
-                          !isDone && !isActive && 'text-muted-foreground/60 hover:text-muted-foreground',
+                          'flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200',
+                          isDone && 'opacity-40',
+                          isActive && 'bg-primary/10',
+                          !isDone && !isActive && 'opacity-50 hover:opacity-80',
                         )}
                       >
                         <div className={cn(
-                          'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all',
-                          isDone && 'bg-primary text-primary-foreground',
-                          isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
-                          !isDone && !isActive && 'bg-border text-muted-foreground',
+                          'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all duration-200',
+                          isDone && 'bg-muted-foreground/30 text-muted-foreground',
+                          isActive && 'bg-primary text-primary-foreground ring-3 ring-primary/25 scale-110',
+                          !isDone && !isActive && 'bg-border/60 text-muted-foreground',
                         )}>
                           {isDone ? <Check className="h-2.5 w-2.5" /> : i + 1}
                         </div>
-                        <span className={cn('text-xs whitespace-nowrap', isActive && 'font-medium')}>
+                        <span className={cn(
+                          'text-xs whitespace-nowrap transition-colors duration-200',
+                          isDone && 'text-muted-foreground line-through',
+                          isActive && 'text-primary font-semibold',
+                          !isDone && !isActive && 'text-muted-foreground/60',
+                        )}>
                           {sub}
                         </span>
                       </button>
