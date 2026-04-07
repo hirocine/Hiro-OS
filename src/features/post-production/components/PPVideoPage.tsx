@@ -234,7 +234,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                 <span className="text-xs text-muted-foreground font-medium">Etapa</span>
                 <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
                   <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
+                    <PPStatusBadge status={form.status} />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.keys(PP_STATUS_CONFIG).map(v => (
@@ -248,7 +248,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                 <span className="text-xs text-muted-foreground font-medium">Prioridade</span>
                 <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
                   <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
+                    <PPPriorityBadge priority={form.priority} />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.keys(PP_PRIORITY_CONFIG).map(v => (
@@ -335,7 +335,7 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
           <CardContent className="pt-6 space-y-6">
-            <div className="flex items-start w-full">
+            <div className="flex items-start w-full overflow-x-auto pb-1">
               {MACRO_STEPS.map((step, i) => {
                 const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
                 const isDone = i < currentIdx;
@@ -343,7 +343,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                 return (
                   <React.Fragment key={step.key}>
                     <button onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
-                      className="flex flex-col items-center gap-2 shrink-0 group"
+                      className="flex flex-col items-center gap-2 min-w-[60px] group"
                     >
                       <div className={cn(
                         'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
@@ -425,8 +425,10 @@ export function PPVideoPage({ item, onBack }: Props) {
             )}
 
             {form.status === 'fila' && (
-              <div className="flex justify-center">
-                <Button onClick={handleAdvanceStage} size="sm">Iniciar Edição →</Button>
+              <div className="pt-2 border-t border-border">
+                <Button onClick={handleAdvanceStage} size="sm" variant="outline">
+                  Iniciar Edição →
+                </Button>
               </div>
             )}
           </CardContent>
