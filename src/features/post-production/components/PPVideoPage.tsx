@@ -9,7 +9,7 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
@@ -185,25 +185,31 @@ export function PPVideoPage({ item, onBack }: Props) {
     setComment('');
   };
 
+  const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
+  const nextStep = MACRO_STEPS[currentStepIdx + 1];
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <div className="animate-fade-in space-y-6">
 
         {/* HEADER */}
         <div className="flex items-center justify-between gap-4">
-          <BreadcrumbNav items={[{ label: 'Esteira de Pós', href: '/esteira-de-pos' }, { label: composedTitle || 'Vídeo' }]} />
-          <div className="flex items-center gap-2">
+          <BreadcrumbNav items={[
+            { label: 'Esteira de Pós', href: '/esteira-de-pos' },
+            { label: composedTitle || 'Vídeo' },
+          ]} className="mb-0" />
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={() => navigate(`/esteira-de-pos/${item.id}/editar`)}>
-              <Pencil className="h-4 w-4 mr-2" /> Editar
+              <Pencil className="h-4 w-4 mr-1.5" /> Editar
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -214,63 +220,79 @@ export function PPVideoPage({ item, onBack }: Props) {
         {/* SUMMARY CARD */}
         <Card>
           <CardContent className="p-5">
+            {/* Title row */}
             <div className="flex items-start justify-between gap-4 mb-4">
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold tracking-tight truncate">{composedTitle || 'Novo Vídeo'}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">
+                <h1 className="text-xl font-semibold leading-tight truncate">
+                  {composedTitle || 'Novo Vídeo'}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
                   {form.client_name}{form.project_name ? ` · ${form.project_name}` : ''}
                   {' · '}criado em {format(parseISO(item.created_at), 'dd/MM/yyyy')}
                 </p>
               </div>
               {latestVersion && (
-                <Badge variant="secondary" className="shrink-0">v{latestVersion.version_number}</Badge>
+                <Badge variant="outline" className="shrink-0 text-xs">
+                  v{latestVersion.version_number}
+                </Badge>
               )}
             </div>
 
             <Separator className="mb-4" />
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="space-y-1.5">
-                <span className="text-xs text-muted-foreground font-medium">Etapa</span>
+            {/* Inline fields row */}
+            <div className="flex items-center flex-wrap gap-x-5 gap-y-3">
+
+              {/* Etapa */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Etapa</span>
                 <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
                     <PPStatusBadge status={form.status} />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.keys(PP_STATUS_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}>{PP_STATUS_CONFIG[v as PPStatus].label}</SelectItem>
+                      <SelectItem key={v} value={v}>
+                        <PPStatusBadge status={v as PPStatus} />
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-xs text-muted-foreground font-medium">Prioridade</span>
+              {/* Prioridade */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Prioridade</span>
                 <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
                     <PPPriorityBadge priority={form.priority} />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.keys(PP_PRIORITY_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}>{PP_PRIORITY_CONFIG[v as PPPriority].label}</SelectItem>
+                      <SelectItem key={v} value={v}>
+                        <PPPriorityBadge priority={v as PPPriority} />
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-xs text-muted-foreground font-medium">Editor</span>
+              {/* Editor */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Editor</span>
                 <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
                     {selectedEditor ? (
-                      <div className="flex items-center gap-2 truncate">
+                      <div className="flex items-center gap-1.5">
                         <Avatar className="h-5 w-5">
                           <AvatarImage src={getUserAvatarUrl(selectedEditor)} />
-                          <AvatarFallback className="text-[10px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
+                          <AvatarFallback className="text-[9px]">{getInitials(selectedEditor.display_name)}</AvatarFallback>
                         </Avatar>
-                        <span className="truncate">{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
+                        <span className="text-sm font-medium">{selectedEditor.display_name?.split(' ')[0] || selectedEditor.email}</span>
                       </div>
-                    ) : <span className="text-muted-foreground">Sem editor</span>}
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Sem editor</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     {users.map(u => (
@@ -278,7 +300,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={getUserAvatarUrl(u)} />
-                            <AvatarFallback className="text-[10px]">{getInitials(u.display_name)}</AvatarFallback>
+                            <AvatarFallback className="text-[9px]">{getInitials(u.display_name)}</AvatarFallback>
                           </Avatar>
                           <span>{u.display_name || u.email}</span>
                         </div>
@@ -288,24 +310,29 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-xs text-muted-foreground font-medium">Prazo</span>
+              {/* Prazo */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Prazo</span>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full justify-start text-sm h-9 font-normal">
-                      <CalendarIcon className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                      {form.due_date ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy') : '—'}
-                    </Button>
+                    <button className="flex items-center gap-1 text-sm font-medium hover:opacity-70 transition-opacity">
+                      <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                      {form.due_date
+                        ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy')
+                        : <span className="text-muted-foreground">—</span>}
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
+                    <Calendar
+                      mode="single"
+                      selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
                       onSelect={date => setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }))}
                       initialFocus className="p-3 pointer-events-auto"
                     />
                     {form.due_date && (
-                      <div className="p-2 pt-0 flex justify-end">
-                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
-                          <X className="h-3 w-3 mr-1" /> Limpar
+                      <div className="p-2 border-t">
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
+                          <X className="w-3.5 h-3.5 mr-1" /> Limpar
                         </Button>
                       </div>
                     )}
@@ -313,173 +340,201 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </Popover>
               </div>
 
+              {/* Save button — only when dirty */}
               {isDirty && (
-                <div className="space-y-1.5 flex items-end">
-                  <Button size="sm" className="h-9 w-full" onClick={handleSave}>
-                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                  </Button>
-                </div>
+                <Button size="sm" className="h-7 ml-auto" onClick={handleSave}>
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
+                </Button>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* PIPELINE */}
+        {/* PIPELINE CARD */}
         <Card>
-          <div className="flex items-center gap-3 px-5 py-3 border-b">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-primary/10">
-                <Clapperboard className="h-4 w-4 text-primary" />
+          <div className="flex items-center px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-muted">
+                <Clapperboard className="h-4 w-4 text-foreground/70" />
               </div>
               <CardTitle className="text-sm font-semibold tracking-tight">Pipeline de Produção</CardTitle>
             </div>
           </div>
-          <CardContent className="pt-6 space-y-6">
-            <div className="flex items-start w-full overflow-x-auto pb-1">
+
+          <CardContent className="pt-6 pb-5 space-y-6">
+            {/* Macro steps — each step is flex-1 with absolute lines */}
+            <div className="flex items-start w-full">
               {MACRO_STEPS.map((step, i) => {
-                const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
-                const isDone = i < currentIdx;
-                const isActive = i === currentIdx;
+                const isDone = i < currentStepIdx;
+                const isActive = i === currentStepIdx;
                 return (
                   <React.Fragment key={step.key}>
-                    <button onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
-                      className="flex flex-col items-center gap-2 min-w-[60px] group"
+                    <button
+                      onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
+                      className="flex-1 flex flex-col items-center gap-2 group relative"
                     >
+                      {/* Line left */}
+                      {i > 0 && (
+                        <div className={cn(
+                          'absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300',
+                          isDone || isActive ? 'bg-primary' : 'bg-border'
+                        )} />
+                      )}
+                      {/* Line right */}
+                      {i < MACRO_STEPS.length - 1 && (
+                        <div className={cn(
+                          'absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300',
+                          isDone ? 'bg-primary' : 'bg-border'
+                        )} />
+                      )}
+                      {/* Circle */}
                       <div className={cn(
-                        'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
+                        'relative z-10 w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300',
                         isDone && 'bg-primary text-primary-foreground',
-                        isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110',
-                        !isDone && !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20',
+                        !isDone && !isActive && 'bg-muted text-muted-foreground group-hover:bg-muted/70',
                       )}>
                         {isDone ? <Check className="h-4 w-4" /> : i + 1}
                       </div>
+                      {/* Label */}
                       <span className={cn(
-                        'text-xs font-medium whitespace-nowrap transition-colors duration-300',
-                        isActive ? 'text-primary' : 'text-muted-foreground'
+                        'text-xs text-center whitespace-nowrap transition-colors duration-300 px-1',
+                        isActive ? 'text-primary font-semibold' : 'text-muted-foreground',
                       )}>
                         {step.label}
                       </span>
                     </button>
-                    {i < MACRO_STEPS.length - 1 && (
-                      <div className={cn(
-                        'flex-1 h-0.5 mt-5 rounded-full transition-all duration-500',
-                        i < currentIdx ? 'bg-primary' : 'bg-border'
-                      )} />
-                    )}
                   </React.Fragment>
                 );
               })}
             </div>
 
+            {/* Sub-steps */}
             {SUB_STEPS[form.status]?.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="space-y-3 pt-4 border-t border-border">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Sub-etapas · {MACRO_STEPS.find(s => s.key === form.status)?.label}
                 </p>
-                <div className="flex items-start w-full flex-wrap gap-y-3">
+                <div className="flex items-start w-full">
                   {SUB_STEPS[form.status].map((sub, i) => {
                     const isDone = i < subStepIndex;
                     const isActive = i === subStepIndex;
                     return (
                       <React.Fragment key={i}>
-                        <button onClick={() => handleSubStepClick(i)} className="flex flex-col items-center gap-1.5 shrink-0 group">
+                        <button
+                          onClick={() => handleSubStepClick(i)}
+                          className="flex-1 flex flex-col items-center gap-1.5 group relative"
+                        >
+                          {i > 0 && (
+                            <div className={cn(
+                              'absolute left-0 right-1/2 top-[11px] h-px transition-colors duration-200',
+                              isDone || isActive ? 'bg-primary/60' : 'bg-border'
+                            )} />
+                          )}
+                          {i < SUB_STEPS[form.status].length - 1 && (
+                            <div className={cn(
+                              'absolute left-1/2 right-0 top-[11px] h-px transition-colors duration-200',
+                              isDone ? 'bg-primary/60' : 'bg-border'
+                            )} />
+                          )}
                           <div className={cn(
-                            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
-                            isDone && 'bg-primary/80 text-primary-foreground',
+                            'relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
+                            isDone && 'bg-primary text-primary-foreground',
                             isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
-                            !isDone && !isActive && 'bg-muted text-muted-foreground'
+                            !isDone && !isActive && 'bg-muted text-muted-foreground',
                           )}>
                             {isDone ? <Check className="h-3 w-3" /> : i + 1}
                           </div>
                           <span className={cn(
-                            'text-[11px] whitespace-nowrap transition-colors',
-                            isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+                            'text-[11px] text-center leading-tight px-1 transition-colors',
+                            isActive ? 'text-foreground font-medium' : 'text-muted-foreground',
                           )}>
                             {sub}
                           </span>
                         </button>
-                        {i < SUB_STEPS[form.status].length - 1 && (
-                          <div className={cn(
-                            'flex-1 h-0.5 mt-3 rounded-full min-w-[16px] transition-all duration-300',
-                            i < subStepIndex ? 'bg-primary/50' : 'bg-border'
-                          )} />
-                        )}
                       </React.Fragment>
                     );
                   })}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{subStepIndex} de {SUB_STEPS[form.status].length} concluídas</span>
-                  {(() => {
-                    const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
-                    const nextStep = MACRO_STEPS[currentIdx + 1];
-                    const allDone = subStepIndex >= SUB_STEPS[form.status].length;
-                    return nextStep ? (
-                      <Button variant={allDone ? 'default' : 'ghost'} size="sm" className="text-xs" onClick={handleAdvanceStage}>
-                        Avançar para {nextStep.label} →
-                      </Button>
-                    ) : null;
-                  })()}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-muted-foreground">
+                    {subStepIndex} de {SUB_STEPS[form.status].length} concluídas
+                  </span>
                 </div>
               </div>
             )}
-
-            {form.status === 'fila' && (
-              <div className="pt-2 border-t border-border">
-                <Button onClick={handleAdvanceStage} size="sm" variant="outline">
-                  Iniciar Edição →
-                </Button>
-              </div>
-            )}
           </CardContent>
+
+          {/* Pipeline footer — advance button */}
+          {nextStep && (
+            <div className="px-6 py-4 border-t border-border">
+              <Button
+                size="sm"
+                variant={subStepIndex >= (SUB_STEPS[form.status]?.length ?? 0) ? 'default' : 'outline'}
+                onClick={handleAdvanceStage}
+              >
+                Avançar para {nextStep.label} →
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* ATIVIDADE & VERSÕES */}
         <Card>
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-primary/10">
-                <MessageSquare className="h-4 w-4 text-primary" />
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-muted">
+                <MessageSquare className="h-4 w-4 text-foreground/70" />
               </div>
               <CardTitle className="text-sm font-semibold tracking-tight">Atividade & Versões</CardTitle>
             </div>
-            <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setAddingVersion(true)}>
+            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAddingVersion(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar versão
             </Button>
           </div>
-          <CardContent className="pt-6 space-y-4">
+
+          <CardContent className="pt-5 space-y-4">
             {addingVersion && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
-                <Input placeholder="Link do Frame.io" value={newVersionUrl} onChange={e => setNewVersionUrl(e.target.value)}
-                  className="flex-1 h-8 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddVersion()} />
-                <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion}>Adicionar</Button>
-                <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>Cancelar</Button>
+              <div className="flex gap-2 items-center p-3 rounded-lg bg-muted/50 border">
+                <Input
+                  placeholder="URL do Frame.io"
+                  value={newVersionUrl}
+                  onChange={e => setNewVersionUrl(e.target.value)}
+                  className="flex-1 h-8 text-sm"
+                  onKeyDown={e => e.key === 'Enter' && handleAddVersion()}
+                />
+                <Button size="sm" className="h-8 text-xs" onClick={handleAddVersion} disabled={!newVersionUrl.trim()}>
+                  Adicionar
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setAddingVersion(false); setNewVersionUrl(''); }}>
+                  Cancelar
+                </Button>
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {timelineItems.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-6">Nenhuma atividade ainda.</p>
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhuma atividade ainda.</p>
               )}
               {timelineItems.map((ti, idx) => (
-                <div key={idx} className="flex gap-3">
+                <div key={idx} className="flex gap-3 items-start">
                   {ti.type === 'version' ? (
                     <>
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-[10px] font-bold text-primary">v{ti.data.version_number}</span>
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                        v{ti.data.version_number}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-medium">Versão {ti.data.version_number}</span>
-                          <Badge variant="outline" className="text-[10px] h-5">
+                          <span className="text-xs text-muted-foreground border rounded-full px-2 py-0.5">
                             {ti.data.status === 'em_revisao' ? 'Em revisão' : ti.data.status === 'aprovada' ? 'Aprovada' : 'Arquivada'}
-                          </Badge>
+                          </span>
                           <a href={ti.data.frame_io_url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                            className="text-xs text-primary hover:underline flex items-center gap-0.5">
                             Frame.io <ExternalLink className="h-3 w-3" />
                           </a>
                         </div>
-                        {ti.data.notes && <p className="text-xs text-muted-foreground mt-1">{ti.data.notes}</p>}
+                        {ti.data.notes && <p className="text-xs text-muted-foreground mt-0.5">{ti.data.notes}</p>}
                         <p className="text-[11px] text-muted-foreground mt-1">
                           {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
                         </p>
@@ -487,11 +542,11 @@ export function PPVideoPage({ item, onBack }: Props) {
                     </>
                   ) : (
                     <>
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className="text-[10px]">{getInitials(ti.data.user_name)}</AvatarFallback>
-                      </Avatar>
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+                        {getInitials(ti.data.user_name)}
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm">{ti.data.content}</p>
+                        <p className="text-sm bg-muted/50 rounded-lg px-3 py-2">{ti.data.content}</p>
                         <p className="text-[11px] text-muted-foreground mt-1">
                           {ti.data.user_name} · {formatDistanceToNow(parseISO(ti.date), { addSuffix: true, locale: ptBR })}
                         </p>
@@ -503,19 +558,25 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
 
             <Separator />
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-[10px]">{getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
-                <input placeholder="Adicionar comentário..." value={comment}
+            <div className="flex gap-3 items-center">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+                {getInitials(user?.user_metadata?.full_name || user?.email?.split('@')[0])}
+              </div>
+              <div className="flex flex-1 items-center gap-2 border rounded-lg px-3 h-10 bg-background focus-within:ring-1 focus-within:ring-ring">
+                <input
+                  placeholder="Adicionar comentário..."
+                  value={comment}
                   onChange={e => setComment(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddComment()}
                   className="flex-1 text-sm bg-transparent outline-none"
                 />
-                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handleAddComment} disabled={!comment.trim()}>
-                  <Send className="h-3.5 w-3.5" />
-                </Button>
+                <button
+                  onClick={handleAddComment}
+                  disabled={!comment.trim()}
+                  className="shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </CardContent>
