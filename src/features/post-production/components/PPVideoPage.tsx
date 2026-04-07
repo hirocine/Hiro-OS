@@ -108,39 +108,12 @@ export function PPVideoPage({ item, onBack }: Props) {
   const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
   const selectedEditor = users.find(u => u.id === form.editor_id);
 
-  const isDirty =
-    form.status !== item.status ||
-    form.priority !== item.priority ||
-    form.editor_id !== (item.editor_id || '') ||
-    form.due_date !== (item.due_date || '') ||
-    form.start_date !== (item.start_date || '');
 
   const timelineItems = [
     ...versions.map(v => ({ type: 'version' as const, date: v.created_at, data: v })),
     ...comments.map(c => ({ type: 'comment' as const, date: c.created_at, data: c })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const handleSave = () => {
-    const editorUser = users.find(u => u.id === form.editor_id);
-    updateItem.mutate({
-      id: item.id,
-      updates: {
-        title: composedTitle,
-        project_name: form.project_name || null,
-        client_name: form.client_name || null,
-        editor_id: form.editor_id || null,
-        editor_name: editorUser?.display_name || null,
-        status: form.status,
-        priority: form.priority,
-        due_date: form.due_date || null,
-        start_date: form.start_date || null,
-        notes: form.notes || null,
-        sub_status_index: subStepIndex,
-        ...(form.status === 'entregue' && !item.delivered_date ? { delivered_date: new Date().toISOString().split('T')[0] } : {}),
-      },
-    });
-    toast.success('Salvo!');
-  };
 
   const handleDelete = () => {
     deleteItem.mutate(item.id);
@@ -247,24 +220,16 @@ export function PPVideoPage({ item, onBack }: Props) {
               {/* Etapa */}
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">Etapa</span>
-                <Select value={form.status} onValueChange={v => { setForm(prev => ({ ...prev, status: v as PPStatus })); setSubStepIndex(0); }}>
-                  <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
-                    <PPStatusBadge status={form.status} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PP_STATUS_CONFIG).map(v => (
-                      <SelectItem key={v} value={v}>
-                        <PPStatusBadge status={v as PPStatus} />
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <PPStatusBadge status={form.status} />
               </div>
 
               {/* Prioridade */}
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">Prioridade</span>
-                <Select value={form.priority} onValueChange={v => setForm(prev => ({ ...prev, priority: v as PPPriority }))}>
+                <Select value={form.priority} onValueChange={v => {
+                  setForm(prev => ({ ...prev, priority: v as PPPriority }));
+                  updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } });
+                }}>
                   <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
                     <PPPriorityBadge priority={form.priority} />
                   </SelectTrigger>
@@ -281,7 +246,11 @@ export function PPVideoPage({ item, onBack }: Props) {
               {/* Editor */}
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">Editor</span>
-                <Select value={form.editor_id} onValueChange={v => setForm(prev => ({ ...prev, editor_id: v }))}>
+                <Select value={form.editor_id} onValueChange={v => {
+                  const editorUser = users.find(u => u.id === v);
+                  setForm(prev => ({ ...prev, editor_id: v }));
+                  updateItem.mutate({ id: item.id, updates: { editor_id: v || null, editor_name: editorUser?.display_name || null } });
+                }}>
                   <SelectTrigger className="w-auto h-7 border-0 bg-transparent p-0 shadow-none focus:ring-0 gap-1 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-50">
                     {selectedEditor ? (
                       <div className="flex items-center gap-1.5">
@@ -327,12 +296,19 @@ export function PPVideoPage({ item, onBack }: Props) {
                     <Calendar
                       mode="single"
                       selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
-                      onSelect={date => setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }))}
+                      onSelect={date => {
+                        const val = date ? format(date, 'yyyy-MM-dd') : '';
+                        setForm(prev => ({ ...prev, due_date: val }));
+                        updateItem.mutate({ id: item.id, updates: { due_date: val || null } });
+                      }}
                       initialFocus className="p-3 pointer-events-auto"
                     />
                     {form.due_date && (
                       <div className="p-2 border-t">
-                        <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => {
+                          setForm(prev => ({ ...prev, due_date: '' }));
+                          updateItem.mutate({ id: item.id, updates: { due_date: null } });
+                        }}>
                           <X className="w-3.5 h-3.5 mr-1" /> Limpar
                         </Button>
                       </div>
@@ -341,12 +317,6 @@ export function PPVideoPage({ item, onBack }: Props) {
                 </Popover>
               </div>
 
-              {/* Save button — only when dirty */}
-              {isDirty && (
-                <Button size="sm" className="h-7 ml-auto" onClick={handleSave}>
-                  <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
