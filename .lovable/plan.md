@@ -1,15 +1,38 @@
 
 
-# Replace Pipeline CardContent with new compact layout
+# Auto-save fields, read-only Etapa, remove isDirty/handleSave, disable phase card clicks
 
 ## File: `src/features/post-production/components/PPVideoPage.tsx`
 
-Replace lines 365-458 (the entire `<CardContent>...</CardContent>` block of the Pipeline card) with the new layout featuring:
+### 1. Remove `Save` from imports (line 6)
+Remove `Save` from the lucide-react import.
 
-1. **Thin progress track** — horizontal bar segments (`h-1.5`, `flex-1`, `rounded-full`) colored by step state
-2. **Phase cards** — equal-width grid of clickable step buttons with number/checkmark, label, and state-based styling (`bg-primary/8` for active, `bg-muted/50` for done, transparent+opacity for future)
-3. **Sub-steps row** — horizontal inline sub-step buttons with numbered circles, wrapped in a muted container; includes footer with counter + advance button
-4. **Standalone advance button** — shown when current step has no sub-steps but a next step exists
+### 2. Remove `isDirty` (lines 111-116) and `handleSave` (lines 123-143)
+Delete both blocks entirely.
 
-No other files changed.
+### 3. Replace Etapa Select with read-only display (lines 248-262)
+Replace the Select-based Etapa field with:
+```tsx
+<div className="flex items-center gap-1.5">
+  <span className="text-xs text-muted-foreground">Etapa</span>
+  <PPStatusBadge status={form.status} />
+</div>
+```
+
+### 4. Auto-save Prioridade (line 267)
+Add `updateItem.mutate(...)` call after `setForm` in `onValueChange`.
+
+### 5. Auto-save Editor (line 284)
+Add `updateItem.mutate(...)` with `editor_id` and `editor_name` after `setForm`.
+
+### 6. Auto-save Prazo (line 330)
+Add `updateItem.mutate(...)` with `due_date` after `setForm` in `onSelect`. Also update the "Limpar" button (line 335) to auto-save clearing.
+
+### 7. Remove Save button block (lines 344-349)
+Delete the `isDirty && Save button` block.
+
+### 8. Phase cards — remove onClick, change cursor (lines 385-387)
+Remove `onClick` handler, change to `cursor-default`. Keep as `<button>` but non-interactive for macro navigation.
+
+Single file, no other changes.
 
