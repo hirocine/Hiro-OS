@@ -143,10 +143,17 @@ export function HeroBanner() {
             Bem-Vindo à Hiro OS®, {firstName}.
           </h1>
 
-          {(nextRec || weather?.current_weather) && (
-            <div className="flex items-end justify-between w-full mt-auto pt-8">
+          <div className={cn(
+            "flex items-end justify-between w-full mt-auto pt-8 transition-all duration-700 ease-out",
+            (nextRec || weather?.current_weather)
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2 pointer-events-none"
+          )}>
               {nextRec ? (
-                <div className="flex items-center gap-2 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
+                <div className={cn(
+                  "flex items-center gap-2 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 transition-all duration-500 delay-300",
+                  nextRec ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                )}>
                   <span>🎬</span>
                   <span className="text-white/60">Próxima gravação</span>
                   <span className="font-medium truncate max-w-[150px] md:max-w-[200px]">
@@ -156,8 +163,11 @@ export function HeroBanner() {
                 </div>
               ) : <div />}
 
-              {weather?.current_weather && (
-                <div className="flex items-center gap-2">
+              {weather?.current_weather ? (
+                <div className={cn(
+                  "flex items-center gap-2 transition-all duration-500 delay-500",
+                  weather?.current_weather ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                )}>
                   <div className="flex items-center gap-1.5 text-white/90 text-xs md:text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
                     <span>{getWeatherIcon(weather.current_weather.weathercode)}</span>
                     <span className="font-medium">{Math.round(weather.current_weather.temperature)}°</span>
@@ -178,9 +188,8 @@ export function HeroBanner() {
                     </>
                   )}
                 </div>
-              )}
-            </div>
-          )}
+              ) : <div />}
+          </div>
         </div>
 
         {/* Edit button for admins - hidden on mobile */}
