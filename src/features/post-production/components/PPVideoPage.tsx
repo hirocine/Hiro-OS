@@ -373,20 +373,16 @@ export function PPVideoPage({ item, onBack }: Props) {
                       onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
                       className="flex-1 flex flex-col items-center gap-2 group relative"
                     >
-                      {/* Line left */}
-                      {i > 0 && (
-                        <div className={cn(
-                          'absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300',
-                          isDone || isActive ? 'bg-primary' : 'bg-border'
-                        )} />
-                      )}
-                      {/* Line right */}
-                      {i < MACRO_STEPS.length - 1 && (
-                        <div className={cn(
-                          'absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300',
-                          isDone ? 'bg-primary' : 'bg-border'
-                        )} />
-                      )}
+                      {/* Line left — always present, transparent on first step */}
+                      <div className={cn(
+                        'absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300',
+                        i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary' : 'bg-border')
+                      )} />
+                      {/* Line right — always present, transparent on last step */}
+                      <div className={cn(
+                        'absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300',
+                        i === MACRO_STEPS.length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary' : 'bg-border')
+                      )} />
                       {/* Circle */}
                       <div className={cn(
                         'relative z-10 w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300',
@@ -425,18 +421,16 @@ export function PPVideoPage({ item, onBack }: Props) {
                           onClick={() => handleSubStepClick(i)}
                           className="flex-1 flex flex-col items-center gap-1.5 group relative"
                         >
-                          {i > 0 && (
-                            <div className={cn(
-                              'absolute left-0 right-1/2 top-[11px] h-px transition-colors duration-200',
-                              isDone || isActive ? 'bg-primary/60' : 'bg-border'
-                            )} />
-                          )}
-                          {i < SUB_STEPS[form.status].length - 1 && (
-                            <div className={cn(
-                              'absolute left-1/2 right-0 top-[11px] h-px transition-colors duration-200',
-                              isDone ? 'bg-primary/60' : 'bg-border'
-                            )} />
-                          )}
+                          {/* Line left — always present, transparent on first step */}
+                          <div className={cn(
+                            'absolute left-0 right-1/2 top-[11px] h-px transition-colors duration-200',
+                            i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary/60' : 'bg-border')
+                          )} />
+                          {/* Line right — always present, transparent on last step */}
+                          <div className={cn(
+                            'absolute left-1/2 right-0 top-[11px] h-px transition-colors duration-200',
+                            i === SUB_STEPS[form.status].length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary/60' : 'bg-border')
+                          )} />
                           <div className={cn(
                             'relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
                             isDone && 'bg-primary text-primary-foreground',
