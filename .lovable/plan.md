@@ -1,38 +1,83 @@
 
 
-# Rewrite PPVideoPage layout with BreadcrumbNav header and rich summary card
+# Fix Pipeline Section in PPVideoPage
 
 ## Single file: `src/features/post-production/components/PPVideoPage.tsx`
 
-All logic, hooks, state, handlers, helpers unchanged. Only JSX restructure.
+### 1. Macro steps container (line 338)
+Replace `<div className="flex items-center justify-center gap-0 overflow-x-auto pb-2">` with:
+```tsx
+<div className="flex items-start w-full">
+```
 
-### Import changes
-- Add: `BreadcrumbNav` from `@/components/ui/breadcrumb-nav`
-- Add: `DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger` from `@/components/ui/dropdown-menu`
-- Add: `MoreHorizontal` from `lucide-react` (Pencil already imported)
-- Keep: `Save, Trash2` (Save used in summary card save button, Trash2 in dropdown)
-- `useNavigate` already imported
+### 2. Macro step buttons (lines 345-358)
+Update each `<button>` with `shrink-0`, larger circles (`w-10 h-10`, `text-sm`), `gap-2`, and `duration-300`:
+```tsx
+<button
+  onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
+  className="flex flex-col items-center gap-2 shrink-0 group"
+>
+  <div className={cn(
+    'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
+    isDone && 'bg-primary text-primary-foreground',
+    isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110',
+    !isDone && !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
+  )}>
+    {isDone ? <Check className="h-4 w-4" /> : i + 1}
+  </div>
+  <span className={cn(
+    'text-xs font-medium whitespace-nowrap transition-colors duration-300',
+    isActive ? 'text-primary' : 'text-muted-foreground'
+  )}>
+    {step.label}
+  </span>
+</button>
+```
 
-### 1. Header — BreadcrumbNav + dropdown (lines 236-259)
-Replace with ProposalDetails pattern:
-- `BreadcrumbNav` with items: `Esteira de Pós` (href `/esteira-de-pos`) > `composedTitle || 'Vídeo'`
-- Right side: "Editar" outline button navigating to edit page, then a `DropdownMenu` with `MoreHorizontal` trigger containing "Excluir" as destructive item
+### 3. Macro step connector (lines 360-362)
+Replace fixed-width connector with flex-1, aligned to circle center (`mt-5`):
+```tsx
+<div className={cn(
+  'flex-1 h-0.5 mt-5 rounded-full transition-all duration-500',
+  i < currentIdx ? 'bg-primary' : 'bg-border'
+)} />
+```
 
-### 2. Summary Card — replace current + delete Informações card (lines 262-486)
-Replace the current simple summary card AND the entire Informações card with one rich summary card containing:
-- **Top row**: title + version badge on left; status + priority badges on right
-- **Separator**
-- **Bottom grid** (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4`): Status select, Priority select, Editor select, Prazo DateField, Início DateField, Entregue em (read-only), Tempo na etapa (read-only) — each in `space-y-1.5` div
-- **Footer row**: right-aligned Save button (shown always, disabled when `!form.client_name.trim()`)
+### 4. Sub-steps container (line 373)
+Replace `<div className="flex items-center gap-0 overflow-x-auto pb-2">` with:
+```tsx
+<div className="flex items-start w-full flex-wrap gap-y-3">
+```
 
-### 3. Pipeline Card — unchanged (lines 287-393)
+### 5. Sub-step buttons (lines 379-391)
+Update to `flex-col` layout with `shrink-0`, `ring-primary/30`, `text-[11px]`:
+```tsx
+<button onClick={() => handleSubStepClick(i)} className="flex flex-col items-center gap-1.5 shrink-0 group">
+  <div className={cn(
+    'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
+    isDone && 'bg-primary/80 text-primary-foreground',
+    isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
+    !isDone && !isActive && 'bg-muted text-muted-foreground'
+  )}>
+    {isDone ? <Check className="h-3 w-3" /> : i + 1}
+  </div>
+  <span className={cn(
+    'text-[11px] whitespace-nowrap transition-colors',
+    isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+  )}>
+    {sub}
+  </span>
+</button>
+```
 
-### 4. Delete the standalone Informações card (lines 395-486)
-All its content is now in the summary card.
+### 6. Sub-step connector (lines 392-394)
+Replace with flex-1 + `mt-3` + `min-w-[16px]`:
+```tsx
+<div className={cn(
+  'flex-1 h-0.5 mt-3 rounded-full min-w-[16px] transition-all duration-300',
+  i < subStepIndex ? 'bg-primary/50' : 'bg-border'
+)} />
+```
 
-### 5. Atividade & Versões — unchanged (lines 488-587)
-
-### Technical notes
-- The `onBack` prop is no longer used in the header (BreadcrumbNav handles navigation). Keep prop in interface for compatibility but don't render a back button.
-- `DropdownMenuSeparator` not needed (only one item in dropdown).
+No logic changes. No other files.
 
