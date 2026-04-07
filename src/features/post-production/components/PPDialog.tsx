@@ -253,45 +253,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Prazo</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !form.due_date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.due_date
-                      ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
-                      : 'Selecionar data'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
-                    onSelect={(date) => {
-                      setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-                    }}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                  {form.due_date && (
-                    <div className="p-2 border-t">
-                      <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
-                        <X className="w-4 h-4 mr-2" /> Limpar
-                      </Button>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div>
               <Label>Início</Label>
-              <Popover>
+              <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -319,6 +282,43 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                   {form.start_date && (
                     <div className="p-2 border-t">
                       <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
+                        <X className="w-4 h-4 mr-2" /> Limpar
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label>Data de Entrega</Label>
+              <Popover modal={false}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !form.due_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.due_date
+                      ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })
+                      : 'Selecionar data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
+                    onSelect={(date) => {
+                      setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {form.due_date && (
+                    <div className="p-2 border-t">
+                      <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
                         <X className="w-4 h-4 mr-2" /> Limpar
                       </Button>
                     </div>
