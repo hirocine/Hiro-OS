@@ -362,99 +362,114 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
 
-          <CardContent className="pt-6 pb-5">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-6">
-              {/* Left: macro steps */}
-              <div className="flex flex-col gap-6">
-                <div className="flex items-start w-full">
-                  {MACRO_STEPS.map((step, i) => {
-                    const isDone = i < currentStepIdx;
-                    const isActive = i === currentStepIdx;
+          <CardContent className="pt-5 pb-5 space-y-4">
+            {/* 1. Thin progress track */}
+            <div className="flex items-center gap-1">
+              {MACRO_STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'h-1.5 flex-1 rounded-full transition-all duration-500',
+                    i < currentStepIdx ? 'bg-primary' : i === currentStepIdx ? 'bg-primary/40' : 'bg-border'
+                  )}
+                />
+              ))}
+            </div>
+
+            {/* 2. Phase cards */}
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${MACRO_STEPS.length}, 1fr)` }}>
+              {MACRO_STEPS.map((step, i) => {
+                const isDone = i < currentStepIdx;
+                const isActive = i === currentStepIdx;
+                return (
+                  <button
+                    key={step.key}
+                    onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
+                    className={cn(
+                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-200 text-center',
+                      isDone && 'bg-muted/50 border-border/50',
+                      isActive && 'bg-primary/8 border-primary/40',
+                      !isDone && !isActive && 'bg-transparent border-border/30 opacity-50 hover:opacity-70',
+                    )}
+                  >
+                    <span className={cn(
+                      'text-[10px] font-medium',
+                      isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground'
+                    )}>
+                      {isDone ? '✓' : i + 1}
+                    </span>
+                    <span className={cn(
+                      'text-xs font-medium leading-tight',
+                      isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground'
+                    )}>
+                      {step.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 3. Sub-steps row — only when current step has sub-steps */}
+            {SUB_STEPS[normalizedStatus]?.length > 0 && (
+              <div className="bg-muted/40 rounded-lg px-4 py-3 border border-border/40 space-y-3">
+                <div className="flex items-center gap-4 flex-wrap">
+                  {SUB_STEPS[normalizedStatus].map((sub, i) => {
+                    const isDone = i < subStepIndex;
+                    const isActive = i === subStepIndex;
                     return (
-                      <React.Fragment key={step.key}>
-                        <button
-                          onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
-                          className="flex-1 flex flex-col items-center gap-2 group relative"
-                        >
-                          <div className={cn('absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300', i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary' : 'bg-border'))} />
-                          <div className={cn('absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300', i === MACRO_STEPS.length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary' : 'bg-border'))} />
-                          <div className={cn(
-                            'relative z-10 w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300',
-                            isDone && 'bg-primary text-primary-foreground',
-                            isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20',
-                            !isDone && !isActive && 'bg-muted text-muted-foreground group-hover:bg-muted/70',
-                          )}>
-                            {isDone ? <Check className="h-4 w-4" /> : i + 1}
-                          </div>
-                          <span className={cn('text-xs text-center whitespace-nowrap transition-colors duration-300 px-1', isActive ? 'text-primary font-semibold' : 'text-muted-foreground')}>
-                            {step.label}
-                          </span>
-                        </button>
-                      </React.Fragment>
+                      <button
+                        key={i}
+                        onClick={() => handleSubStepClick(i)}
+                        className={cn(
+                          'flex items-center gap-1.5 transition-colors',
+                          isDone && 'text-muted-foreground',
+                          isActive && 'text-primary',
+                          !isDone && !isActive && 'text-muted-foreground/60 hover:text-muted-foreground',
+                        )}
+                      >
+                        <div className={cn(
+                          'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all',
+                          isDone && 'bg-primary text-primary-foreground',
+                          isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
+                          !isDone && !isActive && 'bg-border text-muted-foreground',
+                        )}>
+                          {isDone ? <Check className="h-2.5 w-2.5" /> : i + 1}
+                        </div>
+                        <span className={cn('text-xs whitespace-nowrap', isActive && 'font-medium')}>
+                          {sub}
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
 
-                {/* Advance button */}
-                {nextStep && (
-                  <div className="border-t border-border pt-4">
+                {/* Footer: counter + advance button */}
+                <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                  <span className="text-xs text-muted-foreground">
+                    {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
+                  </span>
+                  {nextStep && (
                     <Button
                       size="sm"
-                      variant={subStepIndex >= (SUB_STEPS[normalizedStatus]?.length ?? 0) ? 'default' : 'outline'}
+                      className="h-7 text-xs"
+                      variant={subStepIndex >= SUB_STEPS[normalizedStatus].length ? 'default' : 'outline'}
                       onClick={handleAdvanceStage}
                     >
                       Avançar para {nextStep.label} →
                     </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Right: sub-steps sidebar */}
-              {SUB_STEPS[normalizedStatus]?.length > 0 && (
-                <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                    {MACRO_STEPS.find(s => s.key === normalizedStatus)?.label}
-                  </p>
-                  <div className="flex flex-col gap-1">
-                    {SUB_STEPS[normalizedStatus].map((sub, i) => {
-                      const isDone = i < subStepIndex;
-                      const isActive = i === subStepIndex;
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => handleSubStepClick(i)}
-                          className={cn(
-                            'flex items-center gap-2.5 text-left px-2 py-1.5 rounded-md transition-colors',
-                            isActive && 'bg-primary/10',
-                            !isActive && 'hover:bg-muted',
-                          )}
-                        >
-                          <div className={cn(
-                            'w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all',
-                            isDone && 'bg-primary',
-                            isActive && 'border-2 border-primary',
-                            !isDone && !isActive && 'border border-border',
-                          )}>
-                            {isDone && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                          </div>
-                          <span className={cn(
-                            'text-xs transition-colors',
-                            isDone && 'text-muted-foreground line-through',
-                            isActive && 'text-primary font-medium',
-                            !isDone && !isActive && 'text-muted-foreground',
-                          )}>
-                            {sub}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50">
-                    {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
-                  </p>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* When no sub-steps: show advance button standalone */}
+            {SUB_STEPS[normalizedStatus]?.length === 0 && nextStep && (
+              <div className="flex justify-end pt-1">
+                <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
+                  Avançar para {nextStep.label} →
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
