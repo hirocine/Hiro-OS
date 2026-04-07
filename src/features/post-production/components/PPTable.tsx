@@ -140,7 +140,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
     <div className="rounded-xl overflow-hidden border border-border/40">
       <Table className="table-fixed">
         <TableHeader>
-          <TableRow className="bg-muted/60 border-b border-border">
+          <TableRow className="bg-muted border-b border-border">
             <TableHead className="w-[35%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
             </TableHead>
@@ -170,7 +170,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
             return (
               <TableRow
                 key={item.id}
-                className="hover:bg-muted/40 cursor-pointer border-b border-border/40 last:border-0 transition-colors"
+                className="border-b border-border/50 last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"
                 onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
               >
                 <TableCell>
