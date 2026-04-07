@@ -1,14 +1,10 @@
 
 
-# Variable-height pipeline segments
+# Replace PipelineProgress with SVG-based segments
 
 ## File: `src/features/post-production/components/PPTable.tsx`
 
-In the `PipelineProgress` component, move `h-[3px]` out of the shared className and make it conditional per segment state:
+Replace the current CSS grid-based `PipelineProgress` component with an SVG version that uses fixed pixel-width rectangles (14px each, 3px gaps) for perfectly equal segments. Each segment has variable height for visual hierarchy: completed=3px, active=4px, future=2px. The status label above remains unchanged.
 
-- Completed (`i < currentIndex`): `h-[3px] bg-primary`
-- Current (`i === currentIndex`): `h-[4px] bg-primary/60`
-- Future: `h-[2px] bg-muted-foreground/20`
-
-Single file, single change.
+Single component replacement, no other changes.
 
