@@ -75,6 +75,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   const isCreating = !item;
 
   const [form, setForm] = useState(defaultForm);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [dueDateOpen, setDueDateOpen] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -254,7 +256,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Início</Label>
-              <Popover modal={false}>
+              <Popover modal={false} open={startDateOpen} onOpenChange={setStartDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -275,8 +277,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
                       setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setStartDateOpen(false);
                     }}
-                    initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
                   {form.start_date && (
@@ -291,7 +293,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
             </div>
             <div>
               <Label>Data de Entrega</Label>
-              <Popover modal={false}>
+              <Popover modal={false} open={dueDateOpen} onOpenChange={setDueDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -312,8 +314,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
                       setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setDueDateOpen(false);
                     }}
-                    initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
                   {form.due_date && (
