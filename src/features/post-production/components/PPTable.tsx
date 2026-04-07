@@ -171,7 +171,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
             return (
               <TableRow
                 key={item.id}
-                className="border-b border-border/50 hover:bg-muted/40 cursor-pointer transition-colors"
+                className="border-b border-border hover:bg-muted/40 cursor-pointer transition-colors"
                 onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
               >
                 <TableCell>
