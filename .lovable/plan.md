@@ -1,38 +1,23 @@
 
 
-# Auto-save fields, read-only Etapa, remove isDirty/handleSave, disable phase card clicks
+# Fix handleAdvanceStage + add handleGoBack + redesign footer buttons
 
 ## File: `src/features/post-production/components/PPVideoPage.tsx`
 
-### 1. Remove `Save` from imports (line 6)
-Remove `Save` from the lucide-react import.
+### Change 1: Move `normalizedStatus` before handlers (lines 160-163 → before line 118)
+Move the normalization block to right after line 111 (before `handleDelete`), so handlers can use it.
 
-### 2. Remove `isDirty` (lines 111-116) and `handleSave` (lines 123-143)
-Delete both blocks entirely.
+### Change 2: Fix `handleAdvanceStage` (lines 129-145)
+Replace `form.status` with `normalizedStatus` in the findIndex call.
 
-### 3. Replace Etapa Select with read-only display (lines 248-262)
-Replace the Select-based Etapa field with:
-```tsx
-<div className="flex items-center gap-1.5">
-  <span className="text-xs text-muted-foreground">Etapa</span>
-  <PPStatusBadge status={form.status} />
-</div>
-```
+### Change 3: Add `handleGoBack` (after handleAdvanceStage, ~line 145)
+New handler that finds the previous macro step using `normalizedStatus`, updates form + DB, and toasts.
 
-### 4. Auto-save Prioridade (line 267)
-Add `updateItem.mutate(...)` call after `setForm` in `onValueChange`.
+### Change 4: Replace sub-steps footer (lines 415-430)
+Replace with new layout: left counter, right side has "← Voltar" ghost button (if not first step) + either "Próxima sub-etapa →" outline button (if sub-steps remain) or "Avançar para {next} →" default button (if all sub-steps done and next exists).
 
-### 5. Auto-save Editor (line 284)
-Add `updateItem.mutate(...)` with `editor_id` and `editor_name` after `setForm`.
+### Change 5: Replace standalone advance block (lines 434-441)
+Replace with version that includes both back button and advance button, wrapped in `justify-end gap-2`.
 
-### 6. Auto-save Prazo (line 330)
-Add `updateItem.mutate(...)` with `due_date` after `setForm` in `onSelect`. Also update the "Limpar" button (line 335) to auto-save clearing.
-
-### 7. Remove Save button block (lines 344-349)
-Delete the `isDirty && Save button` block.
-
-### 8. Phase cards — remove onClick, change cursor (lines 385-387)
-Remove `onClick` handler, change to `cursor-default`. Keep as `<button>` but non-interactive for macro navigation.
-
-Single file, no other changes.
+No other files.
 
