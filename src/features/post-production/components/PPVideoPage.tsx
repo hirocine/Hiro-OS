@@ -108,6 +108,11 @@ export function PPVideoPage({ item, onBack }: Props) {
   const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
   const selectedEditor = users.find(u => u.id === form.editor_id);
 
+  // Normalize legacy color_grading status to finalizacao for pipeline display
+  const normalizedStatus = form.status === 'color_grading' ? 'finalizacao' : form.status;
+  const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
+  const nextStep = MACRO_STEPS[currentStepIdx + 1];
+
 
   const timelineItems = [
     ...versions.map(v => ({ type: 'version' as const, date: v.created_at, data: v })),
@@ -127,7 +132,7 @@ export function PPVideoPage({ item, onBack }: Props) {
   };
 
   const handleAdvanceStage = () => {
-    const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
+    const currentIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
     const next = MACRO_STEPS[currentIdx + 1];
     if (!next) return;
     setForm(prev => ({ ...prev, status: next.key }));
@@ -144,6 +149,16 @@ export function PPVideoPage({ item, onBack }: Props) {
     toast.success(`Avançado para ${next.label}`);
   };
 
+  const handleGoBack = () => {
+    const currentIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
+    const prev = MACRO_STEPS[currentIdx - 1];
+    if (!prev) return;
+    setForm(p => ({ ...p, status: prev.key }));
+    setSubStepIndex(0);
+    updateItem.mutate({ id: item.id, updates: { status: prev.key, sub_status_index: 0 } });
+    toast.success(`Voltou para ${prev.label}`);
+  };
+
   const handleAddVersion = async () => {
     if (!newVersionUrl.trim()) return;
     await addVersion.mutateAsync({ frame_io_url: newVersionUrl.trim() });
@@ -157,10 +172,6 @@ export function PPVideoPage({ item, onBack }: Props) {
     setComment('');
   };
 
-  // Normalize legacy color_grading status to finalizacao for pipeline display
-  const normalizedStatus = form.status === 'color_grading' ? 'finalizacao' : form.status;
-  const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
-  const nextStep = MACRO_STEPS[currentStepIdx + 1];
 
   return (
     <ResponsiveContainer maxWidth="7xl">
@@ -412,31 +423,53 @@ export function PPVideoPage({ item, onBack }: Props) {
                   })}
                 </div>
 
-                {/* Footer: counter + advance button */}
+                {/* Footer: counter + advance/back buttons */}
                 <div className="flex items-center justify-between pt-2 border-t border-border/40">
                   <span className="text-xs text-muted-foreground">
                     {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
                   </span>
-                  {nextStep && (
-                    <Button
-                      size="sm"
-                      className="h-7 text-xs"
-                      variant={subStepIndex >= SUB_STEPS[normalizedStatus].length ? 'default' : 'outline'}
-                      onClick={handleAdvanceStage}
-                    >
-                      Avançar para {nextStep.label} →
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {currentStepIdx > 0 && (
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleGoBack}>
+                        ← Voltar
+                      </Button>
+                    )}
+                    {subStepIndex < SUB_STEPS[normalizedStatus].length ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          const newIndex = subStepIndex + 1;
+                          setSubStepIndex(newIndex);
+                          updateItem.mutate({ id: item.id, updates: { sub_status_index: newIndex } });
+                        }}
+                      >
+                        Próxima sub-etapa →
+                      </Button>
+                    ) : nextStep ? (
+                      <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
+                        Avançar para {nextStep.label} →
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* When no sub-steps: show advance button standalone */}
-            {SUB_STEPS[normalizedStatus]?.length === 0 && nextStep && (
-              <div className="flex justify-end pt-1">
-                <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
-                  Avançar para {nextStep.label} →
-                </Button>
+            {/* When no sub-steps: show back/advance buttons standalone */}
+            {SUB_STEPS[normalizedStatus]?.length === 0 && (
+              <div className="flex items-center justify-end gap-2 pt-1">
+                {currentStepIdx > 0 && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleGoBack}>
+                    ← Voltar
+                  </Button>
+                )}
+                {nextStep && (
+                  <Button size="sm" className="h-7 text-xs" onClick={handleAdvanceStage}>
+                    Avançar para {nextStep.label} →
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
