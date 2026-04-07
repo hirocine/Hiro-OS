@@ -14,9 +14,9 @@ export function TaskStatsCards() {
   }
 
   const cards = [
-    { title: 'Tarefas Ativas', value: stats.active, icon: CheckSquare, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary' },
-    { title: 'Tarefas Urgentes', value: stats.urgent, icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10', borderColor: 'border-l-orange-500' },
-    { title: 'Tarefas Atrasadas', value: stats.overdue, icon: Clock, color: 'text-destructive', bgColor: 'bg-destructive/10', borderColor: 'border-l-destructive' },
+    { title: 'Tarefas Ativas', value: stats.active, icon: CheckSquare, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Tarefas Urgentes', value: stats.urgent, icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
+    { title: 'Tarefas Atrasadas', value: stats.overdue, icon: Clock, color: 'text-destructive', bgColor: 'bg-destructive/10' },
   ];
 
   return (

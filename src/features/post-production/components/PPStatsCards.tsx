@@ -31,10 +31,10 @@ export function PPStatsCards({ items }: PPStatsCardsProps) {
   }, [items]);
 
   const cards = [
-    { title: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary' },
-    { title: 'Em Produção', value: stats.inProgress, icon: Clock, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', borderColor: 'border-l-blue-500' },
-    { title: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive', bgColor: 'bg-destructive/10', borderColor: 'border-l-destructive' },
-    { title: 'Entregues (mês)', value: stats.delivered, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-l-green-500' },
+    { title: 'Total na Esteira', value: stats.total, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Em Produção', value: stats.inProgress, icon: Clock, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10' },
+    { title: 'Atrasados', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive', bgColor: 'bg-destructive/10' },
+    { title: 'Entregues (mês)', value: stats.delivered, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500/10' },
   ];
 
   return (

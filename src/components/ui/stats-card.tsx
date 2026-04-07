@@ -8,26 +8,23 @@ interface StatsCardProps {
   icon: LucideIcon;
   color: string;
   bgColor: string;
-  borderColor: string;
   description?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, color, bgColor, borderColor, description }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, color, bgColor, description }: StatsCardProps) {
   return (
-    <Card className={`border-l-4 ${borderColor} ${bgColor.replace('/10', '/5')} hover:shadow-elegant transition-all duration-300 animate-fade-in`}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${bgColor}`}>
+    <Card className="hover:shadow-sm transition-all duration-200 animate-fade-in">
+      <CardContent className="p-5">
+        <div className="flex items-center gap-4">
+          <div className={`w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}>
             <Icon className={`h-5 w-5 ${color}`} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground truncate">{title}</p>
-            <p className={`text-2xl font-bold ${color}`}>
+            <p className="text-xs text-muted-foreground">{title}</p>
+            <p className={`text-3xl font-semibold leading-tight mt-0.5 ${color}`}>
               {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
             </p>
-            {description && (
-              <p className="text-xs text-muted-foreground truncate">{description}</p>
-            )}
+            {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
           </div>
         </div>
       </CardContent>
