@@ -271,7 +271,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                       : 'Selecionar data'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom">
+                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom" onCloseAutoFocus={(e) => e.preventDefault()}>
                   <Calendar
                     mode="single"
                     selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
@@ -281,7 +281,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     }}
                     className={cn("p-3 pointer-events-auto")}
                   />
-                  {form.start_date && (
+                  {form.start_date && startDateOpen && (
                     <div className="p-2 border-t">
                       <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
                         <X className="w-4 h-4 mr-2" /> Limpar
@@ -308,7 +308,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                       : 'Selecionar data'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom">
+                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom" onCloseAutoFocus={(e) => e.preventDefault()}>
                   <Calendar
                     mode="single"
                     selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
@@ -318,7 +318,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     }}
                     className={cn("p-3 pointer-events-auto")}
                   />
-                  {form.due_date && (
+                  {form.due_date && dueDateOpen && (
                     <div className="p-2 border-t">
                       <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
                         <X className="w-4 h-4 mr-2" /> Limpar
