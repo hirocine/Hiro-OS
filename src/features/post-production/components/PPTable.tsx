@@ -137,107 +137,106 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
   }
 
   return (
-    <Table className="table-fixed">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[22%]">
-            <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-          <TableHead className="w-[16%]">
-            <PPSortableHeader field="project_name" label="Projeto / Cliente" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-          <TableHead className="w-[12%]">
-            <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-          <TableHead className="w-[22%] min-w-[160px]">
-            <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-          <TableHead className="w-[12%]">
-            <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-          <TableHead className="w-[18%]">
-            <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedItems.map(item => {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
-          const daysOverdue = isOverdue
-            ? Math.floor((today.getTime() - new Date(item.due_date! + 'T00:00:00').getTime()) / 86400000)
-            : 0;
+    <div className="rounded-xl overflow-hidden border border-border/40">
+      <Table className="table-fixed">
+        <TableHeader>
+          <TableRow className="bg-muted/60 border-b border-border">
+            <TableHead className="w-[35%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            </TableHead>
+            <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            </TableHead>
+            <TableHead className="w-[22%] min-w-[160px] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            </TableHead>
+            <TableHead className="w-[13%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            </TableHead>
+            <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedItems.map(item => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
+            const daysOverdue = isOverdue
+              ? Math.floor((today.getTime() - new Date(item.due_date! + 'T00:00:00').getTime()) / 86400000)
+              : 0;
 
-          return (
-            <TableRow
-              key={item.id}
-              className="hover:bg-muted/50 cursor-pointer"
-              onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
-            >
-              <TableCell>
-                <span className="text-sm font-medium truncate block hover:text-primary transition-colors">
-                  {item.title}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="text-sm text-muted-foreground truncate block">
-                  {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
-                </span>
-              </TableCell>
-              <TableCell onClick={e => e.stopPropagation()}>
-                <InlineAssigneeCell
-                  value={item.editor_id ? [item.editor_id] : []}
-                  users={users}
-                  onSave={values => {
-                    const newId = values[0] || null;
-                    const editorUser = users.find(u => u.id === newId);
-                    updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
-                  }}
-                />
-              </TableCell>
-              <TableCell className="overflow-hidden">
-                <PipelineProgress status={item.status} />
-              </TableCell>
-              <TableCell onClick={e => e.stopPropagation()}>
-                <InlineSelectCell
-                  value={item.priority}
-                  options={Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
-                  onSave={v => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
-                  renderValue={v => <PPPriorityBadge priority={v as PPPriority} />}
-                  renderOption={v => <PPPriorityBadge priority={v as PPPriority} />}
-                />
-              </TableCell>
-              <TableCell onClick={e => e.stopPropagation()}>
-                {isOverdue ? (
-                  <div>
-                    <div className="flex items-center gap-1 text-destructive text-sm font-medium">
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                      {format(new Date(item.due_date! + 'T00:00:00'), 'dd/MM/yyyy')}
-                    </div>
-                    <p className="text-xs text-destructive mt-0.5">
-                      Atrasada há {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''}
-                    </p>
+            return (
+              <TableRow
+                key={item.id}
+                className="hover:bg-muted/40 cursor-pointer border-b border-border/40 last:border-0 transition-colors"
+                onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+              >
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium text-foreground leading-snug">
+                      {item.title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                    </span>
                   </div>
-                ) : (
-                  <InlineDateCell
-                    value={item.due_date}
-                    onSave={v => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
+                </TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <InlineAssigneeCell
+                    value={item.editor_id ? [item.editor_id] : []}
+                    users={users}
+                    onSave={values => {
+                      const newId = values[0] || null;
+                      const editorUser = users.find(u => u.id === newId);
+                      updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
+                    }}
                   />
-                )}
+                </TableCell>
+                <TableCell className="overflow-hidden">
+                  <PipelineProgress status={item.status} />
+                </TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <InlineSelectCell
+                    value={item.priority}
+                    options={Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
+                    onSave={v => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
+                    renderValue={v => <PPPriorityBadge priority={v as PPPriority} />}
+                    renderOption={v => <PPPriorityBadge priority={v as PPPriority} />}
+                  />
+                </TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  {isOverdue ? (
+                    <div>
+                      <div className="flex items-center gap-1 text-destructive text-sm font-medium">
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                        {format(new Date(item.due_date! + 'T00:00:00'), 'dd/MM/yyyy')}
+                      </div>
+                      <p className="text-xs text-destructive mt-0.5">
+                        Atrasada há {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  ) : (
+                    <InlineDateCell
+                      value={item.due_date}
+                      onSave={v => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
+                    />
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+
+          {sortedItems.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5}>
+                <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
               </TableCell>
             </TableRow>
-          );
-        })}
-
-        {sortedItems.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={6}>
-              <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
