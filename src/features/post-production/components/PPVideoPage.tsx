@@ -404,7 +404,6 @@ export function PPVideoPage({ item, onBack }: Props) {
                             i < subStepIndex ? 'bg-primary/50' : 'bg-border'
                           )} />
                         )}
-                        )}
                       </React.Fragment>
                     );
                   })}
