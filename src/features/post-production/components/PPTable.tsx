@@ -30,11 +30,11 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const config = PP_STATUS_CONFIG[status];
   return (
-    <div className="flex flex-col gap-1.5 w-full">
-      <span className={`text-xs font-medium leading-none ${config.color}`}>
+    <div className="flex flex-col gap-1.5 min-w-0 max-w-full">
+      <span className={`text-xs font-medium leading-none truncate ${config.color}`}>
         {config.label}
       </span>
-      <div className="grid gap-[3px] w-full" style={{ gridTemplateColumns: `repeat(${PIPELINE_STEPS.length}, 1fr)` }}>
+      <div className="grid gap-[3px] max-w-full" style={{ gridTemplateColumns: `repeat(${PIPELINE_STEPS.length}, 1fr)` }}>
         {PIPELINE_STEPS.map((_, i) => (
           <div
             key={i}
@@ -181,7 +181,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
                   }}
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="overflow-hidden">
                 <PipelineProgress status={item.status} />
               </TableCell>
               <TableCell onClick={e => e.stopPropagation()}>
