@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { AlertTriangle, Film } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Film } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -124,6 +125,19 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
     });
   }, [items, sortBy, sortOrder]);
 
+  const activeItems = sortedItems.filter(i => i.status !== 'entregue');
+  const deliveredItems = useMemo(() =>
+    [...sortedItems.filter(i => i.status === 'entregue')]
+      .sort((a, b) => {
+        const dateA = a.delivered_date || a.updated_at;
+        const dateB = b.delivered_date || b.updated_at;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      }),
+    [sortedItems]
+  );
+
+  const [deliveredOpen, setDeliveredOpen] = useState(false);
+
   const handleSort = (field: PPSortableField, order: PPSortOrder) => {
     setSortBy(field);
     setSortOrder(order);
@@ -138,6 +152,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
   }
 
   return (
+    <>
     <div className="rounded-xl overflow-hidden border-y border-border/50">
       <Table className="table-fixed">
         <TableHeader>
@@ -160,7 +175,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedItems.map(item => {
+          {activeItems.map(item => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
@@ -229,15 +244,87 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
             );
           })}
 
-          {sortedItems.length === 0 && (
+          {activeItems.length === 0 && (
             <TableRow>
               <TableCell colSpan={5}>
-                <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
+                <EmptyState icon={Film} title="" description="Nenhum vídeo em produção." compact />
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
     </div>
+
+    {/* Delivered accordion */}
+    {deliveredItems.length > 0 && (
+      <div className="mt-3 rounded-xl overflow-hidden border border-border/50">
+        <button
+          className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors"
+          onClick={() => setDeliveredOpen(o => !o)}
+        >
+          <div className="flex items-center gap-2">
+            <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform duration-200', deliveredOpen && 'rotate-180')} />
+            <span className="text-sm font-medium text-muted-foreground">Entregues</span>
+            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              {deliveredItems.length}
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground/60">Ordenado por mais recente</span>
+        </button>
+
+        {deliveredOpen && (
+          <Table className="table-fixed">
+            <TableHeader>
+              <TableRow className="bg-muted/30 border-b border-border">
+                <TableHead className="w-[35%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Título</TableHead>
+                <TableHead className="w-[15%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Editor</TableHead>
+                <TableHead className="w-[22%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Pipeline</TableHead>
+                <TableHead className="w-[28%] py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Entregue em</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {deliveredItems.map(item => (
+                <TableRow
+                  key={item.id}
+                  className="border-b border-border/50 last:border-0 hover:bg-muted/30 cursor-pointer transition-colors opacity-70 hover:opacity-100"
+                  onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+                >
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium text-foreground leading-snug">{item.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <InlineAssigneeCell
+                      value={item.editor_id ? [item.editor_id] : []}
+                      users={users}
+                      onSave={values => {
+                        const newId = values[0] || null;
+                        const editorUser = users.find(u => u.id === newId);
+                        updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell className="overflow-hidden">
+                    <PipelineProgress status={item.status} />
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {item.delivered_date
+                        ? format(new Date(item.delivered_date + 'T00:00:00'), 'dd/MM/yyyy')
+                        : '—'}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    )}
+  </>
   );
 }
