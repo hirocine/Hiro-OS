@@ -150,12 +150,21 @@ export function PPVideoPage({ item, onBack }: Props) {
   };
 
   const handleGoBack = () => {
+    // If there are previous sub-steps, go back one sub-step
+    if (subStepIndex > 0) {
+      const newIndex = subStepIndex - 1;
+      setSubStepIndex(newIndex);
+      updateItem.mutate({ id: item.id, updates: { sub_status_index: newIndex } });
+      return;
+    }
+    // If on first sub-step (or no sub-steps), go back to previous macro stage
     const currentIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
     const prev = MACRO_STEPS[currentIdx - 1];
     if (!prev) return;
+    const prevSubSteps = SUB_STEPS[prev.key] || [];
     setForm(p => ({ ...p, status: prev.key }));
-    setSubStepIndex(0);
-    updateItem.mutate({ id: item.id, updates: { status: prev.key, sub_status_index: 0 } });
+    setSubStepIndex(prevSubSteps.length);
+    updateItem.mutate({ id: item.id, updates: { status: prev.key, sub_status_index: prevSubSteps.length } });
     toast.success(`Voltou para ${prev.label}`);
   };
 
@@ -434,7 +443,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                     {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
                   </span>
                   <div className="flex items-center gap-2">
-                    {currentStepIdx > 0 && (
+                    {(currentStepIdx > 0 || subStepIndex > 0) && (
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleGoBack}>
                         ← Voltar
                       </Button>
