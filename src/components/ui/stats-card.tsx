@@ -16,8 +16,8 @@ export function StatsCard({ title, value, icon: Icon, color, bgColor, descriptio
     <Card className="hover:shadow-sm transition-all duration-200 animate-fade-in">
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={`w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}>
-            <Icon className={`h-5 w-5 ${color}`} />
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${bgColor}`}>
+            <Icon className={`h-[18px] w-[18px] ${color}`} />
           </div>
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{title}</p>

@@ -43,7 +43,7 @@ function PipelineProgress({ status }: { status: PPStatus }) {
                 ? 'bg-primary'
                 : i === currentIndex
                 ? 'bg-primary/40'
-                : 'bg-border'
+                : 'bg-muted-foreground/20'
             }`}
           />
         ))}
