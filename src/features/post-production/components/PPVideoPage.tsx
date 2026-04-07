@@ -352,11 +352,10 @@ export function PPVideoPage({ item, onBack }: Props) {
                 const isDone = i < currentStepIdx;
                 const isActive = i === currentStepIdx;
                 return (
-                  <button
+                  <div
                     key={step.key}
-                    onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
                     className={cn(
-                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-200 text-center',
+                      'flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all duration-200 text-center cursor-default',
                       isDone && 'bg-muted/50 border-border/50',
                       isActive && 'bg-primary/8 border-primary/40',
                       !isDone && !isActive && 'bg-transparent border-border/30 opacity-50 hover:opacity-70',
@@ -374,7 +373,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                     )}>
                       {step.label}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
