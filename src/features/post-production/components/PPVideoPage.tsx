@@ -376,27 +376,34 @@ export function PPVideoPage({ item, onBack }: Props) {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Sub-etapas · {MACRO_STEPS.find(s => s.key === form.status)?.label}
                 </p>
-                <div className="flex items-center gap-0 overflow-x-auto pb-2">
+                <div className="flex items-start w-full flex-wrap gap-y-3">
                   {SUB_STEPS[form.status].map((sub, i) => {
                     const isDone = i < subStepIndex;
                     const isActive = i === subStepIndex;
                     return (
                       <React.Fragment key={i}>
-                        <button onClick={() => handleSubStepClick(i)} className="flex items-center gap-1.5 group">
+                        <button onClick={() => handleSubStepClick(i)} className="flex flex-col items-center gap-1.5 shrink-0 group">
                           <div className={cn(
-                            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
+                            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
                             isDone && 'bg-primary/80 text-primary-foreground',
-                            isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/20',
+                            isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
                             !isDone && !isActive && 'bg-muted text-muted-foreground'
                           )}>
                             {isDone ? <Check className="h-3 w-3" /> : i + 1}
                           </div>
-                          <span className={cn('text-xs whitespace-nowrap', isActive ? 'text-foreground font-medium' : 'text-muted-foreground')}>
+                          <span className={cn(
+                            'text-[11px] whitespace-nowrap transition-colors',
+                            isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          )}>
                             {sub}
                           </span>
                         </button>
                         {i < SUB_STEPS[form.status].length - 1 && (
-                          <div className={cn('h-0.5 w-6 mx-1 rounded-full', i < subStepIndex ? 'bg-primary/60' : 'bg-muted')} />
+                          <div className={cn(
+                            'flex-1 h-0.5 mt-3 rounded-full min-w-[16px] transition-all duration-300',
+                            i < subStepIndex ? 'bg-primary/50' : 'bg-border'
+                          )} />
+                        )}
                         )}
                       </React.Fragment>
                     );
