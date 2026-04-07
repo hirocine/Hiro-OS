@@ -1,14 +1,13 @@
 
 
-# Uniform-height pipeline segments with opacity differentiation
+# Remove last:border-0 from PPTable data rows
 
 ## File: `src/features/post-production/components/PPTable.tsx`
 
-In the `PipelineProgress` component, replace the `<rect>` element so all segments share the same `y={0}`, `height={4}`, and `fill="currentColor"`. Differentiation is purely via className:
+Remove `last:border-0` from the data `<TableRow>` className so the bottom border applies to all rows including the last one.
 
-- Completed: `text-primary` (full opacity)
-- Active: `text-primary opacity-50`
-- Future: `text-muted-foreground opacity-20`
+**Before:** `"border-b border-border/50 last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"`
+**After:** `"border-b border-border/50 hover:bg-muted/40 cursor-pointer transition-colors"`
 
-Single element change within the SVG map callback. No other files.
+Single class change, no other files.
 
