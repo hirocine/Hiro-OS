@@ -34,11 +34,11 @@ function PipelineProgress({ status }: { status: PPStatus }) {
       <span className={`text-xs font-medium leading-none ${config.color}`}>
         {config.label}
       </span>
-      <div className="flex items-center gap-[3px] w-full">
+      <div className="flex items-center gap-[3px]" style={{ width: '100%', minWidth: 0 }}>
         {PIPELINE_STEPS.map((_, i) => (
           <div
             key={i}
-            className={`h-[3px] flex-1 rounded-full transition-colors ${
+            className={`h-[3px] flex-1 min-w-0 rounded-full transition-colors ${
               i < currentIndex
                 ? 'bg-primary'
                 : i === currentIndex
