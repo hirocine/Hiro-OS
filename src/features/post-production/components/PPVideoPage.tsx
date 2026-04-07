@@ -335,7 +335,7 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
           <CardContent className="pt-6 space-y-6">
-            <div className="flex items-center justify-center gap-0 overflow-x-auto pb-2">
+            <div className="flex items-start w-full">
               {MACRO_STEPS.map((step, i) => {
                 const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
                 const isDone = i < currentIdx;
@@ -343,22 +343,28 @@ export function PPVideoPage({ item, onBack }: Props) {
                 return (
                   <React.Fragment key={step.key}>
                     <button onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
-                      className="flex flex-col items-center gap-1.5 group"
+                      className="flex flex-col items-center gap-2 shrink-0 group"
                     >
                       <div className={cn(
-                        'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+                        'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
                         isDone && 'bg-primary text-primary-foreground',
                         isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110',
-                        !isDone && !isActive && 'bg-muted text-muted-foreground'
+                        !isDone && !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}>
                         {isDone ? <Check className="h-4 w-4" /> : i + 1}
                       </div>
-                      <span className={cn('text-[11px] font-medium whitespace-nowrap', isActive ? 'text-primary' : 'text-muted-foreground')}>
+                      <span className={cn(
+                        'text-xs font-medium whitespace-nowrap transition-colors duration-300',
+                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      )}>
                         {step.label}
                       </span>
                     </button>
                     {i < MACRO_STEPS.length - 1 && (
-                      <div className={cn('h-0.5 w-8 mx-1 rounded-full transition-all', i < currentIdx ? 'bg-primary' : 'bg-muted')} />
+                      <div className={cn(
+                        'flex-1 h-0.5 mt-5 rounded-full transition-all duration-500',
+                        i < currentIdx ? 'bg-primary' : 'bg-border'
+                      )} />
                     )}
                   </React.Fragment>
                 );
