@@ -1,40 +1,45 @@
 
 
-# Fix pipeline step alignment in PPVideoPage.tsx
+# Fix HeroBanner layout jump and add widget entrance animation
 
-## Single file: `src/features/post-production/components/PPVideoPage.tsx`
+## Problem
+The content area uses `justify-between` with a conditional bottom section (`{(nextRec || weather?.current_weather) && ...}`). When weather/recording data loads after the banner image, the `h1` jumps from bottom to middle as the widget row appears.
 
-### 1. Macro steps — always render both lines (lines 376-389)
-Replace the two conditional blocks (`{i > 0 && ...}` and `{i < MACRO_STEPS.length - 1 && ...}`) with always-rendered lines that use `bg-transparent` for the edges:
+## Solution
 
-```tsx
-{/* Line left — always present, transparent on first step */}
-<div className={cn(
-  'absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300',
-  i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary' : 'bg-border')
-)} />
-{/* Line right — always present, transparent on last step */}
-<div className={cn(
-  'absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300',
-  i === MACRO_STEPS.length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary' : 'bg-border')
-)} />
-```
+### File: `src/components/Home/HeroBanner.tsx`
 
-### 2. Sub-steps — same pattern (lines 428-439)
-Replace the two conditional blocks with always-rendered lines:
+**1. Always render the bottom widget row** -- remove the conditional wrapper so the row always occupies space. Show placeholder height when data isn't ready, then fade in content.
+
+Replace the conditional `{(nextRec || weather?.current_weather) && (` (line 145) with an always-rendered container. The widgets inside fade in with a CSS transition:
 
 ```tsx
-{/* Line left — always present, transparent on first step */}
+{/* Always present — reserves space, content fades in */}
 <div className={cn(
-  'absolute left-0 right-1/2 top-[11px] h-px transition-colors duration-200',
-  i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary/60' : 'bg-border')
-)} />
-{/* Line right — always present, transparent on last step */}
-<div className={cn(
-  'absolute left-1/2 right-0 top-[11px] h-px transition-colors duration-200',
-  i === SUB_STEPS[form.status].length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary/60' : 'bg-border')
-)} />
+  "flex items-end justify-between w-full mt-auto pt-8 transition-all duration-700 ease-out",
+  (nextRec || weather?.current_weather)
+    ? "opacity-100 translate-y-0"
+    : "opacity-0 translate-y-2 pointer-events-none"
+)}>
+  {/* recording pill */}
+  {nextRec ? ( ... ) : <div />}
+  {/* weather pills */}
+  {weather?.current_weather ? ( ... ) : <div />}
+</div>
 ```
 
-No logic changes. No other files.
+This keeps the `h1` in its final position from the start since the bottom row always takes up space.
+
+**2. Add staggered entrance animation to weather pills**
+
+Add a small delay to the weather group so it slides in slightly after the recording pill:
+
+- Recording pill: `transition-all duration-500 delay-300`
+- Weather group: `transition-all duration-500 delay-500`
+
+Both start `opacity-0 translate-y-1` and animate to `opacity-100 translate-y-0` when their data is available.
+
+**3. Import `cn`** (already imported via `@/lib/utils`).
+
+### No other files changed.
 
