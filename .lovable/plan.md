@@ -1,14 +1,14 @@
 
 
-# Fix PPTable border styling
+# Uniform-height pipeline segments with opacity differentiation
 
 ## File: `src/features/post-production/components/PPTable.tsx`
 
-Three class changes:
+In the `PipelineProgress` component, replace the `<rect>` element so all segments share the same `y={0}`, `height={4}`, and `fill="currentColor"`. Differentiation is purely via className:
 
-1. **Wrapper div**: `border-x-0 border border-border/40` → `border-y border-border/50`
-2. **Header `<TableRow>`**: `bg-muted/60 border-b border-border` → `bg-muted border-b border-border`
-3. **Data `<TableRow>`**: `hover:bg-muted/40 cursor-pointer border-b border-border/40 last:border-0 transition-colors` → `border-b border-border/50 last:border-0 hover:bg-muted/40 cursor-pointer transition-colors`
+- Completed: `text-primary` (full opacity)
+- Active: `text-primary opacity-50`
+- Future: `text-muted-foreground opacity-20`
 
-No other files.
+Single element change within the SVG map callback. No other files.
 
