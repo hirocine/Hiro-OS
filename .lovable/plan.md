@@ -1,46 +1,47 @@
 
+Objetivo: eliminar o efeito de “abre outro calendário e fecha” ao selecionar data no modal de novo vídeo da Status Post.
 
-# Fix: calendário infinito ao selecionar data no PPDialog
+Diagnóstico:
+- O Popover já está controlado, então o bug atual não é mais um estado realmente “infinito”.
+- O replay mostra dois problemas juntos no fechamento:
+  1) o Popover devolve foco para o botão trigger;
+  2) quando a data é selecionada, o footer com “Limpar” entra no DOM no mesmo render do fechamento, o que força recálculo de posição e cria um flicker/flip visual.
+- Isso gera a sensação de um segundo calendário abrindo/fechando.
 
-## Problema
-Ao selecionar uma data no calendário dentro do Dialog, o Popover não fecha automaticamente. Cada clique em uma data mantém o popover aberto e pode causar comportamento estranho de "calendário infinito".
+Implementação:
 
-## Causa
-O `<Popover>` não é controlado — não tem estado `open`/`onOpenChange`. Quando `modal={false}`, o popover não fecha automaticamente ao selecionar uma data no `Calendar`.
+1. Arquivo: `src/features/post-production/components/PPDialog.tsx`
+   - Adicionar `onCloseAutoFocus={(e) => e.preventDefault()}` nos dois `<PopoverContent>`.
+   - Isso impede o foco automático de voltar para o trigger ao fechar.
 
-## Solução
+2. Campo “Início”
+   - Ajustar a renderização do bloco “Limpar” para depender também de `startDateOpen`.
+   - Trocar:
+     - `{form.start_date && (...)}`
+   - Por:
+     - `{form.start_date && startDateOpen && (...)}`
+   - Assim, ao selecionar a primeira data, o footer não aparece no frame de fechamento.
 
-### File: `src/features/post-production/components/PPDialog.tsx`
+3. Campo “Data de Entrega”
+   - Aplicar o mesmo ajuste usando `dueDateOpen`.
+   - Trocar:
+     - `{form.due_date && (...)}`
+   - Por:
+     - `{form.due_date && dueDateOpen && (...)}`
 
-1. **Adicionar dois estados de controle** para os popovers:
-```tsx
-const [startDateOpen, setStartDateOpen] = useState(false);
-const [dueDateOpen, setDueDateOpen] = useState(false);
-```
+4. Manter sem alteração
+   - `modal={false}`
+   - `open` / `onOpenChange`
+   - handlers de seleção de data
+   - classes de z-index e `side="bottom"`
+   - qualquer lógica de criação/edição
 
-2. **Tornar ambos Popovers controlados** — adicionar `open` e `onOpenChange`:
-```tsx
-<Popover modal={false} open={startDateOpen} onOpenChange={setStartDateOpen}>
-```
-```tsx
-<Popover modal={false} open={dueDateOpen} onOpenChange={setDueDateOpen}>
-```
+Resultado esperado:
+- selecionar uma data fecha o calendário de forma limpa;
+- não há mais “segundo calendário” piscando;
+- alterar uma data existente também fecha sem bounce visual;
+- o botão “Limpar” continua aparecendo normalmente quando o calendário estiver aberto e já houver uma data preenchida.
 
-3. **Fechar o popover ao selecionar data** — nos callbacks `onSelect` de cada Calendar, adicionar o fechamento:
-```tsx
-onSelect={(date) => {
-  setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-  setStartDateOpen(false);  // ← fecha o popover
-}}
-```
-```tsx
-onSelect={(date) => {
-  setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-  setDueDateOpen(false);  // ← fecha o popover
-}}
-```
-
-4. **Remover `initialFocus`** dos dois `<Calendar>` — essa prop pode conflitar com `modal={false}` dentro de um Dialog e contribuir para o bug de foco.
-
-No other files changed.
-
+Escopo:
+- somente `src/features/post-production/components/PPDialog.tsx`
+- nenhuma outra alteração
