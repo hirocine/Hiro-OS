@@ -152,6 +152,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
   }
 
   return (
+    <>
     <div className="rounded-xl overflow-hidden border-y border-border/50">
       <Table className="table-fixed">
         <TableHeader>
