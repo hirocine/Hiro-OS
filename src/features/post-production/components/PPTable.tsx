@@ -24,7 +24,7 @@ import {
   PP_STATUS_CONFIG,
 } from '../types';
 
-const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'entregue'];
+const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'finalizacao', 'revisao', 'entregue'];
 
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
