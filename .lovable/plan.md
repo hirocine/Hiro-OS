@@ -1,31 +1,39 @@
 
 
-# Fix 3 issues in PPVideoPage.tsx
+# Fix pipeline step alignment in PPVideoPage.tsx
 
 ## Single file: `src/features/post-production/components/PPVideoPage.tsx`
 
-### 1. Colored badges in selects (lines 236-237, 250-251)
-- Line 237: Replace `<SelectValue />` with `<PPStatusBadge status={form.status} />`
-- Line 251: Replace `<SelectValue />` with `<PPPriorityBadge priority={form.priority} />`
+### 1. Macro steps — always render both lines (lines 376-389)
+Replace the two conditional blocks (`{i > 0 && ...}` and `{i < MACRO_STEPS.length - 1 && ...}`) with always-rendered lines that use `bg-transparent` for the edges:
 
-### 2. Pipeline overflow fix (lines 338, 346)
-- Line 338: Change `"flex items-start w-full"` to `"flex items-start w-full overflow-x-auto pb-1"`
-- Line 346: Change `"flex flex-col items-center gap-2 shrink-0 group"` to `"flex flex-col items-center gap-2 min-w-[60px] group"`
-
-### 3. "Iniciar Edição" button alignment (lines 427-431)
-Replace:
 ```tsx
-<div className="flex justify-center">
-  <Button onClick={handleAdvanceStage} size="sm">Iniciar Edição →</Button>
-</div>
+{/* Line left — always present, transparent on first step */}
+<div className={cn(
+  'absolute left-0 right-1/2 top-[18px] h-px transition-colors duration-300',
+  i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary' : 'bg-border')
+)} />
+{/* Line right — always present, transparent on last step */}
+<div className={cn(
+  'absolute left-1/2 right-0 top-[18px] h-px transition-colors duration-300',
+  i === MACRO_STEPS.length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary' : 'bg-border')
+)} />
 ```
-With:
+
+### 2. Sub-steps — same pattern (lines 428-439)
+Replace the two conditional blocks with always-rendered lines:
+
 ```tsx
-<div className="pt-2 border-t border-border">
-  <Button onClick={handleAdvanceStage} size="sm" variant="outline">
-    Iniciar Edição →
-  </Button>
-</div>
+{/* Line left — always present, transparent on first step */}
+<div className={cn(
+  'absolute left-0 right-1/2 top-[11px] h-px transition-colors duration-200',
+  i === 0 ? 'bg-transparent' : (isDone || isActive ? 'bg-primary/60' : 'bg-border')
+)} />
+{/* Line right — always present, transparent on last step */}
+<div className={cn(
+  'absolute left-1/2 right-0 top-[11px] h-px transition-colors duration-200',
+  i === SUB_STEPS[form.status].length - 1 ? 'bg-transparent' : (isDone ? 'bg-primary/60' : 'bg-border')
+)} />
 ```
 
 No logic changes. No other files.
