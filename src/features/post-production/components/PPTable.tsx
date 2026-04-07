@@ -35,6 +35,8 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const gap = 3;
   const totalW = total * segW + (total - 1) * gap;
 
+  const isDelivered = status === 'entregue';
+
   return (
     <div className="flex flex-col gap-1.5">
       <span className={`text-xs font-medium leading-none ${config.color}`}>
@@ -55,7 +57,9 @@ function PipelineProgress({ status }: { status: PPStatus }) {
               rx={2}
               fill="currentColor"
               className={
-                isCompleted
+                isDelivered
+                  ? 'text-green-600 dark:text-green-400'
+                  : isCompleted
                   ? 'text-primary'
                   : isActive
                   ? 'text-primary opacity-50'
