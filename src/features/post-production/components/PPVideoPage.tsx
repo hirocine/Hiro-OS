@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ExternalLink, Plus, Send, Trash2, X, CalendarIcon, Check,
-  Save, Clapperboard, MessageSquare, Pencil, MoreHorizontal
+  Clapperboard, MessageSquare, Pencil, MoreHorizontal
 } from 'lucide-react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
