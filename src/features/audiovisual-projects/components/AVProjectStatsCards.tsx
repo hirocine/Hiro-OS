@@ -17,9 +17,9 @@ export function AVProjectStatsCards({ stats, isLoading }: AVProjectStatsCardsPro
   }
 
   const cards = [
-    { title: 'Projetos Ativos', value: stats?.active || 0, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary' },
-    { title: 'Projetos em Atraso', value: stats?.overdue || 0, icon: AlertTriangle, color: 'text-orange-500', bgColor: 'bg-orange-500/10', borderColor: 'border-l-orange-500' },
-    { title: 'Projetos Entregues', value: stats?.completed || 0, icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-l-success' },
+    { title: 'Projetos Ativos', value: stats?.active || 0, icon: Film, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Projetos em Atraso', value: stats?.overdue || 0, icon: AlertTriangle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
+    { title: 'Projetos Entregues', value: stats?.completed || 0, icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10' },
   ];
 
   return (

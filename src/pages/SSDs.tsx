@@ -68,10 +68,10 @@ const SSDs = () => {
   }
 
   const statsCards = [
-    { title: 'Total de SSDs/HDs', value: stats.total, icon: HardDrive, color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-l-primary', description: `${stats.totalCapacity.toFixed(0)} GB capacidade total` },
-    { title: 'Disponíveis', value: stats.available, icon: CheckCircle2, color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-l-success', description: 'Prontos para uso' },
-    { title: 'Em Projetos', value: stats.inUse, icon: FolderOpen, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', borderColor: 'border-l-blue-500', description: 'Alocados em projetos' },
-    { title: 'Emprestados', value: stats.loaned, icon: Share2, color: 'text-warning', bgColor: 'bg-warning/10', borderColor: 'border-l-warning', description: 'Fora do estoque' },
+    { title: 'Total de SSDs/HDs', value: stats.total, icon: HardDrive, color: 'text-primary', bgColor: 'bg-primary/10', description: `${stats.totalCapacity.toFixed(0)} GB capacidade total` },
+    { title: 'Disponíveis', value: stats.available, icon: CheckCircle2, color: 'text-success', bgColor: 'bg-success/10', description: 'Prontos para uso' },
+    { title: 'Em Projetos', value: stats.inUse, icon: FolderOpen, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', description: 'Alocados em projetos' },
+    { title: 'Emprestados', value: stats.loaned, icon: Share2, color: 'text-warning', bgColor: 'bg-warning/10', description: 'Fora do estoque' },
   ];
 
   return (

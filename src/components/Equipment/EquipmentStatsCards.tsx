@@ -25,7 +25,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       icon: Package,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
-      borderColor: 'border-l-primary',
       description: `${stats.mainItems} principais, ${stats.accessories} acessórios`,
     },
     {
@@ -34,7 +33,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       icon: CheckCircle,
       color: 'text-success',
       bgColor: 'bg-success/10',
-      borderColor: 'border-l-success',
       description: `${Math.round((stats.available / stats.total) * 100)}% do total`,
     },
     {
@@ -43,7 +41,6 @@ export function EquipmentStatsCards({ stats, isLoading }: EquipmentStatsCardsPro
       icon: Wrench,
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
-      borderColor: 'border-l-destructive',
       description: stats.maintenance > 0 ? 'Requer atenção' : 'Tudo em ordem',
     },
   ];
