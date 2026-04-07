@@ -48,16 +48,17 @@ function PipelineProgress({ status }: { status: PPStatus }) {
             <rect
               key={i}
               x={x}
-              y={isActive ? 0 : 0.5}
+              y={0}
               width={segW}
-              height={isActive ? 4 : isCompleted ? 3 : 2}
+              height={4}
               rx={2}
+              fill="currentColor"
               className={
                 isCompleted
-                  ? 'fill-primary'
+                  ? 'text-primary'
                   : isActive
-                  ? 'fill-primary/60'
-                  : 'fill-muted-foreground/20'
+                  ? 'text-primary opacity-50'
+                  : 'text-muted-foreground opacity-20'
               }
             />
           );
