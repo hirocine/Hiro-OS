@@ -1,17 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Film, ChevronDown, Check } from 'lucide-react';
+import { format } from 'date-fns';
+import { AlertTriangle, Film } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PPSortableHeader } from './PPSortableHeader';
 import { InlineDateCell } from '@/features/tasks/components/InlineDateCell';
 import { InlineAssigneeCell } from '@/features/tasks/components/InlineAssigneeCell';
 import { InlineSelectCell } from '@/features/tasks/components/InlineSelectCell';
-import { PPStatusBadge } from './PPStatusBadge';
 import { PPPriorityBadge } from './PPPriorityBadge';
 import { usePostProductionMutations } from '../hooks/usePostProductionMutations';
 import { useUsers } from '@/hooks/useUsers';
@@ -25,53 +22,32 @@ import {
   PP_STATUS_ORDER,
   PP_PRIORITY_CONFIG,
   PP_STATUS_CONFIG,
-  PP_STATUS_COLUMNS,
 } from '../types';
-
-function StatusDropdown({ item, onUpdate }: { item: PostProductionItem; onUpdate: (id: string, status: PPStatus) => void }) {
-  const config = PP_STATUS_CONFIG[item.status];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger onClick={e => e.stopPropagation()} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity gap-1 ${config.bgColor} ${config.color}`}>
-        {config.label}
-        <ChevronDown className="h-3 w-3 opacity-60" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" onClick={e => e.stopPropagation()}>
-        {PP_STATUS_COLUMNS.map(status => (
-          <DropdownMenuItem
-            key={status}
-            onClick={() => onUpdate(item.id, status)}
-            className={`gap-2 ${item.status === status ? 'font-medium' : ''}`}
-          >
-            <span className={`w-2 h-2 rounded-full ${PP_STATUS_CONFIG[status].bgColor.split(' ')[0]}`} />
-            {PP_STATUS_CONFIG[status].label}
-            {item.status === status && <Check className="h-3 w-3 ml-auto" />}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'entregue'];
 
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
+  const config = PP_STATUS_CONFIG[status];
   return (
-    <div className="flex items-center gap-0.5">
-      {PIPELINE_STEPS.map((step, i) => (
-        <div
-          key={step}
-          className={`h-1 rounded-full transition-all ${
-            i < currentIndex
-              ? 'w-3 bg-primary/40'
-              : i === currentIndex
-              ? 'w-4 bg-primary'
-              : 'w-3 bg-muted-foreground/20'
-          }`}
-        />
-      ))}
+    <div className="flex flex-col gap-1.5">
+      <span className={`text-xs font-medium ${config.color}`}>
+        {config.label}
+      </span>
+      <div className="flex items-center gap-0.5">
+        {PIPELINE_STEPS.map((step, i) => (
+          <div
+            key={step}
+            className={`h-[3px] flex-1 rounded-full transition-all ${
+              i < currentIndex
+                ? 'bg-primary'
+                : i === currentIndex
+                ? 'bg-primary/40'
+                : 'bg-border'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -90,14 +66,6 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
 
   const [sortBy, setSortBy] = useState<PPSortableField>('due_date');
   const [sortOrder, setSortOrder] = useState<PPSortOrder>('asc');
-
-  const handleStatusChange = (id: string, status: PPStatus) => {
-    const item = items.find(i => i.id === id);
-    const updates: Partial<PostProductionItem> = { status };
-    if (status === 'entregue') updates.delivered_date = new Date().toISOString().split('T')[0];
-    if (status === 'edicao' && !item?.start_date) updates.start_date = new Date().toISOString().split('T')[0];
-    updateItem.mutate({ id, updates });
-  };
 
   const parseLocalDate = (dateStr: string): Date => {
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -157,89 +125,99 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
     <Table className="table-fixed">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[24%]" style={{ textAlign: 'left' }}>
+          <TableHead className="w-[22%]">
             <PPSortableHeader field="title" label="Título" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[17%]" style={{ textAlign: 'left' }}>
-            <PPSortableHeader field="project_name" label="Projeto/Cliente" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          <TableHead className="w-[16%]">
+            <PPSortableHeader field="project_name" label="Projeto / Cliente" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[14%]" style={{ textAlign: 'left' }}>
+          <TableHead className="w-[12%]">
             <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
-            <PPSortableHeader field="status" label="Etapa" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
+          <TableHead className="w-[20%]">
+            <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[12%]" style={{ textAlign: 'left' }}>
+          <TableHead className="w-[12%]">
             <PPSortableHeader field="priority" label="Prioridade" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[15%]" style={{ textAlign: 'left' }}>
+          <TableHead className="w-[18%]">
             <PPSortableHeader field="due_date" label="Prazo" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[6%]" />
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sortedItems.map(item => (
-          <TableRow key={item.id} className="hover:bg-muted/50">
-            <TableCell style={{ textAlign: 'left' }}>
-              <div
-                className="flex flex-col gap-1 cursor-pointer group"
-                onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
-              >
-                <span className="text-sm font-medium truncate block group-hover:text-primary transition-colors">{item.title}</span>
+        {sortedItems.map(item => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const isOverdue = item.due_date && item.status !== 'entregue' && new Date(item.due_date + 'T00:00:00') < today;
+          const daysOverdue = isOverdue
+            ? Math.floor((today.getTime() - new Date(item.due_date! + 'T00:00:00').getTime()) / 86400000)
+            : 0;
+
+          return (
+            <TableRow
+              key={item.id}
+              className="hover:bg-muted/50 cursor-pointer"
+              onClick={() => navigate(`/esteira-de-pos/${item.id}`)}
+            >
+              <TableCell>
+                <span className="text-sm font-medium truncate block hover:text-primary transition-colors">
+                  {item.title}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="text-sm text-muted-foreground truncate block">
+                  {[item.client_name, item.project_name].filter(Boolean).join(' · ') || '—'}
+                </span>
+              </TableCell>
+              <TableCell onClick={e => e.stopPropagation()}>
+                <InlineAssigneeCell
+                  value={item.editor_id ? [item.editor_id] : []}
+                  users={users}
+                  onSave={values => {
+                    const newId = values[0] || null;
+                    const editorUser = users.find(u => u.id === newId);
+                    updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
+                  }}
+                />
+              </TableCell>
+              <TableCell>
                 <PipelineProgress status={item.status} />
-              </div>
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <span className="text-sm text-muted-foreground truncate block">
-                {item.project_name || item.client_name || '—'}
-              </span>
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineAssigneeCell
-                value={item.editor_id ? [item.editor_id] : []}
-                users={users}
-                onSave={values => {
-                  const newId = values[0] || null;
-                  const editorUser = users.find(u => u.id === newId);
-                  updateItem.mutate({ id: item.id, updates: { editor_id: newId, editor_name: editorUser?.display_name || null } });
-                }}
-              />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <StatusDropdown item={item} onUpdate={handleStatusChange} />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineSelectCell
-                value={item.priority}
-                options={Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
-                onSave={v => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
-                renderValue={v => <PPPriorityBadge priority={v as PPPriority} />}
-                renderOption={v => <PPPriorityBadge priority={v as PPPriority} />}
-              />
-            </TableCell>
-            <TableCell style={{ textAlign: 'left' }}>
-              <InlineDateCell
-                value={item.due_date}
-                onSave={v => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
-              />
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={e => { e.stopPropagation(); onEditClick?.(item); }}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+              <TableCell onClick={e => e.stopPropagation()}>
+                <InlineSelectCell
+                  value={item.priority}
+                  options={Object.entries(PP_PRIORITY_CONFIG).map(([v, c]) => ({ value: v, label: c.label }))}
+                  onSave={v => updateItem.mutate({ id: item.id, updates: { priority: v as PPPriority } })}
+                  renderValue={v => <PPPriorityBadge priority={v as PPPriority} />}
+                  renderOption={v => <PPPriorityBadge priority={v as PPPriority} />}
+                />
+              </TableCell>
+              <TableCell onClick={e => e.stopPropagation()}>
+                {isOverdue ? (
+                  <div>
+                    <div className="flex items-center gap-1 text-destructive text-sm font-medium">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      {format(new Date(item.due_date! + 'T00:00:00'), 'dd/MM/yyyy')}
+                    </div>
+                    <p className="text-xs text-destructive mt-0.5">
+                      Atrasada há {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <InlineDateCell
+                    value={item.due_date}
+                    onSave={v => updateItem.mutate({ id: item.id, updates: { due_date: v } })}
+                  />
+                )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
 
         {sortedItems.length === 0 && (
           <TableRow>
-            <TableCell colSpan={7}>
+            <TableCell colSpan={6}>
               <EmptyState icon={Film} title="" description="Nenhum vídeo na esteira ainda." compact />
             </TableCell>
           </TableRow>
