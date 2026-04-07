@@ -184,7 +184,9 @@ export function PPVideoPage({ item, onBack }: Props) {
     setComment('');
   };
 
-  const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
+  // Normalize legacy color_grading status to finalizacao for pipeline display
+  const normalizedStatus = form.status === 'color_grading' ? 'finalizacao' : form.status;
+  const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
   const nextStep = MACRO_STEPS[currentStepIdx + 1];
 
   return (
@@ -398,7 +400,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                   <div className="border-t border-border pt-4">
                     <Button
                       size="sm"
-                      variant={subStepIndex >= (SUB_STEPS[form.status]?.length ?? 0) ? 'default' : 'outline'}
+                      variant={subStepIndex >= (SUB_STEPS[normalizedStatus]?.length ?? 0) ? 'default' : 'outline'}
                       onClick={handleAdvanceStage}
                     >
                       Avançar para {nextStep.label} →
@@ -408,13 +410,13 @@ export function PPVideoPage({ item, onBack }: Props) {
               </div>
 
               {/* Right: sub-steps sidebar */}
-              {SUB_STEPS[form.status]?.length > 0 && (
+              {SUB_STEPS[normalizedStatus]?.length > 0 && (
                 <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                    {MACRO_STEPS.find(s => s.key === form.status)?.label}
+                    {MACRO_STEPS.find(s => s.key === normalizedStatus)?.label}
                   </p>
                   <div className="flex flex-col gap-1">
-                    {SUB_STEPS[form.status].map((sub, i) => {
+                    {SUB_STEPS[normalizedStatus].map((sub, i) => {
                       const isDone = i < subStepIndex;
                       const isActive = i === subStepIndex;
                       return (
@@ -448,7 +450,7 @@ export function PPVideoPage({ item, onBack }: Props) {
                     })}
                   </div>
                   <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50">
-                    {subStepIndex} de {SUB_STEPS[form.status].length} concluídas
+                    {subStepIndex} de {SUB_STEPS[normalizedStatus].length} concluídas
                   </p>
                 </div>
               )}
