@@ -1,35 +1,30 @@
 
 
-# Redesign Pipeline: 5 Macro Steps + Sidebar Layout
+# Add status normalization for legacy `color_grading` in pipeline display
 
-## Summary
-Remove Color Grading from macro steps (now a sub-step of Finalização), reduce pipeline from 6 to 5 steps, and replace the sub-steps layout with a horizontal steps + sidebar design. Changes span 3 files.
+## File: `src/features/post-production/components/PPVideoPage.tsx`
 
-## File 1: `src/features/post-production/components/PPVideoPage.tsx`
+### Change 1: Replace lines 187-188
+Current `currentStepIdx` and `nextStep` declarations derive from `form.status` directly. Add a normalization line and update the derivations:
 
-### 1a. Replace MACRO_STEPS (lines 33-40)
-Remove `color_grading` entry, keeping 5 steps: fila, edicao, finalizacao, revisao, entregue.
+```tsx
+// Normalize legacy color_grading status to finalizacao for pipeline display
+const normalizedStatus = form.status === 'color_grading' ? 'finalizacao' : form.status;
+const currentStepIdx = MACRO_STEPS.findIndex(s => s.key === normalizedStatus);
+const nextStep = MACRO_STEPS[currentStepIdx + 1];
+```
 
-### 1b. Replace SUB_STEPS (lines 42-49)
-Add "Color Grading" as first sub-step of `finalizacao`. Keep `color_grading` key with empty array for backward compatibility.
+### Change 2: Replace `form.status` with `normalizedStatus` in pipeline JSX (6 occurrences)
 
-### 1c. Replace Pipeline CardContent (lines 364-473)
-Replace the current vertical sub-steps and separate advance button with a two-column grid layout:
-- **Left column**: horizontal macro steps (same circle+line style) plus advance button below a border-t
-- **Right column**: sub-steps sidebar in a muted rounded card with small circle indicators (done/active/future), click-to-toggle, and progress counter
+All in the Pipeline CardContent section (lines 363-456):
 
-The advance button moves inside the left column area. The separate pipeline footer `div` (lines 462-473) is removed since the button is now inside CardContent.
+1. **Line 401** — advance button variant check: `SUB_STEPS[form.status]` → `SUB_STEPS[normalizedStatus]`
+2. **Line 411** — sub-steps sidebar condition: `SUB_STEPS[form.status]` → `SUB_STEPS[normalizedStatus]`
+3. **Line 414** — sidebar label lookup: `s.key === form.status` → `s.key === normalizedStatus`
+4. **Line 417** — sub-steps map: `SUB_STEPS[form.status]` → `SUB_STEPS[normalizedStatus]`
+5. **Line 451** — progress counter: `SUB_STEPS[form.status]` → `SUB_STEPS[normalizedStatus]`
 
-## File 2: `src/features/post-production/components/PPTable.tsx`
+Leave `form.status` unchanged in the step button's `onClick` (line 374) and everywhere outside the pipeline card (Select dropdown, handleSave, etc.).
 
-### Replace PIPELINE_STEPS (line 26)
-Change from 6 entries to 5: remove `color_grading`. The SVG width auto-adjusts since `totalW` is computed from `PIPELINE_STEPS.length`.
-
-## File 3: `src/features/post-production/components/PPStatsCards.tsx`
-
-No change needed. The `inProgress` filter already includes `color_grading` for backward compatibility with existing data.
-
-## Technical Notes
-- Items with `status: 'color_grading'` in the database will still render correctly in stats and table (they'll show between edicao and finalizacao in the pipeline bar since the index won't match, appearing as a "future" segment — acceptable for legacy data)
-- The `PP_STATUS_CONFIG` and `PP_STATUS_ORDER` in types remain unchanged to avoid breaking existing data
+No other files.
 
