@@ -134,7 +134,7 @@ export function PPTable({ items, isLoading, onItemClick, onEditClick }: PPTableP
           <TableHead className="w-[12%]">
             <PPSortableHeader field="editor_name" label="Editor" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
-          <TableHead className="w-[20%]">
+          <TableHead className="w-[22%] min-w-[160px]">
             <PPSortableHeader field="status" label="Pipeline" currentSortBy={sortBy} currentSortOrder={sortOrder} onSort={handleSort as any} />
           </TableHead>
           <TableHead className="w-[12%]">
