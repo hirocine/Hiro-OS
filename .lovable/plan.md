@@ -1,23 +1,18 @@
 
 
-# Fix handleAdvanceStage + add handleGoBack + redesign footer buttons
+# Update Pipeline CardContent styling classes
 
 ## File: `src/features/post-production/components/PPVideoPage.tsx`
 
-### Change 1: Move `normalizedStatus` before handlers (lines 160-163 → before line 118)
-Move the normalization block to right after line 111 (before `handleDelete`), so handlers can use it.
+### Change 1: Phase cards (lines 368-384)
+- **Line 368-373**: Replace className with new styling — transparent bg for done, `bg-primary/10 border-primary shadow-sm` for active, transparent+opacity for future. Change `duration-200` to `duration-300`.
+- **Lines 375-378**: Number/check span — change `text-[10px] font-medium` to `text-[11px] font-semibold`.
+- **Lines 381-384**: Label span — add conditional `font-normal`/`font-semibold` instead of uniform `font-medium`.
 
-### Change 2: Fix `handleAdvanceStage` (lines 129-145)
-Replace `form.status` with `normalizedStatus` in the findIndex call.
+### Change 2: Sub-step buttons (lines 400-421)
+- **Lines 403-408**: Button className — add `px-2 py-1 rounded-md`, use opacity-based fading for done/future, `bg-primary/10` for active. Change `transition-colors` to `transition-all duration-200`.
+- **Lines 410-414**: Circle className — muted bg for done, add `ring-3 ring-primary/25 scale-110` for active, `bg-border/60` for future. Add `duration-200`.
+- **Line 418**: Label span — add `line-through` for done, `font-semibold` for active, `text-muted-foreground/60` for future. Add `transition-colors duration-200`.
 
-### Change 3: Add `handleGoBack` (after handleAdvanceStage, ~line 145)
-New handler that finds the previous macro step using `normalizedStatus`, updates form + DB, and toasts.
-
-### Change 4: Replace sub-steps footer (lines 415-430)
-Replace with new layout: left counter, right side has "← Voltar" ghost button (if not first step) + either "Próxima sub-etapa →" outline button (if sub-steps remain) or "Avançar para {next} →" default button (if all sub-steps done and next exists).
-
-### Change 5: Replace standalone advance block (lines 434-441)
-Replace with version that includes both back button and advance button, wrapped in `justify-end gap-2`.
-
-No other files.
+Styling-only changes, no logic modifications, no other files.
 
