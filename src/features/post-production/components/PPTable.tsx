@@ -29,25 +29,40 @@ const PIPELINE_STEPS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finaliza
 function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const config = PP_STATUS_CONFIG[status];
+  const total = PIPELINE_STEPS.length;
+  const segW = 14;
+  const gap = 3;
+  const totalW = total * segW + (total - 1) * gap;
+
   return (
-    <div className="flex flex-col gap-1.5 min-w-0 max-w-full">
-      <span className={`text-xs font-medium leading-none truncate ${config.color}`}>
+    <div className="flex flex-col gap-1.5">
+      <span className={`text-xs font-medium leading-none ${config.color}`}>
         {config.label}
       </span>
-      <div className="grid gap-[3px] max-w-full" style={{ gridTemplateColumns: `repeat(${PIPELINE_STEPS.length}, 1fr)` }}>
-        {PIPELINE_STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`rounded-full transition-colors ${
-              i < currentIndex
-                ? 'h-[3px] bg-primary'
-                : i === currentIndex
-                ? 'h-[4px] bg-primary/60'
-                : 'h-[2px] bg-muted-foreground/20'
-            }`}
-          />
-        ))}
-      </div>
+      <svg width={totalW} height={4} style={{ display: 'block', overflow: 'visible' }}>
+        {PIPELINE_STEPS.map((_, i) => {
+          const x = i * (segW + gap);
+          const isCompleted = i < currentIndex;
+          const isActive = i === currentIndex;
+          return (
+            <rect
+              key={i}
+              x={x}
+              y={isActive ? 0 : 0.5}
+              width={segW}
+              height={isActive ? 4 : isCompleted ? 3 : 2}
+              rx={2}
+              className={
+                isCompleted
+                  ? 'fill-primary'
+                  : isActive
+                  ? 'fill-primary/60'
+                  : 'fill-muted-foreground/20'
+              }
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }
