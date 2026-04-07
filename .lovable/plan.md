@@ -1,16 +1,20 @@
 
 
-# Swap date fields order + rename label + fix Popover modal
+# Fix PopoverContent z-index and positioning in PPDialog
 
 ## File: `src/features/post-production/components/PPDialog.tsx`
 
-### Change (lines 254-327)
-Replace the date fields grid with the Início block first (left), then the Prazo block second (right) renamed to "Data de Entrega". Add `modal={false}` to both `<Popover>` components.
+### Change
+Update both `<PopoverContent>` elements in the date fields grid to add `z-[9999]` to className and `side="bottom"` prop. This ensures the calendar popovers render above the dialog overlay and consistently appear below the trigger.
 
-Specifically:
-1. **Line 254-291** (currently Prazo first) and **lines 292-327** (currently Início second) — swap their positions
-2. **Line 256** — rename `Prazo` label to `Data de Entrega`
-3. **Lines 257, 294** — add `modal={false}` to both `<Popover>` tags
+Both instances change from:
+```tsx
+<PopoverContent className="w-auto p-0" align="start">
+```
+to:
+```tsx
+<PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom">
+```
 
-No logic changes, no other files.
+No other changes. No other files.
 
