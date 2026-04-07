@@ -75,14 +75,14 @@ export default function PostProduction() {
 
         {/* Filter chips */}
         <div className="flex flex-wrap gap-2 items-center">
-          {(['urgente', 'alta', 'media', 'baixa'] as PPPriority[]).map(p => (
+{(['urgente', 'alta', 'media', 'baixa'] as PPPriority[]).map(p => (
             <button
               key={p}
               onClick={() => setFilterPriority(filterPriority === p ? null : p)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                 filterPriority === p
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+                  ? `${PP_PRIORITY_CONFIG[p].bgColor} ${PP_PRIORITY_CONFIG[p].color} border-transparent ring-2 ring-offset-1 ring-current`
+                  : `${PP_PRIORITY_CONFIG[p].bgColor} ${PP_PRIORITY_CONFIG[p].color} border-transparent opacity-60 hover:opacity-100`
               }`}
             >
               {PP_PRIORITY_CONFIG[p].label}
