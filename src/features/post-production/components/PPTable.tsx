@@ -31,14 +31,14 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const config = PP_STATUS_CONFIG[status];
   return (
     <div className="flex flex-col gap-1.5">
-      <span className={`text-xs font-medium ${config.color}`}>
+      <span className={`text-xs font-medium leading-none ${config.color}`}>
         {config.label}
       </span>
-      <div className="flex items-center gap-0.5">
-        {PIPELINE_STEPS.map((step, i) => (
+      <div className="flex items-center gap-[3px] w-full">
+        {PIPELINE_STEPS.map((_, i) => (
           <div
-            key={step}
-            className={`h-[3px] flex-1 rounded-full transition-all ${
+            key={i}
+            className={`h-[3px] flex-1 rounded-full transition-colors ${
               i < currentIndex
                 ? 'bg-primary'
                 : i === currentIndex
