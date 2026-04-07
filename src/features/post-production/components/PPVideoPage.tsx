@@ -335,7 +335,7 @@ export function PPVideoPage({ item, onBack }: Props) {
             </div>
           </div>
           <CardContent className="pt-6 space-y-6">
-            <div className="flex items-center justify-center gap-0 overflow-x-auto pb-2">
+            <div className="flex items-start w-full">
               {MACRO_STEPS.map((step, i) => {
                 const currentIdx = MACRO_STEPS.findIndex(s => s.key === form.status);
                 const isDone = i < currentIdx;
@@ -343,22 +343,28 @@ export function PPVideoPage({ item, onBack }: Props) {
                 return (
                   <React.Fragment key={step.key}>
                     <button onClick={() => { setForm(prev => ({ ...prev, status: step.key })); setSubStepIndex(0); }}
-                      className="flex flex-col items-center gap-1.5 group"
+                      className="flex flex-col items-center gap-2 shrink-0 group"
                     >
                       <div className={cn(
-                        'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+                        'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
                         isDone && 'bg-primary text-primary-foreground',
                         isActive && 'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110',
-                        !isDone && !isActive && 'bg-muted text-muted-foreground'
+                        !isDone && !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}>
                         {isDone ? <Check className="h-4 w-4" /> : i + 1}
                       </div>
-                      <span className={cn('text-[11px] font-medium whitespace-nowrap', isActive ? 'text-primary' : 'text-muted-foreground')}>
+                      <span className={cn(
+                        'text-xs font-medium whitespace-nowrap transition-colors duration-300',
+                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      )}>
                         {step.label}
                       </span>
                     </button>
                     {i < MACRO_STEPS.length - 1 && (
-                      <div className={cn('h-0.5 w-8 mx-1 rounded-full transition-all', i < currentIdx ? 'bg-primary' : 'bg-muted')} />
+                      <div className={cn(
+                        'flex-1 h-0.5 mt-5 rounded-full transition-all duration-500',
+                        i < currentIdx ? 'bg-primary' : 'bg-border'
+                      )} />
                     )}
                   </React.Fragment>
                 );
@@ -370,27 +376,33 @@ export function PPVideoPage({ item, onBack }: Props) {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Sub-etapas · {MACRO_STEPS.find(s => s.key === form.status)?.label}
                 </p>
-                <div className="flex items-center gap-0 overflow-x-auto pb-2">
+                <div className="flex items-start w-full flex-wrap gap-y-3">
                   {SUB_STEPS[form.status].map((sub, i) => {
                     const isDone = i < subStepIndex;
                     const isActive = i === subStepIndex;
                     return (
                       <React.Fragment key={i}>
-                        <button onClick={() => handleSubStepClick(i)} className="flex items-center gap-1.5 group">
+                        <button onClick={() => handleSubStepClick(i)} className="flex flex-col items-center gap-1.5 shrink-0 group">
                           <div className={cn(
-                            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
+                            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200',
                             isDone && 'bg-primary/80 text-primary-foreground',
-                            isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/20',
+                            isActive && 'bg-primary text-primary-foreground ring-2 ring-primary/30',
                             !isDone && !isActive && 'bg-muted text-muted-foreground'
                           )}>
                             {isDone ? <Check className="h-3 w-3" /> : i + 1}
                           </div>
-                          <span className={cn('text-xs whitespace-nowrap', isActive ? 'text-foreground font-medium' : 'text-muted-foreground')}>
+                          <span className={cn(
+                            'text-[11px] whitespace-nowrap transition-colors',
+                            isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          )}>
                             {sub}
                           </span>
                         </button>
                         {i < SUB_STEPS[form.status].length - 1 && (
-                          <div className={cn('h-0.5 w-6 mx-1 rounded-full', i < subStepIndex ? 'bg-primary/60' : 'bg-muted')} />
+                          <div className={cn(
+                            'flex-1 h-0.5 mt-3 rounded-full min-w-[16px] transition-all duration-300',
+                            i < subStepIndex ? 'bg-primary/50' : 'bg-border'
+                          )} />
                         )}
                       </React.Fragment>
                     );
