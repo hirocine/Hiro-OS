@@ -30,15 +30,15 @@ function PipelineProgress({ status }: { status: PPStatus }) {
   const currentIndex = PIPELINE_STEPS.indexOf(status);
   const config = PP_STATUS_CONFIG[status];
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 w-full">
       <span className={`text-xs font-medium leading-none ${config.color}`}>
         {config.label}
       </span>
-      <div className="flex items-center gap-[3px]" style={{ width: '100%', minWidth: 0 }}>
+      <div className="grid gap-[3px] w-full" style={{ gridTemplateColumns: `repeat(${PIPELINE_STEPS.length}, 1fr)` }}>
         {PIPELINE_STEPS.map((_, i) => (
           <div
             key={i}
-            className={`h-[3px] flex-1 min-w-0 rounded-full transition-colors ${
+            className={`h-[3px] rounded-full transition-colors ${
               i < currentIndex
                 ? 'bg-primary'
                 : i === currentIndex
