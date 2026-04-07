@@ -269,7 +269,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                       : 'Selecionar data'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom">
                   <Calendar
                     mode="single"
                     selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
@@ -306,7 +306,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                       : 'Selecionar data'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-[9999]" align="start" side="bottom">
                   <Calendar
                     mode="single"
                     selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
