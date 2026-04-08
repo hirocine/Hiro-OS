@@ -184,6 +184,7 @@ export default function ProposalDetails() {
       list_price: proposal.list_price || 0,
       discount_pct: proposal.discount_pct || 0,
       payment_terms: proposal.payment_terms || '',
+      payment_options: (Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[],
     });
     setDiagForm({ objetivo: proposal.objetivo || '' });
     setTestimonialForm({
