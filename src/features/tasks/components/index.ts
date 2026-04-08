@@ -17,3 +17,4 @@ export * from './TaskCalendarWidget';
 export * from './TaskSectionCards';
 export * from './TaskSummaryBar';
 export * from './TasksTable';
+export * from './TaskKanbanView';

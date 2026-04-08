@@ -11,6 +11,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { TaskSummaryBar } from '@/features/tasks/components/TaskSummaryBar';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
+import { TaskKanbanView } from '@/features/tasks/components/TaskKanbanView';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useFilteredTaskStats } from '@/features/tasks/hooks/useFilteredTaskStats';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -242,10 +243,7 @@ export default function Tasks() {
         )}
 
         {currentView === 'kanban' && (
-          <Card className="p-12 text-center">
-            <Columns3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">Visualização Kanban — em breve</p>
-          </Card>
+          <TaskKanbanView tasks={filteredTasks} isLoading={isLoading} />
         )}
 
         {currentView === 'calendario' && (
