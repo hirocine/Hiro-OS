@@ -33,6 +33,11 @@ const producaoNavigation: NavigationItem[] = [
     icon: Receipt,
   },
   {
+    name: 'CRM',
+    href: '/crm',
+    icon: Handshake,
+  },
+  {
     name: 'Freelancers',
     href: '/fornecedores/freelancers',
     icon: UserCheck,
