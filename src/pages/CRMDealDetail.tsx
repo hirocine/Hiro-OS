@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatBRL, type Deal } from '@/features/crm/types/crm.types';
-import { Activity, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 
 export default function CRMDealDetail() {
