@@ -2,13 +2,17 @@ import { useState, useMemo } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors, closestCenter, useDroppable, useDraggable } from '@dnd-kit/core';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { useDeals, useDealMutations } from '../../hooks/useDeals';
+import { useTeamProfiles } from '../../hooks/useTeamProfiles';
 import { DealCard } from './DealCard';
 import { DealForm } from './DealForm';
 import { LostReasonDialog } from './LostReasonDialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, AlertTriangle, Handshake, DollarSign } from 'lucide-react';
+import { Plus, AlertTriangle, Handshake, DollarSign, Search } from 'lucide-react';
 import { formatBRL, type DealWithRelations, type PipelineStage } from '../../types/crm.types';
+import { useDebounce } from '@/hooks/useDebounce';
 
 function DraggableDealCard({ deal }: { deal: DealWithRelations }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: deal.id });
@@ -32,23 +36,41 @@ export function PipelineBoard() {
   const { data: stages, isLoading: stagesLoading } = usePipelineStages();
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { moveToStage } = useDealMutations();
+  const { data: profiles } = useTeamProfiles();
   const [dealFormOpen, setDealFormOpen] = useState(false);
   const [activeDeal, setActiveDeal] = useState<DealWithRelations | null>(null);
   const [pendingLost, setPendingLost] = useState<{ dealId: string; stageId: string } | null>(null);
+  const [search, setSearch] = useState('');
+  const [assigneeFilter, setAssigneeFilter] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const filteredDeals = useMemo(() => {
+    let result = deals ?? [];
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      result = result.filter(d =>
+        d.title.toLowerCase().includes(q) || (d.contact_name ?? '').toLowerCase().includes(q)
+      );
+    }
+    if (assigneeFilter) {
+      result = result.filter(d => d.assigned_to === assigneeFilter);
+    }
+    return result;
+  }, [deals, debouncedSearch, assigneeFilter]);
 
   const dealsByStage = useMemo(() => {
     const map = new Map<string, DealWithRelations[]>();
     stages?.forEach(s => map.set(s.id, []));
-    deals?.forEach(d => {
+    filteredDeals.forEach(d => {
       const arr = map.get(d.stage_id);
       if (arr) arr.push(d);
     });
     return map;
-  }, [deals, stages]);
+  }, [filteredDeals, stages]);
 
-  const activeDeals = useMemo(() => deals?.filter(d => !d.stage_is_won && !d.stage_is_lost) ?? [], [deals]);
+  const activeDeals = useMemo(() => filteredDeals.filter(d => !d.stage_is_won && !d.stage_is_lost), [filteredDeals]);
   const pipelineValue = useMemo(() => activeDeals.reduce((sum, d) => sum + (d.estimated_value ?? 0), 0), [activeDeals]);
   const staleCount = useMemo(() => activeDeals.filter(d => {
     const days = Math.floor((Date.now() - new Date(d.updated_at ?? d.created_at!).getTime()) / 86400000);
@@ -93,6 +115,27 @@ export function PipelineBoard() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4 text-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar deals..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9 h-8 w-[200px]"
+          />
+        </div>
+        <Select value={assigneeFilter || 'all'} onValueChange={v => setAssigneeFilter(v === 'all' ? '' : v)}>
+          <SelectTrigger className="w-[160px] h-8">
+            <SelectValue placeholder="Responsável" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {profiles?.map(p => (
+              <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <div className="flex items-center gap-1.5">
           <Handshake className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{activeDeals.length}</span>

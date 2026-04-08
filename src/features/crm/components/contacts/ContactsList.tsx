@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useContacts, useContactMutations } from '../../hooks/useContacts';
+import { useTeamProfiles } from '../../hooks/useTeamProfiles';
 import { ContactForm } from './ContactForm';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export function ContactsList() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [assigneeFilter, setAssigneeFilter] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
@@ -38,8 +40,10 @@ export function ContactsList() {
     search: debouncedSearch,
     contactType: typeFilter || undefined,
     leadSource: sourceFilter || undefined,
+    assignedTo: assigneeFilter || undefined,
   });
   const { deleteContact } = useContactMutations();
+  const { data: profiles } = useTeamProfiles();
 
   const typeLabel = (type: string) => CONTACT_TYPES.find(t => t.value === type)?.label ?? type;
 
@@ -61,18 +65,27 @@ export function ContactsList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Buscar contatos..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
-          <Select value={typeFilter} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}>
+          <Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               {CONTACT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={sourceFilter} onValueChange={v => setSourceFilter(v === 'all' ? '' : v)}>
+          <Select value={sourceFilter || 'all'} onValueChange={v => setSourceFilter(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Origem" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
               {LEAD_SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={assigneeFilter || 'all'} onValueChange={v => setAssigneeFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Responsável" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {profiles?.map(p => (
+                <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

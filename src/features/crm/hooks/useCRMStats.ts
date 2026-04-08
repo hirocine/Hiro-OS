@@ -25,11 +25,13 @@ export function useCRMStats() {
         .filter(d => !closedIds.has(d.stage_id))
         .reduce((sum, d) => sum + (d.estimated_value ?? 0), 0);
 
-      const wonCount = deals.filter(d => wonIds.has(d.stage_id)).length;
+      const wonDeals = deals.filter(d => wonIds.has(d.stage_id));
+      const wonCount = wonDeals.length;
       const closedCount = deals.filter(d => closedIds.has(d.stage_id)).length;
       const conversionRate = closedCount > 0 ? Math.round((wonCount / closedCount) * 100) : 0;
+      const wonRevenue = wonDeals.reduce((sum, d) => sum + (d.estimated_value ?? 0), 0);
 
-      return { totalContacts, activeDeals, pipelineValue, conversionRate };
+      return { totalContacts, activeDeals, pipelineValue, conversionRate, wonRevenue };
     },
   });
 }

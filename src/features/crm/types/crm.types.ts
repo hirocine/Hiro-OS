@@ -30,6 +30,7 @@ export interface CRMStats {
   activeDeals: number;
   pipelineValue: number;
   conversionRate: number;
+  wonRevenue: number;
 }
 
 // Enums for UI

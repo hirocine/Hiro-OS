@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Plus, Handshake, Mail, Phone, Building2, Instagram, Globe, MessageCircle } from 'lucide-react';
+import { Plus, Handshake, Mail, Phone, Building2, Instagram, Globe, MessageCircle, FileText } from 'lucide-react';
 import { formatBRL, CONTACT_TYPES } from '@/features/crm/types/crm.types';
 import { useState } from 'react';
 import type { Contact } from '@/features/crm/types/crm.types';
@@ -143,7 +143,15 @@ export default function CRMContactDetail() {
                 {deals.map(d => (
                   <div key={d.id} className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/50 rounded px-2 -mx-2" onClick={() => navigate(`/crm/deals/${d.id}`)}>
                     <div>
-                      <p className="text-sm font-medium">{d.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{d.title}</p>
+                        {d.proposal_id && (
+                          <Badge variant="outline" className="text-xs">
+                            <FileText className="h-3 w-3 mr-0.5" />
+                            Com proposta
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{d.stage_name}</p>
                     </div>
                     <div className="text-right">

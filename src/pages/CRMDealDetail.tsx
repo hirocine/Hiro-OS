@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatBRL, type Deal } from '@/features/crm/types/crm.types';
-import { Clock } from 'lucide-react';
+import { Clock, FileText } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 
 export default function CRMDealDetail() {
@@ -26,6 +26,20 @@ export default function CRMDealDetail() {
       return { ...data, contact_name: contact?.name ?? 'Desconhecido' };
     },
     enabled: !!id,
+  });
+
+  const { data: proposal } = useQuery({
+    queryKey: ['crm-deal-proposal', deal?.proposal_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orcamentos')
+        .select('project_name, slug, final_value, status')
+        .eq('id', deal!.proposal_id!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!deal?.proposal_id,
   });
 
   if (isLoading) return (
@@ -56,6 +70,16 @@ export default function CRMDealDetail() {
                 >
                   {deal.contact_name}
                 </button>
+                {proposal && (
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-sm text-primary hover:underline mt-1"
+                    onClick={() => navigate(`/orcamentos/${proposal.slug}`)}
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Proposta: {proposal.project_name}
+                  </button>
+                )}
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-2xl font-semibold">{formatBRL(deal.estimated_value)}</p>
