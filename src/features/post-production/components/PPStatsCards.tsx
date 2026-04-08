@@ -12,7 +12,7 @@ export function PPStatsCards({ items }: PPStatsCardsProps) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const total = items.length;
+    const total = items.filter(i => i.status !== 'entregue').length;
     const inProgress = items.filter(i => ['edicao', 'color_grading', 'finalizacao'].includes(i.status)).length;
     const overdue = items.filter(i => {
       if (!i.due_date || i.status === 'entregue') return false;
