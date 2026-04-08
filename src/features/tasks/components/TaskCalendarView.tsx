@@ -162,6 +162,14 @@ export function TaskCalendarView({ tasks, isLoading }: TaskCalendarViewProps) {
           <div className="flex items-center gap-2">
             {view !== 'list' && (
               <div className="flex items-center gap-1 mr-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs px-2.5 mr-1"
+                  onClick={() => { setCurrentDate(new Date()); setAnimKey(k => k + 1); }}
+                >
+                  Hoje
+                </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigatePeriod(-1)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>

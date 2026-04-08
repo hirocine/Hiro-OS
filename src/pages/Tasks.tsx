@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Plus, User, CheckCircle, Archive, CheckSquare, List, Columns3, CalendarDays, Search } from 'lucide-react';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PageHeader } from '@/components/ui/page-header';
@@ -36,6 +36,13 @@ export default function Tasks() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterAssignee, setFilterAssignee] = useState('all');
+
+  // Reset status filter when switching to lista view (tabs handle status there)
+  useEffect(() => {
+    if (currentView === 'lista') {
+      setFilterStatus('all');
+    }
+  }, [currentView]);
 
   // Data hooks
   const { tasks, isLoading } = useTasks();
@@ -148,18 +155,20 @@ export default function Tasks() {
             </SelectContent>
           </Select>
 
-          {/* Status filter */}
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Status filter - hidden in lista view (tabs handle this) */}
+          {currentView !== 'lista' && (
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[140px] h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                  <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Department filter */}
           <Select value={filterDepartment} onValueChange={setFilterDepartment}>
@@ -187,6 +196,29 @@ export default function Tasks() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Active filters indicator */}
+        {(searchQuery || filterPriority !== 'all' || filterStatus !== 'all' || filterDepartment !== 'all' || filterAssignee !== 'all') && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground text-xs">
+              Filtros ativos: mostrando {filteredTasks.length} de {tasks.length} tarefas
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs px-2 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setSearchQuery('');
+                setFilterPriority('all');
+                setFilterStatus('all');
+                setFilterDepartment('all');
+                setFilterAssignee('all');
+              }}
+            >
+              Limpar filtros
+            </Button>
+          </div>
+        )}
 
         {/* Content */}
         {currentView === 'lista' && (
