@@ -1,26 +1,23 @@
 
 
-# Restore Popover/Calendar date pickers with z-[200] fix in PPDialog
+# Move "Limpar" buttons outside PopoverContent in PPDialog
 
 ## File: `src/features/post-production/components/PPDialog.tsx`
 
-### Change 1: Add imports (after line 15)
-Add `format` from date-fns, `ptBR` from date-fns/locale, `Calendar`, `Popover/PopoverContent/PopoverTrigger`, and `CalendarIcon, X` from lucide-react.
+### Change 1: Start date field (lines 276-284)
+- Delete the conditional "Limpar" block inside PopoverContent (lines 276-282)
+- After `</Popover>` (line 284), add an external clear link:
+```tsx
+{form.start_date && (
+  <button type="button" className="text-xs text-muted-foreground hover:text-foreground mt-1 ml-1" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
+    Limpar
+  </button>
+)}
+```
 
-### Change 2: Add state variables (after line 72)
-Add `startDateOpen` and `dueDateOpen` controlled state.
+### Change 2: Due date field (lines 306-314)
+- Delete the conditional "Limpar" block inside PopoverContent (lines 306-312)
+- After `</Popover>` (line 314), add the same external clear link for `due_date`
 
-### Change 3: Replace date fields grid (lines 249-282)
-Replace native `<input type="date">` with controlled `<Popover modal={false}>` + `<Calendar>` for both fields. Key details:
-- Início (left), Data de Entrega (right)
-- `<PopoverContent className="w-auto p-0 z-[200]" align="start" onCloseAutoFocus={e => e.preventDefault()}>`
-- Calendar with `mode="single"`, `initialFocus`, `className="p-3 pointer-events-auto"`
-- `onSelect` sets form value + closes popover
-- Conditional "Limpar" button when date is set
-- Trigger shows formatted date (`dd/MM/yyyy` with ptBR locale) or placeholder
-
-### Change 4: Update DialogContent (line 150)
-Change `<DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">` to add `overflow-visible` instead of `overflow-y-auto` — actually no, keep `overflow-y-auto` but the z-[200] on PopoverContent will render via portal above the dialog anyway.
-
-No other files changed.
+No other changes. No other files.
 
