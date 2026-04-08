@@ -156,7 +156,7 @@ export default function ProposalDetails() {
   const [transcriptText, setTranscriptText] = useState('');
 
   const [clientForm, setClientForm] = useState({ project_number: '', client_name: '', project_name: '', client_responsible: '', whatsapp_number: '+55 ', company_description: '', validity_date: '' });
-  const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '' });
+  const [investForm, setInvestForm] = useState({ list_price: 0, discount_pct: 0, payment_terms: '', payment_options: [] as PaymentOption[] });
   const [diagForm, setDiagForm] = useState({ objetivo: '' });
   const [testimonialForm, setTestimonialForm] = useState({ testimonial_name: '', testimonial_role: '', testimonial_text: '', testimonial_image: '' });
   const [doresForm, setDoresForm] = useState<DiagnosticoDor[]>([]);
