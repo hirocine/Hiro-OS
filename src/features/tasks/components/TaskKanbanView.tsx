@@ -13,6 +13,18 @@ import { Task, TaskStatus } from '../types';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core';
 
 interface TaskKanbanViewProps {
   tasks: Task[];
@@ -39,18 +51,45 @@ const getDueInfo = (dueDate: string | null) => {
   return { text: format(due, 'dd/MM', { locale: ptBR }), isOverdue: false };
 };
 
+function DroppableColumn({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+  const { isOver, setNodeRef } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(className, isOver && 'ring-2 ring-primary/30 bg-primary/5')}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DraggableCard({ task, children }: { task: Task; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined;
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={cn(isDragging && 'opacity-30')}>
+      {children}
+    </div>
+  );
+}
+
 export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
   const navigate = useNavigate();
   const { createTask, updateTask } = useTaskMutations();
   const [quickAddColumn, setQuickAddColumn] = useState<TaskStatus | null>(null);
   const [quickAddTitle, setQuickAddTitle] = useState('');
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, Task[]> = {
-      pendente: [],
-      em_progresso: [],
-      concluida: [],
-      arquivada: [],
+      pendente: [], em_progresso: [], concluida: [], arquivada: [],
     };
     tasks.forEach(task => {
       if (grouped[task.status]) grouped[task.status].push(task);
@@ -61,12 +100,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
   const handleQuickAdd = async (status: TaskStatus) => {
     if (!quickAddTitle.trim()) return;
     try {
-      await createTask.mutateAsync({
-        title: quickAddTitle.trim(),
-        status,
-        priority: 'media',
-        assignee_ids: [],
-      });
+      await createTask.mutateAsync({ title: quickAddTitle.trim(), status, priority: 'media', assignee_ids: [] });
       setQuickAddTitle('');
       setQuickAddColumn(null);
       toast.success('Tarefa criada!');
@@ -81,15 +115,27 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
       id: task.id,
       updates: { status: newStatus },
       oldTask: {
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        due_date: task.due_date,
-        department: task.department,
-        assigned_to: task.assigned_to,
-        description: task.description,
+        title: task.title, status: task.status, priority: task.priority,
+        due_date: task.due_date, department: task.department,
+        assigned_to: task.assigned_to, description: task.description,
       },
     });
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = tasks.find(t => t.id === event.active.id);
+    if (task) setActiveTask(task);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+    if (!over) return;
+    const task = tasks.find(t => t.id === active.id);
+    const newStatus = over.id as TaskStatus;
+    if (task && task.status !== newStatus) {
+      handleMoveTask(task, newStatus);
+    }
   };
 
   if (isLoading) {
@@ -107,141 +153,145 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
-      {COLUMNS.map(column => {
-        const columnTasks = tasksByStatus[column.status];
-        return (
-          <div key={column.status} className={cn('rounded-xl p-3 flex flex-col', column.bgColor)}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <h3 className={cn('text-sm font-semibold', column.color)}>{column.label}</h3>
-                <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                  {columnTasks.length}
-                </Badge>
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
+        {COLUMNS.map(column => {
+          const columnTasks = tasksByStatus[column.status];
+          return (
+            <DroppableColumn key={column.status} id={column.status} className={cn('rounded-xl p-3 flex flex-col transition-all', column.bgColor)}>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <h3 className={cn('text-sm font-semibold', column.color)}>{column.label}</h3>
+                  <Badge variant="secondary" className="text-xs px-1.5 py-0">{columnTasks.length}</Badge>
+                </div>
+                <button onClick={() => setQuickAddColumn(column.status)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Plus className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setQuickAddColumn(column.status)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
 
-            {/* Cards */}
-            <div className="flex-1 space-y-2 overflow-y-auto">
-              {columnTasks.map(task => {
-                const dueInfo = getDueInfo(task.due_date);
-                return (
-                  <Card
-                    key={task.id}
-                    onClick={() => navigate(`/tarefas/${task.id}`)}
-                    className={cn(
-                      'p-3 cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group',
-                      dueInfo?.isOverdue && task.status !== 'concluida' && 'border-l-4 border-l-destructive'
-                    )}
-                  >
-                    <div className="flex items-start gap-2 mb-2">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                        task.priority === 'urgente' && "bg-red-500",
-                        task.priority === 'alta' && "bg-orange-500",
-                        task.priority === 'media' && "bg-yellow-500",
-                        task.priority === 'baixa' && "bg-blue-500",
-                        task.priority === 'standby' && "bg-gray-400",
-                      )} />
-                      <p className="text-sm font-medium leading-tight line-clamp-2">{task.title}</p>
-                    </div>
+              {/* Cards */}
+              <div className="flex-1 space-y-2 overflow-y-auto">
+                {columnTasks.map(task => {
+                  const dueInfo = getDueInfo(task.due_date);
+                  return (
+                    <DraggableCard key={task.id} task={task}>
+                      <Card
+                        onClick={() => navigate(`/tarefas/${task.id}`)}
+                        className={cn(
+                          'p-3 cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group',
+                          dueInfo?.isOverdue && task.status !== 'concluida' && 'border-l-4 border-l-destructive'
+                        )}
+                      >
+                        <div className="flex items-start gap-2 mb-2">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                            task.priority === 'urgente' && "bg-red-500",
+                            task.priority === 'alta' && "bg-orange-500",
+                            task.priority === 'media' && "bg-yellow-500",
+                            task.priority === 'baixa' && "bg-blue-500",
+                            task.priority === 'standby' && "bg-gray-400",
+                          )} />
+                          <p className="text-sm font-medium leading-tight line-clamp-2">{task.title}</p>
+                        </div>
 
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        {task.assignees && task.assignees.length > 0 && (
-                          <div className="flex -space-x-1.5">
-                            {task.assignees.slice(0, 3).map(a => (
-                              <Avatar key={a.user_id} className="h-5 w-5 border border-background">
-                                <AvatarImage src={a.avatar_url || ''} />
-                                <AvatarFallback className="text-[10px]">
-                                  {a.display_name?.[0]?.toUpperCase() || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                            ))}
-                            {task.assignees.length > 3 && (
-                              <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] border border-background">
-                                +{task.assignees.length - 3}
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5">
+                            {task.assignees && task.assignees.length > 0 && (
+                              <div className="flex -space-x-1.5">
+                                {task.assignees.slice(0, 3).map(a => (
+                                  <Avatar key={a.user_id} className="h-5 w-5 border border-background">
+                                    <AvatarImage src={a.avatar_url || ''} />
+                                    <AvatarFallback className="text-[10px]">{a.display_name?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                                  </Avatar>
+                                ))}
+                                {task.assignees.length > 3 && (
+                                  <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] border border-background">
+                                    +{task.assignees.length - 3}
+                                  </div>
+                                )}
                               </div>
                             )}
+                            {task.department && (
+                              <Badge variant="outline" className="text-[10px] px-1 py-0">{task.department}</Badge>
+                            )}
                           </div>
-                        )}
-                        {task.department && (
-                          <Badge variant="outline" className="text-[10px] px-1 py-0">
-                            {task.department}
-                          </Badge>
-                        )}
-                      </div>
+                          {dueInfo && (
+                            <span className={cn('flex items-center gap-0.5', dueInfo.isOverdue ? 'text-destructive' : 'text-muted-foreground')}>
+                              {dueInfo.isOverdue && <AlertTriangle className="h-3 w-3" />}
+                              {dueInfo.text}
+                            </span>
+                          )}
+                        </div>
 
-                      {dueInfo && (
-                        <span className={cn('flex items-center gap-0.5', dueInfo.isOverdue ? 'text-destructive' : 'text-muted-foreground')}>
-                          {dueInfo.isOverdue && <AlertTriangle className="h-3 w-3" />}
-                          {dueInfo.text}
-                        </span>
-                      )}
-                    </div>
+                        {/* Move buttons on hover */}
+                        <div className="flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity gap-1 mt-2 pt-2 border-t flex-wrap">
+                          {COLUMNS.filter(c => c.status !== task.status).map(c => (
+                            <Button
+                              key={c.status}
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-[10px] px-2"
+                              onClick={(e) => { e.stopPropagation(); handleMoveTask(task, c.status); }}
+                            >
+                              {c.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </Card>
+                    </DraggableCard>
+                  );
+                })}
 
-                    {/* Move buttons on hover */}
-                    <div className="flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity gap-1 mt-2 pt-2 border-t flex-wrap">
-                      {COLUMNS.filter(c => c.status !== task.status).map(c => (
-                        <Button
-                          key={c.status}
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-[10px] px-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMoveTask(task, c.status);
-                          }}
-                        >
-                          {c.label}
-                        </Button>
-                      ))}
+                {/* Quick add input */}
+                {quickAddColumn === column.status && (
+                  <Card className="p-3">
+                    <Input
+                      autoFocus
+                      placeholder="Título da tarefa..."
+                      value={quickAddTitle}
+                      onChange={e => setQuickAddTitle(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleQuickAdd(column.status);
+                        if (e.key === 'Escape') { setQuickAddColumn(null); setQuickAddTitle(''); }
+                      }}
+                      className="h-8 text-sm mb-2"
+                    />
+                    <div className="flex gap-1">
+                      <Button size="sm" className="h-7 text-xs" onClick={() => handleQuickAdd(column.status)} disabled={!quickAddTitle.trim()}>Criar</Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setQuickAddColumn(null); setQuickAddTitle(''); }}>Cancelar</Button>
                     </div>
                   </Card>
-                );
-              })}
+                )}
 
-              {/* Quick add input */}
-              {quickAddColumn === column.status && (
-                <Card className="p-3">
-                  <Input
-                    autoFocus
-                    placeholder="Título da tarefa..."
-                    value={quickAddTitle}
-                    onChange={e => setQuickAddTitle(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') handleQuickAdd(column.status);
-                      if (e.key === 'Escape') { setQuickAddColumn(null); setQuickAddTitle(''); }
-                    }}
-                    className="h-8 text-sm mb-2"
-                  />
-                  <div className="flex gap-1">
-                    <Button size="sm" className="h-7 text-xs" onClick={() => handleQuickAdd(column.status)} disabled={!quickAddTitle.trim()}>
-                      Criar
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setQuickAddColumn(null); setQuickAddTitle(''); }}>
-                      Cancelar
-                    </Button>
+                {columnTasks.length === 0 && quickAddColumn !== column.status && (
+                  <div className="text-center py-6 text-xs text-muted-foreground">
+                    <p>Nenhuma tarefa</p>
                   </div>
-                </Card>
-              )}
+                )}
+              </div>
+            </DroppableColumn>
+          );
+        })}
+      </div>
 
-              {columnTasks.length === 0 && quickAddColumn !== column.status && (
-                <div className="text-center py-6 text-xs text-muted-foreground">
-                  <p>Nenhuma tarefa</p>
-                </div>
-              )}
+      <DragOverlay>
+        {activeTask && (
+          <Card className="p-3 shadow-lg rotate-2 w-64 opacity-90">
+            <div className="flex items-start gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                activeTask.priority === 'urgente' && "bg-red-500",
+                activeTask.priority === 'alta' && "bg-orange-500",
+                activeTask.priority === 'media' && "bg-yellow-500",
+                activeTask.priority === 'baixa' && "bg-blue-500",
+                activeTask.priority === 'standby' && "bg-gray-400",
+              )} />
+              <p className="text-sm font-medium leading-tight line-clamp-2">{activeTask.title}</p>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          </Card>
+        )}
+      </DragOverlay>
+    </DndContext>
   );
 }
