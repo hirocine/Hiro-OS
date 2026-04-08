@@ -273,15 +273,13 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
-                  {form.start_date && (
-                    <div className="border-t p-2">
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setForm(prev => ({ ...prev, start_date: '' })); setStartDateOpen(false); }}>
-                        <X className="h-4 w-4 mr-1" /> Limpar
-                      </Button>
-                    </div>
-                  )}
                 </PopoverContent>
               </Popover>
+              {form.start_date && (
+                <button type="button" className="text-xs text-muted-foreground hover:text-foreground mt-1 ml-1" onClick={() => setForm(prev => ({ ...prev, start_date: '' }))}>
+                  Limpar
+                </button>
+              )}
             </div>
             <div>
               <Label>Data de Entrega</Label>
@@ -303,15 +301,13 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
-                  {form.due_date && (
-                    <div className="border-t p-2">
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setForm(prev => ({ ...prev, due_date: '' })); setDueDateOpen(false); }}>
-                        <X className="h-4 w-4 mr-1" /> Limpar
-                      </Button>
-                    </div>
-                  )}
                 </PopoverContent>
               </Popover>
+              {form.due_date && (
+                <button type="button" className="text-xs text-muted-foreground hover:text-foreground mt-1 ml-1" onClick={() => setForm(prev => ({ ...prev, due_date: '' }))}>
+                  Limpar
+                </button>
+              )}
             </div>
           </div>
 
