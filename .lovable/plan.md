@@ -1,47 +1,36 @@
 
-Objetivo: eliminar o efeito de “abre outro calendário e fecha” ao selecionar data no modal de novo vídeo da Status Post.
 
-Diagnóstico:
-- O Popover já está controlado, então o bug atual não é mais um estado realmente “infinito”.
-- O replay mostra dois problemas juntos no fechamento:
-  1) o Popover devolve foco para o botão trigger;
-  2) quando a data é selecionada, o footer com “Limpar” entra no DOM no mesmo render do fechamento, o que força recálculo de posição e cria um flicker/flip visual.
-- Isso gera a sensação de um segundo calendário abrindo/fechando.
+# Fix: flickering ao alterar data no calendário do PPDialog
 
-Implementação:
+## Problema
+Na primeira seleção de data, funciona bem. Mas ao clicar para alterar a data (quando já existe uma data selecionada), o calendário pisca — fecha e reabre rapidamente.
 
-1. Arquivo: `src/features/post-production/components/PPDialog.tsx`
-   - Adicionar `onCloseAutoFocus={(e) => e.preventDefault()}` nos dois `<PopoverContent>`.
-   - Isso impede o foco automático de voltar para o trigger ao fechar.
+## Causa raiz
+Quando o usuário clica no trigger para reabrir o calendário e já existe uma data, o `onSelect` do Calendar dispara imediatamente ao clicar em qualquer dia (incluindo o dia já selecionado durante navegação). O problema é que `setForm` atualiza o estado, causando re-render, e o `setStartDateOpen(false)` fecha o popover — mas o `onOpenChange` do Popover pode reabri-lo no mesmo ciclo porque o clique no trigger ainda está propagando.
 
-2. Campo “Início”
-   - Ajustar a renderização do bloco “Limpar” para depender também de `startDateOpen`.
-   - Trocar:
-     - `{form.start_date && (...)}`
-   - Por:
-     - `{form.start_date && startDateOpen && (...)}`
-   - Assim, ao selecionar a primeira data, o footer não aparece no frame de fechamento.
+A solução real: o `onSelect` não deve fechar o popover se a data selecionada é a mesma que já está no form (o usuário está apenas navegando pelo calendário). E ao fechar, precisamos usar `setTimeout` para garantir que o estado de fechamento não conflite com o evento de clique do trigger.
 
-3. Campo “Data de Entrega”
-   - Aplicar o mesmo ajuste usando `dueDateOpen`.
-   - Trocar:
-     - `{form.due_date && (...)}`
-   - Por:
-     - `{form.due_date && dueDateOpen && (...)}`
+## Solução
 
-4. Manter sem alteração
-   - `modal={false}`
-   - `open` / `onOpenChange`
-   - handlers de seleção de data
-   - classes de z-index e `side="bottom"`
-   - qualquer lógica de criação/edição
+### File: `src/features/post-production/components/PPDialog.tsx`
 
-Resultado esperado:
-- selecionar uma data fecha o calendário de forma limpa;
-- não há mais “segundo calendário” piscando;
-- alterar uma data existente também fecha sem bounce visual;
-- o botão “Limpar” continua aparecendo normalmente quando o calendário estiver aberto e já houver uma data preenchida.
+**Ambos os calendários** — atualizar o `onSelect` para usar `setTimeout` no fechamento, evitando conflito com o ciclo de eventos do Radix:
 
-Escopo:
-- somente `src/features/post-production/components/PPDialog.tsx`
-- nenhuma outra alteração
+```tsx
+// Início
+onSelect={(date) => {
+  setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+  setTimeout(() => setStartDateOpen(false), 0);
+}}
+
+// Data de Entrega
+onSelect={(date) => {
+  setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+  setTimeout(() => setDueDateOpen(false), 0);
+}}
+```
+
+Isso empurra o fechamento para o próximo tick, depois que o evento de clique do Radix Popover termina de propagar, eliminando o conflito entre `onSelect` e `onOpenChange`.
+
+Nenhuma outra alteração. Nenhum outro arquivo.
+
