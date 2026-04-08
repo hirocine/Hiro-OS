@@ -42,6 +42,9 @@ const NewProposal = lazy(() => import("./pages/NewProposal"));
 const PostProduction = lazy(() => import("./pages/PostProduction"));
 const PPVideoDetail = lazy(() => import("./pages/PPVideoDetail"));
 const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
+const CRM = lazy(() => import("./pages/CRM"));
+const CRMContactDetail = lazy(() => import("./pages/CRMContactDetail"));
+const CRMDealDetail = lazy(() => import("./pages/CRMDealDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -99,6 +102,9 @@ const App = () => (
                 <Route path="orcamentos/novo" element={<Suspense fallback={<LoadingScreenSkeleton />}><NewProposal /></Suspense>} />
                 <Route path="orcamentos/:slug/overview" element={<ProposalOverview />} />
                 <Route path="orcamentos/:slug" element={<ProposalDetails />} />
+                <Route path="crm" element={<CRM />} />
+                <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
+                <Route path="crm/deals/:id" element={<CRMDealDetail />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
                 <Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />
