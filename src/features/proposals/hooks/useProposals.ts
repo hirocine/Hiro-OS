@@ -154,6 +154,7 @@ export function useProposals() {
           slug,
           client_name: form.client_name.trim(),
           project_name: form.project_name.trim(),
+          project_number: form.project_number || null,
           client_responsible: form.client_responsible.trim() || null,
           client_logo: form.client_logo.trim() || null,
           validity_date: form.validity_date ? form.validity_date.toLocaleDateString('en-CA') : undefined,

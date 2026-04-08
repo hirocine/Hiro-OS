@@ -516,6 +516,7 @@ export function ProposalGuidedWizard() {
     try {
       const result = await createProposal.mutateAsync({
         client_name: clientName,
+        project_number: projectNumber.trim() || null,
         project_name: projectName,
         client_responsible: clientResponsible,
         client_logo: '',
