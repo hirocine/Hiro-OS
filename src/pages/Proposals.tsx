@@ -12,7 +12,7 @@ import type { Proposal } from '@/features/proposals';
 
 export default function Proposals() {
   const navigate = useNavigate();
-  const { data: proposals, deleteProposal } = useProposals();
+  const { data: proposals, deleteProposal, duplicateProposal } = useProposals();
   const [showApproved, setShowApproved] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -27,6 +27,7 @@ export default function Proposals() {
           key={p.id}
           proposal={p}
           onDelete={(id) => deleteProposal.mutate(id)}
+          onDuplicate={(id) => duplicateProposal.mutate(id)}
         />
       ))}
     </div>

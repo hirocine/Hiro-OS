@@ -298,7 +298,56 @@ export function useProposals() {
     },
   });
 
-  return { ...query, createProposal, createDraft, updateProposal, deleteProposal, createNewVersion };
+  const duplicateProposal = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: original, error: fetchError } = await supabase
+        .from('orcamentos')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (fetchError || !original) throw new Error('Proposta não encontrada');
+
+      const { id: _id, created_at, updated_at, views_count, parent_id, version, is_latest_version, slug, ...rest } = original as any;
+
+      let newSlug = generateSlug(rest.client_name || '', `${rest.project_name || ''} copia`);
+      const { data: existing } = await supabase
+        .from('orcamentos')
+        .select('slug')
+        .eq('slug', newSlug)
+        .maybeSingle();
+      if (existing) {
+        newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
+      }
+
+      const { data, error } = await supabase
+        .from('orcamentos')
+        .insert({
+          ...rest,
+          slug: newSlug,
+          project_name: `${rest.project_name || ''} (Cópia)`,
+          status: 'draft',
+          views_count: 0,
+          version: 1,
+          parent_id: null,
+          is_latest_version: true,
+          sent_date: new Date().toLocaleDateString('en-CA'),
+        } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return mapProposal(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      toast.success('Proposta duplicada com sucesso!');
+    },
+    onError: (err: Error) => {
+      toast.error('Erro ao duplicar proposta: ' + err.message);
+    },
+  });
+
+  return { ...query, createProposal, createDraft, updateProposal, deleteProposal, createNewVersion, duplicateProposal };
 }
 
 function mapProposal(row: any): Proposal {
