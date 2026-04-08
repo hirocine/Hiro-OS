@@ -9,6 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Plus, Search, Users, Trash2, Pencil } from 'lucide-react';
 import { CONTACT_TYPES, LEAD_SOURCES, type Contact } from '../../types/crm.types';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +30,7 @@ export function ContactsList() {
   const [sourceFilter, setSourceFilter] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 300);
   const navigate = useNavigate();
 
@@ -96,7 +107,7 @@ export function ContactsList() {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingContact(c); setFormOpen(true); }}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteContact.mutate(c.id)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingContactId(c.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -110,6 +121,29 @@ export function ContactsList() {
       </CardContent>
 
       <ContactForm open={formOpen} onOpenChange={setFormOpen} contact={editingContact} />
+
+      <AlertDialog open={!!deletingContactId} onOpenChange={open => { if (!open) setDeletingContactId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir contato</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este contato? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingContactId) deleteContact.mutate(deletingContactId);
+                setDeletingContactId(null);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

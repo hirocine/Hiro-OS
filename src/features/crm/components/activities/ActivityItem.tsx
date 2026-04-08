@@ -1,15 +1,31 @@
 import { Checkbox } from '@/components/ui/checkbox';
-import { Phone, Mail, Calendar, StickyNote, CheckSquare } from 'lucide-react';
+import { Phone, Mail, Calendar, StickyNote, MessageCircle, Bell, FileText, MapPin, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Activity } from '../../types/crm.types';
 import { useActivityMutations } from '../../hooks/useActivities';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  ligacao: Phone, email: Mail, reuniao: Calendar, nota: StickyNote, tarefa: CheckSquare,
+  nota: StickyNote,
+  ligacao: Phone,
+  whatsapp: MessageCircle,
+  email: Mail,
+  reuniao: Calendar,
+  follow_up: Bell,
+  proposta: FileText,
+  visita: MapPin,
+  outro: MoreHorizontal,
 };
 
 const typeLabels: Record<string, string> = {
-  ligacao: 'Ligação', email: 'E-mail', reuniao: 'Reunião', nota: 'Nota', tarefa: 'Tarefa',
+  nota: 'Nota',
+  ligacao: 'Ligação',
+  whatsapp: 'WhatsApp',
+  email: 'E-mail',
+  reuniao: 'Reunião',
+  follow_up: 'Follow-up',
+  proposta: 'Proposta',
+  visita: 'Visita',
+  outro: 'Outro',
 };
 
 interface ActivityItemProps {

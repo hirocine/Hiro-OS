@@ -35,7 +35,8 @@ export interface CRMStats {
 // Enums for UI
 export const CONTACT_TYPES = [
   { value: 'lead', label: 'Lead' },
-  { value: 'cliente', label: 'Cliente' },
+  { value: 'cliente_ativo', label: 'Cliente Ativo' },
+  { value: 'cliente_antigo', label: 'Cliente Antigo' },
   { value: 'parceiro', label: 'Parceiro' },
   { value: 'fornecedor', label: 'Fornecedor' },
 ] as const;
@@ -46,15 +47,21 @@ export const LEAD_SOURCES = [
   { value: 'google', label: 'Google' },
   { value: 'linkedin', label: 'LinkedIn' },
   { value: 'evento', label: 'Evento' },
+  { value: 'cold_outreach', label: 'Cold Outreach' },
+  { value: 'site', label: 'Site' },
   { value: 'outro', label: 'Outro' },
 ] as const;
 
 export const ACTIVITY_TYPES = [
+  { value: 'nota', label: 'Nota', icon: 'StickyNote' },
   { value: 'ligacao', label: 'Ligação', icon: 'Phone' },
+  { value: 'whatsapp', label: 'WhatsApp', icon: 'MessageCircle' },
   { value: 'email', label: 'E-mail', icon: 'Mail' },
   { value: 'reuniao', label: 'Reunião', icon: 'Calendar' },
-  { value: 'nota', label: 'Nota', icon: 'StickyNote' },
-  { value: 'tarefa', label: 'Tarefa', icon: 'CheckSquare' },
+  { value: 'follow_up', label: 'Follow-up', icon: 'Bell' },
+  { value: 'proposta', label: 'Proposta', icon: 'FileText' },
+  { value: 'visita', label: 'Visita', icon: 'MapPin' },
+  { value: 'outro', label: 'Outro', icon: 'MoreHorizontal' },
 ] as const;
 
 export const SERVICE_TYPES = [
