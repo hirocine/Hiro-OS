@@ -1,21 +1,61 @@
 
 
-# Move CRM from Menu to Produção section
+# Visual Pattern Corrections for CRM Module
 
-## Changes (3 files)
+5 files to update, matching Proposals page patterns (PageHeader + ResponsiveContainer for lists, BreadcrumbNav + flat section headers for detail pages).
 
-### 1. `src/components/Layout/DesktopSidebar.tsx`
-- **Remove** `{ name: 'CRM', href: '/crm', icon: Users }` from `navigation` array (line 32)
-- **Add** `{ name: 'CRM', href: '/crm', icon: Users }` to `producaoNavigation` array after Orçamentos, before Fornecedores (between lines 37 and 38)
+---
 
-### 2. `src/components/Layout/MobileSidebar.tsx`
-- **Remove** `{ name: 'CRM', href: '/crm', icon: Users }` from `navigation` array (line 35)
-- **Add** `{ name: 'CRM', href: '/crm', icon: Users }` to `producaoNavigation` array after Orçamentos, before Fornecedores (between lines 40 and 41)
+## 1. `src/pages/CRM.tsx`
+- Replace `BreadcrumbNav` with `PageHeader` (title="CRM", subtitle="Gerencie seu pipeline e contatos comerciais")
+- Wrap everything in `ResponsiveContainer maxWidth="7xl"`
 
-### 3. `src/components/Layout/Sidebar.tsx`
-- **Remove** `{ name: 'CRM', href: '/crm', icon: Handshake }` from `navigation` array (line 22)
-- **Add** `{ name: 'CRM', href: '/crm', icon: Handshake }` to `producaoNavigation` array after Orçamentos, before Freelancers (between lines 34 and 36)
-- Update icon import: ensure `Handshake` is still imported (already is)
+## 2. `src/pages/CRMContactDetail.tsx`
+- Wrap in `ResponsiveContainer maxWidth="7xl"`
+- Rewrite `ContactCard` inline as a rich summary card: Avatar circle with initials (large, colored), name as h2, position + company below, type badge, clickable links (`mailto:`, `tel:`, `https://wa.me/`, Instagram URL)
+- Replace CardHeader/CardTitle in Deals section with flat section header pattern:
+  ```
+  <div className="flex items-center justify-between border-b pb-3 mb-4">
+    <div className="flex items-center gap-2 text-sm font-medium">
+      <Handshake className="h-4 w-4" /> Deals Vinculados
+    </div>
+    <Button ...>+ Novo Deal</Button>
+  </div>
+  ```
+- Same flat header for Activities section (icon Activity + "Atividades"), full-width at bottom
+- Remove `<Card>` wrapper from both sections, use the Card but with the flat header replacing CardHeader/CardTitle
 
-CRM will inherit the Produção section's visibility logic (`canAccessSuppliers` / producao+admin role check), matching all other items in that section.
+## 3. `src/pages/CRMDealDetail.tsx`
+- Wrap in `ResponsiveContainer maxWidth="7xl"`
+- Summary card: title as h2 font-semibold, Badge with stage color, value in text-2xl, contact name as clickable link to `/crm/contatos/:id`, service type, days in stage calculation shown
+- Replace CardHeader/CardTitle with flat section header pattern for details and activities sections
+- Pipeline stepper: replace simple rounded divs with a horizontal stepper using circles connected by lines. Each circle filled with stage color if past/current, muted if future. Current stage has ring highlight.
+
+## 4. `src/features/crm/components/contacts/ContactsList.tsx`
+- Wrap entire content inside a `<Card>` with flat section header (icon Users + "Contatos" left, "Novo Contato" button right, `border-b pb-3 mb-4`)
+- Move filters below the header, inside CardContent
+- Remove the standalone button from the filters row (it moves to the section header)
+
+## 5. `src/features/crm/components/CRMDashboard.tsx`
+- Keep existing 4 StatsCards
+- Add "Atencao Necessaria" section below: a Card with flat section header (`AlertTriangle` icon + "Atencao Necessaria")
+- Query stale deals (active deals where `updated_at` is older than 7 days) from existing `useDeals()` data
+- Query overdue follow-ups using `useActivities({ pending: true })` filtered by `scheduled_at < now`
+- If both lists empty, show `EmptyState compact` with "Tudo em dia! Nenhuma pendencia."
+- List items: deal name + days stale, or activity description + how overdue
+
+---
+
+## Section header pattern (applied everywhere)
+```tsx
+<div className="flex items-center justify-between border-b pb-3 mb-4">
+  <div className="flex items-center gap-2 text-sm font-medium">
+    <Icon className="h-4 w-4" />
+    Section Title
+  </div>
+  {action && <Button ...>Action</Button>}
+</div>
+```
+
+No changes to `src/features/proposals/components/public/` or any other files.
 
