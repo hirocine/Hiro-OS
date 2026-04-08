@@ -29,6 +29,7 @@ const navigation: NavigationItem[] = [
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'CRM', href: '/crm', icon: Users },
 ];
 
 const producaoNavigation: NavigationItem[] = [

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare, Users, UserCheck, Building2, Film, Receipt } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Settings, BarChart3, Camera, HardDrive, Key, FileText, CheckSquare, Users, UserCheck, Building2, Film, Receipt, Handshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/contexts/AuthContext';
 import hiroLogo from '@/assets/hiro-logo.png';
@@ -19,6 +19,7 @@ const navigation: NavigationItem[] = [
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'CRM', href: '/crm', icon: Handshake },
 ];
 
 const producaoNavigation: NavigationItem[] = [
