@@ -440,6 +440,7 @@ export default function ProposalDetails() {
           final_value: finalValue,
           base_value: finalValue,
           payment_terms: investForm.payment_terms.trim(),
+          payment_options: investForm.payment_options,
         };
       } else if (section === 'diag') {
         data = { objetivo: diagForm.objetivo.trim() || null };
