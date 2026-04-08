@@ -1,22 +1,29 @@
 import { useState, useMemo } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors, closestCenter, useDroppable, useDraggable } from '@dnd-kit/core';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { useDeals, useDealMutations } from '../../hooks/useDeals';
-import { PipelineColumn } from './PipelineColumn';
 import { DealCard } from './DealCard';
 import { DealForm } from './DealForm';
 import { LostReasonDialog } from './LostReasonDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, AlertTriangle, Handshake, DollarSign } from 'lucide-react';
-import { formatBRL, type DealWithRelations } from '../../types/crm.types';
-import { useDraggable } from '@dnd-kit/core';
+import { formatBRL, type DealWithRelations, type PipelineStage } from '../../types/crm.types';
 
 function DraggableDealCard({ deal }: { deal: DealWithRelations }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: deal.id });
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}>
       <DealCard deal={deal} isDragging={isDragging} />
+    </div>
+  );
+}
+
+function DroppableArea({ stageId, children }: { stageId: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: stageId });
+  return (
+    <div ref={setNodeRef} className={`flex-1 p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)] transition-colors duration-200 ${isOver ? 'bg-primary/5' : ''}`}>
+      {children}
     </div>
   );
 }
@@ -41,17 +48,15 @@ export function PipelineBoard() {
     return map;
   }, [deals, stages]);
 
-  // Summary stats
-  const activeDeals = deals?.filter(d => !d.stage_is_won && !d.stage_is_lost) ?? [];
-  const pipelineValue = activeDeals.reduce((sum, d) => sum + (d.estimated_value ?? 0), 0);
-  const staleCount = activeDeals.filter(d => {
+  const activeDeals = useMemo(() => deals?.filter(d => !d.stage_is_won && !d.stage_is_lost) ?? [], [deals]);
+  const pipelineValue = useMemo(() => activeDeals.reduce((sum, d) => sum + (d.estimated_value ?? 0), 0), [activeDeals]);
+  const staleCount = useMemo(() => activeDeals.filter(d => {
     const days = Math.floor((Date.now() - new Date(d.updated_at ?? d.created_at!).getTime()) / 86400000);
     return days > 7;
-  }).length;
+  }).length, [activeDeals]);
 
   const handleDragStart = (event: DragStartEvent) => {
-    const deal = deals?.find(d => d.id === event.active.id);
-    setActiveDeal(deal ?? null);
+    setActiveDeal(deals?.find(d => d.id === event.active.id) ?? null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -72,19 +77,12 @@ export function PipelineBoard() {
       return;
     }
 
-    moveToStage.mutate({
-      dealId, stageId: targetStageId,
-      isWon: targetStage.is_won ?? false,
-      isLost: false,
-    });
+    moveToStage.mutate({ dealId, stageId: targetStageId, isWon: targetStage.is_won ?? false, isLost: false });
   };
 
   const handleLostConfirm = (reason: string) => {
     if (!pendingLost) return;
-    moveToStage.mutate({
-      dealId: pendingLost.dealId, stageId: pendingLost.stageId,
-      isLost: true, lostReason: reason,
-    });
+    moveToStage.mutate({ dealId: pendingLost.dealId, stageId: pendingLost.stageId, isLost: true, lostReason: reason });
     setPendingLost(null);
   };
 
@@ -94,7 +92,6 @@ export function PipelineBoard() {
 
   return (
     <div className="space-y-4">
-      {/* Summary bar */}
       <div className="flex flex-wrap items-center gap-4 text-sm">
         <div className="flex items-center gap-1.5">
           <Handshake className="h-4 w-4 text-muted-foreground" />
@@ -117,14 +114,12 @@ export function PipelineBoard() {
         </Button>
       </div>
 
-      {/* Kanban */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {stages?.map(stage => {
             const stageDeals = dealsByStage.get(stage.id) ?? [];
             return (
               <div key={stage.id} className="flex flex-col min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg border">
-                {/* Column header */}
                 <div className="p-3 border-b">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stage.color ?? '#6366f1' }} />
@@ -135,20 +130,14 @@ export function PipelineBoard() {
                     {formatBRL(stageDeals.reduce((s, d) => s + (d.estimated_value ?? 0), 0))}
                   </p>
                 </div>
-                {/* Droppable area */}
                 <DroppableArea stageId={stage.id}>
-                  {stageDeals.map(deal => (
-                    <DraggableDealCard key={deal.id} deal={deal} />
-                  ))}
+                  {stageDeals.map(deal => <DraggableDealCard key={deal.id} deal={deal} />)}
                 </DroppableArea>
               </div>
             );
           })}
         </div>
-
-        <DragOverlay>
-          {activeDeal && <DealCard deal={activeDeal} isDragging />}
-        </DragOverlay>
+        <DragOverlay>{activeDeal && <DealCard deal={activeDeal} isDragging />}</DragOverlay>
       </DndContext>
 
       <DealForm open={dealFormOpen} onOpenChange={setDealFormOpen} />
@@ -156,19 +145,3 @@ export function PipelineBoard() {
     </div>
   );
 }
-
-function DroppableArea({ stageId, children }: { stageId: string; children: React.ReactNode }) {
-  const { setNodeRef, isOver } = await_drop(stageId);
-  return (
-    <div ref={setNodeRef} className={`flex-1 p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)] transition-colors duration-200 ${isOver ? 'bg-primary/5' : ''}`}>
-      {children}
-    </div>
-  );
-}
-
-function await_drop(id: string) {
-  const { setNodeRef, isOver } = __useDroppable({ id });
-  return { setNodeRef, isOver };
-}
-
-import { useDroppable as __useDroppable } from '@dnd-kit/core';
