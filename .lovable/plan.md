@@ -1,36 +1,31 @@
 
 
-# Fix: flickering ao alterar data no calendário do PPDialog
+# Replace date pickers with native date inputs in PPDialog
 
-## Problema
-Na primeira seleção de data, funciona bem. Mas ao clicar para alterar a data (quando já existe uma data selecionada), o calendário pisca — fecha e reabre rapidamente.
+## File: `src/features/post-production/components/PPDialog.tsx`
 
-## Causa raiz
-Quando o usuário clica no trigger para reabrir o calendário e já existe uma data, o `onSelect` do Calendar dispara imediatamente ao clicar em qualquer dia (incluindo o dia já selecionado durante navegação). O problema é que `setForm` atualiza o estado, causando re-render, e o `setStartDateOpen(false)` fecha o popover — mas o `onOpenChange` do Popover pode reabri-lo no mesmo ciclo porque o clique no trigger ainda está propagando.
+### Change 1: Remove imports (lines 8-13)
+Remove lines 8-9 (Calendar, Popover imports), remove `CalendarIcon` from line 10, remove lines 11-12 (`format`, `ptBR`), remove line 13 (`cn`). Keep `X` in lucide-react import.
 
-A solução real: o `onSelect` não deve fechar o popover se a data selecionada é a mesma que já está no form (o usuário está apenas navegando pelo calendário). E ao fechar, precisamos usar `setTimeout` para garantir que o estado de fechamento não conflite com o evento de clique do trigger.
+**Note**: `format` and `cn` are still used elsewhere in the file (in `handleSave` for `delivered_date` formatting). Need to check — actually `format` is used in `onSelect` callbacks which are being removed, and `delivered_date` uses `new Date().toISOString().split('T')[0]` not `format`. And `cn` is used in Calendar className which is being removed. Let me verify other usages.
 
-## Solução
+Actually, `format` from date-fns and `ptBR` are only used in the date field rendering (lines 270, 279, 307, 316). `cn` is used in lines 264, 282, 300, 319 — all inside the date blocks being removed. `CalendarIcon` only in lines 268, 305. So all can be safely removed.
 
-### File: `src/features/post-production/components/PPDialog.tsx`
+Keep: `X` from lucide-react (used in line 21 via Trash2... actually let me check if X is used elsewhere). X is only used in the "Limpar" buttons being removed. So `X` can also be removed from the import. `Trash2` is imported separately on line 21.
 
-**Ambos os calendários** — atualizar o `onSelect` para usar `setTimeout` no fechamento, evitando conflito com o ciclo de eventos do Radix:
+### Change 2: Remove state variables (lines 78-79)
+Remove `startDateOpen` and `dueDateOpen` state declarations.
 
-```tsx
-// Início
-onSelect={(date) => {
-  setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-  setTimeout(() => setStartDateOpen(false), 0);
-}}
+### Change 3: Replace date fields block (lines 256-331)
+Replace entire grid with native date inputs using `<Input type="date">`.
 
-// Data de Entrega
-onSelect={(date) => {
-  setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-  setTimeout(() => setDueDateOpen(false), 0);
-}}
-```
+### Summary of import changes
+- Remove line 8: `Calendar` import
+- Remove line 9: `Popover, PopoverContent, PopoverTrigger` import  
+- Line 10: remove `CalendarIcon, X` — line becomes empty, remove it
+- Remove line 11: `format` from date-fns
+- Remove line 12: `ptBR` from date-fns/locale
+- Remove line 13: `cn` from utils
 
-Isso empurra o fechamento para o próximo tick, depois que o evento de clique do Radix Popover termina de propagar, eliminando o conflito entre `onSelect` e `onOpenChange`.
-
-Nenhuma outra alteração. Nenhum outro arquivo.
+No other files changed.
 
