@@ -141,6 +141,7 @@ export const CASE_TAG_OPTIONS = [
 export interface ProposalFormData {
   client_name: string;
   project_name: string;
+  project_number?: string | null;
   client_responsible: string;
   client_logo: string;
   whatsapp_number: string;
