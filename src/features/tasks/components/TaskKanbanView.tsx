@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useTaskMutations } from '../hooks/useTaskMutations';
-import { PriorityBadge } from './PriorityBadge';
 import { Task, TaskStatus } from '../types';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -21,10 +20,10 @@ interface TaskKanbanViewProps {
 }
 
 const COLUMNS: { status: TaskStatus; label: string; color: string; bgColor: string }[] = [
-  { status: 'pendente', label: 'Pendente', color: 'text-gray-600', bgColor: 'bg-gray-100 dark:bg-gray-800/50' },
-  { status: 'em_progresso', label: 'Em Progresso', color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
-  { status: 'concluida', label: 'Concluída', color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-  { status: 'arquivada', label: 'Arquivada', color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-900/20' },
+  { status: 'pendente', label: 'Pendente', color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-100 dark:bg-gray-800/50' },
+  { status: 'em_progresso', label: 'Em Progresso', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
+  { status: 'concluida', label: 'Concluída', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-900/20' },
+  { status: 'arquivada', label: 'Arquivada', color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-50 dark:bg-red-900/20' },
 ];
 
 const getDueInfo = (dueDate: string | null) => {
@@ -95,7 +94,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(i => (
           <div key={i} className="space-y-3">
             <Skeleton className="h-8 w-full" />
@@ -108,7 +107,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-4 min-h-[500px]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
       {COLUMNS.map(column => {
         const columnTasks = tasksByStatus[column.status];
         return (
@@ -143,7 +142,14 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
                     )}
                   >
                     <div className="flex items-start gap-2 mb-2">
-                      <PriorityBadge priority={task.priority} />
+                      <div className={cn(
+                        "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                        task.priority === 'urgente' && "bg-red-500",
+                        task.priority === 'alta' && "bg-orange-500",
+                        task.priority === 'media' && "bg-yellow-500",
+                        task.priority === 'baixa' && "bg-blue-500",
+                        task.priority === 'standby' && "bg-gray-400",
+                      )} />
                       <p className="text-sm font-medium leading-tight line-clamp-2">{task.title}</p>
                     </div>
 
@@ -182,7 +188,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
                     </div>
 
                     {/* Move buttons on hover */}
-                    <div className="hidden group-hover:flex gap-1 mt-2 pt-2 border-t flex-wrap">
+                    <div className="flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity gap-1 mt-2 pt-2 border-t flex-wrap">
                       {COLUMNS.filter(c => c.status !== task.status).map(c => (
                         <Button
                           key={c.status}
@@ -204,7 +210,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
 
               {/* Quick add input */}
               {quickAddColumn === column.status && (
-                <div>
+                <Card className="p-3">
                   <Input
                     autoFocus
                     placeholder="Título da tarefa..."
@@ -224,7 +230,7 @@ export function TaskKanbanView({ tasks, isLoading }: TaskKanbanViewProps) {
                       Cancelar
                     </Button>
                   </div>
-                </div>
+                </Card>
               )}
 
               {columnTasks.length === 0 && quickAddColumn !== column.status && (
