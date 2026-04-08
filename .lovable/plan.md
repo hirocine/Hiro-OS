@@ -1,24 +1,30 @@
 
-# Fase 2 — TaskKanbanView
 
-## Arquivos
+# Fase 3 — TaskCalendarView (Calendar View)
 
-### 1. CRIAR `src/features/tasks/components/TaskKanbanView.tsx`
-Kanban board with 4 columns (Pendente, Em Progresso, Concluída, Arquivada). Features:
-- Tasks grouped by status via `useMemo`
-- Quick-add inline input on each column (especially Pendente)
-- Click card to navigate to `/tarefas/{id}`
-- Move buttons visible on hover to change status
-- Due date display with overdue detection
-- Assignee avatars, department badge, priority badge
-- Loading skeleton state
-- No subtask progress (fields don't exist yet)
+## Files
 
-### 2. MODIFICAR `src/features/tasks/components/index.ts`
-Add `export * from './TaskKanbanView';`
+### 1. CREATE `src/features/tasks/components/TaskCalendarView.tsx`
+Full calendar component with 3 sub-views (Month/Week/List), following RecordingsCalendar visual patterns:
 
-### 3. MODIFICAR `src/pages/Tasks.tsx`
-- Import `TaskKanbanView`
-- Replace kanban placeholder with `<TaskKanbanView tasks={filteredTasks} isLoading={isLoading} />`
+- **State**: `view` (month/week/list), `currentDate`, `animKey`
+- **Data**: Filter active tasks with due dates, group by date via `Map<string, Task[]>`
+- **Navigation**: Period label, prev/next buttons, view toggle pills
+- **Month view**: 7-col grid with weekday headers, day cells showing priority-colored pills (max 2 + overflow), today circle highlight, filler days empty
+- **Week view**: 7 horizontal day cards with left-border colored by priority, task title + first assignee name
+- **List view**: Tasks grouped into Atrasadas/Esta semana/Próxima semana/Este mês/Futuras, each with date box, priority badge, status badge, assignee info
+- **Priority pill colors**: urgente=red, alta=orange, media=yellow, baixa=blue, standby=gray (with dark mode variants)
+- Click any task → `navigate('/tarefas/{id}')`
 
-No changes to `src/features/proposals/components/public/`.
+### 2. MODIFY `src/features/tasks/components/index.ts`
+- Remove: `export * from './TaskCalendarWidget';`
+- Add: `export * from './TaskCalendarView';`
+
+### 3. MODIFY `src/pages/Tasks.tsx`
+- Add import: `TaskCalendarView`
+- Replace calendar placeholder (lines 249-254) with: `<TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />`
+
+### 4. DELETE `src/features/tasks/components/TaskCalendarWidget.tsx`
+
+No other files modified. No changes to `src/features/proposals/components/public/`.
+
