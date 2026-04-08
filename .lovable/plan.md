@@ -1,61 +1,48 @@
 
 
-# Visual Pattern Corrections for CRM Module
+# CRM Critical Fixes — 6 Issues
 
-5 files to update, matching Proposals page patterns (PageHeader + ResponsiveContainer for lists, BreadcrumbNav + flat section headers for detail pages).
+## 1. Fix enums in `src/features/crm/types/crm.types.ts`
 
----
+**CONTACT_TYPES** (lines 36-41): Replace with `lead`, `cliente_ativo`, `cliente_antigo`, `parceiro`, `fornecedor`.
 
-## 1. `src/pages/CRM.tsx`
-- Replace `BreadcrumbNav` with `PageHeader` (title="CRM", subtitle="Gerencie seu pipeline e contatos comerciais")
-- Wrap everything in `ResponsiveContainer maxWidth="7xl"`
+**LEAD_SOURCES** (lines 43-50): Add `cold_outreach` and `site`.
 
-## 2. `src/pages/CRMContactDetail.tsx`
-- Wrap in `ResponsiveContainer maxWidth="7xl"`
-- Rewrite `ContactCard` inline as a rich summary card: Avatar circle with initials (large, colored), name as h2, position + company below, type badge, clickable links (`mailto:`, `tel:`, `https://wa.me/`, Instagram URL)
-- Replace CardHeader/CardTitle in Deals section with flat section header pattern:
-  ```
-  <div className="flex items-center justify-between border-b pb-3 mb-4">
-    <div className="flex items-center gap-2 text-sm font-medium">
-      <Handshake className="h-4 w-4" /> Deals Vinculados
-    </div>
-    <Button ...>+ Novo Deal</Button>
-  </div>
-  ```
-- Same flat header for Activities section (icon Activity + "Atividades"), full-width at bottom
-- Remove `<Card>` wrapper from both sections, use the Card but with the flat header replacing CardHeader/CardTitle
+**ACTIVITY_TYPES** (lines 52-58): Replace entirely with 9 types: `nota`, `ligacao`, `whatsapp`, `email`, `reuniao`, `follow_up`, `proposta`, `visita`, `outro`.
 
-## 3. `src/pages/CRMDealDetail.tsx`
-- Wrap in `ResponsiveContainer maxWidth="7xl"`
-- Summary card: title as h2 font-semibold, Badge with stage color, value in text-2xl, contact name as clickable link to `/crm/contatos/:id`, service type, days in stage calculation shown
-- Replace CardHeader/CardTitle with flat section header pattern for details and activities sections
-- Pipeline stepper: replace simple rounded divs with a horizontal stepper using circles connected by lines. Each circle filled with stage color if past/current, muted if future. Current stage has ring highlight.
+## 2. Update `src/features/crm/components/activities/ActivityItem.tsx`
 
-## 4. `src/features/crm/components/contacts/ContactsList.tsx`
-- Wrap entire content inside a `<Card>` with flat section header (icon Users + "Contatos" left, "Novo Contato" button right, `border-b pb-3 mb-4`)
-- Move filters below the header, inside CardContent
-- Remove the standalone button from the filters row (it moves to the section header)
+- Add imports: `MessageCircle, Bell, FileText, MapPin, MoreHorizontal` from lucide-react
+- Remove `CheckSquare` import
+- Update `iconMap` to include all 9 types (whatsapp: MessageCircle, follow_up: Bell, proposta: FileText, visita: MapPin, outro: MoreHorizontal)
+- Update `typeLabels` to include all 9 types
 
-## 5. `src/features/crm/components/CRMDashboard.tsx`
-- Keep existing 4 StatsCards
-- Add "Atencao Necessaria" section below: a Card with flat section header (`AlertTriangle` icon + "Atencao Necessaria")
-- Query stale deals (active deals where `updated_at` is older than 7 days) from existing `useDeals()` data
-- Query overdue follow-ups using `useActivities({ pending: true })` filtered by `scheduled_at < now`
-- If both lists empty, show `EmptyState compact` with "Tudo em dia! Nenhuma pendencia."
-- List items: deal name + days stale, or activity description + how overdue
+## 3. Remove duplicate Activities headers in detail pages
 
----
+**`src/pages/CRMContactDetail.tsx`** (lines 159-170): Remove the outer section header (the `div` with border-b containing "Atividades" icon+text at lines 162-167). Keep the `<Card><CardContent>` wrapper but render `<ActivitiesList>` directly inside without the duplicate header.
 
-## Section header pattern (applied everywhere)
-```tsx
-<div className="flex items-center justify-between border-b pb-3 mb-4">
-  <div className="flex items-center gap-2 text-sm font-medium">
-    <Icon className="h-4 w-4" />
-    Section Title
-  </div>
-  {action && <Button ...>Action</Button>}
-</div>
-```
+**`src/pages/CRMDealDetail.tsx`** (lines 131-142): Same change — remove the "Atividades" section header div, keep Card/CardContent with ActivitiesList directly.
 
-No changes to `src/features/proposals/components/public/` or any other files.
+## 4. Add spacing wrapper in detail pages
+
+**`src/pages/CRMContactDetail.tsx`**: After `<BreadcrumbNav>`, wrap the three Cards (summary, deals, activities) in `<div className="space-y-6">`.
+
+**`src/pages/CRMDealDetail.tsx`**: After `<BreadcrumbNav>`, wrap all Cards (summary, pipeline stepper, activities) in `<div className="space-y-6">`.
+
+## 5. Delete confirmation in `src/features/crm/components/contacts/ContactsList.tsx`
+
+- Import `AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle` from `@/components/ui/alert-dialog`
+- Add state: `deletingContactId: string | null`
+- Replace direct `deleteContact.mutate(c.id)` with `setDeletingContactId(c.id)`
+- Add AlertDialog at bottom with confirmation text: "Tem certeza que deseja excluir este contato? Esta acao nao pode ser desfeita." On confirm: `deleteContact.mutate(deletingContactId)` then reset state.
+
+## Summary of files changed
+
+1. `src/features/crm/types/crm.types.ts` — fix 3 enum arrays
+2. `src/features/crm/components/activities/ActivityItem.tsx` — update iconMap + typeLabels
+3. `src/pages/CRMContactDetail.tsx` — remove duplicate header, add space-y-6
+4. `src/pages/CRMDealDetail.tsx` — remove duplicate header, add space-y-6
+5. `src/features/crm/components/contacts/ContactsList.tsx` — add delete confirmation dialog
+
+No changes to `src/features/proposals/components/public/`.
 
