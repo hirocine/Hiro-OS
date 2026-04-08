@@ -3,15 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Proposal, ProposalFormData, ProposalCase } from '../types';
 
-export function generateSlug(clientName: string, projectName: string): string {
-  const year = new Date().getFullYear();
-  const raw = `${clientName}-${projectName}-${year}`;
-  return raw
+export function generateSlug(clientName: string, projectName: string, projectNumber?: string | null, version?: number): string {
+  const v = version || 1;
+  const parts = [projectNumber, clientName, projectName].filter(Boolean).join('-');
+  const base = parts
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+  return `${base}-v${v}`;
 }
 
 export function useProposals() {
@@ -34,7 +35,7 @@ export function useProposals() {
   const createProposal = useMutation({
     mutationFn: async (form: ProposalFormData) => {
       // Generate slug with uniqueness check
-      let slug = generateSlug(form.client_name, form.project_name);
+      let slug = generateSlug(form.client_name, form.project_name, form.project_number, 1);
       const { data: existing } = await supabase
         .from('orcamentos')
         .select('slug')
@@ -195,17 +196,18 @@ export function useProposals() {
 
   const updateProposal = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Record<string, any>> }) => {
-      if (data.client_name || data.project_name) {
+      if (data.client_name || data.project_name || data.project_number) {
         const { data: current } = await supabase
           .from('orcamentos')
-          .select('client_name, project_name')
+          .select('client_name, project_name, project_number, version')
           .eq('id', id)
           .single();
 
         const clientName = (data.client_name as string) || current?.client_name || '';
         const projectName = (data.project_name as string) || current?.project_name || '';
+        const projectNumber = (data.project_number as string) || current?.project_number;
 
-        let newSlug = generateSlug(clientName, projectName);
+        let newSlug = generateSlug(clientName, projectName, projectNumber, current?.version);
 
         const { data: existing } = await supabase
           .from('orcamentos')
@@ -297,7 +299,7 @@ export function useProposals() {
         .or(`id.eq.${parentId},parent_id.eq.${parentId}`);
 
       const { id, created_at, updated_at, slug, version, is_latest_version, views_count, ...rest } = original as any;
-      const newSlug = `${slug.replace(/-v\d+$/, '')}-v${nextVersion}`;
+      const newSlug = generateSlug(rest.client_name, rest.project_name, rest.project_number, nextVersion);
 
       const { data: newProposal, error } = await supabase
         .from('orcamentos')
@@ -337,7 +339,7 @@ export function useProposals() {
 
       const { id: _id, created_at, updated_at, views_count, parent_id, version, is_latest_version, slug, ...rest } = original as any;
 
-      let newSlug = generateSlug(rest.client_name || '', `${rest.project_name || ''} copia`);
+      let newSlug = generateSlug(rest.client_name || '', rest.project_name || '', rest.project_number, 1);
       const { data: existing } = await supabase
         .from('orcamentos')
         .select('slug')
@@ -352,7 +354,6 @@ export function useProposals() {
         .insert({
           ...rest,
           slug: newSlug,
-          project_name: `${rest.project_name || ''} (Cópia)`,
           status: 'draft',
           views_count: 0,
           version: 1,
