@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Copy, ExternalLink, Trash2, Building2, MoreHorizontal, Eye, EyeOff, Pencil, Clock } from 'lucide-react';
+import { Copy, CopyPlus, ExternalLink, Trash2, Building2, MoreHorizontal, Eye, EyeOff, Pencil, Clock } from 'lucide-react';
 import { differenceInDays, format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Proposal } from '../types';
@@ -21,9 +21,10 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
 interface Props {
   proposal: Proposal;
   onDelete?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
 }
 
-export function ProposalCard({ proposal, onDelete }: Props) {
+export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
   const navigate = useNavigate();
   const status = statusMap[proposal.status] || statusMap.draft;
   const daysLeft = differenceInDays(new Date(proposal.validity_date + 'T12:00:00'), new Date());
@@ -100,6 +101,11 @@ export function ProposalCard({ proposal, onDelete }: Props) {
             <DropdownMenuItem onClick={handleCopyLink}>
               <Copy className="mr-2 h-4 w-4" /> Copiar Link
             </DropdownMenuItem>
+            {onDuplicate && (
+              <DropdownMenuItem onClick={() => onDuplicate(proposal.id)}>
+                <CopyPlus className="mr-2 h-4 w-4" /> Duplicar
+              </DropdownMenuItem>
+            )}
             {onDelete && (
               <>
                 <DropdownMenuSeparator />
