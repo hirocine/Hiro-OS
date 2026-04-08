@@ -5,6 +5,7 @@ interface FilteredStats {
   active: number;
   overdue: number;
   urgent: number;
+  completed: number;
 }
 
 export function useFilteredTaskStats(tasks: Task[]): FilteredStats {
@@ -31,6 +32,8 @@ export function useFilteredTaskStats(tasks: Task[]): FilteredStats {
 
     const urgent = activeTasks.filter(t => t.priority === 'urgente').length;
 
-    return { active, overdue, urgent };
+    const completed = tasks.filter(t => t.status === 'concluida').length;
+
+    return { active, overdue, urgent, completed };
   }, [tasks]);
 }

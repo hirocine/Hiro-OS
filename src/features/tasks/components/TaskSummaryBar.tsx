@@ -1,4 +1,4 @@
-import { ListChecks, AlertTriangle, Flame } from 'lucide-react';
+import { ListChecks, AlertTriangle, Flame, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ interface TaskSummaryBarProps {
     active: number;
     overdue: number;
     urgent: number;
+    completed: number;
   };
   isLoading?: boolean;
 }
@@ -17,7 +18,7 @@ export function TaskSummaryBar({ stats, isLoading }: TaskSummaryBarProps) {
     return (
       <Card className="p-4">
         <div className="flex items-center justify-center gap-8">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-8 w-24" />
           ))}
         </div>
@@ -27,7 +28,7 @@ export function TaskSummaryBar({ stats, isLoading }: TaskSummaryBarProps) {
 
   return (
     <Card>
-      <div className="grid grid-cols-3 py-3 px-4">
+      <div className="grid grid-cols-4 py-3 px-4">
         <div className="flex items-center justify-center gap-2">
           <div className="p-1.5 rounded-lg bg-primary/10">
             <ListChecks className="h-4 w-4 text-primary" />
@@ -55,6 +56,16 @@ export function TaskSummaryBar({ stats, isLoading }: TaskSummaryBarProps) {
           <div className="flex items-baseline gap-1.5">
             <span className={cn("text-xl font-bold", stats.urgent > 0 ? "text-orange-500" : "text-muted-foreground")}>{stats.urgent}</span>
             <span className="text-sm text-muted-foreground">Urgentes</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-2">
+          <div className={cn("p-1.5 rounded-lg", stats.completed > 0 ? "bg-green-500/10" : "bg-muted")}>
+            <CheckCircle className={cn("h-4 w-4", stats.completed > 0 ? "text-green-600" : "text-muted-foreground")} />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className={cn("text-xl font-bold", stats.completed > 0 ? "text-green-600" : "text-muted-foreground")}>{stats.completed}</span>
+            <span className="text-sm text-muted-foreground">Concluídas</span>
           </div>
         </div>
       </div>
