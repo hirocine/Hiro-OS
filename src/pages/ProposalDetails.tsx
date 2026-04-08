@@ -542,6 +542,20 @@ export default function ProposalDetails() {
 
   const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
 
+  // Auto-recalculate payment option values when final value changes
+  useEffect(() => {
+    const finalVal = investForm.list_price * (1 - investForm.discount_pct / 100);
+    if (finalVal <= 0) return;
+    const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+    setInvestForm(prev => ({
+      ...prev,
+      payment_options: prev.payment_options.map((opt, i) => ({
+        ...opt,
+        valor: i === 0 ? fmt(finalVal * 0.95) : `2x ${fmt(finalVal / 2)}`,
+      })),
+    }));
+  }, [investForm.list_price, investForm.discount_pct]);
+
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
 
