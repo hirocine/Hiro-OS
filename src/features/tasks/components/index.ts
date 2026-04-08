@@ -13,7 +13,7 @@ export * from './UrgentTasksWidget';
 export * from './UpcomingDeadlinesWidget';
 export * from './RecentActivityWidget';
 export * from './QuickActionsCard';
-export * from './TaskCalendarWidget';
+export * from './TaskCalendarView';
 export * from './TaskSectionCards';
 export * from './TaskSummaryBar';
 export * from './TasksTable';

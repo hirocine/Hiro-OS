@@ -12,6 +12,7 @@ import { TaskSummaryBar } from '@/features/tasks/components/TaskSummaryBar';
 import { TasksTable } from '@/features/tasks/components/TasksTable';
 import { TaskDialog } from '@/features/tasks/components/TaskDialog';
 import { TaskKanbanView } from '@/features/tasks/components/TaskKanbanView';
+import { TaskCalendarView } from '@/features/tasks/components/TaskCalendarView';
 import { useTasks } from '@/features/tasks/hooks/useTasks';
 import { useFilteredTaskStats } from '@/features/tasks/hooks/useFilteredTaskStats';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -247,10 +248,7 @@ export default function Tasks() {
         )}
 
         {currentView === 'calendario' && (
-          <Card className="p-12 text-center">
-            <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">Visualização Calendário — em breve</p>
-          </Card>
+          <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />
         )}
       </div>
 
