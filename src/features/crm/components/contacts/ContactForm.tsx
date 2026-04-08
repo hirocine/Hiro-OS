@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useContactMutations } from '../../hooks/useContacts';
+import { useTeamProfiles } from '../../hooks/useTeamProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { CONTACT_TYPES, LEAD_SOURCES, type Contact } from '../../types/crm.types';
 
@@ -18,12 +19,13 @@ interface ContactFormProps {
 const emptyForm = {
   name: '', email: '', phone: '', company_name: '', position: '',
   contact_type: 'lead', lead_source: '', instagram: '', company_website: '',
-  company_segment: '', notes: '',
+  company_segment: '', notes: '', assigned_to: '',
 };
 
 export function ContactForm({ open, onOpenChange, contact }: ContactFormProps) {
   const [form, setForm] = useState(emptyForm);
   const { createContact, updateContact } = useContactMutations();
+  const { data: profiles } = useTeamProfiles();
   const { user } = useAuthContext();
   const isEditing = !!contact;
 
@@ -35,17 +37,23 @@ export function ContactForm({ open, onOpenChange, contact }: ContactFormProps) {
         contact_type: contact.contact_type ?? 'lead', lead_source: contact.lead_source ?? '',
         instagram: contact.instagram ?? '', company_website: contact.company_website ?? '',
         company_segment: contact.company_segment ?? '', notes: contact.notes ?? '',
+        assigned_to: contact.assigned_to ?? '',
       });
     } else {
-      setForm(emptyForm);
+      setForm({ ...emptyForm, assigned_to: user?.id ?? '' });
     }
-  }, [contact, open]);
+  }, [contact, open, user?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
 
-    const payload = { ...form, lead_source: form.lead_source || null, created_by: user?.id };
+    const payload = {
+      ...form,
+      lead_source: form.lead_source || null,
+      assigned_to: form.assigned_to || null,
+      created_by: user?.id,
+    };
 
     if (isEditing && contact) {
       await updateContact.mutateAsync({ id: contact.id, ...payload });
@@ -118,6 +126,16 @@ export function ContactForm({ open, onOpenChange, contact }: ContactFormProps) {
               <Label>Site</Label>
               <Input value={form.company_website} onChange={e => set('company_website', e.target.value)} />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Responsável</Label>
+            <Select value={form.assigned_to || 'none'} onValueChange={v => set('assigned_to', v === 'none' ? '' : v)}>
+              <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {profiles?.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.display_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label>Observações</Label>
