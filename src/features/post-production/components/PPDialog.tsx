@@ -12,9 +12,13 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { PostProductionItem, PPStatus, PPPriority, PP_STATUS_CONFIG, PP_PRIORITY_CONFIG } from '../types';
 import { PPStatusBadge } from './PPStatusBadge';
 import { PPPriorityBadge } from './PPPriorityBadge';
-import { Trash2 } from 'lucide-react';
+import { Trash2, CalendarIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface PPDialogProps {
   item: PostProductionItem | null;
@@ -70,6 +74,8 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
   const isCreating = !item;
 
   const [form, setForm] = useState(defaultForm);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [dueDateOpen, setDueDateOpen] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -248,36 +254,64 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="pp-start">Início</Label>
-              <input
-                id="pp-start"
-                type="date"
-                value={form.start_date}
-                onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))}
-                className={cn(
-                  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                  "[color-scheme:light] dark:[color-scheme:dark]",
-                  !form.start_date && "text-muted-foreground"
-                )}
-              />
+              <Label>Início</Label>
+              <Popover modal={false} open={startDateOpen} onOpenChange={setStartDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.start_date && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.start_date ? format(new Date(form.start_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[200]" align="start" onCloseAutoFocus={e => e.preventDefault()}>
+                  <Calendar
+                    mode="single"
+                    selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
+                    onSelect={(date) => {
+                      setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setStartDateOpen(false);
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                  {form.start_date && (
+                    <div className="border-t p-2">
+                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setForm(prev => ({ ...prev, start_date: '' })); setStartDateOpen(false); }}>
+                        <X className="h-4 w-4 mr-1" /> Limpar
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
-              <Label htmlFor="pp-due">Data de Entrega</Label>
-              <input
-                id="pp-due"
-                type="date"
-                value={form.due_date}
-                onChange={e => setForm(prev => ({ ...prev, due_date: e.target.value }))}
-                className={cn(
-                  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                  "[color-scheme:light] dark:[color-scheme:dark]",
-                  !form.due_date && "text-muted-foreground"
-                )}
-              />
+              <Label>Data de Entrega</Label>
+              <Popover modal={false} open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.due_date && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.due_date ? format(new Date(form.due_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'Selecionar data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[200]" align="start" onCloseAutoFocus={e => e.preventDefault()}>
+                  <Calendar
+                    mode="single"
+                    selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
+                    onSelect={(date) => {
+                      setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
+                      setDueDateOpen(false);
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                  {form.due_date && (
+                    <div className="border-t p-2">
+                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setForm(prev => ({ ...prev, due_date: '' })); setDueDateOpen(false); }}>
+                        <X className="h-4 w-4 mr-1" /> Limpar
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
