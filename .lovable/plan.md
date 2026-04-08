@@ -1,30 +1,32 @@
 
 
-# Fase 3 — TaskCalendarView (Calendar View)
+# Polish do módulo de Tarefas — 8 ajustes
 
-## Files
+## Arquivos
 
-### 1. CREATE `src/features/tasks/components/TaskCalendarView.tsx`
-Full calendar component with 3 sub-views (Month/Week/List), following RecordingsCalendar visual patterns:
+### 1. MODIFICAR `src/features/tasks/components/TaskKanbanView.tsx` (5 ajustes)
 
-- **State**: `view` (month/week/list), `currentDate`, `animKey`
-- **Data**: Filter active tasks with due dates, group by date via `Map<string, Task[]>`
-- **Navigation**: Period label, prev/next buttons, view toggle pills
-- **Month view**: 7-col grid with weekday headers, day cells showing priority-colored pills (max 2 + overflow), today circle highlight, filler days empty
-- **Week view**: 7 horizontal day cards with left-border colored by priority, task title + first assignee name
-- **List view**: Tasks grouped into Atrasadas/Esta semana/Próxima semana/Este mês/Futuras, each with date box, priority badge, status badge, assignee info
-- **Priority pill colors**: urgente=red, alta=orange, media=yellow, baixa=blue, standby=gray (with dark mode variants)
-- Click any task → `navigate('/tarefas/{id}')`
+**A) Grid responsivo** — Lines 98, 111: Replace `grid-cols-4` with `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`
 
-### 2. MODIFY `src/features/tasks/components/index.ts`
-- Remove: `export * from './TaskCalendarWidget';`
-- Add: `export * from './TaskCalendarView';`
+**B) Move buttons mobile** — Line 185: Replace `hidden group-hover:flex` with `flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity`
 
-### 3. MODIFY `src/pages/Tasks.tsx`
-- Add import: `TaskCalendarView`
-- Replace calendar placeholder (lines 249-254) with: `<TaskCalendarView tasks={filteredTasks} isLoading={isLoading} />`
+**C) Quick-add Card wrapper** — Lines 207, 227: Replace `<div>` / `</div>` with `<Card className="p-3">` / `</Card>`
 
-### 4. DELETE `src/features/tasks/components/TaskCalendarWidget.tsx`
+**D) Priority dot** — Lines 145-148: Replace `<PriorityBadge>` with a colored dot div (`w-2 h-2 rounded-full mt-1.5 shrink-0`). Remove `PriorityBadge` import (line 12) since it's no longer used in this file.
 
-No other files modified. No changes to `src/features/proposals/components/public/`.
+**E) Dark mode column headers** — Lines 23-28: Add `dark:text-*-400` variants to each column's `color` field.
+
+### 2. MODIFICAR `src/features/tasks/components/TaskCalendarView.tsx` (1 ajuste)
+
+**"Hoje" button** — Before line 165 (the left arrow button), add an outline Button "Hoje" that sets `currentDate` to `new Date()` and increments `animKey`.
+
+### 3. MODIFICAR `src/pages/Tasks.tsx` (2 ajustes)
+
+**A) Hide Status filter in lista view** — Wrap the Status Select (lines 151-162) in `{currentView !== 'lista' && (...)}`. Add `useEffect` import and effect to reset `filterStatus` to `'all'` when `currentView` changes to `'lista'`.
+
+**B) Active filters indicator** — After the toolbar div (after line 189), add a conditional div showing "Filtros ativos: mostrando X de Y tarefas" with a "Limpar filtros" ghost button that resets all filter states.
+
+### 4. DELETAR `src/pages/MyTasks.tsx`
+
+File is not referenced in App.tsx routes. Functionality replaced by "Minhas" tab in Tasks.tsx. Safe to delete.
 
