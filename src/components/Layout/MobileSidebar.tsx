@@ -32,12 +32,12 @@ const navigation: NavigationItem[] = [
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
-  { name: 'CRM', href: '/crm', icon: Users },
 ];
 
 const producaoNavigation: NavigationItem[] = [
   { name: 'Projetos', href: '/projetos-av', icon: Film },
   { name: 'Orçamentos', href: '/orcamentos', icon: Receipt },
+  { name: 'CRM', href: '/crm', icon: Users },
   {
     name: 'Fornecedores', href: '/fornecedores', icon: Users,
     children: [
