@@ -64,13 +64,18 @@ function DroppableColumn({ id, children, className }: { id: string; children: Re
 }
 
 function DraggableCard({ task, children }: { task: Task; children: React.ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={cn(isDragging && 'opacity-30')}>
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={cn(
+        'touch-none',
+        isDragging && 'opacity-30 scale-[0.98] transition-all'
+      )}
+    >
       {children}
     </div>
   );
