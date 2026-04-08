@@ -1,35 +1,52 @@
 
 
-# Update generateSlug to include project_number prefix and version suffix
+# Reestruturar página /tarefas — Fase 1 (Infraestrutura)
 
-## File: `src/features/proposals/hooks/useProposals.ts`
+## Arquivos modificados (3)
 
-### 1. Rewrite `generateSlug` (lines 6-15)
-New signature: `(clientName, projectName, projectNumber?, version?)`.
-- Build parts from `[projectNumber, clientName, projectName]`, filter falsy, join with `-`
-- Normalize, lowercase, strip non-alphanumeric
-- Append `-v{version}` (default v1)
+### 1. `src/features/tasks/hooks/useFilteredTaskStats.ts`
+- Add `completed` field to `FilteredStats` interface
+- Calculate `completed = tasks.filter(t => t.status === 'concluida').length`
+- Return `{ active, overdue, urgent, completed }`
 
-### 2. Update `createProposal` call (line 37)
-```
-generateSlug(form.client_name, form.project_name, form.project_number, 1)
-```
+### 2. `src/features/tasks/components/TaskSummaryBar.tsx`
+- Add `completed` to stats prop type
+- Change `grid-cols-3` to `grid-cols-4`
+- Add 4th metric: icon `CheckCircle`, color `text-green-600`, bg `bg-green-500/10`, label "Concluídas"
 
-### 3. Update `updateProposal` (lines 198-221)
-- Expand condition: `if (data.client_name || data.project_name || data.project_number)`
-- Expand select: `'client_name, project_name, project_number, version'`
-- Call: `generateSlug(clientName, projectName, data.project_number as string || current?.project_number, current?.version)`
+### 3. `src/pages/Tasks.tsx` — full restructure
 
-### 4. Update `createNewVersion` (line 300)
-Replace manual slug construction with:
-```
-const newSlug = generateSlug(rest.client_name, rest.project_name, rest.project_number, nextVersion);
-```
+**New imports:**
+- `List, Columns3, CalendarDays, Search` from lucide-react
+- `Input` from `@/components/ui/input`
+- `Select, SelectTrigger, SelectValue, SelectContent, SelectItem` from `@/components/ui/select`
+- `useUsers` from `@/hooks/useUsers`
+- `useDepartments` from `@/features/tasks/hooks/useDepartments`
+- `PRIORITY_CONFIG, STATUS_CONFIG` from `@/features/tasks/types`
+- Remove `TaskCalendarWidget` import
 
-### 5. Update `duplicateProposal` (lines 340-355)
-- Remove `copia` from slug generation, remove `(Cópia)` from project_name
-- Call: `generateSlug(rest.client_name || '', rest.project_name || '', rest.project_number, 1)`
-- Keep `project_name` as-is (no more "(Cópia)" suffix)
+**New state:**
+- `currentView`: `'lista' | 'kanban' | 'calendario'` (default `'lista'`)
+- `searchQuery`, `filterPriority`, `filterStatus`, `filterDepartment`, `filterAssignee` (all string, default `''` or `'all'`)
 
-No other files modified. No changes to `src/features/proposals/components/public/`.
+**New hooks:**
+- `const { users } = useUsers()`
+- `const { departments } = useDepartments()`
+
+**`filteredTasks` useMemo** — applies all 5 filters on `tasks` array sequentially (search, priority, status, department, assignee)
+
+**Stats & tab arrays** — all derived from `filteredTasks` instead of `tasks`
+
+**JSX structure:**
+1. PageHeader (unchanged)
+2. TaskSummaryBar with `completed` stat
+3. **Toolbar** (inline div, not separate component):
+   - View toggle: 3 styled buttons (Lista/Kanban/Calendário) with active state styling
+   - Search Input with Search icon
+   - 4 Select dropdowns: Prioridade (from PRIORITY_CONFIG), Status (from STATUS_CONFIG), Departamento (from departments), Responsável (from users)
+4. **Conditional content:**
+   - `'lista'`: existing Card with Tabs (using filteredTasks-derived arrays)
+   - `'kanban'`: placeholder Card with "em breve" message
+   - `'calendario'`: placeholder Card with "em breve" message
+5. Remove `<TaskCalendarWidget>` from render
 
