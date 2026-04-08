@@ -194,14 +194,41 @@ export function useProposals() {
 
   const updateProposal = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Record<string, any>> }) => {
+      if (data.client_name || data.project_name) {
+        const { data: current } = await supabase
+          .from('orcamentos')
+          .select('client_name, project_name')
+          .eq('id', id)
+          .single();
+
+        const clientName = (data.client_name as string) || current?.client_name || '';
+        const projectName = (data.project_name as string) || current?.project_name || '';
+
+        let newSlug = generateSlug(clientName, projectName);
+
+        const { data: existing } = await supabase
+          .from('orcamentos')
+          .select('slug')
+          .eq('slug', newSlug)
+          .neq('id', id)
+          .maybeSingle();
+
+        if (existing) {
+          newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
+        }
+
+        data.slug = newSlug;
+      }
+
       const { error } = await supabase
         .from('orcamentos')
         .update(data as any)
         .eq('id', id);
       if (error) throw error;
     },
-  onSuccess: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['proposal-details'] });
     },
     onError: (err: Error) => {
       toast.error('Erro ao atualizar proposta: ' + err.message);
