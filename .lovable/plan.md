@@ -1,32 +1,34 @@
 
 
-# Polish do módulo de Tarefas — 8 ajustes
+# Add Drag & Drop to Task Kanban View
 
-## Arquivos
+## File: `src/features/tasks/components/TaskKanbanView.tsx`
 
-### 1. MODIFICAR `src/features/tasks/components/TaskKanbanView.tsx` (5 ajustes)
+Single file modification. All changes within this file only.
 
-**A) Grid responsivo** — Lines 98, 111: Replace `grid-cols-4` with `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`
+### Changes
 
-**B) Move buttons mobile** — Line 185: Replace `hidden group-hover:flex` with `flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity`
+1. **Add imports**: `DndContext`, `DragOverlay`, `closestCorners`, `PointerSensor`, `useSensor`, `useSensors`, `DragStartEvent`, `DragEndEvent`, `useDroppable`, `useDraggable` from `@dnd-kit/core`; `CSS` from `@dnd-kit/utilities`
 
-**C) Quick-add Card wrapper** — Lines 207, 227: Replace `<div>` / `</div>` with `<Card className="p-3">` / `</Card>`
+2. **Add state & sensors**: `activeTask` state (`Task | null`), `sensors` with `PointerSensor` (distance: 8) to distinguish clicks from drags
 
-**D) Priority dot** — Lines 145-148: Replace `<PriorityBadge>` with a colored dot div (`w-2 h-2 rounded-full mt-1.5 shrink-0`). Remove `PriorityBadge` import (line 12) since it's no longer used in this file.
+3. **Add handlers**: `handleDragStart` (find task, set activeTask), `handleDragEnd` (get over target status, call existing `handleMoveTask`, clear activeTask)
 
-**E) Dark mode column headers** — Lines 23-28: Add `dark:text-*-400` variants to each column's `color` field.
+4. **Create internal components**:
+   - `DroppableColumn`: wraps each column div, uses `useDroppable`, adds `ring-2 ring-primary/30 bg-primary/5` when `isOver`
+   - `DraggableCard`: wraps each task Card, uses `useDraggable`, applies `translate3d` transform and `opacity-30` when dragging
 
-### 2. MODIFICAR `src/features/tasks/components/TaskCalendarView.tsx` (1 ajuste)
+5. **Wrap JSX**:
+   - Wrap the entire grid in `<DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>`
+   - Replace each column's outer `<div>` with `<DroppableColumn id={column.status}>`
+   - Wrap each task `<Card>` with `<DraggableCard task={task}>`, move `key` to DraggableCard
+   - Add `<DragOverlay>` after the grid with a ghost card (shadow-lg, rotate-2, priority dot + title)
 
-**"Hoje" button** — Before line 165 (the left arrow button), add an outline Button "Hoje" that sets `currentDate` to `new Date()` and increments `animKey`.
+### Behavior
+- Drag 8px+ → activates drag, original card fades (opacity-30), ghost follows cursor
+- Drop on column → status update via existing `handleMoveTask`
+- Click without dragging → navigates to `/tarefas/{id}` as before
+- Hover move buttons remain as fallback for accessibility/mobile
 
-### 3. MODIFICAR `src/pages/Tasks.tsx` (2 ajustes)
-
-**A) Hide Status filter in lista view** — Wrap the Status Select (lines 151-162) in `{currentView !== 'lista' && (...)}`. Add `useEffect` import and effect to reset `filterStatus` to `'all'` when `currentView` changes to `'lista'`.
-
-**B) Active filters indicator** — After the toolbar div (after line 189), add a conditional div showing "Filtros ativos: mostrando X de Y tarefas" with a "Limpar filtros" ghost button that resets all filter states.
-
-### 4. DELETAR `src/pages/MyTasks.tsx`
-
-File is not referenced in App.tsx routes. Functionality replaced by "Minhas" tab in Tasks.tsx. Safe to delete.
+No other files modified. No changes to `src/features/proposals/components/public/`.
 
