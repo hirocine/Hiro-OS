@@ -1,33 +1,52 @@
 
 
-# Duplicar Orçamento
+# Auto-regenerate slug on updateProposal
 
-## Resumo
-Adicionar opção "Duplicar" no menu kebab do ProposalCard e criar uma mutation `duplicateProposal` no hook `useProposals`.
+## File: `src/features/proposals/hooks/useProposals.ts`
 
-## Alterações
+### Change: Expand `updateProposal.mutationFn` (lines 196-201)
 
-### 1. `src/features/proposals/hooks/useProposals.ts`
-- Adicionar mutation `duplicateProposal` que:
-  - Busca o orçamento original por ID (`select('*')`)
-  - Remove `id`, `created_at`, `updated_at`, `views_count`
-  - Gera novo slug: `generateSlug(original.client_name, original.project_name)` + random suffix
-  - Insere como novo registro independente (sem `parent_id`, `version: 1`, `is_latest_version: true`)
-  - Altera `project_name` para `"{nome} (Cópia)"`
-  - Status: `draft`, `views_count: 0`, `sent_date: hoje`
-- Retornar `duplicateProposal` no objeto do hook (linha 301)
+Before the `supabase.update()` call, add slug regeneration logic:
 
-### 2. `src/features/proposals/components/ProposalCard.tsx`
-- Adicionar prop `onDuplicate?: (id: string) => void`
-- Importar `CopyPlus` de lucide-react (ícone diferente de Copy para distinguir)
-- Adicionar item no DropdownMenu entre "Copiar Link" e o separador do Excluir:
-  ```
-  <DropdownMenuItem onClick={() => onDuplicate?.(proposal.id)}>
-    <CopyPlus className="mr-2 h-4 w-4" /> Duplicar
-  </DropdownMenuItem>
-  ```
+```typescript
+mutationFn: async ({ id, data }: { id: string; data: Partial<Record<string, any>> }) => {
+  // If client_name or project_name changed, regenerate slug
+  if (data.client_name || data.project_name) {
+    const { data: current } = await supabase
+      .from('orcamentos')
+      .select('client_name, project_name')
+      .eq('id', id)
+      .single();
 
-### 3. `src/pages/Proposals.tsx`
-- Extrair `duplicateProposal` do hook `useProposals()`
-- Passar `onDuplicate={(id) => duplicateProposal.mutate(id)}` ao ProposalCard
+    const clientName = (data.client_name as string) || current?.client_name || '';
+    const projectName = (data.project_name as string) || current?.project_name || '';
+
+    let newSlug = generateSlug(clientName, projectName);
+
+    // Check uniqueness (exclude current record)
+    const { data: existing } = await supabase
+      .from('orcamentos')
+      .select('slug')
+      .eq('slug', newSlug)
+      .neq('id', id)
+      .maybeSingle();
+
+    if (existing) {
+      newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+
+    data.slug = newSlug;
+  }
+
+  const { error } = await supabase
+    .from('orcamentos')
+    .update(data as any)
+    .eq('id', id);
+  if (error) throw error;
+},
+```
+
+Also invalidate `proposal-details` queries in `onSuccess` so detail pages refresh with new slug.
+
+No other files modified. No changes to `src/features/proposals/components/public/`.
 
