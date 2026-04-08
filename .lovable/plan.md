@@ -1,52 +1,17 @@
 
 
-# Auto-regenerate slug on updateProposal
+# Add `project_number` to proposal creation flow
 
-## File: `src/features/proposals/hooks/useProposals.ts`
+## Changes (3 files)
 
-### Change: Expand `updateProposal.mutationFn` (lines 196-201)
+### 1. `src/features/proposals/types/index.ts`
+- Add `project_number?: string | null;` to `ProposalFormData` interface
 
-Before the `supabase.update()` call, add slug regeneration logic:
+### 2. `src/features/proposals/components/ProposalGuidedWizard.tsx` (~line 519)
+- Add `project_number: projectNumber.trim() || null,` after `client_name` in the `createProposal.mutateAsync()` call
 
-```typescript
-mutationFn: async ({ id, data }: { id: string; data: Partial<Record<string, any>> }) => {
-  // If client_name or project_name changed, regenerate slug
-  if (data.client_name || data.project_name) {
-    const { data: current } = await supabase
-      .from('orcamentos')
-      .select('client_name, project_name')
-      .eq('id', id)
-      .single();
-
-    const clientName = (data.client_name as string) || current?.client_name || '';
-    const projectName = (data.project_name as string) || current?.project_name || '';
-
-    let newSlug = generateSlug(clientName, projectName);
-
-    // Check uniqueness (exclude current record)
-    const { data: existing } = await supabase
-      .from('orcamentos')
-      .select('slug')
-      .eq('slug', newSlug)
-      .neq('id', id)
-      .maybeSingle();
-
-    if (existing) {
-      newSlug = `${newSlug}-${Math.random().toString(36).slice(2, 6)}`;
-    }
-
-    data.slug = newSlug;
-  }
-
-  const { error } = await supabase
-    .from('orcamentos')
-    .update(data as any)
-    .eq('id', id);
-  if (error) throw error;
-},
-```
-
-Also invalidate `proposal-details` queries in `onSuccess` so detail pages refresh with new slug.
+### 3. `src/features/proposals/hooks/useProposals.ts` (~line 156)
+- Add `project_number: form.project_number || null,` after `project_name` in the insert object
 
 No other files modified. No changes to `src/features/proposals/components/public/`.
 
