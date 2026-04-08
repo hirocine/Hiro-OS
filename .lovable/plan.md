@@ -1,34 +1,36 @@
 
 
-# Add Drag & Drop to Task Kanban View
+# Fix Kanban Drag & Drop — Remove card movement on original
 
 ## File: `src/features/tasks/components/TaskKanbanView.tsx`
 
-Single file modification. All changes within this file only.
+### Change: Replace `DraggableCard` component (lines 66-78)
 
-### Changes
+Remove `transform` and `style` logic so the original card stays in place. Only the `DragOverlay` ghost follows the cursor.
 
-1. **Add imports**: `DndContext`, `DragOverlay`, `closestCorners`, `PointerSensor`, `useSensor`, `useSensors`, `DragStartEvent`, `DragEndEvent`, `useDroppable`, `useDraggable` from `@dnd-kit/core`; `CSS` from `@dnd-kit/utilities`
+**Before:** Card applies `translate3d` transform, causing it to move with cursor alongside the overlay ghost.
 
-2. **Add state & sensors**: `activeTask` state (`Task | null`), `sensors` with `PointerSensor` (distance: 8) to distinguish clicks from drags
+**After:** Card stays put with `opacity-30 scale-[0.98]` feedback when dragging. Added `touch-none` for proper touch device support.
 
-3. **Add handlers**: `handleDragStart` (find task, set activeTask), `handleDragEnd` (get over target status, call existing `handleMoveTask`, clear activeTask)
+```typescript
+function DraggableCard({ task, children }: { task: Task; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
 
-4. **Create internal components**:
-   - `DroppableColumn`: wraps each column div, uses `useDroppable`, adds `ring-2 ring-primary/30 bg-primary/5` when `isOver`
-   - `DraggableCard`: wraps each task Card, uses `useDraggable`, applies `translate3d` transform and `opacity-30` when dragging
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={cn(
+        'touch-none',
+        isDragging && 'opacity-30 scale-[0.98] transition-all'
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+```
 
-5. **Wrap JSX**:
-   - Wrap the entire grid in `<DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>`
-   - Replace each column's outer `<div>` with `<DroppableColumn id={column.status}>`
-   - Wrap each task `<Card>` with `<DraggableCard task={task}>`, move `key` to DraggableCard
-   - Add `<DragOverlay>` after the grid with a ghost card (shadow-lg, rotate-2, priority dot + title)
-
-### Behavior
-- Drag 8px+ → activates drag, original card fades (opacity-30), ghost follows cursor
-- Drop on column → status update via existing `handleMoveTask`
-- Click without dragging → navigates to `/tarefas/{id}` as before
-- Hover move buttons remain as fallback for accessibility/mobile
-
-No other files modified. No changes to `src/features/proposals/components/public/`.
+No other files modified.
 
