@@ -277,7 +277,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     selected={form.start_date ? new Date(form.start_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
                       setForm(prev => ({ ...prev, start_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-                      setStartDateOpen(false);
+                      setTimeout(() => setStartDateOpen(false), 0);
                     }}
                     className={cn("p-3 pointer-events-auto")}
                   />
@@ -314,7 +314,7 @@ export function PPDialog({ item, open, onOpenChange }: PPDialogProps) {
                     selected={form.due_date ? new Date(form.due_date + 'T00:00:00') : undefined}
                     onSelect={(date) => {
                       setForm(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }));
-                      setDueDateOpen(false);
+                      setTimeout(() => setDueDateOpen(false), 0);
                     }}
                     className={cn("p-3 pointer-events-auto")}
                   />
