@@ -30,7 +30,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useProposalDetailsBySlug } from '@/features/proposals/hooks/useProposalDetailsBySlug';
 import { useProposals, generateSlug } from '@/features/proposals/hooks/useProposals';
-import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase } from '@/features/proposals/types';
+import type { DiagnosticoDor, CaseItem, EntregavelItem, InclusoCategory, ProposalCase, PaymentOption } from '@/features/proposals/types';
 import { DEFAULT_INCLUSO_CATEGORIES, ICON_OPTIONS, CASE_TAG_OPTIONS } from '@/features/proposals/types';
 import { usePainPoints } from '@/features/proposals/hooks/usePainPoints';
 import { useTestimonials } from '@/features/proposals/hooks/useTestimonials';
