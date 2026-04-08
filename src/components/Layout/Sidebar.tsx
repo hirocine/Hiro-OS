@@ -19,7 +19,6 @@ const navigation: NavigationItem[] = [
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
   { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
-  { name: 'CRM', href: '/crm', icon: Handshake },
 ];
 
 const producaoNavigation: NavigationItem[] = [
@@ -32,6 +31,11 @@ const producaoNavigation: NavigationItem[] = [
     name: 'Orçamentos',
     href: '/orcamentos',
     icon: Receipt,
+  },
+  {
+    name: 'CRM',
+    href: '/crm',
+    icon: Handshake,
   },
   {
     name: 'Freelancers',
