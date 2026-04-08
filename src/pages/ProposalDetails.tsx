@@ -864,6 +864,100 @@ export default function ProposalDetails() {
                 <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investFinalValue)}</span>
               </div>
               <div className="space-y-1.5"><Label className="text-xs">Condições de Pagamento</Label><Textarea value={investForm.payment_terms} onChange={e => setInvestForm(p => ({ ...p, payment_terms: e.target.value }))} rows={4} /></div>
+
+              {/* Payment Options */}
+              <div className="space-y-3">
+                <Label className="text-xs font-medium">Opções de Pagamento</Label>
+                {investForm.payment_options.length === 0 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+                      const fv = investFinalValue;
+                      setInvestForm(p => ({
+                        ...p,
+                        payment_options: [
+                          { titulo: 'À Vista', valor: fmt(fv * 0.95), descricao: '5% de desconto', destaque: '5% OFF', recomendado: true },
+                          { titulo: '2x sem juros', valor: `2x ${fmt(fv / 2)}`, descricao: 'Entrada + 1 parcela', destaque: '', recomendado: false },
+                        ],
+                      }));
+                    }}
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Adicionar opções padrão
+                  </Button>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {investForm.payment_options.map((opt, i) => (
+                      <Card key={i} className={opt.recomendado ? 'border-primary/50 bg-primary/5' : ''}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Input
+                              value={opt.titulo}
+                              onChange={e => {
+                                const v = e.target.value;
+                                setInvestForm(p => ({ ...p, payment_options: p.payment_options.map((o, idx) => idx === i ? { ...o, titulo: v } : o) }));
+                              }}
+                              placeholder="Título"
+                              className="text-sm font-medium h-8"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 ml-2 shrink-0"
+                              onClick={() => setInvestForm(p => ({ ...p, payment_options: p.payment_options.filter((_, idx) => idx !== i) }))}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          <div className="p-2 rounded bg-muted/50 text-center">
+                            <span className="text-xs text-muted-foreground">Valor calculado</span>
+                            <p className="text-sm font-semibold">{opt.valor}</p>
+                          </div>
+                          <Input
+                            value={opt.descricao}
+                            onChange={e => {
+                              const v = e.target.value;
+                              setInvestForm(p => ({ ...p, payment_options: p.payment_options.map((o, idx) => idx === i ? { ...o, descricao: v } : o) }));
+                            }}
+                            placeholder="Descrição"
+                            className="text-xs h-8"
+                          />
+                          <Input
+                            value={opt.destaque || ''}
+                            onChange={e => {
+                              const v = e.target.value;
+                              setInvestForm(p => ({ ...p, payment_options: p.payment_options.map((o, idx) => idx === i ? { ...o, destaque: v } : o) }));
+                            }}
+                            placeholder="Badge / Destaque"
+                            className="text-xs h-8"
+                          />
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs">Recomendado</Label>
+                            <div className="flex items-center gap-2">
+                              {opt.recomendado && <Badge variant="default" className="text-[10px] px-1.5 py-0">RECOMENDADO</Badge>}
+                              <Switch
+                                checked={!!opt.recomendado}
+                                onCheckedChange={checked => {
+                                  setInvestForm(p => ({
+                                    ...p,
+                                    payment_options: p.payment_options.map((o, idx) => ({
+                                      ...o,
+                                      recomendado: idx === i ? checked : false,
+                                    })),
+                                  }));
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
