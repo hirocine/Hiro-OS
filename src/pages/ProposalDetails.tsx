@@ -257,7 +257,8 @@ export default function ProposalDetails() {
     if (!proposal) return false;
     return investForm.list_price !== (proposal.list_price || 0) ||
       investForm.discount_pct !== (proposal.discount_pct || 0) ||
-      investForm.payment_terms !== (proposal.payment_terms || '');
+      investForm.payment_terms !== (proposal.payment_terms || '') ||
+      JSON.stringify(investForm.payment_options) !== JSON.stringify((Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[]);
   }, [investForm, proposal]);
 
   const diagDirty = useMemo(() => {
