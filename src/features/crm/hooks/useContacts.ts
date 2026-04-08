@@ -7,6 +7,7 @@ interface ContactFilters {
   search?: string;
   contactType?: string;
   leadSource?: string;
+  assignedTo?: string;
 }
 
 export function useContacts(filters?: ContactFilters) {
@@ -23,6 +24,9 @@ export function useContacts(filters?: ContactFilters) {
       }
       if (filters?.search) {
         query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,company_name.ilike.%${filters.search}%`);
+      }
+      if (filters?.assignedTo) {
+        query = query.eq('assigned_to', filters.assignedTo);
       }
 
       const { data, error } = await query;
