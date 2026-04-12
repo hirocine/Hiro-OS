@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -23,15 +23,13 @@ interface NavigationItem {
   children?: NavigationItem[];
 }
 
-const navigation: NavigationItem[] = [
-  { name: 'Home', href: '/', icon: Home },
+const operacoesNavigation: NavigationItem[] = [
   { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
-  { name: 'Retiradas', href: '/retiradas', icon: Camera },
-  { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
+  { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
-  { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'Políticas', href: '/politicas', icon: FileText },
 ];
 
 const producaoNavigation: NavigationItem[] = [
@@ -47,6 +45,10 @@ const producaoNavigation: NavigationItem[] = [
   },
 ];
 
+const marketingNavigation: NavigationItem[] = [
+  { name: 'Referências', href: '/referencias', icon: Megaphone },
+];
+
 const adminNavigation: NavigationItem[] = [
   {
     name: 'Financeiro', href: '/financeiro', icon: LayoutDashboard, adminOnly: true,
@@ -55,6 +57,7 @@ const adminNavigation: NavigationItem[] = [
       { name: 'Gestão de CAPEX', href: '/financeiro/capex', icon: TrendingUp },
     ],
   },
+  { name: 'Inventário', href: '/inventario', icon: Package, adminOnly: true },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
@@ -160,7 +163,7 @@ export function MobileSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...navigation, ...producaoNavigation, ...adminNavigation];
+    const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => isActive(c.href))) {
         setExpandedItem(item.name);
@@ -174,8 +177,9 @@ export function MobileSidebar() {
     if (!searchQuery) return;
     const query = searchQuery.toLowerCase();
     const allItems = [
-      ...navigation,
+      ...operacoesNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
+      ...marketingNavigation,
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
@@ -200,8 +204,8 @@ export function MobileSidebar() {
     if (!open) setSearchQuery('');
   }, [open]);
 
-  const filteredNav = useMemo(() =>
-    navigation.filter(item =>
+  const filteredOperacoesNav = useMemo(() =>
+    operacoesNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -216,6 +220,13 @@ export function MobileSidebar() {
   );
   const filteredProducaoNav = useMemo(() =>
     producaoNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    [searchQuery]
+  );
+  const filteredMarketingNav = useMemo(() =>
+    marketingNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -270,11 +281,37 @@ export function MobileSidebar() {
         {/* Navigation */}
         <ScrollArea className="flex-1">
           <div className="py-2">
+            {/* Home solo */}
+            <nav className="px-4 mb-2">
+              {(() => {
+                const active = isActive('/');
+                return (
+                  <NavLink
+                    to="/"
+                    onClick={(e) => { setExpandedItem(null); handleNavClick(e, '/'); }}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                      active
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {active && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                    )}
+                    <Home className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                    <span className="text-sm">Home</span>
+                  </NavLink>
+                );
+              })()}
+            </nav>
+
+            {/* Operações */}
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
-              Menu
+              Operações
             </p>
             <nav className="space-y-0.5 px-4">
-              {filteredNav.map((item) => (
+              {filteredOperacoesNav.map((item) => (
                 item.children ? (
                   <MobileNavItemWithChildren
                     key={item.name}
@@ -358,6 +395,55 @@ export function MobileSidebar() {
               </>
             )}
 
+            {/* Marketing Section */}
+            {(filteredMarketingNav.length > 0 || !searchQuery) && (
+              <>
+                <div className="px-4 my-3">
+                  <Separator />
+                </div>
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-7 mb-2">
+                  Marketing
+                </p>
+                <nav className="space-y-0.5 px-4">
+                  {filteredMarketingNav.map((item) => (
+                    item.children ? (
+                      <MobileNavItemWithChildren
+                        key={item.name}
+                        item={item}
+                        isActive={isActive}
+                        onNavClick={handleNavClick}
+                        expanded={expandedItem === item.name}
+                        onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
+                      />
+                    ) : (() => {
+                      const Icon = item.icon;
+                      const active = isActive(item.href);
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={(e) => { setExpandedItem(null); handleNavClick(e, item.href); }}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
+                            active
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] bg-primary rounded-r-full" />
+                          )}
+                          <Icon className={cn("h-[18px] w-[18px]", active && "text-primary")} />
+                          <span className="text-sm">{item.name}</span>
+                        </NavLink>
+                      );
+                    })()
+                  ))}
+                </nav>
+              </>
+            )}
+
+            {/* Administração Section */}
             {isAdmin && (filteredAdminNav.length > 0 || !searchQuery) && (
               <>
                 <div className="px-4 my-3">
