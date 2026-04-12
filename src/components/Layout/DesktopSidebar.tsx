@@ -21,6 +21,7 @@ interface NavigationItem {
 }
 
 const operacoesNavigation: NavigationItem[] = [
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
   { name: 'Retiradas', href: '/retiradas', icon: Camera },
@@ -317,16 +318,6 @@ export function DesktopSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1">
         <div className="pt-5 pb-3">
-          {/* Home solo */}
-          <nav className="space-y-0.5 px-3 mb-2">
-            <NavItem
-              item={{ name: 'Home', href: '/', icon: Home }}
-              active={location.pathname === '/'}
-              onNavClick={handleNavClick}
-              onClearExpanded={() => setExpandedItem(null)}
-            />
-          </nav>
-
           {/* Operações Section */}
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
             Operações
