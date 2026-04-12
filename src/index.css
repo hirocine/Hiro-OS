@@ -199,6 +199,7 @@ html body[data-scroll-locked="true"] {
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Helvetica Now Display', 'Inter', system-ui, sans-serif;
   }
 }
 
