@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -20,15 +20,13 @@ interface NavigationItem {
   children?: NavigationItem[];
 }
 
-const navigation: NavigationItem[] = [
-  { name: 'Home', href: '/', icon: Home },
+const operacoesNavigation: NavigationItem[] = [
   { name: 'Esteira de Pós', href: '/esteira-de-pos', icon: Clapperboard },
-  { name: 'Retiradas', href: '/retiradas', icon: Camera },
-  { name: 'Inventário', href: '/inventario', icon: Package },
   { name: 'Tarefas', href: '/tarefas', icon: CheckSquare },
+  { name: 'Retiradas', href: '/retiradas', icon: Camera },
   { name: 'Armazenamento', href: '/ssds', icon: HardDrive },
-  { name: 'Políticas', href: '/politicas', icon: FileText },
   { name: 'Plataformas', href: '/plataformas', icon: Key },
+  { name: 'Políticas', href: '/politicas', icon: FileText },
 ];
 
 const producaoNavigation: NavigationItem[] = [
@@ -44,6 +42,10 @@ const producaoNavigation: NavigationItem[] = [
   },
 ];
 
+const marketingNavigation: NavigationItem[] = [
+  { name: 'Referências', href: '/referencias', icon: Megaphone },
+];
+
 const adminNavigation: NavigationItem[] = [
   {
     name: 'Financeiro', href: '/financeiro', icon: LayoutDashboard, adminOnly: true,
@@ -52,6 +54,7 @@ const adminNavigation: NavigationItem[] = [
       { name: 'Gestão de CAPEX', href: '/financeiro/capex', icon: TrendingUp },
     ],
   },
+  { name: 'Inventário', href: '/inventario', icon: Package, adminOnly: true },
   {
     name: 'Admin', href: '/administracao', icon: Settings, adminOnly: true,
     children: [
@@ -202,7 +205,7 @@ export function DesktopSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...navigation, ...producaoNavigation, ...adminNavigation];
+    const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => isActive(c.href))) {
         setExpandedItem(item.name);
@@ -216,8 +219,9 @@ export function DesktopSidebar() {
     if (!searchQuery) return;
     const query = searchQuery.toLowerCase();
     const allItems = [
-      ...navigation,
+      ...operacoesNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
+      ...marketingNavigation,
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
@@ -238,8 +242,8 @@ export function DesktopSidebar() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const filteredNav = useMemo(() =>
-    navigation.filter(item =>
+  const filteredOperacoesNav = useMemo(() =>
+    operacoesNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -254,6 +258,13 @@ export function DesktopSidebar() {
   );
   const filteredProducaoNav = useMemo(() =>
     producaoNavigation.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    [searchQuery]
+  );
+  const filteredMarketingNav = useMemo(() =>
+    marketingNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
@@ -306,11 +317,22 @@ export function DesktopSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1">
         <div className="pt-5 pb-3">
+          {/* Home solo */}
+          <nav className="space-y-0.5 px-3 mb-2">
+            <NavItem
+              item={{ name: 'Home', href: '/', icon: Home }}
+              active={location.pathname === '/'}
+              onNavClick={handleNavClick}
+              onClearExpanded={() => setExpandedItem(null)}
+            />
+          </nav>
+
+          {/* Operações Section */}
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
-            Menu
+            Operações
           </p>
           <nav className="space-y-0.5 px-3">
-            {filteredNav.map((item) => (
+            {filteredOperacoesNav.map((item) => (
               item.children ? (
                 <NavItemWithChildren
                   key={item.name}
@@ -343,6 +365,40 @@ export function DesktopSidebar() {
               </p>
               <nav className="space-y-0.5 px-3">
                 {filteredProducaoNav.map((item) => (
+                  item.children ? (
+                    <NavItemWithChildren
+                      key={item.name}
+                      item={item}
+                      isActive={isActive}
+                      onNavClick={handleNavClick}
+                      expanded={expandedItem === item.name}
+                      onToggle={() => setExpandedItem(prev => prev === item.name ? null : item.name)}
+                    />
+                  ) : (
+                    <NavItem
+                      key={item.name}
+                      item={item}
+                      active={isActive(item.href)}
+                      onNavClick={handleNavClick}
+                      onClearExpanded={() => setExpandedItem(null)}
+                    />
+                  )
+                ))}
+              </nav>
+            </>
+          )}
+
+          {/* Marketing Section */}
+          {(filteredMarketingNav.length > 0 || !searchQuery) && (
+            <>
+              <div className="px-3 my-5">
+                <Separator />
+              </div>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 mb-2">
+                Marketing
+              </p>
+              <nav className="space-y-0.5 px-3">
+                {filteredMarketingNav.map((item) => (
                   item.children ? (
                     <NavItemWithChildren
                       key={item.name}
