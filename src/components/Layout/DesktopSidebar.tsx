@@ -202,7 +202,7 @@ export function DesktopSidebar() {
 
   // Auto-expand when route matches a child
   useEffect(() => {
-    const allItems = [...navigation, ...producaoNavigation, ...adminNavigation];
+    const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
       if (item.children?.some(c => isActive(c.href))) {
         setExpandedItem(item.name);
@@ -216,8 +216,9 @@ export function DesktopSidebar() {
     if (!searchQuery) return;
     const query = searchQuery.toLowerCase();
     const allItems = [
-      ...navigation,
+      ...operacoesNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
+      ...marketingNavigation,
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
