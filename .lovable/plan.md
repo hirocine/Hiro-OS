@@ -1,36 +1,40 @@
 
 
-# Fix Kanban Drag & Drop — Remove card movement on original
+# Reorganizar navegação lateral — DesktopSidebar.tsx
 
-## File: `src/features/tasks/components/TaskKanbanView.tsx`
+## Resumo
 
-### Change: Replace `DraggableCard` component (lines 66-78)
+Reorganizar os 4 grupos de navegação no sidebar: Home (solo) → Operações → Produção → Marketing (novo) → Administração (com Inventário).
 
-Remove `transform` and `style` logic so the original card stays in place. Only the `DragOverlay` ghost follows the cursor.
+## Mudanças no arquivo `src/components/Layout/DesktopSidebar.tsx`
 
-**Before:** Card applies `translate3d` transform, causing it to move with cursor alongside the overlay ghost.
+### 1. Import
+- Adicionar `Megaphone` ao import de lucide-react
 
-**After:** Card stays put with `opacity-30 scale-[0.98]` feedback when dragging. Added `touch-none` for proper touch device support.
+### 2. Arrays de navegação (linhas 23-65)
+- Renomear `navigation` → `operacoesNavigation`, remover Home e Inventário, reordenar (Esteira de Pós, Tarefas, Retiradas, Armazenamento, Plataformas, Políticas)
+- `producaoNavigation` — sem alteração
+- `adminNavigation` — adicionar `{ name: 'Inventário', href: '/inventario', icon: Package, adminOnly: true }` entre Financeiro e Admin
+- Criar `marketingNavigation` com item Referências (`/referencias`, icon: Megaphone)
 
-```typescript
-function DraggableCard({ task, children }: { task: Task; children: React.ReactNode }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
+### 3. useMemo (linhas 241-261)
+- Renomear `filteredNav` → `filteredOperacoesNav`
+- Adicionar `filteredMarketingNav` seguindo o mesmo padrão
 
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      className={cn(
-        'touch-none',
-        isDragging && 'opacity-30 scale-[0.98] transition-all'
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-```
+### 4. useEffect auto-expand por rota (linha 205)
+- Incluir `marketingNavigation` no array `allItems`
+- Renomear referência de `navigation` → `operacoesNavigation`
 
-No other files modified.
+### 5. useEffect auto-expand por search (linhas 218-220)
+- Incluir `marketingNavigation` no array `allItems`
+- Renomear referência de `navigation` → `operacoesNavigation`
+
+### 6. JSX — Seções de navegação (linhas 308-404)
+- **Home solo**: Renderizar um NavItem fixo para Home (`/`, icon: Home) ANTES do label "Operações", sem label de seção
+- **Operações**: Label "Menu" → "Operações", usar `filteredOperacoesNav`
+- **Produção**: Sem alteração
+- **Marketing** (novo bloco): Separator + label "MARKETING" + itens de `filteredMarketingNav`. Visível para todos (sem condição de role)
+- **Administração**: Sem alteração na renderização (os dados já mudam via array)
+
+Nenhum outro arquivo modificado.
 
