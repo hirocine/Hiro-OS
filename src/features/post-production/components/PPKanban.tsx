@@ -104,7 +104,7 @@ export function PPKanban({ items, onItemClick }: PPKanbanProps) {
 
   const itemsByStatus = useMemo(() => {
     const map: Record<PPStatus, PostProductionItem[]> = {
-      fila: [], edicao: [], color_grading: [], finalizacao: [], revisao: [], entregue: [],
+      fila: [], edicao: [], color_grading: [], finalizacao: [], revisao: [], validacao_cliente: [], entregue: [],
     };
     items.forEach(item => {
       if (map[item.status]) map[item.status].push(item);
