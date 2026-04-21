@@ -1,98 +1,44 @@
 
 
-# Banco de Condições de Pagamento (presets parametrizáveis)
+# Corrigir React error #310 em `/orcamentos/:slug` (Proposta de Investimento)
 
 ## Problema
-Hoje as opções de pagamento são duas cards genéricas digitadas manualmente, sem lógica. Não dá para representar "Faturamento 30d", "5x", "10% à vista" etc. de forma escalável, e não há nenhuma proteção garantindo pelo menos 1 condição.
+Após introduzir o `PaymentOptionsEditor`, abrir qualquer proposta dispara o erro `Minified React error #310` e cai no ErrorBoundary ("Algo deu errado").
 
-## Modelo proposto
+## Causa raiz
+Há uma **corrida entre 3 efeitos** que estão se sobrescrevendo mutuamente em loop:
 
-Criar um **banco de presets** internos. Cada preset gera dinamicamente o `PaymentOption` que vai para o JSONB `payment_options` (mesmo schema atual — **público continua intocado**).
+1. **`ProposalDetails.tsx` linha 191** — popula `investForm` (incluindo `payment_options`) quando a proposta carrega.
+2. **`ProposalDetails.tsx` linha 566** — se `payment_options` estiver vazio, injeta a condição default. Esse efeito tem deps só `[proposal?.id]`, mas lê `investForm` do closure (stale). Pode rodar **antes** do efeito 191 popular o estado e, pior, sobrescrever propostas que já têm `payment_options` salvos no banco se o estado local ainda estiver vazio na primeira passagem.
+3. **`PaymentOptionsEditor.tsx` linha 35** — quando `finalValue` muda, recalcula `valor`/`descricao` e chama `onChange`. Como `investFinalValue` (linha 562 do pai) é recalculado a cada render via expressão inline, qualquer atualização de `investForm` faz `finalValue` parecer "novo" para a comparação por referência primitiva — mas como é `number`, a comparação `===` funciona. O problema real é a **ordem das chamadas**: o `onChange` dispara `setInvestForm` durante render-cycle do filho, que re-renderiza o pai, que re-monta condicionalmente nodes do JSX dependendo de `proposal`/`isLoading`, alterando a contagem de hooks de uma fase para outra.
 
-### Presets disponíveis
-1. **Faturamento Nd** — parâmetro: `dias` (default 30). Renderiza valor cheio + "Faturamento em N dias".
-2. **Parcelado entrada/entrega** — parâmetros: `pctEntrada` (default 50), `pctEntrega` (default 50). Valida soma = 100%. Renderiza "Nx R$ X" + "X% no fechamento + Y% na entrega".
-3. **À Vista c/ desconto** — parâmetro: `descontoPct` (default 5). Renderiza valor com desconto + "X% de desconto para pagamento único".
-4. **Parcelado em N x** — parâmetro: `parcelas` (default 5), `juros` opcional. Renderiza "Nx R$ X" + descrição.
+O ErrorBoundary captura no momento em que o efeito 566 dispara `setInvestForm` em paralelo ao efeito do editor, gerando uma fase em que React vê uma árvore com hooks diferente.
 
-Cada preset guarda no JSONB:
-```ts
-{ titulo, valor, descricao, destaque, recomendado,
-  preset: 'faturamento'|'entrada_entrega'|'avista_desconto'|'parcelado',
-  params: { ... } }
-```
+## Correção
 
-Os campos `preset` e `params` são **aditivos** — o renderer público ignora (lê só os 5 originais), então nada quebra.
+### 1. Mover a inicialização default para dentro do efeito de populate (linha 191)
+Em vez de ter dois `useEffect` separados disputando o mesmo estado, inicializar `payment_options` **dentro** do mesmo efeito que popula o resto do form:
 
-## Regras de negócio
-- **Mínimo 1, máximo 2** condições ativas por proposta.
-- Default ao criar proposta: **1x "Faturamento 30d"** já adicionada e marcada como recomendada.
-- Botão "Adicionar condição" desabilita quando já há 2.
-- Botão remover (X) desabilita quando só resta 1.
-- Trocar parâmetros recalcula `valor`/`descricao` em tempo real.
-- Recalcular automaticamente ao alterar `finalValue` (já existe esse efeito).
+- Se `proposal.payment_options` existir e tiver itens → usa o que veio do banco.
+- Se vier vazio/null → cria `[buildPaymentOption('faturamento', {dias:30}, finalValueDoBanco, {recomendado:true})]`.
 
-## UI nova (idêntica nos 2 lugares)
+Remover por completo o `useEffect` da linha 566.
 
-Em vez do input livre de "Título/Descrição/Badge", cada card vira um seletor compacto:
+### 2. Estabilizar `finalValue` passado ao editor
+Trocar a expressão inline `const investFinalValue = ...` (linha 562) por um `useMemo` com deps `[investForm.list_price, investForm.discount_pct]`. Isso garante referência estável e elimina recomputo em renders não relacionados.
 
-```
-┌─────────────────────────────────────┐
-│ [Faturamento ▾]              [X]    │  <- Select do preset
-│                                     │
-│   Valor calculado                   │
-│   R$ 6.978,72                       │
-│                                     │
-│   Dias: [30]                        │  <- inputs dependentes do preset
-│                                     │
-│   Badge (opcional): [Mais comum]    │
-│   Recomendado            [toggle]   │
-└─────────────────────────────────────┘
+### 3. Proteger o `onChange` do editor contra loops
+No `PaymentOptionsEditor` (linha 35), além da comparação `lastFinalValue.current === finalValue`, adicionar guard `if (finalValue <= 0) return;` para não recalcular durante o boot (quando `list_price` ainda é 0 e a proposta nem carregou).
 
-[+ Adicionar condição]   (disabled se já tem 2)
-```
+### 4. Garantir que o editor não dispare `onChange` durante render
+A função `recalcPaymentOptions` é chamada dentro de `useEffect` (correto), mas o `addOption` inicial não deve rodar em mount. Já está OK — apenas confirmar que não há `onChange` síncrono em código de renderização.
 
-Os parâmetros mudam conforme o preset:
-- Faturamento: 1 input (dias)
-- Entrada/entrega: 2 inputs (% entrada, % entrega) com validação 100%
-- À vista c/ desconto: 1 input (% desconto)
-- Parcelado N x: 1 input (nº parcelas)
-
-## Implementação técnica
-
-### Novo arquivo
-`src/features/proposals/lib/paymentPresets.ts`
-- Tipo `PaymentPreset = 'faturamento' | 'entrada_entrega' | 'avista_desconto' | 'parcelado'`
-- Função `buildPaymentOption(preset, params, finalValue): PaymentOption` — devolve `{titulo, valor, descricao, destaque, recomendado, preset, params}`
-- Constante `DEFAULT_PRESET_PARAMS` com defaults por preset
-- Constante `PRESET_LABELS` para o select
-
-### Novo componente compartilhado
-`src/features/proposals/components/PaymentOptionsEditor.tsx`
-- Props: `value: PaymentOption[]`, `onChange`, `finalValue`
-- Renderiza grid com cards dos presets, +/- botões, regras min/max
-- Recalcula valores automaticamente quando `finalValue` ou `params` mudam
-
-### Arquivos modificados
-1. **`src/features/proposals/types/index.ts`** — estender `PaymentOption` com `preset?` e `params?` opcionais (compat retroativa).
-2. **`src/features/proposals/components/ProposalGuidedWizard.tsx`** —
-   - Default state: `[buildPaymentOption('faturamento', {dias:30}, 0)]` em vez das duas cards atuais.
-   - Substituir bloco do step 8 (linhas 1468-1539) por `<PaymentOptionsEditor>`.
-   - Remover o useEffect de auto-cálculo antigo (lógica fica dentro do editor).
-3. **`src/pages/ProposalDetails.tsx`** —
-   - Substituir bloco linhas 886-977 por `<PaymentOptionsEditor>`.
-   - Remover useEffect das linhas 562-574 (substituído pela lógica do editor).
-   - Migração leve ao carregar: se `payment_options` vier vazio do banco, inicializar com `[buildPaymentOption('faturamento', {dias:30}, finalValue)]` localmente (não força save até usuário editar).
-
-### Compatibilidade com propostas antigas
-Propostas existentes têm `payment_options` sem `preset`. O editor detecta isso e exibe um card legado "Personalizado" com inputs livres (mesma UI antiga em modo compacto), até o usuário trocá-lo por um preset. Sem migração de banco.
-
-### Renderer público
-**Não alterado.** O `ProposalInvestimento.tsx` continua lendo `titulo`/`valor`/`descricao`/`destaque`/`recomendado` exatamente como hoje. Os campos novos (`preset`, `params`) são ignorados.
+## Arquivos alterados
+- `src/pages/ProposalDetails.tsx` — unificar o useEffect de populate (191) com a inicialização de `payment_options`, remover useEffect 566, trocar `investFinalValue` por `useMemo`.
+- `src/features/proposals/components/PaymentOptionsEditor.tsx` — adicionar guard `finalValue <= 0` no useEffect de recálculo.
 
 ## Escopo
-- 2 arquivos novos (`paymentPresets.ts`, `PaymentOptionsEditor.tsx`)
-- 3 arquivos modificados (types, wizard, details)
-- 0 mudanças em DB, edge functions, componentes públicos
-- 0 mudanças em outros módulos
+- 2 arquivos, mudanças cirúrgicas
+- Sem alteração em DB, hooks, types ou componentes públicos
+- Comportamento funcional preservado: propostas existentes carregam suas condições salvas; novas propostas ganham "Faturamento 30d" como default; recálculo automático ao mudar valor continua funcionando
 
