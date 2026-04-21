@@ -186,6 +186,24 @@ export function PPVideoPage({ item, onBack }: Props) {
     setComment('');
   };
 
+  const handleRequestCorrection = async () => {
+    const note = correctionText.trim()
+      ? `🔄 Cliente solicitou correção: ${correctionText.trim()}`
+      : '🔄 Cliente solicitou correção';
+    try {
+      await addComment.mutateAsync(note);
+    } catch (e) { /* continue even if comment fails */ }
+    setForm(prev => ({ ...prev, status: 'edicao' }));
+    setSubStepIndex(0);
+    updateItem.mutate({
+      id: item.id,
+      updates: { status: 'edicao', sub_status_index: 0 },
+    });
+    setCorrectionText('');
+    setRequestingCorrection(false);
+    toast.success('Vídeo retornou para Edição');
+  };
+
 
   return (
     <ResponsiveContainer maxWidth="7xl">
