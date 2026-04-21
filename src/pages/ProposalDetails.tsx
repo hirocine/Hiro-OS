@@ -39,6 +39,8 @@ import { useProposalCases } from '@/features/proposals/hooks/useProposalCases';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 import { DOR_EMOJI_OPTIONS } from '@/features/proposals/types';
+import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOptionsEditor';
+import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '@/features/proposals/lib/paymentPresets';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -559,19 +561,21 @@ export default function ProposalDetails() {
 
   const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
 
-  // Auto-recalculate payment option values when final value changes
+  // Auto-recalculation now lives inside <PaymentOptionsEditor />.
+  // Initialize with default condition if proposal has none on load.
   useEffect(() => {
-    const finalVal = investForm.list_price * (1 - investForm.discount_pct / 100);
-    if (finalVal <= 0) return;
-    const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-    setInvestForm(prev => ({
-      ...prev,
-      payment_options: prev.payment_options.map((opt, i) => ({
-        ...opt,
-        valor: i === 0 ? fmt(finalVal * 0.95) : `2x ${fmt(finalVal / 2)}`,
-      })),
-    }));
-  }, [investForm.list_price, investForm.discount_pct]);
+    if (!proposal) return;
+    if (!investForm.payment_options || investForm.payment_options.length === 0) {
+      const fv = investForm.list_price * (1 - investForm.discount_pct / 100);
+      setInvestForm(prev => ({
+        ...prev,
+        payment_options: [
+          buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, fv, { recomendado: true }),
+        ],
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposal?.id]);
 
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));
