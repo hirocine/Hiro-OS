@@ -199,12 +199,21 @@ export default function ProposalDetails() {
       company_description: proposal.company_description || '',
       validity_date: proposal.validity_date || '',
     });
-    setInvestForm({
-      list_price: proposal.list_price || 0,
-      discount_pct: proposal.discount_pct || 0,
-      payment_terms: proposal.payment_terms || '',
-      payment_options: (Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[],
-    });
+    {
+      const lp = proposal.list_price || 0;
+      const dp = proposal.discount_pct || 0;
+      const fv = lp * (1 - dp / 100);
+      const existing = (Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[];
+      const payment_options = existing.length > 0
+        ? existing
+        : [buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, fv, { recomendado: true })];
+      setInvestForm({
+        list_price: lp,
+        discount_pct: dp,
+        payment_terms: proposal.payment_terms || '',
+        payment_options,
+      });
+    }
     setDiagForm({ objetivo: proposal.objetivo || '' });
     setTestimonialForm({
       testimonial_name: proposal.testimonial_name || '',
@@ -559,23 +568,10 @@ export default function ProposalDetails() {
     navigate('/orcamentos');
   };
 
-  const investFinalValue = investForm.list_price * (1 - investForm.discount_pct / 100);
-
-  // Auto-recalculation now lives inside <PaymentOptionsEditor />.
-  // Initialize with default condition if proposal has none on load.
-  useEffect(() => {
-    if (!proposal) return;
-    if (!investForm.payment_options || investForm.payment_options.length === 0) {
-      const fv = investForm.list_price * (1 - investForm.discount_pct / 100);
-      setInvestForm(prev => ({
-        ...prev,
-        payment_options: [
-          buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, fv, { recomendado: true }),
-        ],
-      }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proposal?.id]);
+  const investFinalValue = useMemo(
+    () => investForm.list_price * (1 - investForm.discount_pct / 100),
+    [investForm.list_price, investForm.discount_pct],
+  );
 
   // Dores helpers
   const removeDor = (i: number) => setDoresForm(prev => prev.filter((_, idx) => idx !== i));

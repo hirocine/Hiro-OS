@@ -33,11 +33,11 @@ export function PaymentOptionsEditor({ value, onChange, finalValue }: Props) {
 
   // Auto-recalculate when finalValue changes (skip first render).
   useEffect(() => {
+    if (finalValue <= 0) return;
     if (lastFinalValue.current === finalValue) return;
     lastFinalValue.current = finalValue;
     if (!value.length) return;
     const recalculated = recalcPaymentOptions(value, finalValue);
-    // Only push if something actually changed
     const changed = recalculated.some(
       (o, i) => o.valor !== value[i]?.valor || o.descricao !== value[i]?.descricao,
     );
