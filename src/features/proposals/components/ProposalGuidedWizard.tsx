@@ -1457,78 +1457,11 @@ export function ProposalGuidedWizard() {
                 <span className="text-sm text-muted-foreground">Valor Final</span>
                 <span className="text-xl font-bold">{fmt(finalValue)}</span>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Opções de Pagamento</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  {paymentOptions.map((opt, i) => (
-                    <Card key={i} className={cn(
-                      'transition-all',
-                      opt.recomendado && 'border-primary ring-1 ring-primary/20'
-                    )}>
-                      <CardContent className="pt-4 pb-4 space-y-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Título</Label>
-                          <Input
-                            value={opt.titulo}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], titulo: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Ex: À Vista"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="p-3 rounded-lg bg-muted text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Valor calculado</p>
-                          <p className="text-xl font-bold">{opt.valor || '—'}</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Descrição</Label>
-                          <Input
-                            value={opt.descricao}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], descricao: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Condições..."
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Badge / Destaque</Label>
-                          <Input
-                            value={opt.destaque || ''}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], destaque: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Ex: Melhor custo"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between pt-1">
-                          <Label className="text-xs text-muted-foreground">Recomendado</Label>
-                          <Switch
-                            checked={opt.recomendado || false}
-                            onCheckedChange={() => {
-                              setPaymentOptions(prev => prev.map((o, idx) => ({
-                                ...o,
-                                recomendado: idx === i,
-                              })));
-                            }}
-                          />
-                        </div>
-                        {opt.recomendado && (
-                          <Badge className="text-xs">RECOMENDADO</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+              <PaymentOptionsEditor
+                value={paymentOptions}
+                onChange={setPaymentOptions}
+                finalValue={finalValue}
+              />
               <div className="space-y-1.5">
                 <Label className="text-xs">Observações de pagamento</Label>
                 <Textarea
