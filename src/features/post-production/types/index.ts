@@ -1,4 +1,4 @@
-export type PPStatus = 'fila' | 'edicao' | 'color_grading' | 'finalizacao' | 'revisao' | 'entregue';
+export type PPStatus = 'fila' | 'edicao' | 'color_grading' | 'finalizacao' | 'revisao' | 'validacao_cliente' | 'entregue';
 export type PPPriority = 'baixa' | 'media' | 'alta' | 'urgente';
 
 export type PPSortableField = 'title' | 'priority' | 'status' | 'editor_name' | 'due_date' | 'project_name';
