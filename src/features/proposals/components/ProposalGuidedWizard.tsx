@@ -90,16 +90,27 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
   useEffect(() => {
     if (!videoId) return;
     setFailed(false);
-    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
-  }, [videoId]);
+    setThumbUrl(null);
+    const hashSegment = videoHash ? `/${videoHash}` : '';
+    const oembedUrl = `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}${hashSegment}`;
+    fetch(oembedUrl)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const url = (data.thumbnail_url as string)?.replace(/-d_\d+x\d+/, '-d_1280x720') || data.thumbnail_url;
+        setThumbUrl(url);
+      })
+      .catch(() => {
+        setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
+      });
+  }, [videoId, videoHash]);
   if (failed || !thumbUrl) {
     return <div className={`bg-muted flex items-center justify-center ${className || ''}`}><Film className="h-6 w-6 text-muted-foreground/30" /></div>;
   }
   return (
     <img src={thumbUrl} alt={alt || ''} className={`object-cover ${className || ''}`} loading="lazy"
       onError={() => {
-        if (thumbUrl.includes('vumbnail.com')) {
-          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
+        if (!thumbUrl.includes('vumbnail.com')) {
+          setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
         } else { setFailed(true); }
       }}
     />
