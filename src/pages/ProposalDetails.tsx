@@ -94,8 +94,25 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
   useEffect(() => {
     if (!videoId) return;
     setFailed(false);
-    setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
-  }, [videoId]);
+    setThumbUrl(null);
+    let cancelled = false;
+    const hashSegment = videoHash ? `/${videoHash}` : '';
+    const oembedUrl = `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}${hashSegment}`;
+    fetch(oembedUrl)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (cancelled) return;
+        const raw = data.thumbnail_url as string | undefined;
+        const upgraded = raw ? raw.replace(/-d_\d+x\d+/, '-d_1280x720') : null;
+        setThumbUrl(upgraded || `https://vumbnail.com/${videoId}.jpg`);
+      })
+      .catch(() => {
+        if (!cancelled) setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [videoId, videoHash]);
 
   if (failed || !thumbUrl) {
     return (
@@ -112,8 +129,8 @@ function VimeoThumbnail({ videoId, videoHash, alt, className }: { videoId: strin
       className={`object-cover ${className || ''}`}
       loading="lazy"
       onError={() => {
-        if (thumbUrl.includes('vumbnail.com')) {
-          setThumbUrl(`https://i.vimeocdn.com/video/${videoId}_640.jpg`);
+        if (thumbUrl && !thumbUrl.includes('vumbnail.com')) {
+          setThumbUrl(`https://vumbnail.com/${videoId}.jpg`);
         } else {
           setFailed(true);
         }
