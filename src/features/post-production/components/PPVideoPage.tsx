@@ -35,6 +35,7 @@ const MACRO_STEPS: { key: PPStatus; label: string }[] = [
   { key: 'edicao', label: 'Edição' },
   { key: 'finalizacao', label: 'Finalização' },
   { key: 'revisao', label: 'Revisão' },
+  { key: 'validacao_cliente', label: 'Validação Cliente' },
   { key: 'entregue', label: 'Entrega' },
 ];
 
@@ -44,6 +45,7 @@ const SUB_STEPS: Record<PPStatus, string[]> = {
   color_grading: [],
   finalizacao: ['Color Grading', 'Trilha sonora', 'Motion graphics', 'Legendas', 'SFX'],
   revisao: ['Assistir completo', 'Ajustes', 'Aprovação'],
+  validacao_cliente: ['Enviar ao cliente', 'Aguardando feedback', 'Cliente aprovou'],
   entregue: ['Export final', 'Envio ao cliente'],
 };
 
