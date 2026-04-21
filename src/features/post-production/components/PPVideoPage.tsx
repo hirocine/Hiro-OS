@@ -471,6 +471,16 @@ export function PPVideoPage({ item, onBack }: Props) {
                         ← Voltar
                       </Button>
                     )}
+                    {normalizedStatus === 'validacao_cliente' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs border-orange-500/40 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                        onClick={() => setRequestingCorrection(v => !v)}
+                      >
+                        🔄 Solicitar correção
+                      </Button>
+                    )}
                     {subStepIndex < SUB_STEPS[normalizedStatus].length ? (
                       <Button
                         size="sm"
@@ -491,6 +501,26 @@ export function PPVideoPage({ item, onBack }: Props) {
                     ) : null}
                   </div>
                 </div>
+
+                {/* Correction request inline panel */}
+                {normalizedStatus === 'validacao_cliente' && requestingCorrection && (
+                  <div className="pt-3 border-t border-border/40 space-y-2 animate-fade-in">
+                    <Textarea
+                      value={correctionText}
+                      onChange={e => setCorrectionText(e.target.value)}
+                      placeholder="O que precisa ajustar? (opcional)"
+                      className="text-sm min-h-[70px]"
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setRequestingCorrection(false); setCorrectionText(''); }}>
+                        Cancelar
+                      </Button>
+                      <Button size="sm" className="h-7 text-xs" onClick={handleRequestCorrection}>
+                        Confirmar correção
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
