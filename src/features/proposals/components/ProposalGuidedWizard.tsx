@@ -42,6 +42,8 @@ const extractVimeoId = (raw: string): string => {
   return match ? match[1] : raw;
 };
 import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase, PaymentOption } from '../types';
+import { PaymentOptionsEditor } from './PaymentOptionsEditor';
+import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '../lib/paymentPresets';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
@@ -157,9 +159,8 @@ export function ProposalGuidedWizard() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [listPrice, setListPrice] = useState(0);
   const [discountPct, setDiscountPct] = useState(0);
-  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
-    { titulo: 'À Vista', valor: '', descricao: '5% de desconto para pagamento único', destaque: 'Melhor custo', recomendado: false },
-    { titulo: '2x sem juros', valor: '', descricao: '50% no fechamento + 50% na entrega', destaque: '', recomendado: true },
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>(() => [
+    buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, 0, { recomendado: true }),
   ]);
   const [paymentNotes, setPaymentNotes] = useState('');
   const [testimonialName, setTestimonialName] = useState('');
@@ -187,16 +188,7 @@ export function ProposalGuidedWizard() {
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-  // Auto-calculate payment option values
-  useEffect(() => {
-    if (finalValue <= 0) return;
-    setPaymentOptions(prev => prev.map((opt, i) => ({
-      ...opt,
-      valor: i === 0
-        ? fmt(finalValue * 0.95)
-        : `2x ${fmt(finalValue / 2)}`,
-    })));
-  }, [finalValue]);
+  // Payment option recalculation now lives inside <PaymentOptionsEditor />.
 
   const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
 
@@ -1465,78 +1457,11 @@ export function ProposalGuidedWizard() {
                 <span className="text-sm text-muted-foreground">Valor Final</span>
                 <span className="text-xl font-bold">{fmt(finalValue)}</span>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Opções de Pagamento</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  {paymentOptions.map((opt, i) => (
-                    <Card key={i} className={cn(
-                      'transition-all',
-                      opt.recomendado && 'border-primary ring-1 ring-primary/20'
-                    )}>
-                      <CardContent className="pt-4 pb-4 space-y-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Título</Label>
-                          <Input
-                            value={opt.titulo}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], titulo: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Ex: À Vista"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="p-3 rounded-lg bg-muted text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Valor calculado</p>
-                          <p className="text-xl font-bold">{opt.valor || '—'}</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Descrição</Label>
-                          <Input
-                            value={opt.descricao}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], descricao: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Condições..."
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Badge / Destaque</Label>
-                          <Input
-                            value={opt.destaque || ''}
-                            onChange={e => {
-                              const updated = [...paymentOptions];
-                              updated[i] = { ...updated[i], destaque: e.target.value };
-                              setPaymentOptions(updated);
-                            }}
-                            placeholder="Ex: Melhor custo"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between pt-1">
-                          <Label className="text-xs text-muted-foreground">Recomendado</Label>
-                          <Switch
-                            checked={opt.recomendado || false}
-                            onCheckedChange={() => {
-                              setPaymentOptions(prev => prev.map((o, idx) => ({
-                                ...o,
-                                recomendado: idx === i,
-                              })));
-                            }}
-                          />
-                        </div>
-                        {opt.recomendado && (
-                          <Badge className="text-xs">RECOMENDADO</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+              <PaymentOptionsEditor
+                value={paymentOptions}
+                onChange={setPaymentOptions}
+                finalValue={finalValue}
+              />
               <div className="space-y-1.5">
                 <Label className="text-xs">Observações de pagamento</Label>
                 <Textarea
