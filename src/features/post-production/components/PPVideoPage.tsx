@@ -107,6 +107,8 @@ export function PPVideoPage({ item, onBack }: Props) {
   const [addingVersion, setAddingVersion] = useState(false);
   const [newVersionUrl, setNewVersionUrl] = useState('');
   const [comment, setComment] = useState('');
+  const [requestingCorrection, setRequestingCorrection] = useState(false);
+  const [correctionText, setCorrectionText] = useState('');
 
   const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
   const selectedEditor = users.find(u => u.id === form.editor_id);
