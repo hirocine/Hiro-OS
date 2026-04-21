@@ -74,25 +74,23 @@ export function ProposalEntregaveis({ entregaveis }: Props) {
                   const isEmoji = item.icone && /\p{Emoji}/u.test(item.icone);
                   const Icon = !isEmoji ? (iconMap[item.icone] || iconMap[item.titulo] || Video) : null;
                   return (
-                    <div key={idx} className='relative overflow-hidden p-[18px] bg-[#111] rounded-2xl border border-gray-800 transition-all duration-300 hover:border-[#4CFF5C] hover:-translate-y-1 group flex gap-4'>
+                    <div key={idx} className='relative overflow-hidden p-5 bg-[#111] rounded-2xl border border-gray-800 transition-all duration-300 hover:border-[#4CFF5C] hover:-translate-y-1 group flex justify-between items-start gap-4'>
                       <div className='absolute top-0 left-0 right-0 h-[2px] bg-[#4CFF5C] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left' />
                       <div className='flex-1 min-w-0'>
-                        <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center mb-4'>
+                        <div className='w-10 h-10 rounded-[10px] bg-[#4CFF5C]/10 flex items-center justify-center mb-[14px]'>
                           {isEmoji ? (
                             <span className='text-xl'>{item.icone}</span>
                           ) : (
                             Icon && <Icon className='w-5 h-5 text-[#4CFF5C]' />
                           )}
                         </div>
-                        <h4 className='text-[15px] font-bold mb-1'>{item.titulo}</h4>
-                        <p className='text-[13px] text-gray-400 leading-relaxed'>{item.descricao}</p>
+                        <h4 className='text-[14px] font-medium mb-1'>{item.titulo}</h4>
+                        <p className='text-[12px] text-[#777] leading-[1.5]'>{item.descricao}</p>
                       </div>
                       {item.quantidade && (
-                        <div className='border-l border-[#1f3d26] pl-4 min-w-[56px] flex items-center justify-center'>
-                          <span className='proposal-font-display text-[42px] font-medium tracking-[-0.03em] text-[#4CFF5C] leading-none'>
-                            {item.quantidade}
-                          </span>
-                        </div>
+                        <span className='flex-shrink-0 proposal-font-display text-[26px] font-medium tracking-[-0.02em] text-[#4CFF5C] leading-none'>
+                          {item.quantidade}
+                        </span>
                       )}
                     </div>
                   )
