@@ -62,6 +62,10 @@ export interface PaymentOption {
   descricao: string;
   destaque?: string;
   recomendado?: boolean;
+  /** Preset identifier for parametric recalculation (optional, additive). */
+  preset?: 'faturamento' | 'entrada_entrega' | 'avista_desconto' | 'parcelado' | 'custom';
+  /** Parameters that drive the preset's calculation. */
+  params?: Record<string, any>;
 }
 
 export interface CaseItem {
