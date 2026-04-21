@@ -1,53 +1,25 @@
 
 
-# Reestruturar cards de Entregáveis: layout 2 colunas com quantidade destacada
+# Diagnóstico: alterações não aparecem em `os.hiro.film/orcamento/...`
 
-## Problema
-Hoje a quantidade aparece como número solto no canto superior direito do card, sem clareza de que representa a quantidade do entregável.
+## Causa
+O código do `ProposalEntregaveis.tsx` está correto no repositório (layout 2 colunas já aplicado). O problema **não é de código** — é de **deploy + cache**:
 
-## Solução
-Refatorar o layout dos cards da seção "Entregáveis" (apenas o bloco `bloco.itens`, não os `cards` de Serviços) para um layout horizontal 2-colunas com divisor vertical verde escuro.
+1. **`os.hiro.film` é o domínio publicado** (produção). Edições feitas no editor da Lovable rodam no **preview** (`id-preview--*.lovable.app`). Para a versão pública refletir as mudanças, é necessário **republicar** o projeto pelo botão Publish da Lovable.
 
-## Arquivo
-`src/features/proposals/components/public/ProposalEntregaveis.tsx` (linhas 75-96, bloco do `bloco.itens.map`)
+2. **Service Worker PWA**: mesmo após republicar, o navegador pode estar servindo a build anterior do cache. A rota `/orcamento/*` está com `NetworkOnly` (ok), mas o **index.html + bundle JS** caem na regra genérica `^/.*$` com `NetworkFirst` (TTL 2h). O parâmetro `?v=...` na URL não invalida isso porque o cache key é baseado no caminho do bundle, não da rota.
 
-⚠️ **Atenção memory rule** `mem://constraints/proposals-public-components-integrity`: o arquivo está em `components/public/` que normalmente é intocável para tarefas admin. **Esta tarefa é explicitamente sobre a UI pública da proposta** (alteração visual solicitada pelo usuário para o que o cliente vê), então a alteração é legítima e escopada apenas a esse componente público.
+## Ação recomendada (sem mudança de código)
+1. Clicar em **Publish** no canto superior direito da Lovable para republicar `os.hiro.film` com a build atual.
+2. Aguardar ~30 segundos.
+3. Abrir `https://os.hiro.film/orcamento/546-...` em **aba anônima** (ou Cmd+Shift+R) para forçar bypass do service worker.
 
-## Novo layout do card
+## Verificação
+Se mesmo após republicar + hard reload o layout antigo persistir, o problema é cache do SW. Nesse caso a correção de código seria:
 
-```text
-┌──────────────────────────────────┬──────┐
-│ [icon]                           │      │
-│                                  │      │
-│ Título do entregável             │  25+ │
-│ Descrição em uma ou duas linhas  │      │
-│                                  │      │
-└──────────────────────────────────┴──────┘
-```
+- Adicionar `/orcamento/` ao `navigateFallbackDenylist` no `vite.config.ts`, garantindo que o HTML dessas páginas nunca seja interceptado pelo SW.
+- Forçar `cacheName: 'pages-v2'` (renomear) para invalidar caches antigos em clientes existentes.
 
-- **Padding card**: 18px
-- **Coluna esquerda**: ícone (mantido), título, descrição — fluxo vertical
-- **Divisor**: `border-l border-[#1f3d26]` (1px, verde bem escuro — Tailwind não tem 0.5px nativo; usamos 1px que é o mínimo prático)
-- **Coluna direita**: quantidade centralizada (flex center)
-  - `min-w-[56px]`, `pl-4`
-  - Fonte: `text-[42px] font-medium tracking-[-0.03em] text-[#4CFF5C]`
-  - Sem label, sem sufixo
-- **Gap entre colunas**: 16px
-
-## Mudanças adicionais
-- Remover o número grande fantasma (`text-[#4CFF5C]/20`) que ficava sobreposto no header do card.
-- Remover o `flex items-start justify-between` que dividia o header em ícone + número.
-- Card vira `flex` horizontal (`flex gap-4`), com a coluna esquerda em `flex-1` e a direita com `min-w-[56px]`.
-- Se `item.quantidade` não existir, esconder a coluna direita inteira (sem divisor) para não criar espaço vazio.
-
-## Grid externo
-Manter `grid grid-cols-1 md:grid-cols-3 gap-5` como está (gap atual 5 = 20px; o usuário pediu 12px, então **ajustar para `gap-3`**).
-
-## Bloco de Serviços (`cards`)
-**Não alterar** — a estrutura desses cards (com checklists internos) é diferente e não foi mencionada no pedido.
-
-## Escopo
-- 1 arquivo, ~25 linhas alteradas no bloco `itens`
-- 0 mudanças em DB, types, admin ou outros componentes
-- Componente público alterado intencionalmente (escopo exato do pedido)
+## Próximo passo
+Por favor, republique pelo botão Publish e teste em aba anônima. Se ainda não aparecer, me avise que aplico a correção do `vite.config.ts` para blindar a rota pública de cache do SW.
 
