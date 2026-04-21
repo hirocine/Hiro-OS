@@ -42,6 +42,8 @@ const extractVimeoId = (raw: string): string => {
   return match ? match[1] : raw;
 };
 import type { DiagnosticoDor, EntregavelItem, InclusoCategory, InclusoItem, ProposalCase, PaymentOption } from '../types';
+import { PaymentOptionsEditor } from './PaymentOptionsEditor';
+import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '../lib/paymentPresets';
 import { ICON_OPTIONS, DEFAULT_INCLUSO_CATEGORIES, CASE_TAG_OPTIONS, DOR_EMOJI_OPTIONS } from '../types';
 
 // ── Loading messages ──
@@ -157,9 +159,8 @@ export function ProposalGuidedWizard() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [listPrice, setListPrice] = useState(0);
   const [discountPct, setDiscountPct] = useState(0);
-  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
-    { titulo: 'À Vista', valor: '', descricao: '5% de desconto para pagamento único', destaque: 'Melhor custo', recomendado: false },
-    { titulo: '2x sem juros', valor: '', descricao: '50% no fechamento + 50% na entrega', destaque: '', recomendado: true },
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>(() => [
+    buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, 0, { recomendado: true }),
   ]);
   const [paymentNotes, setPaymentNotes] = useState('');
   const [testimonialName, setTestimonialName] = useState('');
@@ -187,16 +188,7 @@ export function ProposalGuidedWizard() {
   const finalValue = listPrice * (1 - discountPct / 100);
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-  // Auto-calculate payment option values
-  useEffect(() => {
-    if (finalValue <= 0) return;
-    setPaymentOptions(prev => prev.map((opt, i) => ({
-      ...opt,
-      valor: i === 0
-        ? fmt(finalValue * 0.95)
-        : `2x ${fmt(finalValue / 2)}`,
-    })));
-  }, [finalValue]);
+  // Payment option recalculation now lives inside <PaymentOptionsEditor />.
 
   const activeLoadingMessages = isFinalizing ? FINALIZE_MESSAGES : ANALYZE_MESSAGES;
 
