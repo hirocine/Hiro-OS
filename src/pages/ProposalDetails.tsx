@@ -199,12 +199,21 @@ export default function ProposalDetails() {
       company_description: proposal.company_description || '',
       validity_date: proposal.validity_date || '',
     });
-    setInvestForm({
-      list_price: proposal.list_price || 0,
-      discount_pct: proposal.discount_pct || 0,
-      payment_terms: proposal.payment_terms || '',
-      payment_options: (Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[],
-    });
+    {
+      const lp = proposal.list_price || 0;
+      const dp = proposal.discount_pct || 0;
+      const fv = lp * (1 - dp / 100);
+      const existing = (Array.isArray(proposal.payment_options) ? proposal.payment_options : []) as PaymentOption[];
+      const payment_options = existing.length > 0
+        ? existing
+        : [buildPaymentOption('faturamento', { ...DEFAULT_PRESET_PARAMS.faturamento }, fv, { recomendado: true })];
+      setInvestForm({
+        list_price: lp,
+        discount_pct: dp,
+        payment_terms: proposal.payment_terms || '',
+        payment_options,
+      });
+    }
     setDiagForm({ objetivo: proposal.objetivo || '' });
     setTestimonialForm({
       testimonial_name: proposal.testimonial_name || '',
