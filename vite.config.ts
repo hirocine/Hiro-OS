@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/orcamento\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff2,woff}'],
         maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /^\/.*$/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'pages',
+              cacheName: 'pages-v2',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 2
