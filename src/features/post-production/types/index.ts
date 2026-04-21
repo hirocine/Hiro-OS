@@ -1,4 +1,4 @@
-export type PPStatus = 'fila' | 'edicao' | 'color_grading' | 'finalizacao' | 'revisao' | 'entregue';
+export type PPStatus = 'fila' | 'edicao' | 'color_grading' | 'finalizacao' | 'revisao' | 'validacao_cliente' | 'entregue';
 export type PPPriority = 'baixa' | 'media' | 'alta' | 'urgente';
 
 export type PPSortableField = 'title' | 'priority' | 'status' | 'editor_name' | 'due_date' | 'project_name';
@@ -17,7 +17,8 @@ export const PP_STATUS_ORDER: Record<PPStatus, number> = {
   color_grading: 2,
   finalizacao: 3,
   revisao: 4,
-  entregue: 5,
+  validacao_cliente: 5,
+  entregue: 6,
 };
 
 export interface PostProductionItem {
@@ -90,6 +91,11 @@ export const PP_STATUS_CONFIG: Record<PPStatus, { label: string; color: string; 
     color: 'text-yellow-700 dark:text-yellow-300',
     bgColor: 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700',
   },
+  validacao_cliente: {
+    label: 'Validação Cliente',
+    color: 'text-cyan-700 dark:text-cyan-300',
+    bgColor: 'bg-cyan-100 dark:bg-cyan-900/30 border-cyan-300 dark:border-cyan-700',
+  },
   entregue: {
     label: 'Entregue',
     color: 'text-green-700 dark:text-green-300',
@@ -97,4 +103,4 @@ export const PP_STATUS_CONFIG: Record<PPStatus, { label: string; color: string; 
   },
 };
 
-export const PP_STATUS_COLUMNS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'entregue'];
+export const PP_STATUS_COLUMNS: PPStatus[] = ['fila', 'edicao', 'color_grading', 'finalizacao', 'revisao', 'validacao_cliente', 'entregue'];

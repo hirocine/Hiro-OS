@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -35,6 +36,7 @@ const MACRO_STEPS: { key: PPStatus; label: string }[] = [
   { key: 'edicao', label: 'Edição' },
   { key: 'finalizacao', label: 'Finalização' },
   { key: 'revisao', label: 'Revisão' },
+  { key: 'validacao_cliente', label: 'Validação Cliente' },
   { key: 'entregue', label: 'Entrega' },
 ];
 
@@ -44,6 +46,7 @@ const SUB_STEPS: Record<PPStatus, string[]> = {
   color_grading: [],
   finalizacao: ['Color Grading', 'Trilha sonora', 'Motion graphics', 'Legendas', 'SFX'],
   revisao: ['Assistir completo', 'Ajustes', 'Aprovação'],
+  validacao_cliente: ['Enviar ao cliente', 'Aguardando feedback', 'Cliente aprovou'],
   entregue: ['Export final', 'Envio ao cliente'],
 };
 
@@ -104,6 +107,8 @@ export function PPVideoPage({ item, onBack }: Props) {
   const [addingVersion, setAddingVersion] = useState(false);
   const [newVersionUrl, setNewVersionUrl] = useState('');
   const [comment, setComment] = useState('');
+  const [requestingCorrection, setRequestingCorrection] = useState(false);
+  const [correctionText, setCorrectionText] = useState('');
 
   const composedTitle = composeTitle(form.client_name, form.project_name, form.suffix);
   const selectedEditor = users.find(u => u.id === form.editor_id);
@@ -179,6 +184,24 @@ export function PPVideoPage({ item, onBack }: Props) {
     if (!comment.trim()) return;
     await addComment.mutateAsync(comment.trim());
     setComment('');
+  };
+
+  const handleRequestCorrection = async () => {
+    const note = correctionText.trim()
+      ? `🔄 Cliente solicitou correção: ${correctionText.trim()}`
+      : '🔄 Cliente solicitou correção';
+    try {
+      await addComment.mutateAsync(note);
+    } catch (e) { /* continue even if comment fails */ }
+    setForm(prev => ({ ...prev, status: 'edicao' }));
+    setSubStepIndex(0);
+    updateItem.mutate({
+      id: item.id,
+      updates: { status: 'edicao', sub_status_index: 0 },
+    });
+    setCorrectionText('');
+    setRequestingCorrection(false);
+    toast.success('Vídeo retornou para Edição');
   };
 
 
@@ -448,6 +471,16 @@ export function PPVideoPage({ item, onBack }: Props) {
                         ← Voltar
                       </Button>
                     )}
+                    {normalizedStatus === 'validacao_cliente' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs border-orange-500/40 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                        onClick={() => setRequestingCorrection(v => !v)}
+                      >
+                        🔄 Solicitar correção
+                      </Button>
+                    )}
                     {subStepIndex < SUB_STEPS[normalizedStatus].length ? (
                       <Button
                         size="sm"
@@ -468,6 +501,26 @@ export function PPVideoPage({ item, onBack }: Props) {
                     ) : null}
                   </div>
                 </div>
+
+                {/* Correction request inline panel */}
+                {normalizedStatus === 'validacao_cliente' && requestingCorrection && (
+                  <div className="pt-3 border-t border-border/40 space-y-2 animate-fade-in">
+                    <Textarea
+                      value={correctionText}
+                      onChange={e => setCorrectionText(e.target.value)}
+                      placeholder="O que precisa ajustar? (opcional)"
+                      className="text-sm min-h-[70px]"
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setRequestingCorrection(false); setCorrectionText(''); }}>
+                        Cancelar
+                      </Button>
+                      <Button size="sm" className="h-7 text-xs" onClick={handleRequestCorrection}>
+                        Confirmar correção
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
