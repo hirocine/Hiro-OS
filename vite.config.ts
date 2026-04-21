@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /^\/.*$/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'pages',
+              cacheName: 'pages-v2',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 2
