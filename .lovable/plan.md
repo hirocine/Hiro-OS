@@ -1,16 +1,30 @@
 
 
-# Aumentar limite da descrição no Hero da proposta
+# Corrigir thumbnails do Vimeo no fluxo de seleção de cases
 
-## Arquivo: `src/features/proposals/components/public/ProposalHero.tsx`
+## Diagnóstico
 
-### Mudança (linha 97)
-Alterar `max-w-[500px]` para `max-w-[600px]` no parágrafo da descrição, dando mais espaço horizontal para o texto respirar e evitar parágrafos muito comprimidos.
+O componente `VimeoThumbnail` no `ProposalGuidedWizard.tsx` (linhas 86-107) tenta carregar a thumb em duas etapas:
+1. `https://vumbnail.com/{id}.jpg`
+2. Fallback: `https://i.vimeocdn.com/video/{id}_640.jpg` ← **URL inválida**
 
-```diff
-- <p style={fadeUp(300)} className='text-base md:text-lg text-gray-400 font-light mb-16 max-w-[500px] relative z-10'>
-+ <p style={fadeUp(300)} className='text-base md:text-lg text-gray-400 font-light mb-16 max-w-[600px] relative z-10'>
-```
+A segunda URL não funciona porque o CDN do Vimeo exige o *picture ID* (não o video ID). Além disso, **o `videoHash` é recebido mas nunca usado**, o que quebra vídeos unlisted (que precisam do hash para autorizar o oEmbed).
 
-Nenhum outro arquivo modificado. Componentes públicos preservados em estrutura e funcionalidade -- apenas o constraint de largura muda.
+A página pública (`ProposalCases.tsx`) já resolve isso corretamente usando a **API oEmbed do Vimeo**, que retorna o `thumbnail_url` real e respeita o hash de vídeos unlisted.
+
+## Solução
+
+Reescrever o componente `VimeoThumbnail` em `src/features/proposals/components/ProposalGuidedWizard.tsx` (linhas 86-107) para seguir o **mesmo padrão da página pública**:
+
+1. Tentar primeiro `https://vimeo.com/api/oembed.json?url=https://vimeo.com/{id}/{hash}` e usar `data.thumbnail_url` retornado.
+2. Em caso de erro, fallback para `https://vumbnail.com/{id}.jpg`.
+3. Se ambos falharem, mostrar o placeholder com ícone `Film`.
+
+Isso garante que cases unlisted (com hash) carreguem a thumb correta, alinhando o comportamento do wizard com o da página pública e com o padrão de memory `mem://architecture/vimeo-asset-loading-strategy`.
+
+## Escopo
+
+- **1 arquivo alterado**: `src/features/proposals/components/ProposalGuidedWizard.tsx` (apenas linhas 86-107)
+- Nenhum componente público em `components/public/` é tocado
+- Nenhuma mudança em DB, hooks ou API
 
