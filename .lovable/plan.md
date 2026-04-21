@@ -1,25 +1,66 @@
 
 
-# Diagnóstico: alterações não aparecem em `os.hiro.film/orcamento/...`
+# Ajustar cards de Entregáveis: reposicionar número e remover efeito fantasma
 
-## Causa
-O código do `ProposalEntregaveis.tsx` está correto no repositório (layout 2 colunas já aplicado). O problema **não é de código** — é de **deploy + cache**:
+## Mudanças no arquivo
 
-1. **`os.hiro.film` é o domínio publicado** (produção). Edições feitas no editor da Lovable rodam no **preview** (`id-preview--*.lovable.app`). Para a versão pública refletir as mudanças, é necessário **republicar** o projeto pelo botão Publish da Lovable.
+`src/features/proposals/components/public/ProposalEntregaveis.tsx` — bloco `bloco.itens.map` (linhas 71-101)
 
-2. **Service Worker PWA**: mesmo após republicar, o navegador pode estar servindo a build anterior do cache. A rota `/orcamento/*` está com `NetworkOnly` (ok), mas o **index.html + bundle JS** caem na regra genérica `^/.*$` com `NetworkFirst` (TTL 2h). O parâmetro `?v=...` na URL não invalida isso porque o cache key é baseado no caminho do bundle, não da rota.
+## Alterações específicas
 
-## Ação recomendada (sem mudança de código)
-1. Clicar em **Publish** no canto superior direito da Lovable para republicar `os.hiro.film` com a build atual.
-2. Aguardar ~30 segundos.
-3. Abrir `https://os.hiro.film/orcamento/546-...` em **aba anônima** (ou Cmd+Shift+R) para forçar bypass do service worker.
+### 1. Card de entregável (linhas 77-97)
 
-## Verificação
-Se mesmo após republicar + hard reload o layout antigo persistir, o problema é cache do SW. Nesse caso a correção de código seria:
+**Estrutura atual:**
+```tsx
+<div className='... p-[18px] ... flex gap-4'>
+  <div className='flex-1 min-w-0'>
+    <div className='... mb-4'>...</div>
+    <h4>...</h4>
+    <p>...</p>
+  </div>
+  {item.quantidade && (
+    <div className='border-l border-[#1f3d26] pl-4 min-w-[56px] flex items-center justify-center'>
+      <span className='text-[42px] ...'>...</span>
+    </div>
+  )}
+</div>
+```
 
-- Adicionar `/orcamento/` ao `navigateFallbackDenylist` no `vite.config.ts`, garantindo que o HTML dessas páginas nunca seja interceptado pelo SW.
-- Forçar `cacheName: 'pages-v2'` (renomear) para invalidar caches antigos em clientes existentes.
+**Nova estrutura:**
+```tsx
+<div className='... p-5 ... flex justify-between items-start gap-4'>
+  <div className='flex-1 min-w-0'>
+    <div className='... mb-[14px]'>...</div>
+    <h4 className='text-[14px] font-medium mb-1'>...</h4>
+    <p className='text-[12px] text-[#777] leading-[1.5]'>...</p>
+  </div>
+  {item.quantidade && (
+    <span className='flex-shrink-0 text-[26px] font-medium tracking-[-0.02em] text-[#4CFF5C] leading-none'>
+      {item.quantidade}
+    </span>
+  )}
+</div>
+```
 
-## Próximo passo
-Por favor, republique pelo botão Publish e teste em aba anônima. Se ainda não aparecer, me avise que aplico a correção do `vite.config.ts` para blindar a rota pública de cache do SW.
+**Mudanças detalhadas:**
+- Padding: `p-[18px]` → `p-5` (20px)
+- Layout: `flex gap-4` → `flex justify-between items-start gap-4`
+- Ícone: `mb-4` → `mb-[14px]`
+- Título: manter `text-[15px] font-bold` (mas ajustar para `text-[14px] font-medium` conforme especificação do usuário)
+- Descrição: `text-[13px] text-gray-400 leading-relaxed` → `text-[12px] text-[#777] leading-[1.5]`
+- Número: remove div wrapper com `border-l`, coloca `span` direto
+- Número: `text-[42px]` → `text-[26px]`
+- Número: `tracking-[-0.03em]` → `tracking-[-0.02em]`
+- Número: alinhado ao topo via `items-start` no flex pai
+
+### 2. Grid externo
+
+Linha 72: `gap-3` já está correto (12px), manter.
+
+## Escopo
+
+- 1 arquivo, ~20 linhas ajustadas
+- Apenas bloco `itens` (cards de Entregáveis)
+- Bloco `cards` (Serviços) mantido intacto
+- Zero mudanças em DB ou outros componentes
 
