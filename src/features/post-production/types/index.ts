@@ -17,7 +17,8 @@ export const PP_STATUS_ORDER: Record<PPStatus, number> = {
   color_grading: 2,
   finalizacao: 3,
   revisao: 4,
-  entregue: 5,
+  validacao_cliente: 5,
+  entregue: 6,
 };
 
 export interface PostProductionItem {
