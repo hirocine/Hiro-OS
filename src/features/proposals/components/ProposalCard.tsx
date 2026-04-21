@@ -145,9 +145,6 @@ export function ProposalCard({ proposal, onDelete, onDuplicate }: Props) {
           <Button variant="outline" size="sm" onClick={() => navigate(`/orcamentos/${proposal.slug}/overview`)} className="h-7 text-xs px-3">
             <Pencil className="mr-1.5 h-3 w-3" /> Editar
           </Button>
-          <Button size="sm" onClick={() => navigate(`/orcamentos/${proposal.slug}/overview`)} className="h-7 text-xs px-3">
-            <ExternalLink className="mr-1.5 h-3 w-3" /> Ver Proposta
-          </Button>
         </div>
       </div>
     </Card>
