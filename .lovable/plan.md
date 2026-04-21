@@ -1,30 +1,52 @@
 
-
-# Corrigir thumbnails do Vimeo no fluxo de seleção de cases
+# Corrigir thumbnails do Vimeo no fluxo de seleção de cases em `/orcamentos/:slug`
 
 ## Diagnóstico
+O ajuste anterior foi aplicado no arquivo errado para o fluxo que aparece no print.
 
-O componente `VimeoThumbnail` no `ProposalGuidedWizard.tsx` (linhas 86-107) tenta carregar a thumb em duas etapas:
-1. `https://vumbnail.com/{id}.jpg`
-2. Fallback: `https://i.vimeocdn.com/video/{id}_640.jpg` ← **URL inválida**
+A tela atual do usuário é a página de detalhes do orçamento (`/orcamentos/:slug`), que usa `src/pages/ProposalDetails.tsx` — não o `ProposalGuidedWizard.tsx`.
 
-A segunda URL não funciona porque o CDN do Vimeo exige o *picture ID* (não o video ID). Além disso, **o `videoHash` é recebido mas nunca usado**, o que quebra vídeos unlisted (que precisam do hash para autorizar o oEmbed).
+Nesse arquivo, o componente `VimeoThumbnail` ainda está com a lógica antiga:
+- tenta `https://vumbnail.com/{id}.jpg`
+- fallback para `https://i.vimeocdn.com/video/{videoId}_640.jpg` (URL inválida para esse uso)
+- ignora `videoHash` na busca inicial
 
-A página pública (`ProposalCases.tsx`) já resolve isso corretamente usando a **API oEmbed do Vimeo**, que retorna o `thumbnail_url` real e respeita o hash de vídeos unlisted.
+Resultado: os cards do banco de cases continuam pretos com placeholder, mesmo após a correção no wizard.
 
-## Solução
+## Implementação
 
-Reescrever o componente `VimeoThumbnail` em `src/features/proposals/components/ProposalGuidedWizard.tsx` (linhas 86-107) para seguir o **mesmo padrão da página pública**:
+### Arquivo
+- `src/pages/ProposalDetails.tsx`
 
-1. Tentar primeiro `https://vimeo.com/api/oembed.json?url=https://vimeo.com/{id}/{hash}` e usar `data.thumbnail_url` retornado.
-2. Em caso de erro, fallback para `https://vumbnail.com/{id}.jpg`.
-3. Se ambos falharem, mostrar o placeholder com ícone `Film`.
+### Mudança
+Reescrever apenas o `VimeoThumbnail` local desse arquivo para seguir o mesmo padrão já corrigido no wizard:
 
-Isso garante que cases unlisted (com hash) carreguem a thumb correta, alinhando o comportamento do wizard com o da página pública e com o padrão de memory `mem://architecture/vimeo-asset-loading-strategy`.
+1. Montar a URL do oEmbed com suporte a hash:
+```ts
+https://vimeo.com/api/oembed.json?url=https://vimeo.com/{id}/{hash}
+```
+
+2. Usar `thumbnail_url` retornado pelo Vimeo, com upgrade opcional para resolução maior.
+
+3. Se o oEmbed falhar, fallback para:
+```ts
+https://vumbnail.com/{id}.jpg
+```
+
+4. Se a imagem do fallback também falhar, aí sim exibir o placeholder.
+
+### Comportamento preservado
+- Nenhuma mudança visual no card
+- Nenhuma mudança em layout, classes ou estrutura da seleção
+- Nenhuma mudança no botão “Adicionar Cases”
+- Nenhuma mudança no parse dos links ou no banco
+
+## Impacto esperado
+A correção passa a cobrir exatamente a tela do screenshot:
+- thumbnails do banco de cases na aba de seleção
+- thumbnails de cases já adicionados nessa mesma página, porque ambos reutilizam o mesmo `VimeoThumbnail` local
 
 ## Escopo
-
-- **1 arquivo alterado**: `src/features/proposals/components/ProposalGuidedWizard.tsx` (apenas linhas 86-107)
-- Nenhum componente público em `components/public/` é tocado
-- Nenhuma mudança em DB, hooks ou API
-
+- 1 arquivo alterado: `src/pages/ProposalDetails.tsx`
+- Sem alterações em componentes públicos
+- Sem alterações em schema, Supabase, hooks ou navegação
