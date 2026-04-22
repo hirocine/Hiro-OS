@@ -48,7 +48,10 @@ export function useRecordingsCalendar(timeMin?: string, timeMax?: string) {
       const data = await res.json();
       return data.events as RecordingEvent[];
     },
-    staleTime: 1000 * 60 * 5, // 5 min cache
+    staleTime: 1000 * 60 * 2, // 2 min cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 1000 * 60 * 5, // auto-refetch a cada 5 min
   });
 }
 
