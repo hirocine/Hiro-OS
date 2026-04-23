@@ -54,7 +54,8 @@ export function PhaseCard({
   onClearSpecs,
 }: Props) {
   const Icon = PHASE_ICONS[phase.id];
-  const [focusItemId, setFocusItemId] = useState<string | null>(null);
+  // Marca uma sub onde acabamos de adicionar; o último item dessa sub recebe autofocus
+  const [pendingFocusSub, setPendingFocusSub] = useState<number | null>(null);
   const totalItems = phase.subcategories.reduce((acc, s) => acc + s.items.length, 0);
   const includedCount = phase.subcategories.reduce(
     (acc, s) => acc + s.items.filter((i) => i.included).length,
@@ -62,16 +63,8 @@ export function PhaseCard({
   );
 
   const handleAddItem = (subIdx: number) => {
-    // Cria item em branco; capturamos o id recém-criado comparando arrays após o add
-    const before = new Set(phase.subcategories[subIdx]?.items.map((i) => i.id) ?? []);
     onAddItem(subIdx, '');
-    // O array de items real é atualizado no parent; usamos um truque com microtask
-    // para encontrar o novo id após o re-render via efeito no próximo tick
-    requestAnimationFrame(() => {
-      const after = phase.subcategories[subIdx]?.items ?? [];
-      const created = after.find((i) => !before.has(i.id));
-      if (created) setFocusItemId(created.id);
-    });
+    setPendingFocusSub(subIdx);
   };
 
   return (
