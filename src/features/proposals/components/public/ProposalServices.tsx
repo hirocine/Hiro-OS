@@ -32,7 +32,7 @@ export function ProposalServices({ services }: Props) {
       </h2>
 
       <div
-        className='max-w-3xl rounded-2xl border'
+        className='w-full rounded-2xl border'
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.025)',
           borderColor: 'rgba(255, 255, 255, 0.07)',
