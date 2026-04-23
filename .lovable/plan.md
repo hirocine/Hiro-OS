@@ -1,50 +1,30 @@
 
 
-# Popular `services` da proposta 548 e capturar screenshot
+## Plano aprovado — execução
 
-## Ações
+Sim, o `pendingFocusSub` é exatamente isso: marca a subcategoria onde acabamos de adicionar item, e o `ServiceItemRow` da última posição (com `isCustom && label === ''`) recebe `autoFocusLabel` para focar o input de label automaticamente. Mantido.
 
-### 1. Gerar JSON `services`
-Construir em memória o objeto `ProposalServices` equivalente a `createDefaultServices()`, com IDs UUID v4 estáveis, e aplicar overrides:
+### Execução
 
-**Gravação / Equipe** → `included: true`:
-- Filmmaker, Fotógrafo, Produtor, Fotógrafo Fixo Backdrop
+1. Reescrever `src/features/proposals/components/admin/ServiceItemRow.tsx` com CSS Grid `grid-cols-[32px_200px_1fr_70px_32px]`, divisórias `border-l border-border/50` em cada célula, inputs `bg-transparent` ocupando `w-full` da célula, qtd com borda própria estilo campo numérico.
+2. Reescrever `src/features/proposals/components/admin/PhaseCard.tsx`:
+   - Card externo: `rounded-xl border border-border bg-card overflow-hidden`.
+   - Header de coluna: mesmo `ROW_GRID`, `bg-muted/30`, `border-b border-border`, `border-l border-border` por célula.
+   - Label de subcategoria: `px-3 py-2 bg-muted/20 border-b border-border/50 text-[11px] font-medium text-muted-foreground` (sem uppercase).
+   - Última row de cada subcategoria sem `border-b` (via `last:border-b-0`).
+   - Footer "+ Adicionar item": `p-3 bg-muted/20 border-t border-border` com botão tracejado.
+3. Manter intactos: Switch da fase, DropdownMenu de ações, colapso framer-motion, `pendingFocusSub` + autofocus.
 
-**Gravação / Equipamentos** → `included: true`:
-- Câmeras (`specification: "Canon C70 + Sony FX3, lente Sigma 24-70mm f/2.8"`, `quantity: 2`)
-- Iluminação (`specification: "Kit Aputure 600D + painéis LED"`)
-- Áudio
-- Drone (`specification: "DJI Mavic 3 Pro"`)
+### Validação
 
-**Pós-produção** → `included: true`:
-- Edição (`specification: "Entregas com legenda embutida + versão 9:16"`)
-- Motion Graphics, Color Grading, Trilha de Banco
+- `npx tsc --noEmit`
+- `npm test` (services-mutations não muda)
+- Login + navegar para `/orcamentos/548-grupo-primo-evento-portfel-connect-v1`
+- Screenshot da Pré-produção completa
+- Screenshot da Gravação com subcategorias Equipe + Equipamentos visíveis
+- Inspeção visual antes de entregar: alinhamento de colunas, divisórias visíveis, inputs com affordance, altura ~40px por row. Se algo divergir, aviso antes.
 
-Demais itens: `included: false` (default).
+### Entrega
 
-### 2. Persistir no Supabase
-`UPDATE orcamentos SET services = '<json>' WHERE slug = '548-grupo-primo-evento-portfel-connect-v1'`
-
-Executado via insert tool (data-only update, não migration).
-
-### 3. Capturar screenshot
-- `browser--navigate_to_url` para `https://id-preview--cb7836d9-70aa-4b1d-94bc-634ea66dd16d.lovable.app/orcamento/548-grupo-primo-evento-portfel-connect-v1`
-- Scroll até a seção "Serviços / O que está incluso no processo"
-- `browser--screenshot` da seção renderizada
-
-### 4. Verificação visual
-Conferir no screenshot:
-- 3 fases visíveis (Pré-produção **não** aparece, pois zero inclusos)
-- Tabela com colunas RECURSO | ESPECIFICAÇÃO | QTD
-- Subcategorias "EQUIPE" e "EQUIPAMENTOS" como divisores em Gravação
-- Câmeras com `2x`, demais com `1x`
-- Specifications populadas onde definidas; células em branco onde não
-
-## Não inclui
-- Nenhuma alteração de código.
-- Nenhuma alteração em outras propostas.
-- Sem avançar pro Passo 3.
-
-## Entrega
-Screenshot da seção + confirmação dos checkpoints visuais. Aguardo OK antes do Passo 3.
+Patch dos 2 arquivos + saída do tsc/testes + 2 screenshots + checklist visual confirmado.
 
