@@ -39,7 +39,10 @@ export interface Proposal {
   version: number;
   parent_id: string | null;
   is_latest_version: boolean;
+  services: import('@/lib/services-schema').ProposalServices | null;
 }
+
+export type { ProposalServices } from '@/lib/services-schema';
 
 export interface ScopeItem {
   item: string;
