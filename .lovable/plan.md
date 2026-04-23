@@ -1,59 +1,36 @@
 
 
-# Adicionar etapa "Validação Cliente" antes de Entrega na Esteira de Pós
+# Passo 1 — Execução: modelo de dados + zod + template + testes
 
-## Contexto
-Hoje o pipeline tem 5 macro-etapas: Na Fila → Edição → Finalização → Revisão → Entrega. Falta uma etapa entre **Revisão** (revisão interna do nosso time) e **Entrega** (export final + envio), que é o momento em que o vídeo está aprovado internamente e foi **enviado ao cliente para validação**, aguardando aprovação ou pedido de correção.
+Modo atual é read-only. Aprovando este plano, mudo pra default e executo tudo abaixo de uma vez. Tabela confirmada: `orcamentos`. Vitest já configurado (`npx vitest run`). Zod 3.23 disponível.
 
-## Nova etapa
-**Validação Cliente** — fica entre Revisão e Entrega.
+## Ações
 
-Pipeline final (6 etapas):
-```text
-Na Fila → Edição → Finalização → Revisão → Validação Cliente → Entrega
-```
+### 1. Migration Supabase
+Criar migration adicionando `services JSONB` (nullable, sem default) em `orcamentos`. Sem CHECK constraint. Sem migration de dados (propostas antigas ficam `null` → fallback no passo 2). Aplicada automaticamente pela ferramenta de migration.
 
-### Sub-etapas da Validação Cliente
-- Enviar ao cliente
-- Aguardando feedback
-- Cliente aprovou
+### 2. `src/lib/services-schema.ts`
+Zod schema com `phaseIdSchema`, `serviceItemSchema`, `subcategorySchema`, `phaseSchema`, `proposalServicesSchema` (com `superRefine` validando ordem fixa das 3 fases e ordem fixa Equipe→Equipamentos→Produção dentro de gravacao). Tipos inferidos exportados.
 
-### Comportamento de "voltar para correção"
-Quando o vídeo está em **Validação Cliente** e o cliente pede ajustes, o usuário precisa de uma ação rápida que:
-1. Volta o status para **Edição** (sub_status_index 0)
-2. Cria automaticamente uma nota/comentário no card de Atividade marcando "Cliente solicitou correção" + (opcional) texto digitado
-3. Mostra um toast de confirmação
+### 3. `src/lib/services-template.ts`
+`createDefaultServices()` retornando estrutura completa (3 + 10 + 5 + 1 + 7 = 26 itens) com `crypto.randomUUID()` por item. Defaults: `included:false, isCustom:false, specification:"", quantity:1, enabled:true`.
 
-Isso aparece como um botão dedicado **"Solicitar correção (voltar para Edição)"** dentro do bloco de sub-etapas da Validação Cliente, ao lado do botão padrão "Avançar para Entrega". Ao clicar, abre um pequeno popover/inline com textarea opcional ("O que precisa ajustar?") e botão Confirmar.
+### 4. Testes
+- `src/lib/__tests__/services-schema.test.ts` (6 cases): aceita default; rejeita ordem errada de fases; rejeita ordem errada de subcats em gravacao; rejeita quantity<1; rejeita id não-uuid; rejeita número errado de fases.
+- `src/lib/__tests__/services-template.test.ts` (8 cases): 3 fases na ordem certa; pré/pós com 1 subcat name=null; gravacao com 3 subcats na ordem certa; total 26 itens; defaults corretos por item; enabled=true por fase; IDs distintos entre calls; passa pelo `proposalServicesSchema.parse`.
 
-## Arquivos a alterar
+### 5. Verificação final
+- Rodar `npm run build` → reportar status.
+- Rodar `npx vitest run src/lib/__tests__/services-schema.test.ts src/lib/__tests__/services-template.test.ts` → reportar nº de testes/status.
 
-### 1. `src/features/post-production/types/index.ts`
-- Adicionar `'validacao_cliente'` ao tipo `PPStatus`
-- Adicionar entrada em `PP_STATUS_ORDER` (entre `revisao: 4` e `entregue`, renumerar `entregue` para 6)
-- Adicionar entrada em `PP_STATUS_CONFIG` com label "Validação Cliente" e cor (cyan/teal — distinta de revisão amarela e entregue verde)
-- Adicionar à lista `PP_STATUS_COLUMNS`
+## Não inclui
+Nenhuma alteração em UI, hooks, types do módulo proposals, ou wizard. Re-export de tipo em `src/features/proposals/types/index.ts` foi adiado pro passo 2 pra manter este passo 100% isolado em `src/lib/`.
 
-### 2. `src/features/post-production/components/PPVideoPage.tsx`
-- Adicionar `{ key: 'validacao_cliente', label: 'Validação Cliente' }` em `MACRO_STEPS` antes de `entregue`
-- Adicionar sub-etapas em `SUB_STEPS.validacao_cliente`: `['Enviar ao cliente', 'Aguardando feedback', 'Cliente aprovou']`
-- No bloco de sub-etapas (linhas 401-472), quando `normalizedStatus === 'validacao_cliente'`, renderizar botão extra **"Solicitar correção"** que:
-  - Abre estado local `requestingCorrection` com textarea opcional
-  - Ao confirmar: chama `addComment.mutateAsync` com texto "🔄 Cliente solicitou correção" + (texto opcional) e `updateItem.mutate({ status: 'edicao', sub_status_index: 0 })`
-  - Toast: "Vídeo retornou para Edição"
+## Resumo que vou enviar ao terminar
+1. Caminho da migration criada
+2. Confirmação de aplicação automática no Supabase
+3. Output do `npm run build`
+4. Output do `vitest run` (nº de testes + status)
 
-### 3. `src/features/post-production/components/PPDialog.tsx`
-- Já lista todos os status via `Object.keys(PP_STATUS_CONFIG)` — herda automaticamente a nova etapa.
-
-### 4. `src/features/post-production/components/PPKanban.tsx` e `PPTable.tsx`
-- Verificar se renderizam colunas/agrupamentos baseados em `PP_STATUS_COLUMNS` ou no config — se sim, herdam automaticamente a nova etapa Kanban/coluna.
-
-## Banco de dados
-Coluna `status` é `text` **sem CHECK constraint** (verificado nas migrations 20260225 e 20260317). Não precisa migration — apenas o valor `'validacao_cliente'` será aceito automaticamente. Itens existentes com status antigo continuam funcionando (já existe lógica de normalização para `color_grading` legacy).
-
-## Escopo
-- 2 arquivos principais alterados (`types/index.ts`, `PPVideoPage.tsx`)
-- 0 migrations
-- 0 mudanças no schema
-- Comportamento de "voltar para correção" registra histórico no card Atividade & Versões existente
+Aguardo seu OK antes de seguir pro passo 2.
 
