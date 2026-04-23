@@ -11,7 +11,13 @@ interface Props {
   services: ProposalServicesType;
 }
 
-const ROW_GRID = 'grid grid-cols-[210px_1fr_50px] gap-4 items-start';
+const ROW_GRID = 'grid grid-cols-[180px_1fr_40px] gap-5 items-start';
+
+function toSentenceCase(s: string) {
+  if (!s) return s;
+  const lower = s.toLocaleLowerCase('pt-BR');
+  return lower.charAt(0).toLocaleUpperCase('pt-BR') + lower.slice(1);
+}
 
 export function ProposalServices({ services }: Props) {
   // Filtrar fases visíveis: enabled e com pelo menos 1 item incluso
@@ -22,6 +28,12 @@ export function ProposalServices({ services }: Props) {
 
   if (visiblePhases.length === 0) return null;
 
+  const colDivider = { borderLeft: '0.5px solid rgba(255, 255, 255, 0.06)', paddingLeft: '20px' };
+  const headerColDivider = {
+    borderLeft: '0.5px solid rgba(255, 255, 255, 0.08)',
+    paddingLeft: '20px',
+  };
+
   return (
     <section className='py-14 md:py-20 proposal-content-px'>
       <p className='text-[11px] uppercase tracking-[4px] text-[#4CFF5C] font-bold mb-5'>
@@ -31,24 +43,49 @@ export function ProposalServices({ services }: Props) {
         O que está incluso no processo
       </h2>
 
-      <div
-        className='w-full rounded-2xl border'
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.025)',
-          borderColor: 'rgba(255, 255, 255, 0.07)',
-          padding: '32px 36px',
-        }}
-      >
-        {visiblePhases.map((phase, phaseIdx) => {
+      <div className='w-full flex flex-col gap-4'>
+        {visiblePhases.map((phase) => {
           const Icon = PHASE_ICONS[phase.id];
-          const isLast = phaseIdx === visiblePhases.length - 1;
           return (
-            <div key={phase.id} className={isLast ? '' : 'mb-10'}>
-              <div className='flex items-center gap-3 mb-5'>
+            <div
+              key={phase.id}
+              className='rounded-2xl border'
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.025)',
+                borderColor: 'rgba(255, 255, 255, 0.07)',
+                padding: '24px 28px',
+              }}
+            >
+              <div className='flex items-center gap-3 mb-4'>
                 <div className='w-8 h-8 rounded-md bg-[#4CFF5C]/10 flex items-center justify-center flex-shrink-0'>
                   <Icon className='w-4 h-4 text-[#4CFF5C]' />
                 </div>
                 <h3 className='text-lg font-medium text-[#f0f0f0]'>{phase.name}</h3>
+              </div>
+
+              {/* Headers de coluna */}
+              <div
+                className={`${ROW_GRID} py-2`}
+                style={{ borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)' }}
+              >
+                <div
+                  className='text-[10px] uppercase text-muted-foreground font-medium'
+                  style={{ letterSpacing: '0.14em' }}
+                >
+                  Recurso
+                </div>
+                <div
+                  className='text-[10px] uppercase text-muted-foreground font-medium'
+                  style={{ letterSpacing: '0.14em', ...headerColDivider }}
+                >
+                  Especificação
+                </div>
+                <div
+                  className='text-[10px] uppercase text-muted-foreground font-medium text-right'
+                  style={{ letterSpacing: '0.14em', ...headerColDivider }}
+                >
+                  Qtd
+                </div>
               </div>
 
               <div>
@@ -59,8 +96,15 @@ export function ProposalServices({ services }: Props) {
                   return (
                     <div key={sIdx}>
                       {sub.name && (
-                        <div className='text-[10px] uppercase tracking-wider text-muted-foreground mt-4 mb-1'>
-                          {sub.name}
+                        <div
+                          className='text-[11px] font-medium'
+                          style={{
+                            color: 'rgba(255, 255, 255, 0.35)',
+                            marginTop: '16px',
+                            marginBottom: '2px',
+                          }}
+                        >
+                          {toSentenceCase(sub.name)}
                         </div>
                       )}
                       {includedItems.map((item, iIdx) => (
@@ -74,12 +118,12 @@ export function ProposalServices({ services }: Props) {
                           }
                         >
                           <div className='text-[14px] text-[#f0f0f0]'>{item.label}</div>
-                          <div className='text-[13px] text-muted-foreground'>
+                          <div className='text-[13px] text-muted-foreground' style={colDivider}>
                             {item.specification}
                           </div>
                           <div
                             className='text-[13px] text-muted-foreground text-right'
-                            style={{ fontVariantNumeric: 'tabular-nums' }}
+                            style={{ fontVariantNumeric: 'tabular-nums', ...colDivider }}
                           >
                             {item.quantity}x
                           </div>
