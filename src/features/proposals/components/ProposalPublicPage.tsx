@@ -177,8 +177,16 @@ export function ProposalPublicPage() {
       )}
 
       {proposal.entregaveis.length > 0 && (
-        <ProposalEntregaveis entregaveis={proposal.entregaveis} />
+        <ProposalEntregaveis
+          entregaveis={
+            proposal.services
+              ? proposal.entregaveis.filter((b: any) => b?.label !== 'Serviços')
+              : proposal.entregaveis
+          }
+        />
       )}
+
+      {proposal.services && <ProposalServices services={proposal.services} />}
 
       <div className='proposal-content-px'><div className='border-b border-gray-800' /></div>
 
