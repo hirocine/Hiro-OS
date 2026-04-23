@@ -31,7 +31,14 @@ export function ProposalServices({ services }: Props) {
         O que está incluso no processo
       </h2>
 
-      <div className='max-w-2xl'>
+      <div
+        className='max-w-3xl rounded-2xl border'
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.025)',
+          borderColor: 'rgba(255, 255, 255, 0.07)',
+          padding: '32px 36px',
+        }}
+      >
         {visiblePhases.map((phase, phaseIdx) => {
           const Icon = PHASE_ICONS[phase.id];
           const isLast = phaseIdx === visiblePhases.length - 1;
