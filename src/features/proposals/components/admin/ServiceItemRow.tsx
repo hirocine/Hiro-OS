@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { MoreVertical, Trash2, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -12,15 +13,24 @@ import type { ServiceItem } from '@/lib/services-schema';
 
 interface Props {
   item: ServiceItem;
+  autoFocusLabel?: boolean;
   onChange: (patch: Partial<Pick<ServiceItem, 'label' | 'specification' | 'quantity' | 'included'>>) => void;
   onRemove: () => void;
   onDuplicate: () => void;
 }
 
-export function ServiceItemRow({ item, onChange, onRemove, onDuplicate }: Props) {
+export function ServiceItemRow({ item, autoFocusLabel, onChange, onRemove, onDuplicate }: Props) {
+  const labelRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (autoFocusLabel && labelRef.current) {
+      labelRef.current.focus();
+    }
+  }, [autoFocusLabel]);
+
   return (
     <div
-      className={`flex items-center gap-3 py-1.5 border-b border-white/5 last:border-b-0 group ${
+      className={`flex items-center gap-0 py-1.5 border-b border-white/5 last:border-b-0 group ${
         item.isCustom ? 'bg-primary/[0.02]' : ''
       }`}
     >
@@ -33,12 +43,14 @@ export function ServiceItemRow({ item, onChange, onRemove, onDuplicate }: Props)
         />
       </div>
 
-      {/* Label — texto puro quando não custom */}
-      <div className="w-[180px] flex-shrink-0 flex items-center gap-1.5 min-w-0">
+      {/* Label */}
+      <div className="w-[180px] flex-shrink-0 pl-3 flex items-center gap-1.5 min-w-0">
         {item.isCustom ? (
           <Input
+            ref={labelRef}
             value={item.label}
             onChange={(e) => onChange({ label: e.target.value })}
+            placeholder="—"
             className="h-8 text-sm border-0 shadow-none px-2 bg-white/[0.03] hover:bg-white/[0.05] focus-visible:bg-white/[0.05] focus-visible:ring-1"
           />
         ) : (
@@ -52,23 +64,28 @@ export function ServiceItemRow({ item, onChange, onRemove, onDuplicate }: Props)
       </div>
 
       {/* Specification */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 pl-4 border-l border-white/[0.04]">
         <Input
           value={item.specification}
           onChange={(e) => onChange({ specification: e.target.value })}
-          placeholder="Ex: Canon C70 + Sony FX3…"
+          placeholder=""
           className="h-8 text-sm border-0 shadow-none px-2 bg-transparent hover:bg-white/[0.03] focus-visible:bg-white/[0.05] focus-visible:ring-1"
         />
       </div>
 
-      {/* Quantity */}
-      <div className="w-16 flex-shrink-0">
-        <Input
-          type="number"
-          min={1}
+      {/* Quantity — input texto sem spinners */}
+      <div className="w-20 flex-shrink-0 pl-4 border-l border-white/[0.04] flex justify-end pr-2">
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={item.quantity}
-          onChange={(e) => onChange({ quantity: Number(e.target.value) || 1 })}
-          className="h-8 text-sm text-right tabular-nums px-2 border-0 shadow-none bg-transparent hover:bg-white/[0.03] focus-visible:bg-white/[0.05] focus-visible:ring-1"
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, '');
+            onChange({ quantity: v === '' ? 1 : Math.max(1, parseInt(v, 10)) });
+          }}
+          className="w-12 h-8 bg-transparent border-0 text-sm text-right tabular-nums focus:outline-none focus:ring-1 focus:ring-white/20 rounded px-1 hover:bg-white/[0.03]"
+          aria-label={`Quantidade de ${item.label}`}
         />
       </div>
 

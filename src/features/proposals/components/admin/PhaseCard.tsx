@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Track newly added item id per subcategory to autofocus its label input
 import {
   ClipboardList,
   Clapperboard,
@@ -53,20 +54,17 @@ export function PhaseCard({
   onClearSpecs,
 }: Props) {
   const Icon = PHASE_ICONS[phase.id];
-  const [adding, setAdding] = useState<{ subIdx: number; value: string } | null>(null);
+  // Marca uma sub onde acabamos de adicionar; o último item dessa sub recebe autofocus
+  const [pendingFocusSub, setPendingFocusSub] = useState<number | null>(null);
   const totalItems = phase.subcategories.reduce((acc, s) => acc + s.items.length, 0);
   const includedCount = phase.subcategories.reduce(
     (acc, s) => acc + s.items.filter((i) => i.included).length,
     0,
   );
 
-  const submitNew = () => {
-    if (!adding || !adding.value.trim()) {
-      setAdding(null);
-      return;
-    }
-    onAddItem(adding.subIdx, adding.value.trim());
-    setAdding(null);
+  const handleAddItem = (subIdx: number) => {
+    onAddItem(subIdx, '');
+    setPendingFocusSub(subIdx);
   };
 
   return (
@@ -138,52 +136,43 @@ export function PhaseCard({
                   )}
 
                   {/* Headers de coluna */}
-                  <div className="flex items-center gap-3 pb-2 border-b border-white/10 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                  <div className="flex items-center gap-0 pb-2 border-b border-white/10 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                     <div className="w-5 flex-shrink-0" />
-                    <div className="w-[180px] flex-shrink-0 px-2">Recurso</div>
-                    <div className="flex-1 min-w-0 px-2">Especificação</div>
-                    <div className="w-16 flex-shrink-0 px-2 text-right">Qtd</div>
+                    <div className="w-[180px] flex-shrink-0 pl-3">Recurso</div>
+                    <div className="flex-1 min-w-0 pl-4 border-l border-white/10">Especificação</div>
+                    <div className="w-20 flex-shrink-0 pl-4 border-l border-white/10 text-right pr-2">Qtd</div>
                     <div className="w-8 flex-shrink-0" />
                   </div>
 
                   <div>
-                    {sub.items.map((item) => (
-                      <ServiceItemRow
-                        key={item.id}
-                        item={item}
-                        onChange={(patch) => onUpdateItem(subIdx, item.id, patch)}
-                        onRemove={() => onRemoveItem(subIdx, item.id)}
-                        onDuplicate={() => onDuplicateItem(subIdx, item.id)}
-                      />
-                    ))}
+                    {sub.items.map((item, itemIdx) => {
+                      const isLast = itemIdx === sub.items.length - 1;
+                      const shouldFocus = pendingFocusSub === subIdx && isLast && item.isCustom && item.label === '';
+                      return (
+                        <ServiceItemRow
+                          key={item.id}
+                          item={item}
+                          autoFocusLabel={shouldFocus}
+                          onChange={(patch) => {
+                            if (shouldFocus) setPendingFocusSub(null);
+                            onUpdateItem(subIdx, item.id, patch);
+                          }}
+                          onRemove={() => onRemoveItem(subIdx, item.id)}
+                          onDuplicate={() => onDuplicateItem(subIdx, item.id)}
+                        />
+                      );
+                    })}
                   </div>
 
-                  {/* Adicionar item */}
-                  {adding?.subIdx === subIdx ? (
-                    <div className="mt-2 flex gap-2">
-                      <input
-                        autoFocus
-                        value={adding.value}
-                        onChange={(e) => setAdding({ subIdx, value: e.target.value })}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') submitNew();
-                          if (e.key === 'Escape') setAdding(null);
-                        }}
-                        onBlur={submitNew}
-                        placeholder="Nome do novo item…"
-                        className="flex-1 h-8 px-2 text-sm rounded-md border bg-background"
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setAdding({ subIdx, value: '' })}
-                      className="mt-2 w-full h-8 inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground border border-dashed border-border/70 rounded-md hover:border-primary/50 hover:text-primary transition-colors"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Adicionar item{sub.name ? ` em ${sub.name}` : ''}
-                    </button>
-                  )}
+                  {/* Adicionar item — cria row vazia direto */}
+                  <button
+                    type="button"
+                    onClick={() => handleAddItem(subIdx)}
+                    className="mt-2 w-full h-8 inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground border border-dashed border-border/70 rounded-md hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Adicionar item{sub.name ? ` em ${sub.name}` : ''}
+                  </button>
                 </div>
               ))}
             </div>
