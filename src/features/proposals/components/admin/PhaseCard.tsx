@@ -54,20 +54,24 @@ export function PhaseCard({
   onClearSpecs,
 }: Props) {
   const Icon = PHASE_ICONS[phase.id];
-  const [adding, setAdding] = useState<{ subIdx: number; value: string } | null>(null);
+  const [focusItemId, setFocusItemId] = useState<string | null>(null);
   const totalItems = phase.subcategories.reduce((acc, s) => acc + s.items.length, 0);
   const includedCount = phase.subcategories.reduce(
     (acc, s) => acc + s.items.filter((i) => i.included).length,
     0,
   );
 
-  const submitNew = () => {
-    if (!adding || !adding.value.trim()) {
-      setAdding(null);
-      return;
-    }
-    onAddItem(adding.subIdx, adding.value.trim());
-    setAdding(null);
+  const handleAddItem = (subIdx: number) => {
+    // Cria item em branco; capturamos o id recém-criado comparando arrays após o add
+    const before = new Set(phase.subcategories[subIdx]?.items.map((i) => i.id) ?? []);
+    onAddItem(subIdx, '');
+    // O array de items real é atualizado no parent; usamos um truque com microtask
+    // para encontrar o novo id após o re-render via efeito no próximo tick
+    requestAnimationFrame(() => {
+      const after = phase.subcategories[subIdx]?.items ?? [];
+      const created = after.find((i) => !before.has(i.id));
+      if (created) setFocusItemId(created.id);
+    });
   };
 
   return (
