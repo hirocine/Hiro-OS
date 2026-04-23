@@ -41,6 +41,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { DOR_EMOJI_OPTIONS } from '@/features/proposals/types';
 import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOptionsEditor';
 import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '@/features/proposals/lib/paymentPresets';
+import { ServicesSection } from '@/features/proposals/components/admin/ServicesSection';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
