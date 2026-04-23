@@ -31,7 +31,14 @@ export function ProposalServices({ services }: Props) {
         O que está incluso no processo
       </h2>
 
-      <div className='max-w-2xl'>
+      <div
+        className='max-w-3xl rounded-2xl border'
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.025)',
+          borderColor: 'rgba(255, 255, 255, 0.07)',
+          padding: '32px 36px',
+        }}
+      >
         {visiblePhases.map((phase, phaseIdx) => {
           const Icon = PHASE_ICONS[phase.id];
           const isLast = phaseIdx === visiblePhases.length - 1;
@@ -56,10 +63,15 @@ export function ProposalServices({ services }: Props) {
                           {sub.name}
                         </div>
                       )}
-                      {includedItems.map((item) => (
+                      {includedItems.map((item, iIdx) => (
                         <div
                           key={item.id}
-                          className={`${ROW_GRID} py-2.5 border-b border-border/40 last:border-b-0`}
+                          className={`${ROW_GRID} py-2.5`}
+                          style={
+                            iIdx === includedItems.length - 1
+                              ? undefined
+                              : { borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }
+                          }
                         >
                           <div className='text-[14px] text-[#f0f0f0]'>{item.label}</div>
                           <div className='text-[13px] text-muted-foreground'>
