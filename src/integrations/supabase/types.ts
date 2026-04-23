@@ -1079,6 +1079,7 @@ export type Database = {
           scope_pre_production: Json | null
           scope_production: Json | null
           sent_date: string | null
+          services: Json | null
           slug: string
           status: string
           testimonial_image: string | null
@@ -1121,6 +1122,7 @@ export type Database = {
           scope_pre_production?: Json | null
           scope_production?: Json | null
           sent_date?: string | null
+          services?: Json | null
           slug: string
           status?: string
           testimonial_image?: string | null
@@ -1163,6 +1165,7 @@ export type Database = {
           scope_pre_production?: Json | null
           scope_production?: Json | null
           sent_date?: string | null
+          services?: Json | null
           slug?: string
           status?: string
           testimonial_image?: string | null
