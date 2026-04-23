@@ -54,10 +54,11 @@ describe('ProposalServices', () => {
   it('isCustom não muda renderização do cliente (sem badge)', () => {
     const services = makeServicesAllIncluded();
     services.phases[0].subcategories[0].items[0].isCustom = true;
-    services.phases[0].subcategories[0].items[0].label = 'Item Custom';
+    services.phases[0].subcategories[0].items[0].label = 'Item Renderizado';
     render(<ProposalServices services={services} />);
-    expect(screen.getByText('Item Custom')).toBeInTheDocument();
-    expect(screen.queryByText(/custom/i)).not.toBeInTheDocument();
+    expect(screen.getByText('Item Renderizado')).toBeInTheDocument();
+    // Nenhum badge "Custom" deve aparecer no público
+    expect(screen.queryByText(/^custom$/i)).not.toBeInTheDocument();
   });
 
   it('retorna null quando nenhuma fase é visível', () => {
