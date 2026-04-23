@@ -1,36 +1,50 @@
 
 
-# Passo 1 — Execução: modelo de dados + zod + template + testes
-
-Modo atual é read-only. Aprovando este plano, mudo pra default e executo tudo abaixo de uma vez. Tabela confirmada: `orcamentos`. Vitest já configurado (`npx vitest run`). Zod 3.23 disponível.
+# Popular `services` da proposta 548 e capturar screenshot
 
 ## Ações
 
-### 1. Migration Supabase
-Criar migration adicionando `services JSONB` (nullable, sem default) em `orcamentos`. Sem CHECK constraint. Sem migration de dados (propostas antigas ficam `null` → fallback no passo 2). Aplicada automaticamente pela ferramenta de migration.
+### 1. Gerar JSON `services`
+Construir em memória o objeto `ProposalServices` equivalente a `createDefaultServices()`, com IDs UUID v4 estáveis, e aplicar overrides:
 
-### 2. `src/lib/services-schema.ts`
-Zod schema com `phaseIdSchema`, `serviceItemSchema`, `subcategorySchema`, `phaseSchema`, `proposalServicesSchema` (com `superRefine` validando ordem fixa das 3 fases e ordem fixa Equipe→Equipamentos→Produção dentro de gravacao). Tipos inferidos exportados.
+**Gravação / Equipe** → `included: true`:
+- Filmmaker, Fotógrafo, Produtor, Fotógrafo Fixo Backdrop
 
-### 3. `src/lib/services-template.ts`
-`createDefaultServices()` retornando estrutura completa (3 + 10 + 5 + 1 + 7 = 26 itens) com `crypto.randomUUID()` por item. Defaults: `included:false, isCustom:false, specification:"", quantity:1, enabled:true`.
+**Gravação / Equipamentos** → `included: true`:
+- Câmeras (`specification: "Canon C70 + Sony FX3, lente Sigma 24-70mm f/2.8"`, `quantity: 2`)
+- Iluminação (`specification: "Kit Aputure 600D + painéis LED"`)
+- Áudio
+- Drone (`specification: "DJI Mavic 3 Pro"`)
 
-### 4. Testes
-- `src/lib/__tests__/services-schema.test.ts` (6 cases): aceita default; rejeita ordem errada de fases; rejeita ordem errada de subcats em gravacao; rejeita quantity<1; rejeita id não-uuid; rejeita número errado de fases.
-- `src/lib/__tests__/services-template.test.ts` (8 cases): 3 fases na ordem certa; pré/pós com 1 subcat name=null; gravacao com 3 subcats na ordem certa; total 26 itens; defaults corretos por item; enabled=true por fase; IDs distintos entre calls; passa pelo `proposalServicesSchema.parse`.
+**Pós-produção** → `included: true`:
+- Edição (`specification: "Entregas com legenda embutida + versão 9:16"`)
+- Motion Graphics, Color Grading, Trilha de Banco
 
-### 5. Verificação final
-- Rodar `npm run build` → reportar status.
-- Rodar `npx vitest run src/lib/__tests__/services-schema.test.ts src/lib/__tests__/services-template.test.ts` → reportar nº de testes/status.
+Demais itens: `included: false` (default).
+
+### 2. Persistir no Supabase
+`UPDATE orcamentos SET services = '<json>' WHERE slug = '548-grupo-primo-evento-portfel-connect-v1'`
+
+Executado via insert tool (data-only update, não migration).
+
+### 3. Capturar screenshot
+- `browser--navigate_to_url` para `https://id-preview--cb7836d9-70aa-4b1d-94bc-634ea66dd16d.lovable.app/orcamento/548-grupo-primo-evento-portfel-connect-v1`
+- Scroll até a seção "Serviços / O que está incluso no processo"
+- `browser--screenshot` da seção renderizada
+
+### 4. Verificação visual
+Conferir no screenshot:
+- 3 fases visíveis (Pré-produção **não** aparece, pois zero inclusos)
+- Tabela com colunas RECURSO | ESPECIFICAÇÃO | QTD
+- Subcategorias "EQUIPE" e "EQUIPAMENTOS" como divisores em Gravação
+- Câmeras com `2x`, demais com `1x`
+- Specifications populadas onde definidas; células em branco onde não
 
 ## Não inclui
-Nenhuma alteração em UI, hooks, types do módulo proposals, ou wizard. Re-export de tipo em `src/features/proposals/types/index.ts` foi adiado pro passo 2 pra manter este passo 100% isolado em `src/lib/`.
+- Nenhuma alteração de código.
+- Nenhuma alteração em outras propostas.
+- Sem avançar pro Passo 3.
 
-## Resumo que vou enviar ao terminar
-1. Caminho da migration criada
-2. Confirmação de aplicação automática no Supabase
-3. Output do `npm run build`
-4. Output do `vitest run` (nº de testes + status)
-
-Aguardo seu OK antes de seguir pro passo 2.
+## Entrega
+Screenshot da seção + confirmação dos checkpoints visuais. Aguardo OK antes do Passo 3.
 
