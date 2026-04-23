@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Track newly added item id per subcategory to autofocus its label input
 import {
   ClipboardList,
   Clapperboard,
