@@ -41,6 +41,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { DOR_EMOJI_OPTIONS } from '@/features/proposals/types';
 import { PaymentOptionsEditor } from '@/features/proposals/components/PaymentOptionsEditor';
 import { buildPaymentOption, DEFAULT_PRESET_PARAMS } from '@/features/proposals/lib/paymentPresets';
+import { ServicesSection } from '@/features/proposals/components/admin/ServicesSection';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'warning' | 'success' | 'neutral' }> = {
   draft: { label: 'Rascunho', variant: 'neutral' },
@@ -1344,76 +1345,15 @@ export default function ProposalDetails() {
             </CardContent>
           </Card>
 
-          {/* Serviços Inclusos Section */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted"><Package className="h-4 w-4 text-foreground/70" /></div>
-                  <CardTitle className="text-sm font-semibold tracking-tight">Serviços Inclusos</CardTitle>
-                </div>
-                {inclusoDirty && (
-                  <Button size="sm" onClick={() => handleSaveClick('incluso')} disabled={updateProposal.isPending}>
-                    <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Serviços
-                  </Button>
-                )}
-            </div>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {inclusoForm.map((cat, catIdx) => {
-                  const phaseEmoji = cat.categoria === 'Pré-produção' ? '📋' : cat.categoria === 'Gravação' ? '🎬' : '✂️';
-                  const allItems = [
-                    ...(cat.itens || []),
-                    ...(cat.subcategorias?.flatMap(s => s.itens) || []),
-                  ];
-                  const activeCount = allItems.filter(i => i.ativo).length;
-                  const totalCount = allItems.length;
-
-                  return (
-                    <div key={catIdx} className="border rounded-xl bg-muted/30 p-5 space-y-3">
-                      <div className="flex items-center justify-between border-b border-border/50 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-base">{phaseEmoji}</span>
-                          <h4 className="text-sm font-semibold">{cat.categoria}</h4>
-                        </div>
-                        {activeCount > 0 && (
-                          <span className="text-[10px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5">
-                            {activeCount}/{totalCount}
-                          </span>
-                        )}
-                      </div>
-                      {cat.itens && (
-                        <div className="space-y-0.5">
-                          {cat.itens.map((item, itemIdx) => (
-                            <label key={itemIdx} className="flex items-center gap-2.5 text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 -mx-2 transition-colors">
-                              <Checkbox
-                                checked={item.ativo}
-                                onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx)}
-                              />
-                              <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>{item.nome}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                      {cat.subcategorias?.map((sub, subIdx) => (
-                        <div key={subIdx} className="space-y-0.5">
-                          <p className="uppercase tracking-wider text-[10px] text-muted-foreground font-semibold px-2 pt-1 pb-0.5">{sub.nome}</p>
-                          {sub.itens.map((item, itemIdx) => (
-                            <label key={itemIdx} className="flex items-center gap-2.5 text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 -mx-2 transition-colors">
-                              <Checkbox
-                                checked={item.ativo}
-                                onCheckedChange={() => toggleInclusoItem(catIdx, itemIdx, subIdx)}
-                              />
-                              <span className={item.ativo ? 'text-foreground' : 'text-muted-foreground'}>{item.nome}</span>
-                            </label>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Serviços (Pré, Gravação, Pós) — novo editor com fallback legado */}
+          {proposal && (
+            <ServicesSection
+              proposalId={proposal.id}
+              proposalSlug={proposal.slug}
+              services={(proposal as any).services ?? null}
+              legacyInclusoCategories={inclusoForm}
+            />
+          )}
 
           {/* Testimonial Section */}
           <Card className="lg:col-span-2">
