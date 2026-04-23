@@ -36,6 +36,7 @@ export function useProposalDetails(slug: string | undefined) {
         version: (data as any).version || 1,
         parent_id: (data as any).parent_id || null,
         is_latest_version: (data as any).is_latest_version !== false,
+        services: (data as any).services ?? null,
       } as unknown as Proposal;
     },
     enabled: !!slug,

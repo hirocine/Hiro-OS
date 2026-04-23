@@ -9,6 +9,7 @@ import { ProposalClients } from './public/ProposalClients';
 import { ProposalCases } from './public/ProposalCases';
 import { ProposalObjetivo } from './public/ProposalObjetivo';
 import { ProposalEntregaveis } from './public/ProposalEntregaveis';
+import { ProposalServices } from './public/ProposalServices';
 import { ProposalInvestimento } from './public/ProposalInvestimento';
 import { ProposalProximosPassos } from './public/ProposalProximosPassos';
 import { ProposalDownloadButton } from './public/ProposalDownloadButton';
