@@ -1,19 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Track newly added item id per subcategory to autofocus its label input
 import {
   ClipboardList,
   Clapperboard,
   Palette,
   MoreVertical,
-  Plus,
   CheckSquare,
   Square,
   Eraser,
   type LucideIcon,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Phase, PhaseId, ServiceItem } from '@/lib/services-schema';
-import { ServiceItemRow } from './ServiceItemRow';
+import { ServiceItemRow, ROW_GRID } from './ServiceItemRow';
 
 const PHASE_ICONS: Record<PhaseId, LucideIcon> = {
   pre_producao: ClipboardList,
@@ -54,7 +51,6 @@ export function PhaseCard({
   onClearSpecs,
 }: Props) {
   const Icon = PHASE_ICONS[phase.id];
-  // Marca uma sub onde acabamos de adicionar; o último item dessa sub recebe autofocus
   const [pendingFocusSub, setPendingFocusSub] = useState<number | null>(null);
   const totalItems = phase.subcategories.reduce((acc, s) => acc + s.items.length, 0);
   const includedCount = phase.subcategories.reduce(
@@ -68,9 +64,9 @@ export function PhaseCard({
   };
 
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Header da fase */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
           <div
             className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -126,54 +122,60 @@ export function PhaseCard({
             transition={{ duration: 0.22, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <div className="px-5 py-4 space-y-5">
-              {phase.subcategories.map((sub, subIdx) => (
-                <div key={subIdx}>
-                  {sub.name && (
-                    <p className="text-[11px] font-medium text-muted-foreground/70 mb-1.5">
-                      {sub.name}
-                    </p>
-                  )}
+            {/* Header de colunas */}
+            <div
+              className={`${ROW_GRID} bg-muted/30 border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground font-medium`}
+            >
+              <div className="py-2.5" />
+              <div className="py-2.5 px-3 border-l border-border">Recurso</div>
+              <div className="py-2.5 px-3 border-l border-border">Especificação</div>
+              <div className="py-2.5 px-3 border-l border-border text-right">Qtd</div>
+              <div className="py-2.5 border-l border-border" />
+            </div>
 
-                  {/* Headers de coluna */}
-                  <div className="flex items-center gap-0 pb-2 border-b border-white/10 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                    <div className="w-5 flex-shrink-0" />
-                    <div className="w-[180px] flex-shrink-0 pl-3">Recurso</div>
-                    <div className="flex-1 min-w-0 pl-4 border-l border-white/10">Especificação</div>
-                    <div className="w-20 flex-shrink-0 pl-4 border-l border-white/10 text-right pr-2">Qtd</div>
-                    <div className="w-8 flex-shrink-0" />
+            {/* Subcategorias + items */}
+            {phase.subcategories.map((sub, subIdx) => (
+              <div key={subIdx}>
+                {sub.name && (
+                  <div className="px-3 py-2 bg-muted/20 border-b border-border/50 text-[11px] font-medium text-muted-foreground">
+                    {sub.name}
                   </div>
+                )}
 
-                  <div>
-                    {sub.items.map((item, itemIdx) => {
-                      const isLast = itemIdx === sub.items.length - 1;
-                      const shouldFocus = pendingFocusSub === subIdx && isLast && item.isCustom && item.label === '';
-                      return (
-                        <ServiceItemRow
-                          key={item.id}
-                          item={item}
-                          autoFocusLabel={shouldFocus}
-                          onChange={(patch) => {
-                            if (shouldFocus) setPendingFocusSub(null);
-                            onUpdateItem(subIdx, item.id, patch);
-                          }}
-                          onRemove={() => onRemoveItem(subIdx, item.id)}
-                          onDuplicate={() => onDuplicateItem(subIdx, item.id)}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Adicionar item — cria row vazia direto */}
-                  <button
-                    type="button"
-                    onClick={() => handleAddItem(subIdx)}
-                    className="mt-2 w-full h-8 inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground border border-dashed border-border/70 rounded-md hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Adicionar item{sub.name ? ` em ${sub.name}` : ''}
-                  </button>
+                <div>
+                  {sub.items.map((item, itemIdx) => {
+                    const isLast = itemIdx === sub.items.length - 1;
+                    const shouldFocus =
+                      pendingFocusSub === subIdx && isLast && item.isCustom && item.label === '';
+                    return (
+                      <ServiceItemRow
+                        key={item.id}
+                        item={item}
+                        autoFocusLabel={shouldFocus}
+                        onChange={(patch) => {
+                          if (shouldFocus) setPendingFocusSub(null);
+                          onUpdateItem(subIdx, item.id, patch);
+                        }}
+                        onRemove={() => onRemoveItem(subIdx, item.id)}
+                        onDuplicate={() => onDuplicateItem(subIdx, item.id)}
+                      />
+                    );
+                  })}
                 </div>
+              </div>
+            ))}
+
+            {/* Footer adicionar item */}
+            <div className="p-3 bg-muted/20 border-t border-border space-y-2">
+              {phase.subcategories.map((sub, subIdx) => (
+                <button
+                  key={subIdx}
+                  type="button"
+                  onClick={() => handleAddItem(subIdx)}
+                  className="w-full py-2 text-[13px] text-muted-foreground border border-dashed border-border rounded-md hover:bg-accent/50 hover:text-foreground transition"
+                >
+                  + Adicionar item{sub.name ? ` em ${sub.name}` : ''}
+                </button>
               ))}
             </div>
           </motion.div>
