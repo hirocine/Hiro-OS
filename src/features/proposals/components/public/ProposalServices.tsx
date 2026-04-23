@@ -63,10 +63,15 @@ export function ProposalServices({ services }: Props) {
                           {sub.name}
                         </div>
                       )}
-                      {includedItems.map((item) => (
+                      {includedItems.map((item, iIdx) => (
                         <div
                           key={item.id}
-                          className={`${ROW_GRID} py-2.5 border-b border-border/40 last:border-b-0`}
+                          className={`${ROW_GRID} py-2.5`}
+                          style={
+                            iIdx === includedItems.length - 1
+                              ? undefined
+                              : { borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }
+                          }
                         >
                           <div className='text-[14px] text-[#f0f0f0]'>{item.label}</div>
                           <div className='text-[13px] text-muted-foreground'>
