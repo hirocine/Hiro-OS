@@ -138,26 +138,19 @@ export function PhaseCard({
                   )}
 
                   {/* Headers de coluna */}
-                  <div className="grid grid-cols-[24px_minmax(140px,1.2fr)_minmax(180px,2fr)_72px_32px] gap-3 px-2 pb-1.5 border-b border-border/60">
-                    <span />
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                      Recurso
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                      Especificação
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium text-right">
-                      Qtd
-                    </span>
-                    <span />
+                  <div className="flex items-center gap-3 pb-2 border-b border-white/10 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                    <div className="w-5 flex-shrink-0" />
+                    <div className="w-[180px] flex-shrink-0 px-2">Recurso</div>
+                    <div className="flex-1 min-w-0 px-2">Especificação</div>
+                    <div className="w-16 flex-shrink-0 px-2 text-right">Qtd</div>
+                    <div className="w-8 flex-shrink-0" />
                   </div>
 
                   <div>
-                    {sub.items.map((item, iIdx) => (
+                    {sub.items.map((item) => (
                       <ServiceItemRow
                         key={item.id}
                         item={item}
-                        isLast={iIdx === sub.items.length - 1}
                         onChange={(patch) => onUpdateItem(subIdx, item.id, patch)}
                         onRemove={() => onRemoveItem(subIdx, item.id)}
                         onDuplicate={() => onDuplicateItem(subIdx, item.id)}
