@@ -45,6 +45,8 @@ const producaoNavigation: NavigationItem[] = [
 
 const marketingNavigation: NavigationItem[] = [
   { name: 'Marketing', href: '/marketing', icon: Megaphone },
+  { name: 'Calendário de Posts', href: '/marketing/calendario', icon: CalendarDays },
+  { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
   { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
   { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
   { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
