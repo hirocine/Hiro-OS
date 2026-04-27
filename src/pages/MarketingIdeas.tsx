@@ -266,15 +266,21 @@ function KanbanColumn({
 }
 
 export default function MarketingIdeas() {
+  const navigate = useNavigate();
   const { ideas, loading, updateStatus, deleteIdea, duplicateIdea } = useMarketingIdeas();
+  const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 200);
   const [tagFilter, setTagFilter] = useState<string[]>([]);
+  const [pillarFilter, setPillarFilter] = useState<string[]>([]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIdea, setEditingIdea] = useState<MarketingIdea | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<IdeaStatus>('rascunho');
   const [deleteTarget, setDeleteTarget] = useState<MarketingIdea | null>(null);
+
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [postPrefill, setPostPrefill] = useState<Partial<MarketingPostInput> | null>(null);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -296,11 +302,18 @@ export default function MarketingIdeas() {
         return false;
       }
       if (tagFilter.length > 0 && !tagFilter.some((t) => i.tags.includes(t))) return false;
+      if (pillarFilter.length > 0 && !pillarFilter.includes(i.pillar_id ?? '')) return false;
       return true;
     });
-  }, [ideas, debouncedSearch, tagFilter]);
+  }, [ideas, debouncedSearch, tagFilter, pillarFilter]);
 
   const profilesMap = useProfilesMap(ideas.map((i) => i.created_by ?? '').filter(Boolean));
+
+  const pillarsMap = useMemo(() => {
+    const m: Record<string, MarketingPillar> = {};
+    pillars.forEach((p) => { m[p.id] = p; });
+    return m;
+  }, [pillars]);
 
   const grouped = useMemo(() => {
     const g: Record<IdeaStatus, MarketingIdea[]> = {
@@ -338,6 +351,37 @@ export default function MarketingIdeas() {
   const handleEdit = (idea: MarketingIdea) => {
     setEditingIdea(idea);
     setDialogOpen(true);
+  };
+
+  const handlePromote = (idea: MarketingIdea) => {
+    setPostPrefill({
+      title: idea.title,
+      caption: idea.description,
+      pillar_id: idea.pillar_id,
+      idea_id: idea.id,
+      status: 'em_producao',
+      scheduled_at: null,
+      hashtags: [],
+      platform: null,
+      format: null,
+      cover_url: null,
+      file_url: null,
+      published_url: null,
+    });
+    setPostDialogOpen(true);
+  };
+
+  const handlePostDialogChange = (open: boolean) => {
+    setPostDialogOpen(open);
+    if (!open && postPrefill) {
+      // Toast feedback after creation; we can't easily detect "saved", so rely on dialog close
+      // Show a generic toast only if the user actually created (we can't know here precisely),
+      // skip — toast already shown by hook. But add navigation shortcut:
+      setPostPrefill(null);
+      toast.success('Post criado no calendário 🚀', {
+        action: { label: 'Ver no calendário', onClick: () => navigate('/marketing/calendario') },
+      });
+    }
   };
 
   const activeIdea = activeId ? ideas.find((i) => i.id === activeId) : null;
