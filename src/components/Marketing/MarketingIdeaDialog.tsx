@@ -17,6 +17,8 @@ import {
   useMarketingIdeas,
 } from '@/hooks/useMarketingIdeas';
 import { useMarketingReferences } from '@/hooks/useMarketingReferences';
+import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { getPillarColor } from '@/lib/marketing-colors';
 
 interface Props {
   open: boolean;
@@ -28,12 +30,14 @@ interface Props {
 export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }: Props) {
   const { createIdea, updateIdea } = useMarketingIdeas();
   const { references } = useMarketingReferences();
+  const { pillars } = useMarketingPillars();
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IdeaStatus>('rascunho');
   const [source, setSource] = useState<string>('');
+  const [pillarId, setPillarId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [referenceIds, setReferenceIds] = useState<string[]>([]);
@@ -45,6 +49,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setDescription(idea.description ?? '');
         setStatus(idea.status);
         setSource(idea.source ?? '');
+        setPillarId(idea.pillar_id ?? '');
         setTags(idea.tags ?? []);
         setReferenceIds(idea.reference_ids ?? []);
       } else {
@@ -52,6 +57,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setDescription('');
         setStatus(defaultStatus ?? 'rascunho');
         setSource('');
+        setPillarId('');
         setTags([]);
         setTagInput('');
         setReferenceIds([]);
@@ -72,6 +78,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
       description: description.trim() || null,
       status,
       source: source || null,
+      pillar_id: pillarId || null,
       tags,
       reference_ids: referenceIds,
     };
@@ -140,7 +147,38 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
           </div>
 
           <div className="space-y-2">
-            <Label>Tags</Label>
+            <Label>Pilar</Label>
+            <Select value={pillarId} onValueChange={setPillarId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar pilar (opcional)">
+                  {pillarId && (
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: getPillarColor(pillars.find((p) => p.id === pillarId)?.color).hex }}
+                      />
+                      {pillars.find((p) => p.id === pillarId)?.name}
+                    </span>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {pillars.map((p) => {
+                  const c = getPillarColor(p.color);
+                  return (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.hex }} />
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5 mb-2">
               {tags.map((t) => (
                 <Badge key={t} variant="secondary" className="gap-1">
