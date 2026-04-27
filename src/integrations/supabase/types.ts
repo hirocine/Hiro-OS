@@ -1014,6 +1014,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          pillar_id: string | null
           reference_ids: string[]
           source: string | null
           status: string
@@ -1026,6 +1027,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          pillar_id?: string | null
           reference_ids?: string[]
           source?: string | null
           status?: string
@@ -1038,6 +1040,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          pillar_id?: string | null
           reference_ids?: string[]
           source?: string | null
           status?: string
@@ -1045,7 +1048,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketing_ideas_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketing_personas: {
         Row: {
@@ -1094,6 +1105,111 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      marketing_pillars: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          target_percentage: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          target_percentage?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          target_percentage?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_posts: {
+        Row: {
+          caption: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          file_url: string | null
+          format: string | null
+          hashtags: string[]
+          id: string
+          idea_id: string | null
+          pillar_id: string | null
+          platform: string | null
+          published_url: string | null
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_url?: string | null
+          format?: string | null
+          hashtags?: string[]
+          id?: string
+          idea_id?: string | null
+          pillar_id?: string | null
+          platform?: string | null
+          published_url?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_url?: string | null
+          format?: string | null
+          hashtags?: string[]
+          id?: string
+          idea_id?: string | null
+          pillar_id?: string | null
+          platform?: string | null
+          published_url?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_posts_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_posts_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketing_references: {
         Row: {
