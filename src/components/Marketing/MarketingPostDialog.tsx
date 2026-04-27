@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Upload, X, Loader2, Check, ChevronsUpDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Upload, X, Loader2, Check, ChevronsUpDown, ChevronDown, BarChart3, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   POST_FORMATS,
@@ -60,6 +62,20 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [publishedUrl, setPublishedUrl] = useState('');
   const [ideaId, setIdeaId] = useState<string>('');
   const [ideaPickerOpen, setIdeaPickerOpen] = useState(false);
+
+  // Metrics
+  const [metricsOpen, setMetricsOpen] = useState(false);
+  const [views, setViews] = useState(0);
+  const [likes, setLikes] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [shares, setShares] = useState(0);
+  const [saves, setSaves] = useState(0);
+  const [reach, setReach] = useState(0);
+  const [profileClicks, setProfileClicks] = useState(0);
+  const [newFollowers, setNewFollowers] = useState(0);
+  const [metricsUpdatedAt, setMetricsUpdatedAt] = useState<string | null>(null);
+  const [metricsSource, setMetricsSource] = useState<string | null>(null);
+  const initialMetricsRef = useRef<string>('');
 
   useEffect(() => {
     if (!open) return;
