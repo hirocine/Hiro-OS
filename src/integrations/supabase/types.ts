@@ -1139,6 +1139,59 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_post_snapshots: {
+        Row: {
+          captured_at: string
+          comments: number
+          id: string
+          likes: number
+          new_followers: number
+          post_id: string
+          profile_clicks: number
+          reach: number
+          saves: number
+          shares: number
+          source: string
+          views: number
+        }
+        Insert: {
+          captured_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          new_followers?: number
+          post_id: string
+          profile_clicks?: number
+          reach?: number
+          saves?: number
+          shares?: number
+          source: string
+          views?: number
+        }
+        Update: {
+          captured_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          new_followers?: number
+          post_id?: string
+          profile_clicks?: number
+          reach?: number
+          saves?: number
+          shares?: number
+          source?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_snapshots_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_posts: {
         Row: {
           caption: string | null
