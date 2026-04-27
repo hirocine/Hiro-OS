@@ -45,6 +45,10 @@ const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
 const CRM = lazy(() => import("./pages/CRM"));
 const CRMContactDetail = lazy(() => import("./pages/CRMContactDetail"));
 const CRMDealDetail = lazy(() => import("./pages/CRMDealDetail"));
+const MarketingHome = lazy(() => import("./pages/MarketingHome"));
+const MarketingReferences = lazy(() => import("./pages/MarketingReferences"));
+const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
+const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
