@@ -18,15 +18,25 @@ export interface MarketingPost {
   published_url: string | null;
   pillar_id: string | null;
   idea_id: string | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  reach: number;
+  profile_clicks: number;
+  new_followers: number;
+  engagement_rate: number | null;
+  metrics_updated_at: string | null;
+  metrics_source: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type MarketingPostInput = Omit<
-  MarketingPost,
-  'id' | 'created_at' | 'updated_at' | 'created_by'
->;
+export type MarketingPostInput = Partial<Omit<MarketingPost, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'engagement_rate'>> & {
+  title: string;
+};
 
 interface FetchOptions {
   scheduled_from?: string;
