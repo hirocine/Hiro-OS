@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -44,7 +44,10 @@ const producaoNavigation: NavigationItem[] = [
 ];
 
 const marketingNavigation: NavigationItem[] = [
-  { name: 'Referências', href: '/referencias', icon: Megaphone },
+  { name: 'Marketing', href: '/marketing', icon: Megaphone },
+  { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
+  { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
+  { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
 ];
 
 const adminNavigation: NavigationItem[] = [
