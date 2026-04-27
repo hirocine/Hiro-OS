@@ -11,7 +11,9 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,10 @@ import {
   useMarketingIdeas,
 } from '@/hooks/useMarketingIdeas';
 import { MarketingIdeaDialog } from '@/components/Marketing/MarketingIdeaDialog';
+import { MarketingPostDialog } from '@/components/Marketing/MarketingPostDialog';
+import { useMarketingPillars, type MarketingPillar } from '@/hooks/useMarketingPillars';
+import { getPillarColor } from '@/lib/marketing-colors';
+import { type MarketingPostInput } from '@/hooks/useMarketingPosts';
 
 interface ProfileMini {
   user_id: string;
