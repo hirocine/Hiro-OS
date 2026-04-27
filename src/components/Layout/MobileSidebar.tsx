@@ -46,7 +46,10 @@ const producaoNavigation: NavigationItem[] = [
 ];
 
 const marketingNavigation: NavigationItem[] = [
-  { name: 'Referências', href: '/referencias', icon: Megaphone },
+  { name: 'Marketing', href: '/marketing', icon: Megaphone },
+  { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
+  { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
+  { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
 ];
 
 const adminNavigation: NavigationItem[] = [
