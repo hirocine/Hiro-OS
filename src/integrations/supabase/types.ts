@@ -1008,6 +1008,138 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_ideas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          reference_ids: string[]
+          source: string | null
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          reference_ids?: string[]
+          source?: string | null
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          reference_ids?: string[]
+          source?: string | null
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_personas: {
+        Row: {
+          avatar_url: string | null
+          buying_triggers: string[]
+          channels_consumed: string[]
+          common_objections: string[]
+          company_size: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          main_pains: string[]
+          name: string
+          segment: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          buying_triggers?: string[]
+          channels_consumed?: string[]
+          common_objections?: string[]
+          company_size?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          main_pains?: string[]
+          name: string
+          segment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          buying_triggers?: string[]
+          channels_consumed?: string[]
+          common_objections?: string[]
+          company_size?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          main_pains?: string[]
+          name?: string
+          segment?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_references: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          notes: string | null
+          platform: string | null
+          source_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          platform?: string | null
+          source_url?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          platform?: string | null
+          source_url?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
