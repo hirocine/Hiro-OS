@@ -400,12 +400,20 @@ export default function MarketingIdeas() {
             className="pl-9"
           />
         </div>
-        <div className="sm:w-64">
+        <div className="sm:w-56">
           <MultiSelect
             options={allTags.map((t) => ({ value: t, label: t }))}
             value={tagFilter}
             onValueChange={setTagFilter}
             placeholder="Filtrar por tags"
+          />
+        </div>
+        <div className="sm:w-56">
+          <MultiSelect
+            options={pillars.map((p) => ({ value: p.id, label: `● ${p.name}` }))}
+            value={pillarFilter}
+            onValueChange={setPillarFilter}
+            placeholder="Filtrar por pilar"
           />
         </div>
       </div>
@@ -425,10 +433,12 @@ export default function MarketingIdeas() {
                 emoji={s.emoji}
                 ideas={grouped[s.value]}
                 profiles={profilesMap}
+                pillarsMap={pillarsMap}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={setDeleteTarget}
                 onDuplicate={duplicateIdea}
+                onPromote={handlePromote}
                 activeId={activeId}
               />
             ))}
