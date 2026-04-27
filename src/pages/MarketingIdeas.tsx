@@ -460,6 +460,19 @@ export default function MarketingIdeas() {
         defaultStatus={defaultStatus}
       />
 
+      <MarketingPostDialog
+        open={postDialogOpen}
+        onOpenChange={handlePostDialogChange}
+        prefill={postPrefill}
+        onSaved={(_p, isNew) => {
+          if (isNew) {
+            toast.success('Post criado no calendário 🚀', {
+              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing/calendario') },
+            });
+          }
+        }}
+      />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
