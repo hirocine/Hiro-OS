@@ -191,10 +191,12 @@ interface ColumnProps {
   emoji: string;
   ideas: MarketingIdea[];
   profiles: Record<string, ProfileMini>;
+  pillarsMap: Record<string, MarketingPillar>;
   onAdd: (status: IdeaStatus) => void;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
+  onPromote: (idea: MarketingIdea) => void;
   activeId: string | null;
 }
 
@@ -204,10 +206,12 @@ function KanbanColumn({
   emoji,
   ideas,
   profiles,
+  pillarsMap,
   onAdd,
   onEdit,
   onDelete,
   onDuplicate,
+  onPromote,
   activeId,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
@@ -243,9 +247,11 @@ function KanbanColumn({
             key={idea.id}
             idea={idea}
             profile={idea.created_by ? profiles[idea.created_by] : undefined}
+            pillar={idea.pillar_id ? pillarsMap[idea.pillar_id] : undefined}
             onEdit={onEdit}
             onDelete={onDelete}
             onDuplicate={onDuplicate}
+            onPromote={onPromote}
             dragging={activeId === idea.id}
           />
         ))}
