@@ -1142,57 +1142,90 @@ export type Database = {
       marketing_posts: {
         Row: {
           caption: string | null
+          comments: number
           cover_url: string | null
           created_at: string
           created_by: string | null
+          engagement_rate: number | null
           file_url: string | null
           format: string | null
           hashtags: string[]
           id: string
           idea_id: string | null
+          likes: number
+          metrics_source: string | null
+          metrics_updated_at: string | null
+          new_followers: number
           pillar_id: string | null
           platform: string | null
+          profile_clicks: number
           published_url: string | null
+          reach: number
+          saves: number
           scheduled_at: string | null
+          shares: number
           status: string
           title: string
           updated_at: string
+          views: number
         }
         Insert: {
           caption?: string | null
+          comments?: number
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          engagement_rate?: number | null
           file_url?: string | null
           format?: string | null
           hashtags?: string[]
           id?: string
           idea_id?: string | null
+          likes?: number
+          metrics_source?: string | null
+          metrics_updated_at?: string | null
+          new_followers?: number
           pillar_id?: string | null
           platform?: string | null
+          profile_clicks?: number
           published_url?: string | null
+          reach?: number
+          saves?: number
           scheduled_at?: string | null
+          shares?: number
           status?: string
           title: string
           updated_at?: string
+          views?: number
         }
         Update: {
           caption?: string | null
+          comments?: number
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          engagement_rate?: number | null
           file_url?: string | null
           format?: string | null
           hashtags?: string[]
           id?: string
           idea_id?: string | null
+          likes?: number
+          metrics_source?: string | null
+          metrics_updated_at?: string | null
+          new_followers?: number
           pillar_id?: string | null
           platform?: string | null
+          profile_clicks?: number
           published_url?: string | null
+          reach?: number
+          saves?: number
           scheduled_at?: string | null
+          shares?: number
           status?: string
           title?: string
           updated_at?: string
+          views?: number
         }
         Relationships: [
           {

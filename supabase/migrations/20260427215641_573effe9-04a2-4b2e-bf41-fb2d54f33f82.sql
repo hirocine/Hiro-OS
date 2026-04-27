@@ -1,0 +1,1 @@
+COMMENT ON COLUMN public.marketing_posts.engagement_rate IS 'Taxa de engajamento calculada: (likes + comments + shares + saves) / reach * 100';

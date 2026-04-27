@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Upload, X, Loader2, Check, ChevronsUpDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Upload, X, Loader2, Check, ChevronsUpDown, ChevronDown, BarChart3, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   POST_FORMATS,
@@ -61,21 +63,50 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [ideaId, setIdeaId] = useState<string>('');
   const [ideaPickerOpen, setIdeaPickerOpen] = useState(false);
 
+  // Metrics
+  const [metricsOpen, setMetricsOpen] = useState(false);
+  const [views, setViews] = useState(0);
+  const [likes, setLikes] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [shares, setShares] = useState(0);
+  const [saves, setSaves] = useState(0);
+  const [reach, setReach] = useState(0);
+  const [profileClicks, setProfileClicks] = useState(0);
+  const [newFollowers, setNewFollowers] = useState(0);
+  const [metricsUpdatedAt, setMetricsUpdatedAt] = useState<string | null>(null);
+  const [metricsSource, setMetricsSource] = useState<string | null>(null);
+  const initialMetricsRef = useRef<string>('');
+
   useEffect(() => {
     if (!open) return;
-    if (post) {
-      setTitle(post.title);
-      setPlatform(post.platform ?? '');
-      setFormat(post.format ?? '');
-      setPillarId(post.pillar_id ?? '');
-      setStatus(post.status);
-      setScheduledLocal(toLocalInput(post.scheduled_at));
-      setCoverUrl(post.cover_url ?? '');
-      setCaption(post.caption ?? '');
-      setHashtags(post.hashtags ?? []);
-      setFileUrl(post.file_url ?? '');
-      setPublishedUrl(post.published_url ?? '');
-      setIdeaId(post.idea_id ?? '');
+    const m = post ?? null;
+    if (m) {
+      setTitle(m.title);
+      setPlatform(m.platform ?? '');
+      setFormat(m.format ?? '');
+      setPillarId(m.pillar_id ?? '');
+      setStatus(m.status);
+      setScheduledLocal(toLocalInput(m.scheduled_at));
+      setCoverUrl(m.cover_url ?? '');
+      setCaption(m.caption ?? '');
+      setHashtags(m.hashtags ?? []);
+      setFileUrl(m.file_url ?? '');
+      setPublishedUrl(m.published_url ?? '');
+      setIdeaId(m.idea_id ?? '');
+      setViews(m.views ?? 0);
+      setLikes(m.likes ?? 0);
+      setCommentsCount(m.comments ?? 0);
+      setShares(m.shares ?? 0);
+      setSaves(m.saves ?? 0);
+      setReach(m.reach ?? 0);
+      setProfileClicks(m.profile_clicks ?? 0);
+      setNewFollowers(m.new_followers ?? 0);
+      setMetricsUpdatedAt(m.metrics_updated_at);
+      setMetricsSource(m.metrics_source);
+      initialMetricsRef.current = JSON.stringify([
+        m.views, m.likes, m.comments, m.shares, m.saves, m.reach, m.profile_clicks, m.new_followers,
+      ]);
+      setMetricsOpen(m.status === 'publicado');
     } else {
       setTitle(prefill?.title ?? '');
       setPlatform(prefill?.platform ?? '');
@@ -94,8 +125,18 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(prefill?.file_url ?? '');
       setPublishedUrl(prefill?.published_url ?? '');
       setIdeaId(prefill?.idea_id ?? '');
+      setViews(0); setLikes(0); setCommentsCount(0); setShares(0);
+      setSaves(0); setReach(0); setProfileClicks(0); setNewFollowers(0);
+      setMetricsUpdatedAt(null); setMetricsSource(null);
+      initialMetricsRef.current = JSON.stringify([0, 0, 0, 0, 0, 0, 0, 0]);
+      setMetricsOpen(false);
     }
   }, [open, post, defaultDate, prefill]);
+
+  const computedEngagement = useMemo(() => {
+    if (reach <= 0) return 0;
+    return ((likes + commentsCount + shares + saves) / reach) * 100;
+  }, [likes, commentsCount, shares, saves, reach]);
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -118,6 +159,8 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
+    const currentMetrics = JSON.stringify([views, likes, commentsCount, shares, saves, reach, profileClicks, newFollowers]);
+    const metricsChanged = currentMetrics !== initialMetricsRef.current;
     const payload: MarketingPostInput = {
       title: title.trim(),
       caption: caption.trim() || null,
@@ -131,7 +174,29 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       published_url: status === 'publicado' ? publishedUrl.trim() || null : null,
       pillar_id: pillarId || null,
       idea_id: ideaId || null,
+      views, likes, comments: commentsCount, shares, saves, reach,
+      profile_clicks: profileClicks, new_followers: newFollowers,
+      ...(metricsChanged
+        ? { metrics_updated_at: new Date().toISOString(), metrics_source: 'manual' }
+        : {}),
     };
+    try {
+      setSaving(true);
+      let saved: MarketingPost;
+      if (post) {
+        saved = await updatePost(post.id, payload);
+        onSaved?.(saved, false);
+      } else {
+        saved = await createPost(payload);
+        onSaved?.(saved, true);
+      }
+      onOpenChange(false);
+    } catch {
+      // toast in hook
+    } finally {
+      setSaving(false);
+    }
+  };
     try {
       setSaving(true);
       let saved: MarketingPost;
@@ -375,6 +440,92 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
             </div>
           </div>
         </div>
+
+        {status === 'publicado' && (
+          <Collapsible open={metricsOpen} onOpenChange={setMetricsOpen} className="border border-border rounded-xl">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-accent/30 transition rounded-xl"
+              >
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <BarChart3 className="h-4 w-4" />
+                  Métricas de performance
+                </span>
+                <ChevronDown className={cn('h-4 w-4 transition-transform', metricsOpen && 'rotate-180')} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="px-4 pb-4 space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Views', value: views, set: setViews },
+                    { label: 'Curtidas', value: likes, set: setLikes },
+                    { label: 'Comentários', value: commentsCount, set: setCommentsCount },
+                    { label: 'Shares', value: shares, set: setShares },
+                    { label: 'Saves', value: saves, set: setSaves },
+                    { label: 'Alcance', value: reach, set: setReach },
+                    { label: 'Cliques na bio', value: profileClicks, set: setProfileClicks },
+                    { label: 'Novos seguidores', value: newFollowers, set: setNewFollowers },
+                  ].map((m) => (
+                    <div key={m.label} className="space-y-1.5">
+                      <Label className="text-xs">{m.label}</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={m.value}
+                        onChange={(e) => m.set(Number(e.target.value) || 0)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Taxa de engajamento será calculada automaticamente:{' '}
+                  <span className="font-medium text-foreground">{computedEngagement.toFixed(2)}%</span>
+                </p>
+
+                {metricsUpdatedAt && (
+                  <p className="text-xs text-muted-foreground">
+                    Atualizado em {new Date(metricsUpdatedAt).toLocaleDateString('pt-BR')} às{' '}
+                    {new Date(metricsUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}{' '}
+                    via{' '}
+                    {metricsSource === 'api_instagram'
+                      ? 'Instagram'
+                      : metricsSource === 'api_linkedin'
+                      ? 'LinkedIn'
+                      : 'manual'}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
+                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do Instagram
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
+                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do LinkedIn
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
