@@ -441,7 +441,91 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
           </div>
         </div>
 
-        <DialogFooter>
+        {status === 'publicado' && (
+          <Collapsible open={metricsOpen} onOpenChange={setMetricsOpen} className="border border-border rounded-xl">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-accent/30 transition rounded-xl"
+              >
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <BarChart3 className="h-4 w-4" />
+                  Métricas de performance
+                </span>
+                <ChevronDown className={cn('h-4 w-4 transition-transform', metricsOpen && 'rotate-180')} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="px-4 pb-4 space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Views', value: views, set: setViews },
+                    { label: 'Curtidas', value: likes, set: setLikes },
+                    { label: 'Comentários', value: commentsCount, set: setCommentsCount },
+                    { label: 'Shares', value: shares, set: setShares },
+                    { label: 'Saves', value: saves, set: setSaves },
+                    { label: 'Alcance', value: reach, set: setReach },
+                    { label: 'Cliques na bio', value: profileClicks, set: setProfileClicks },
+                    { label: 'Novos seguidores', value: newFollowers, set: setNewFollowers },
+                  ].map((m) => (
+                    <div key={m.label} className="space-y-1.5">
+                      <Label className="text-xs">{m.label}</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={m.value}
+                        onChange={(e) => m.set(Number(e.target.value) || 0)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Taxa de engajamento será calculada automaticamente:{' '}
+                  <span className="font-medium text-foreground">{computedEngagement.toFixed(2)}%</span>
+                </p>
+
+                {metricsUpdatedAt && (
+                  <p className="text-xs text-muted-foreground">
+                    Atualizado em {new Date(metricsUpdatedAt).toLocaleDateString('pt-BR')} às{' '}
+                    {new Date(metricsUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}{' '}
+                    via{' '}
+                    {metricsSource === 'api_instagram'
+                      ? 'Instagram'
+                      : metricsSource === 'api_linkedin'
+                      ? 'LinkedIn'
+                      : 'manual'}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
+                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do Instagram
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
+                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do LinkedIn
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={handleSubmit} disabled={saving || !title.trim() || uploading}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
