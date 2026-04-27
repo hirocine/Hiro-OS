@@ -526,6 +526,8 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
             </CollapsibleContent>
           </Collapsible>
         )}
+
+        <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={handleSubmit} disabled={saving || !title.trim() || uploading}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
