@@ -179,6 +179,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
           </div>
 
           <div className="space-y-2">
+            <Label>Tags</Label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {tags.map((t) => (
                 <Badge key={t} variant="secondary" className="gap-1">
