@@ -11,7 +11,9 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,10 @@ import {
   useMarketingIdeas,
 } from '@/hooks/useMarketingIdeas';
 import { MarketingIdeaDialog } from '@/components/Marketing/MarketingIdeaDialog';
+import { MarketingPostDialog } from '@/components/Marketing/MarketingPostDialog';
+import { useMarketingPillars, type MarketingPillar } from '@/hooks/useMarketingPillars';
+import { getPillarColor } from '@/lib/marketing-colors';
+import { type MarketingPostInput } from '@/hooks/useMarketingPosts';
 
 interface ProfileMini {
   user_id: string;
@@ -82,15 +88,18 @@ function useProfilesMap(userIds: string[]) {
 interface IdeaCardProps {
   idea: MarketingIdea;
   profile?: ProfileMini;
+  pillar?: MarketingPillar;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
+  onPromote: (idea: MarketingIdea) => void;
   dragging?: boolean;
 }
 
-function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: IdeaCardProps) {
+function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onPromote, dragging }: IdeaCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: idea.id });
   const initials = (profile?.display_name || '?').slice(0, 2).toUpperCase();
+  const pillarColor = pillar ? getPillarColor(pillar.color) : null;
 
   return (
     <div
@@ -104,7 +113,16 @@ function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: Id
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="text-sm font-medium leading-snug line-clamp-2 flex-1">{idea.title}</h4>
+        <div className="flex items-start gap-2 flex-1 min-w-0">
+          {pillarColor && (
+            <span
+              className="h-2.5 w-2.5 rounded-full mt-1 shrink-0"
+              style={{ backgroundColor: pillarColor.hex }}
+              title={pillar?.name}
+            />
+          )}
+          <h4 className="text-sm font-medium leading-snug line-clamp-2 flex-1">{idea.title}</h4>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -118,6 +136,9 @@ function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: Id
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onClick={() => onPromote(idea)}>
+              <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(idea)}>
               <Edit2 className="h-3.5 w-3.5 mr-2" /> Editar
             </DropdownMenuItem>
@@ -170,10 +191,12 @@ interface ColumnProps {
   emoji: string;
   ideas: MarketingIdea[];
   profiles: Record<string, ProfileMini>;
+  pillarsMap: Record<string, MarketingPillar>;
   onAdd: (status: IdeaStatus) => void;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
+  onPromote: (idea: MarketingIdea) => void;
   activeId: string | null;
 }
 
@@ -183,10 +206,12 @@ function KanbanColumn({
   emoji,
   ideas,
   profiles,
+  pillarsMap,
   onAdd,
   onEdit,
   onDelete,
   onDuplicate,
+  onPromote,
   activeId,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
@@ -222,9 +247,11 @@ function KanbanColumn({
             key={idea.id}
             idea={idea}
             profile={idea.created_by ? profiles[idea.created_by] : undefined}
+            pillar={idea.pillar_id ? pillarsMap[idea.pillar_id] : undefined}
             onEdit={onEdit}
             onDelete={onDelete}
             onDuplicate={onDuplicate}
+            onPromote={onPromote}
             dragging={activeId === idea.id}
           />
         ))}
@@ -239,15 +266,21 @@ function KanbanColumn({
 }
 
 export default function MarketingIdeas() {
+  const navigate = useNavigate();
   const { ideas, loading, updateStatus, deleteIdea, duplicateIdea } = useMarketingIdeas();
+  const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 200);
   const [tagFilter, setTagFilter] = useState<string[]>([]);
+  const [pillarFilter, setPillarFilter] = useState<string[]>([]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIdea, setEditingIdea] = useState<MarketingIdea | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<IdeaStatus>('rascunho');
   const [deleteTarget, setDeleteTarget] = useState<MarketingIdea | null>(null);
+
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [postPrefill, setPostPrefill] = useState<Partial<MarketingPostInput> | null>(null);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -269,11 +302,18 @@ export default function MarketingIdeas() {
         return false;
       }
       if (tagFilter.length > 0 && !tagFilter.some((t) => i.tags.includes(t))) return false;
+      if (pillarFilter.length > 0 && !pillarFilter.includes(i.pillar_id ?? '')) return false;
       return true;
     });
-  }, [ideas, debouncedSearch, tagFilter]);
+  }, [ideas, debouncedSearch, tagFilter, pillarFilter]);
 
   const profilesMap = useProfilesMap(ideas.map((i) => i.created_by ?? '').filter(Boolean));
+
+  const pillarsMap = useMemo(() => {
+    const m: Record<string, MarketingPillar> = {};
+    pillars.forEach((p) => { m[p.id] = p; });
+    return m;
+  }, [pillars]);
 
   const grouped = useMemo(() => {
     const g: Record<IdeaStatus, MarketingIdea[]> = {
@@ -313,6 +353,29 @@ export default function MarketingIdeas() {
     setDialogOpen(true);
   };
 
+  const handlePromote = (idea: MarketingIdea) => {
+    setPostPrefill({
+      title: idea.title,
+      caption: idea.description,
+      pillar_id: idea.pillar_id,
+      idea_id: idea.id,
+      status: 'em_producao',
+      scheduled_at: null,
+      hashtags: [],
+      platform: null,
+      format: null,
+      cover_url: null,
+      file_url: null,
+      published_url: null,
+    });
+    setPostDialogOpen(true);
+  };
+
+  const handlePostDialogChange = (open: boolean) => {
+    setPostDialogOpen(open);
+    if (!open) setPostPrefill(null);
+  };
+
   const activeIdea = activeId ? ideas.find((i) => i.id === activeId) : null;
 
   return (
@@ -337,12 +400,20 @@ export default function MarketingIdeas() {
             className="pl-9"
           />
         </div>
-        <div className="sm:w-64">
+        <div className="sm:w-56">
           <MultiSelect
             options={allTags.map((t) => ({ value: t, label: t }))}
             value={tagFilter}
             onValueChange={setTagFilter}
             placeholder="Filtrar por tags"
+          />
+        </div>
+        <div className="sm:w-56">
+          <MultiSelect
+            options={pillars.map((p) => ({ value: p.id, label: `● ${p.name}` }))}
+            value={pillarFilter}
+            onValueChange={setPillarFilter}
+            placeholder="Filtrar por pilar"
           />
         </div>
       </div>
@@ -362,10 +433,12 @@ export default function MarketingIdeas() {
                 emoji={s.emoji}
                 ideas={grouped[s.value]}
                 profiles={profilesMap}
+                pillarsMap={pillarsMap}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={setDeleteTarget}
                 onDuplicate={duplicateIdea}
+                onPromote={handlePromote}
                 activeId={activeId}
               />
             ))}
@@ -385,6 +458,19 @@ export default function MarketingIdeas() {
         onOpenChange={setDialogOpen}
         idea={editingIdea}
         defaultStatus={defaultStatus}
+      />
+
+      <MarketingPostDialog
+        open={postDialogOpen}
+        onOpenChange={handlePostDialogChange}
+        prefill={postPrefill}
+        onSaved={(_p, isNew) => {
+          if (isNew) {
+            toast.success('Post criado no calendário 🚀', {
+              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing/calendario') },
+            });
+          }
+        }}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>

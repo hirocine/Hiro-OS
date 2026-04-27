@@ -26,6 +26,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   post?: MarketingPost | null;
   defaultDate?: Date | null;
+  prefill?: Partial<MarketingPostInput> | null;
+  onSaved?: (post: MarketingPost, isNew: boolean) => void;
 }
 
 function toLocalInput(iso: string | null): string {
@@ -35,7 +37,7 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function MarketingPostDialog({ open, onOpenChange, post, defaultDate }: Props) {
+export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
   const { ideas } = useMarketingIdeas();
@@ -75,21 +77,25 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate }: P
       setPublishedUrl(post.published_url ?? '');
       setIdeaId(post.idea_id ?? '');
     } else {
-      setTitle('');
-      setPlatform('');
-      setFormat('');
-      setPillarId('');
-      setStatus('em_producao');
-      setScheduledLocal(defaultDate ? toLocalInput(defaultDate.toISOString()) : '');
-      setCoverUrl('');
-      setCaption('');
-      setHashtags([]);
+      setTitle(prefill?.title ?? '');
+      setPlatform(prefill?.platform ?? '');
+      setFormat(prefill?.format ?? '');
+      setPillarId(prefill?.pillar_id ?? '');
+      setStatus((prefill?.status as PostStatus) ?? 'em_producao');
+      setScheduledLocal(
+        prefill?.scheduled_at
+          ? toLocalInput(prefill.scheduled_at)
+          : defaultDate ? toLocalInput(defaultDate.toISOString()) : ''
+      );
+      setCoverUrl(prefill?.cover_url ?? '');
+      setCaption(prefill?.caption ?? '');
+      setHashtags(prefill?.hashtags ?? []);
       setHashtagInput('');
-      setFileUrl('');
-      setPublishedUrl('');
-      setIdeaId('');
+      setFileUrl(prefill?.file_url ?? '');
+      setPublishedUrl(prefill?.published_url ?? '');
+      setIdeaId(prefill?.idea_id ?? '');
     }
-  }, [open, post, defaultDate]);
+  }, [open, post, defaultDate, prefill]);
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -128,8 +134,14 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate }: P
     };
     try {
       setSaving(true);
-      if (post) await updatePost(post.id, payload);
-      else await createPost(payload);
+      let saved: MarketingPost;
+      if (post) {
+        saved = await updatePost(post.id, payload);
+        onSaved?.(saved, false);
+      } else {
+        saved = await createPost(payload);
+        onSaved?.(saved, true);
+      }
       onOpenChange(false);
     } catch {
       // toast in hook
