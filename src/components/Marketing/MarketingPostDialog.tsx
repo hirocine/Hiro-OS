@@ -79,19 +79,34 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
   useEffect(() => {
     if (!open) return;
-    if (post) {
-      setTitle(post.title);
-      setPlatform(post.platform ?? '');
-      setFormat(post.format ?? '');
-      setPillarId(post.pillar_id ?? '');
-      setStatus(post.status);
-      setScheduledLocal(toLocalInput(post.scheduled_at));
-      setCoverUrl(post.cover_url ?? '');
-      setCaption(post.caption ?? '');
-      setHashtags(post.hashtags ?? []);
-      setFileUrl(post.file_url ?? '');
-      setPublishedUrl(post.published_url ?? '');
-      setIdeaId(post.idea_id ?? '');
+    const m = post ?? null;
+    if (m) {
+      setTitle(m.title);
+      setPlatform(m.platform ?? '');
+      setFormat(m.format ?? '');
+      setPillarId(m.pillar_id ?? '');
+      setStatus(m.status);
+      setScheduledLocal(toLocalInput(m.scheduled_at));
+      setCoverUrl(m.cover_url ?? '');
+      setCaption(m.caption ?? '');
+      setHashtags(m.hashtags ?? []);
+      setFileUrl(m.file_url ?? '');
+      setPublishedUrl(m.published_url ?? '');
+      setIdeaId(m.idea_id ?? '');
+      setViews(m.views ?? 0);
+      setLikes(m.likes ?? 0);
+      setCommentsCount(m.comments ?? 0);
+      setShares(m.shares ?? 0);
+      setSaves(m.saves ?? 0);
+      setReach(m.reach ?? 0);
+      setProfileClicks(m.profile_clicks ?? 0);
+      setNewFollowers(m.new_followers ?? 0);
+      setMetricsUpdatedAt(m.metrics_updated_at);
+      setMetricsSource(m.metrics_source);
+      initialMetricsRef.current = JSON.stringify([
+        m.views, m.likes, m.comments, m.shares, m.saves, m.reach, m.profile_clicks, m.new_followers,
+      ]);
+      setMetricsOpen(m.status === 'publicado');
     } else {
       setTitle(prefill?.title ?? '');
       setPlatform(prefill?.platform ?? '');
@@ -110,8 +125,18 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(prefill?.file_url ?? '');
       setPublishedUrl(prefill?.published_url ?? '');
       setIdeaId(prefill?.idea_id ?? '');
+      setViews(0); setLikes(0); setCommentsCount(0); setShares(0);
+      setSaves(0); setReach(0); setProfileClicks(0); setNewFollowers(0);
+      setMetricsUpdatedAt(null); setMetricsSource(null);
+      initialMetricsRef.current = JSON.stringify([0, 0, 0, 0, 0, 0, 0, 0]);
+      setMetricsOpen(false);
     }
   }, [open, post, defaultDate, prefill]);
+
+  const computedEngagement = useMemo(() => {
+    if (reach <= 0) return 0;
+    return ((likes + commentsCount + shares + saves) / reach) * 100;
+  }, [likes, commentsCount, shares, saves, reach]);
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -134,6 +159,8 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
+    const currentMetrics = JSON.stringify([views, likes, commentsCount, shares, saves, reach, profileClicks, newFollowers]);
+    const metricsChanged = currentMetrics !== initialMetricsRef.current;
     const payload: MarketingPostInput = {
       title: title.trim(),
       caption: caption.trim() || null,
@@ -147,7 +174,29 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       published_url: status === 'publicado' ? publishedUrl.trim() || null : null,
       pillar_id: pillarId || null,
       idea_id: ideaId || null,
+      views, likes, comments: commentsCount, shares, saves, reach,
+      profile_clicks: profileClicks, new_followers: newFollowers,
+      ...(metricsChanged
+        ? { metrics_updated_at: new Date().toISOString(), metrics_source: 'manual' }
+        : {}),
     };
+    try {
+      setSaving(true);
+      let saved: MarketingPost;
+      if (post) {
+        saved = await updatePost(post.id, payload);
+        onSaved?.(saved, false);
+      } else {
+        saved = await createPost(payload);
+        onSaved?.(saved, true);
+      }
+      onOpenChange(false);
+    } catch {
+      // toast in hook
+    } finally {
+      setSaving(false);
+    }
+  };
     try {
       setSaving(true);
       let saved: MarketingPost;
