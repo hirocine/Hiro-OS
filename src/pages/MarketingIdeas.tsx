@@ -88,15 +88,18 @@ function useProfilesMap(userIds: string[]) {
 interface IdeaCardProps {
   idea: MarketingIdea;
   profile?: ProfileMini;
+  pillar?: MarketingPillar;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
+  onPromote: (idea: MarketingIdea) => void;
   dragging?: boolean;
 }
 
-function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: IdeaCardProps) {
+function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onPromote, dragging }: IdeaCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: idea.id });
   const initials = (profile?.display_name || '?').slice(0, 2).toUpperCase();
+  const pillarColor = pillar ? getPillarColor(pillar.color) : null;
 
   return (
     <div
@@ -110,7 +113,16 @@ function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: Id
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="text-sm font-medium leading-snug line-clamp-2 flex-1">{idea.title}</h4>
+        <div className="flex items-start gap-2 flex-1 min-w-0">
+          {pillarColor && (
+            <span
+              className="h-2.5 w-2.5 rounded-full mt-1 shrink-0"
+              style={{ backgroundColor: pillarColor.hex }}
+              title={pillar?.name}
+            />
+          )}
+          <h4 className="text-sm font-medium leading-snug line-clamp-2 flex-1">{idea.title}</h4>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -124,6 +136,9 @@ function IdeaCard({ idea, profile, onEdit, onDelete, onDuplicate, dragging }: Id
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onClick={() => onPromote(idea)}>
+              <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(idea)}>
               <Edit2 className="h-3.5 w-3.5 mr-2" /> Editar
             </DropdownMenuItem>
