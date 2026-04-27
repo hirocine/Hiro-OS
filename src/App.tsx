@@ -109,6 +109,10 @@ const App = () => (
                 <Route path="crm" element={<CRM />} />
                 <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
                 <Route path="crm/deals/:id" element={<CRMDealDetail />} />
+                <Route path="marketing" element={<MarketingHome />} />
+                <Route path="marketing/referencias" element={<MarketingReferences />} />
+                <Route path="marketing/ideias" element={<MarketingIdeas />} />
+                <Route path="marketing/persona" element={<MarketingPersona />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
                 <Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />
