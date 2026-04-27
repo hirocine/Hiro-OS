@@ -373,15 +373,7 @@ export default function MarketingIdeas() {
 
   const handlePostDialogChange = (open: boolean) => {
     setPostDialogOpen(open);
-    if (!open && postPrefill) {
-      // Toast feedback after creation; we can't easily detect "saved", so rely on dialog close
-      // Show a generic toast only if the user actually created (we can't know here precisely),
-      // skip — toast already shown by hook. But add navigation shortcut:
-      setPostPrefill(null);
-      toast.success('Post criado no calendário 🚀', {
-        action: { label: 'Ver no calendário', onClick: () => navigate('/marketing/calendario') },
-      });
-    }
+    if (!open) setPostPrefill(null);
   };
 
   const activeIdea = activeId ? ideas.find((i) => i.id === activeId) : null;
