@@ -1212,7 +1212,7 @@ export default function MarketingDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <BarChart3 className="h-4 w-4" />
-                    Alcance diário (14 dias)
+                    Alcance diário
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1263,7 +1263,7 @@ export default function MarketingDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Eye className="h-4 w-4" />
-                    Visitas no perfil (14 dias)
+                    Visitas no perfil
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
