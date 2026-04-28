@@ -275,6 +275,82 @@ function topEntries(obj: Record<string, number> | null | undefined, n: number) {
   return entries.map((e) => ({ ...e, pct: total > 0 ? (e.value / total) * 100 : 0 }));
 }
 
+// Separa as chaves prefixadas (`age:`, `gender:`) em buckets distintos
+function splitGenderAge(obj: Record<string, number> | null | undefined) {
+  const ages: Record<string, number> = {};
+  const genders: Record<string, number> = {};
+  if (!obj) return { ages, genders };
+  for (const [key, value] of Object.entries(obj)) {
+    const v = Number(value) || 0;
+    if (key.startsWith('age:')) {
+      ages[key.replace('age:', '')] = v;
+    } else if (key.startsWith('gender:')) {
+      genders[key.replace('gender:', '')] = v;
+    }
+  }
+  return { ages, genders };
+}
+
+const AGE_ORDER = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+
+function ageEntries(ages: Record<string, number>) {
+  const total = Object.values(ages).reduce((s, v) => s + v, 0);
+  if (total === 0) return [] as Array<{ key: string; value: number; pct: number }>;
+  return AGE_ORDER.filter((age) => ages[age] !== undefined).map((age) => ({
+    key: age,
+    value: ages[age],
+    pct: (ages[age] / total) * 100,
+  }));
+}
+
+function genderEntries(genders: Record<string, number>) {
+  const total = Object.values(genders).reduce((s, v) => s + v, 0);
+  if (total === 0) return [] as Array<{ key: string; value: number; pct: number; label: string; color: string }>;
+  const LABEL: Record<string, string> = { F: 'Mulheres', M: 'Homens', U: 'Outros' };
+  return Object.entries(genders)
+    .map(([key, value]) => {
+      const k = key.toUpperCase();
+      return {
+        key: k,
+        value,
+        pct: (value / total) * 100,
+        label: LABEL[k] ?? key,
+        color: GENDER_COLORS[k] ?? GENDER_COLORS.U,
+      };
+    })
+    .sort((a, b) => b.value - a.value);
+}
+
+function localeFlag(locale: string): string {
+  const map: Record<string, string> = {
+    pt_BR: '🇧🇷', pt_PT: '🇵🇹',
+    en_US: '🇺🇸', en_GB: '🇬🇧',
+    es_ES: '🇪🇸', es_MX: '🇲🇽',
+    fr_FR: '🇫🇷', it_IT: '🇮🇹',
+    de_DE: '🇩🇪', ja_JP: '🇯🇵',
+    zh_CN: '🇨🇳', ko_KR: '🇰🇷',
+  };
+  return map[locale] ?? map[locale.replace('-', '_')] ?? '🌐';
+}
+
+function localeLabel(locale: string): string {
+  const map: Record<string, string> = {
+    pt_BR: 'Português (BR)',
+    pt_PT: 'Português (PT)',
+    en_US: 'Inglês (US)',
+    en_GB: 'Inglês (UK)',
+    es_ES: 'Espanhol (ES)',
+    es_MX: 'Espanhol (MX)',
+    fr_FR: 'Francês',
+    it_IT: 'Italiano',
+    de_DE: 'Alemão',
+    ja_JP: 'Japonês',
+    zh_CN: 'Chinês',
+    ko_KR: 'Coreano',
+  };
+  return map[locale] ?? map[locale.replace('-', '_')] ?? locale;
+}
+
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
