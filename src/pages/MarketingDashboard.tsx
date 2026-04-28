@@ -347,22 +347,12 @@ export default function MarketingDashboard() {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <PageHeader title="Dashboard de Marketing" subtitle="KPIs consolidados, evolução e top conteúdos." />
-        <Card>
-          <CardContent className="p-12 flex flex-col items-center text-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">Publique seu primeiro post para ver métricas aqui</h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md">
-                Quando você marcar posts como "Publicado" e adicionar métricas, esta tela vai consolidar a performance.
-              </p>
-            </div>
-            <Button asChild>
-              <Link to="/marketing">Ir ao Calendário</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BarChart3}
+          title="Publique seu primeiro post para ver métricas aqui"
+          description='Quando você marcar posts como "Publicado" e adicionar métricas, esta tela vai consolidar a performance.'
+          action={{ label: 'Ir ao Calendário', onClick: () => navigate('/marketing') }}
+        />
       </ResponsiveContainer>
     );
   }
