@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Loader2, User, MoreVertical } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
