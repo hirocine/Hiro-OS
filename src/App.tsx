@@ -46,6 +46,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const CRMContactDetail = lazy(() => import("./pages/CRMContactDetail"));
 const CRMDealDetail = lazy(() => import("./pages/CRMDealDetail"));
 const MarketingHome = lazy(() => import("./pages/MarketingHome"));
+const MarketingIntegrations = lazy(() => import("./pages/MarketingIntegrations"));
 const MarketingReferences = lazy(() => import("./pages/MarketingReferences"));
 const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
 const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
@@ -131,6 +132,7 @@ const App = () => (
                 <Route path="administracao/categorias" element={<Admin />} />
                 <Route path="administracao/notificacoes" element={<Admin />} />
                 <Route path="administracao/sistema" element={<Admin />} />
+                <Route path="administracao/integracoes" element={<MarketingIntegrations />} />
               </Route>
               <Route path="*" element={
                 <Suspense fallback={<LoadingScreenSkeleton />}>

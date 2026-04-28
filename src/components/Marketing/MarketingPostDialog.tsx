@@ -22,6 +22,9 @@ import { PILLAR_COLORS, getPillarColor } from '@/lib/marketing-colors';
 import { type MarketingPost, type MarketingPostInput, useMarketingPosts } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
+import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -43,9 +46,11 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
   const { ideas } = useMarketingIdeas();
+  const { instagramConnected, linkedinConnected } = useMarketingIntegrations();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
+  const [syncingPlatform, setSyncingPlatform] = useState<'instagram' | 'linkedin' | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -195,6 +200,34 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       // toast in hook
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSync = async (target: 'instagram' | 'linkedin') => {
+    if (!post) return;
+    try {
+      setSyncingPlatform(target);
+      const fnName = target === 'instagram' ? 'sync-instagram-post' : 'sync-linkedin-post';
+      const { data, error } = await supabase.functions.invoke(fnName, { body: { post_id: post.id } });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Erro desconhecido');
+      const m = data.metrics ?? {};
+      if (m.views != null) setViews(Number(m.views) || 0);
+      if (m.likes != null) setLikes(Number(m.likes) || 0);
+      if (m.comments != null) setCommentsCount(Number(m.comments) || 0);
+      if (m.shares != null) setShares(Number(m.shares) || 0);
+      if (m.saved != null) setSaves(Number(m.saved) || 0);
+      if (m.saves != null) setSaves(Number(m.saves) || 0);
+      if (m.reach != null) setReach(Number(m.reach) || 0);
+      if (m.profile_clicks != null) setProfileClicks(Number(m.profile_clicks) || 0);
+      setMetricsUpdatedAt(new Date().toISOString());
+      setMetricsSource(target === 'instagram' ? 'api_instagram' : 'api_linkedin');
+      toast.success(`Métricas sincronizadas do ${target === 'instagram' ? 'Instagram' : 'LinkedIn'}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao sincronizar';
+      toast.error(msg);
+    } finally {
+      setSyncingPlatform(null);
     }
   };
 
@@ -483,26 +516,66 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
                 <div className="flex flex-wrap gap-2 pt-1">
                   <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
-                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do Instagram
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
-                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do LinkedIn
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
-                    </Tooltip>
+                    {(() => {
+                      const igEligible = platform === 'instagram' && status === 'publicado' && !!publishedUrl.trim();
+                      const igDisabled = !igEligible || !instagramConnected || syncingPlatform !== null;
+                      const igTooltip = !instagramConnected
+                        ? 'Configure a integração do Instagram em Admin → Integrações'
+                        : !igEligible
+                        ? 'Disponível apenas para posts publicados do Instagram com URL preenchida'
+                        : 'Sincronizar métricas do Instagram';
+                      const liEligible = platform === 'linkedin' && status === 'publicado' && !!publishedUrl.trim();
+                      const liDisabled = !liEligible || !linkedinConnected || syncingPlatform !== null;
+                      const liTooltip = !linkedinConnected
+                        ? 'Configure a integração do LinkedIn em Admin → Integrações'
+                        : !liEligible
+                        ? 'Disponível apenas para posts publicados do LinkedIn com URL preenchida'
+                        : 'Sincronizar métricas do LinkedIn';
+                      return (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={igDisabled}
+                                  onClick={() => handleSync('instagram')}
+                                  className="gap-2"
+                                >
+                                  {syncingPlatform === 'instagram'
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <RefreshCw className="h-3.5 w-3.5" />}
+                                  Sincronizar do Instagram
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{igTooltip}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={liDisabled}
+                                  onClick={() => handleSync('linkedin')}
+                                  className="gap-2"
+                                >
+                                  {syncingPlatform === 'linkedin'
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <RefreshCw className="h-3.5 w-3.5" />}
+                                  Sincronizar do LinkedIn
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{liTooltip}</TooltipContent>
+                          </Tooltip>
+                        </>
+                      );
+                    })()}
                   </TooltipProvider>
                 </div>
               </div>
