@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Pencil, Trash2, Layers } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useMarketingPillars, type MarketingPillar, type MarketingPillarInput } from '@/hooks/useMarketingPillars';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,39 +73,49 @@ export function PillarsContent() {
         />
       ) : (
         <>
-          <Card className="p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-4">Distribuição real (posts publicados)</h3>
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-muted-foreground">Distribuição real</h3>
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground font-numeric">{totalPublished}</strong> posts publicados
+              </span>
+            </div>
+
             {totalPublished === 0 ? (
-              <EmptyState
-                compact
-                icon={Layers}
-                title=""
-                description="Nenhum post publicado ainda. A distribuição aparecerá conforme posts forem publicados."
-              />
+              <p className="text-xs text-muted-foreground py-2">
+                Nenhum post publicado ainda. A distribuição aparecerá conforme posts forem publicados.
+              </p>
             ) : (
-              <div className="h-64 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={70}
-                      outerRadius={100}
-                      paddingAngle={2}
-                    >
-                      {chartData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8 }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-bold">{totalPublished}</span>
-                  <span className="text-xs text-muted-foreground">posts publicados</span>
+              <>
+                <div className="h-3 w-full rounded-full overflow-hidden bg-muted flex">
+                  {chartData.map((d, i) => {
+                    const pct = (d.value / totalPublished) * 100;
+                    return (
+                      <div
+                        key={i}
+                        className="h-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: d.color }}
+                        title={`${d.name}: ${d.value} (${pct.toFixed(0)}%)`}
+                      />
+                    );
+                  })}
                 </div>
-              </div>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                  {chartData.map((d, i) => {
+                    const pct = (d.value / totalPublished) * 100;
+                    return (
+                      <div key={i} className="flex items-center gap-1.5 text-xs">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
+                        <span className="font-medium">{d.name}</span>
+                        <span className="text-muted-foreground font-numeric">
+                          {d.value} ({pct.toFixed(0)}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </Card>
 
@@ -136,9 +145,13 @@ export function PillarsContent() {
 
                   {target != null && (
                     <div className="mb-3">
-                      <div className="flex items-center justify-between text-xs mb-1.5">
+                      <div className="flex items-baseline justify-between text-xs mb-1.5">
+                        <span>
+                          <strong className="text-foreground font-numeric">{realPct.toFixed(0)}%</strong>
+                          <span className="text-muted-foreground"> real</span>
+                        </span>
                         <span className="text-muted-foreground">
-                          {realPct.toFixed(0)}% real / {target}% meta
+                          meta <strong className="text-foreground font-numeric">{target}%</strong>
                         </span>
                       </div>
                       <div className="relative h-2 bg-muted rounded-full overflow-hidden">
@@ -154,9 +167,13 @@ export function PillarsContent() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
-                    <span><strong className="text-foreground">{posts}</strong> posts</span>
-                    <span><strong className="text-foreground">{ideasCount}</strong> ideias</span>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground pt-3 mt-1 border-t border-border">
+                    <span>
+                      <strong className="text-foreground font-numeric">{posts}</strong> posts
+                    </span>
+                    <span>
+                      <strong className="text-foreground font-numeric">{ideasCount}</strong> ideias
+                    </span>
                   </div>
                 </Card>
               );

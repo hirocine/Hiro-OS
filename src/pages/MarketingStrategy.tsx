@@ -43,7 +43,7 @@ export default function MarketingStrategy() {
         <PersonaContent />
       </section>
 
-      <div className="my-8">
+      <div className="my-6">
         <Separator />
       </div>
 

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
+import { Plus, Edit2, Trash2, Loader2, User, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -56,12 +55,29 @@ export function PersonaContent() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : personas.length === 0 ? (
-        <EmptyState
-          icon={UserCircle}
-          title="Defina sua primeira persona"
-          description="Quem é o cliente ideal da Hiro Films? Detalhe segmento, dores, gatilhos e canais para guiar todo o conteúdo de marketing."
-          action={{ label: 'Criar Persona', onClick: openNew }}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card
+            className="group cursor-pointer hover:shadow-md hover:border-primary/40 transition-all"
+            onClick={openNew}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Plus className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold">Criar primeira persona</h3>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
+                    Defina o cliente ideal da Hiro Films: segmento, dores, gatilhos e canais.
+                  </p>
+                  <Button variant="link" size="sm" className="px-0 mt-2">
+                    Começar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {personas.map((p) => (
