@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
