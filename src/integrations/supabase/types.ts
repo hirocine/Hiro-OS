@@ -2020,6 +2020,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_approved: boolean
+          last_seen_at: string | null
           position: string | null
           updated_at: string
           user_id: string
@@ -2031,6 +2032,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_approved?: boolean
+          last_seen_at?: string | null
           position?: string | null
           updated_at?: string
           user_id: string
@@ -2042,6 +2044,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_approved?: boolean
+          last_seen_at?: string | null
           position?: string | null
           updated_at?: string
           user_id?: string
@@ -3278,7 +3281,6 @@ export type Database = {
       get_users_for_admin: {
         Args: never
         Returns: {
-          avatar_url: string
           created_at: string
           department: string
           display_name: string
@@ -3289,7 +3291,6 @@ export type Database = {
           last_sign_in_at: string
           position: string
           role: Database["public"]["Enums"]["app_role"]
-          user_metadata: Json
         }[]
       }
       has_marketing_access: { Args: { _user_id: string }; Returns: boolean }
@@ -3355,6 +3356,7 @@ export type Database = {
       }
       run_security_maintenance: { Args: never; Returns: undefined }
       sanitize_audit_logs: { Args: never; Returns: undefined }
+      update_last_seen: { Args: never; Returns: undefined }
       user_can_access_equipment: {
         Args: { equipment_id: string }
         Returns: boolean
