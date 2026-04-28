@@ -600,23 +600,40 @@ export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
   const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading, fetchIntegrations } = useMarketingIntegrations();
-  const [period, setPeriod] = useState<Period>('30');
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('30');
+  const [customRange, setCustomRange] = useState<PeriodDateRange | null>(null);
+  const [customPickerOpen, setCustomPickerOpen] = useState(false);
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
 
-  // Account-level snapshots
-  const [accountPeriod, setAccountPeriod] = useState<AccountPeriod>(30);
+  const resolvedRange = useMemo(
+    () => resolvePeriod(periodPreset, customRange),
+    [periodPreset, customRange]
+  );
+
+  // Range pro hook de snapshots: 'all' = sem limite
+  const snapshotsRange = useMemo(() => {
+    if (periodPreset === 'all') {
+      return { start: null, end: null };
+    }
+    return { start: resolvedRange.start, end: resolvedRange.end };
+  }, [periodPreset, resolvedRange]);
+
   const {
     snapshots: accountSnapshots,
     audience,
     latest: latestAccount,
+    oldest: oldestAccount,
     loading: accountLoading,
     syncNow,
     syncAudience,
-  } = useMarketingAccountSnapshots(accountPeriod);
+  } = useMarketingAccountSnapshots(snapshotsRange);
   const [syncing, setSyncing] = useState(false);
   const [syncingAudience, setSyncingAudience] = useState(false);
 
-  const range = useMemo(() => getRange(period), [period]);
+  // Range "anterior" (mesmo tamanho, imediatamente antes) para comparações
+  const prevRange = useMemo(() => resolvePrevRange(resolvedRange), [resolvedRange]);
+
+  const range = resolvedRange;
 
   const currentPosts = useMemo<PostWithMetrics[]>(
     () =>
@@ -629,12 +646,13 @@ export default function MarketingDashboard() {
     () =>
       publishedPosts.filter((p) =>
         inRange(p.scheduled_at ? new Date(p.scheduled_at) : null, {
-          start: range.prevStart,
-          end: range.prevEnd,
+          start: prevRange.prevStart,
+          end: prevRange.prevEnd,
         })
       ),
-    [publishedPosts, range]
+    [publishedPosts, prevRange]
   );
+
 
   useEffect(() => {
     let cancelled = false;
