@@ -397,12 +397,16 @@ export default function MarketingIdeas() {
       scheduled_at: null,
       hashtags: [],
       platform: null,
-      format: null,
+      format: idea.format,
       cover_url: null,
       file_url: null,
       published_url: null,
     });
     setPostDialogOpen(true);
+  };
+
+  const handleOpenPost = (postId: string) => {
+    navigate(`/marketing/posts?postId=${postId}`);
   };
 
   const handlePostDialogChange = (open: boolean) => {
