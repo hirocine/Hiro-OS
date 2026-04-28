@@ -1432,7 +1432,6 @@ export type Database = {
           cover_url: string | null
           created_at: string
           created_by: string | null
-          destination_url: string | null
           engagement_rate: number | null
           external_id: string | null
           file_url: string | null
@@ -1459,11 +1458,6 @@ export type Database = {
           thumbnail_url: string | null
           title: string
           updated_at: string
-          utm_campaign: string | null
-          utm_content: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          utm_url: string | null
           views: number
         }
         Insert: {
@@ -1474,7 +1468,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
-          destination_url?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -1501,11 +1494,6 @@ export type Database = {
           thumbnail_url?: string | null
           title: string
           updated_at?: string
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_url?: string | null
           views?: number
         }
         Update: {
@@ -1516,7 +1504,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
-          destination_url?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -1543,11 +1530,6 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_url?: string | null
           views?: number
         }
         Relationships: [
