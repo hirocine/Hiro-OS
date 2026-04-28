@@ -233,7 +233,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
 }
 
 export function DesktopSidebar() {
-  const { isAdmin, canAccessSuppliers } = useAuthContext();
+  const { isAdmin, canAccessSuppliers, canAccessMarketing } = useAuthContext();
   const location = useLocation();
   const isPWA = useIsPWA();
   const { requestNavigation } = useNavigationBlocker();
@@ -260,14 +260,14 @@ export function DesktopSidebar() {
     const allItems = [
       ...operacoesNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
-      ...marketingNavigation,
+      ...(canAccessMarketing ? marketingNavigation : []),
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
       item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(query))
     );
     if (match) setExpandedItem(match.name);
-  }, [searchQuery, canAccessSuppliers, isAdmin]);
+  }, [searchQuery, canAccessSuppliers, canAccessMarketing, isAdmin]);
 
   // Ctrl+K to focus search
   useEffect(() => {
@@ -418,7 +418,7 @@ export function DesktopSidebar() {
           )}
 
           {/* Marketing Section */}
-          {(filteredMarketingNav.length > 0 || !searchQuery) && (
+          {canAccessMarketing && (filteredMarketingNav.length > 0 || !searchQuery) && (
             <>
               <div className="px-3 my-5">
                 <Separator />
