@@ -80,12 +80,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [ideaId, setIdeaId] = useState<string>('');
   const [ideaPickerOpen, setIdeaPickerOpen] = useState(false);
 
-  // UTM Builder
-  const [destinationUrl, setDestinationUrl] = useState('https://hiro.film');
-  const [utmSource, setUtmSource] = useState('');
-  const [utmMedium, setUtmMedium] = useState('');
-  const [utmCampaign, setUtmCampaign] = useState('');
-  const [utmContent, setUtmContent] = useState('');
 
   // Metrics
   const [metricsOpen, setMetricsOpen] = useState(false);
@@ -117,11 +111,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(m.file_url ?? '');
       setPublishedUrl(m.published_url ?? '');
       setIdeaId(m.idea_id ?? '');
-      setDestinationUrl((m as unknown as { destination_url?: string }).destination_url ?? 'https://hiro.film');
-      setUtmSource((m as unknown as { utm_source?: string }).utm_source ?? '');
-      setUtmMedium((m as unknown as { utm_medium?: string }).utm_medium ?? '');
-      setUtmCampaign((m as unknown as { utm_campaign?: string }).utm_campaign ?? '');
-      setUtmContent((m as unknown as { utm_content?: string }).utm_content ?? '');
       setViews(m.views ?? 0);
       setLikes(m.likes ?? 0);
       setCommentsCount(m.comments ?? 0);
@@ -154,8 +143,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(prefill?.file_url ?? '');
       setPublishedUrl(prefill?.published_url ?? '');
       setIdeaId(prefill?.idea_id ?? '');
-      setDestinationUrl('https://hiro.film');
-      setUtmSource(''); setUtmMedium(''); setUtmCampaign(''); setUtmContent('');
       setViews(0); setLikes(0); setCommentsCount(0); setShares(0);
       setSaves(0); setReach(0); setProfileClicks(0); setNewFollowers(0);
       setMetricsUpdatedAt(null); setMetricsSource(null);
@@ -169,40 +156,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     return ((likes + commentsCount + shares + saves) / reach) * 100;
   }, [likes, commentsCount, shares, saves, reach]);
 
-  const effectiveUtm = useMemo(() => {
-    const has = !!destinationUrl.trim();
-    if (!has) return { source: '', medium: '', campaign: '', content: '' };
-    return {
-      source: utmSource || 'instagram',
-      medium: utmMedium || 'social',
-      campaign: utmCampaign || slugify(title) || 'post',
-      content: utmContent || '',
-    };
-  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent, title]);
-
-  const generatedUtmUrl = useMemo(() => {
-    if (!destinationUrl.trim()) return '';
-    try {
-      const u = new URL(destinationUrl.trim());
-      if (effectiveUtm.source) u.searchParams.set('utm_source', effectiveUtm.source);
-      if (effectiveUtm.medium) u.searchParams.set('utm_medium', effectiveUtm.medium);
-      if (effectiveUtm.campaign) u.searchParams.set('utm_campaign', effectiveUtm.campaign);
-      if (effectiveUtm.content) u.searchParams.set('utm_content', effectiveUtm.content);
-      return u.toString();
-    } catch {
-      return destinationUrl.trim();
-    }
-  }, [destinationUrl, effectiveUtm]);
-
-  const copyUtmUrl = async () => {
-    if (!generatedUtmUrl) return;
-    try {
-      await navigator.clipboard.writeText(generatedUtmUrl);
-      toast.success('Link copiado');
-    } catch {
-      toast.error('Não foi possível copiar');
-    }
-  };
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -242,12 +195,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       idea_id: ideaId || null,
       views, likes, comments: commentsCount, shares, saves, reach,
       profile_clicks: profileClicks, new_followers: newFollowers,
-      destination_url: destinationUrl.trim() || null,
-      utm_source: destinationUrl.trim() ? effectiveUtm.source || null : null,
-      utm_medium: destinationUrl.trim() ? effectiveUtm.medium || null : null,
-      utm_campaign: destinationUrl.trim() ? effectiveUtm.campaign || null : null,
-      utm_content: effectiveUtm.content || null,
-      utm_url: generatedUtmUrl || null,
       ...(metricsChanged
         ? { metrics_updated_at: new Date().toISOString(), metrics_source: 'manual' }
         : {}),
@@ -523,61 +470,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
             </div>
           </div>
         </div>
-
-        {/* ===== Link e rastreamento (UTM Builder) ===== */}
-        <div className="border border-border rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <Link2 className="h-4 w-4" />
-            Link e rastreamento
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs">URL de destino (sem UTM)</Label>
-            <Input
-              value={destinationUrl}
-              onChange={(e) => setDestinationUrl(e.target.value)}
-              placeholder="https://hiro.film/portfolio"
-              type="url"
-            />
-          </div>
-
-          {destinationUrl.trim() && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">utm_source</Label>
-                  <Input value={utmSource} onChange={(e) => setUtmSource(e.target.value)} placeholder="instagram" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">utm_medium</Label>
-                  <Input value={utmMedium} onChange={(e) => setUtmMedium(e.target.value)} placeholder="social" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">utm_campaign</Label>
-                  <Input value={utmCampaign} onChange={(e) => setUtmCampaign(e.target.value)} placeholder={slugify(title) || 'campanha'} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">utm_content (opcional)</Label>
-                  <Input value={utmContent} onChange={(e) => setUtmContent(e.target.value)} placeholder="ex: cta-bio" />
-                </div>
-              </div>
-
-              {generatedUtmUrl && (
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <Label className="text-xs text-primary">Link com rastreamento</Label>
-                    <Button type="button" size="sm" variant="outline" onClick={copyUtmUrl} className="h-7 gap-1.5">
-                      <Copy className="h-3 w-3" />
-                      Copiar
-                    </Button>
-                  </div>
-                  <p className="text-xs font-mono break-all text-foreground">{generatedUtmUrl}</p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
         {status === 'publicado' && (
           <Collapsible open={metricsOpen} onOpenChange={setMetricsOpen} className="border border-border rounded-xl">
             <CollapsibleTrigger asChild>
