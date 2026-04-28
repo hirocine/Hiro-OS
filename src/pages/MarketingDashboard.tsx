@@ -458,9 +458,7 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {topPosts.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-6 text-center">
-                  Nenhum post publicado no período.
-                </div>
+                <EmptyState compact icon={Trophy} title="" description="Nenhum post publicado no período." />
               ) : (
                 <ul className="divide-y divide-border">
                   {topPosts.map((p, i) => (
