@@ -99,7 +99,7 @@ export default function MarketingReferences() {
     <ResponsiveContainer>
       <PageHeader
         title="Referências"
-        subtitle="Banco de inspirações de marketing — links, imagens e ideias visuais"
+        subtitle="Banco de inspirações — links, imagens e ideias visuais"
         actions={
           <Button onClick={handleNew}>
             <Plus className="h-4 w-4 mr-1.5" /> Nova referência
