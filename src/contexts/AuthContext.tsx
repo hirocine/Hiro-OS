@@ -39,6 +39,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const isInitialized = useRef(false);
   const roleCache = useRef<{ [userId: string]: UserRole }>({});
+  const lastSeenSentAt = useRef<number>(0);
+
+  const pingLastSeen = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    const now = Date.now();
+    if (now - lastSeenSentAt.current < FIVE_MINUTES) return;
+    lastSeenSentAt.current = now;
+    try {
+      await supabase.rpc('update_last_seen');
+    } catch (err) {
+      logger.debug('update_last_seen failed', { module: 'auth', error: err instanceof Error ? err.message : String(err) });
+    }
+  }, []);
 
   const fetchUserRole = useCallback(async (userId: string) => {
     // Use cached value if available
