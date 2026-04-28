@@ -46,14 +46,19 @@ const producaoNavigation: NavigationItem[] = [
 ];
 
 const marketingNavigation: NavigationItem[] = [
-  { name: 'Marketing', href: '/marketing', icon: Megaphone },
-  { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
-  { name: 'Calendário de Posts', href: '/marketing/calendario', icon: CalendarDays },
-  { name: 'Ranking', href: '/marketing/ranking', icon: Trophy },
-  { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
-  { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
-  { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
-  { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
+  {
+    name: 'Marketing',
+    href: '/marketing',
+    icon: Megaphone,
+    children: [
+      { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
+      { name: 'Ranking', href: '/marketing/ranking', icon: Trophy },
+      { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
+      { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
+      { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
+      { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
+    ],
+  },
 ];
 
 const adminNavigation: NavigationItem[] = [
