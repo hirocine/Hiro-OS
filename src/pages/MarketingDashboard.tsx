@@ -1039,177 +1039,36 @@ export default function MarketingDashboard() {
                       onClick: handleSyncAudience,
                     }}
                   />
-                ) : (() => {
-                  const { ages, genders } = splitGenderAge(audience.gender_age);
-                  const genderList = genderEntries(genders);
-                  const ageList = ageEntries(ages);
-                  const cityList = topEntries(audience.cities, 6);
-                  const localeList = topEntries(audience.locales, 5);
-                  const maxAge = Math.max(...ageList.map((a) => a.pct), 1);
-                  const maxCity = Math.max(...cityList.map((c) => c.pct), 1);
+                ) : (
+                  <div className="space-y-6">
+                    <GenderAgeHero audience={audience} />
 
-                  return (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      {/* HERO: Gênero + Idade */}
-                      <div className="lg:col-span-12 rounded-xl border border-border bg-gradient-to-br from-muted/30 to-transparent p-5 sm:p-6 space-y-6">
-                        {/* Gênero */}
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                              Gênero
-                            </div>
-                            {genderList.length === 0 && (
-                              <span className="text-xs text-muted-foreground">Sem dados</span>
-                            )}
+                      <div className="lg:col-span-7">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <h4 className="text-sm font-semibold">Top cidades</h4>
                           </div>
-                          {genderList.length > 0 && (
-                            <>
-                              <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
-                                {genderList.map((g) => (
-                                  <div
-                                    key={g.key}
-                                    style={{ width: `${g.pct}%`, backgroundColor: g.color }}
-                                    className="h-full transition-all"
-                                  />
-                                ))}
-                              </div>
-                              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                {genderList.map((g) => (
-                                  <div key={g.key} className="flex items-center gap-2">
-                                    <span
-                                      className="w-2.5 h-2.5 rounded-full"
-                                      style={{ backgroundColor: g.color }}
-                                    />
-                                    <span className="text-sm font-medium">{g.label}</span>
-                                    <span className="text-sm tabular-nums text-muted-foreground">
-                                      {g.pct.toFixed(0)}%
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
-                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {topEntries(audience.cities, 100).length} cidades
+                          </span>
                         </div>
-
-                        {/* Idade */}
-                        <div className="space-y-3 pt-2 border-t border-border/50">
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                              Faixa etária
-                            </div>
-                            {ageList.length === 0 && (
-                              <span className="text-xs text-muted-foreground">Sem dados</span>
-                            )}
-                          </div>
-                          {ageList.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
-                              {ageList.map((a) => {
-                                const isMax = a.pct === maxAge;
-                                return (
-                                  <div key={a.key} className="flex items-center gap-3">
-                                    <span
-                                      className={cn(
-                                        'text-xs font-medium tabular-nums w-12 shrink-0',
-                                        isMax ? 'text-foreground' : 'text-muted-foreground'
-                                      )}
-                                    >
-                                      {a.key}
-                                    </span>
-                                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                      <div
-                                        className={cn(
-                                          'h-full rounded-full transition-all',
-                                          isMax ? 'bg-primary' : 'bg-primary/40'
-                                        )}
-                                        style={{ width: `${(a.pct / maxAge) * 100}%` }}
-                                      />
-                                    </div>
-                                    <span
-                                      className={cn(
-                                        'text-xs tabular-nums w-12 text-right shrink-0',
-                                        isMax ? 'text-foreground font-semibold' : 'text-muted-foreground'
-                                      )}
-                                    >
-                                      {a.pct.toFixed(1)}%
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
+                        <CityRanking cities={audience.cities} />
                       </div>
 
-                      {/* Top cidades */}
-                      <div className="lg:col-span-7 rounded-xl border border-border p-5 sm:p-6 space-y-4">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <h3 className="text-sm font-semibold">Top cidades</h3>
-                        </div>
-                        {cityList.length === 0 ? (
-                          <p className="text-xs text-muted-foreground">Sem dados</p>
-                        ) : (
-                          <ul className="space-y-3">
-                            {cityList.map((e, idx) => (
-                              <li key={e.key} className="space-y-1.5">
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium truncate pr-2 flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground tabular-nums w-4">
-                                      {idx + 1}
-                                    </span>
-                                    {e.key}
-                                  </span>
-                                  <span className="tabular-nums text-muted-foreground text-xs">
-                                    {e.pct.toFixed(1)}%
-                                  </span>
-                                </div>
-                                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                                  <div
-                                    className={cn(
-                                      'h-full rounded-full',
-                                      idx === 0 ? 'bg-primary' : 'bg-primary/50'
-                                    )}
-                                    style={{ width: `${(e.pct / maxCity) * 100}%` }}
-                                  />
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-
-                      {/* Idiomas */}
-                      <div className="lg:col-span-5 rounded-xl border border-border p-5 sm:p-6 space-y-4">
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-primary" />
-                          <h3 className="text-sm font-semibold">Idiomas</h3>
-                        </div>
-                        {localeList.length === 0 ? (
-                          <p className="text-xs text-muted-foreground">Sem dados</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {localeList.map((e) => (
-                              <div
-                                key={e.key}
-                                className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 hover:bg-muted/50 transition-colors"
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <span className="text-xl leading-none">{localeFlag(e.key)}</span>
-                                  <span className="text-sm font-medium truncate">
-                                    {localeLabel(e.key)}
-                                  </span>
-                                </div>
-                                <span className="text-sm tabular-nums font-semibold text-foreground shrink-0">
-                                  {e.pct.toFixed(1)}%
-                                </span>
-                              </div>
-                            ))}
+                      <div className="lg:col-span-5">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-muted-foreground" />
+                            <h4 className="text-sm font-semibold">Idiomas falados</h4>
                           </div>
-                        )}
+                        </div>
+                        <LocaleList locales={audience.locales} />
                       </div>
                     </div>
-                  );
-                })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>
