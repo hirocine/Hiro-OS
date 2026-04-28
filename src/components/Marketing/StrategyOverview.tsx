@@ -80,7 +80,7 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                 <h3 className="text-sm font-semibold">Persona</h3>
               </div>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link to="/marketing/persona">
+                <Link to="/marketing/estrategia?aba=persona">
                   Ver completo
                   <ArrowRight className="h-3 w-3 ml-1" />
                 </Link>
@@ -119,7 +119,7 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                   Quem é o cliente ideal da Hiro Films?
                 </p>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-7 text-xs">
-                  <Link to="/marketing/persona">Criar persona</Link>
+                  <Link to="/marketing/estrategia?aba=persona">Criar persona</Link>
                 </Button>
               </div>
             )}
@@ -135,7 +135,7 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                 </h3>
               </div>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <Link to="/marketing/pilares">
+                <Link to="/marketing/estrategia?aba=pilares">
                   Ver completo
                   <ArrowRight className="h-3 w-3 ml-1" />
                 </Link>
@@ -150,7 +150,7 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                   Os 3-5 temas que sua marca representa
                 </p>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-7 text-xs">
-                  <Link to="/marketing/pilares">Criar pilares</Link>
+                  <Link to="/marketing/estrategia?aba=pilares">Criar pilares</Link>
                 </Button>
               </div>
             ) : top3.length === 0 || postsThisMonth.length === 0 ? (
