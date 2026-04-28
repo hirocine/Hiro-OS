@@ -116,6 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchUserRole(newSession.user.id);
           }, 0);
 
+          setTimeout(() => {
+            pingLastSeen(newSession.user.id);
+          }, 0);
+
           // Check approval asynchronously without blocking the callback
           if (event === 'SIGNED_IN') {
             setTimeout(async () => {
