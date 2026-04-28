@@ -759,9 +759,12 @@ export default function MarketingDashboard() {
             </div>
 
             {/* Followers evolution chart */}
-            <Card>
+            <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
               <CardHeader className="pb-2 flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base">Evolução de seguidores</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Evolução de seguidores
+                </CardTitle>
                 <Select
                   value={String(accountPeriod)}
                   onValueChange={(v) => setAccountPeriod(Number(v) as AccountPeriod)}
