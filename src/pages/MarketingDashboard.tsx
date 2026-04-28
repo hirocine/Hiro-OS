@@ -413,8 +413,8 @@ export default function MarketingDashboard() {
           <CardContent>
             <div className="h-64">
               {snapshots.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                  Sem snapshots no período. As métricas começam a gerar histórico ao serem atualizadas.
+                <div className="h-full flex items-center justify-center">
+                  <EmptyState compact icon={CalendarIcon} title="" description="Sem snapshots no período. As métricas começam a gerar histórico ao serem atualizadas." />
                 </div>
               ) : (
                 <RechartsContainer width="100%" height="100%">
