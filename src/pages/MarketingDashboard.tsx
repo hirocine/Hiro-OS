@@ -701,39 +701,63 @@ export default function MarketingDashboard() {
     };
   }, [currentPosts, prevPosts]);
 
-  // ===== Account KPIs derived from accountSnapshots =====
+  // Snapshots do range anterior (mesmo tamanho, imediatamente antes) — para comparação
+  const [prevAccountSnapshots, setPrevAccountSnapshots] = useState<typeof accountSnapshots>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Em "Todo o período" não existe "anterior"
+      if (periodPreset === 'all') {
+        if (!cancelled) setPrevAccountSnapshots([]);
+        return;
+      }
+      const { data } = await supabase
+        .from('marketing_account_snapshots')
+        .select('*')
+        .gte('captured_at', prevRange.prevStart.toISOString())
+        .lte('captured_at', prevRange.prevEnd.toISOString())
+        .order('captured_at', { ascending: true });
+      if (!cancelled) setPrevAccountSnapshots((data ?? []) as typeof accountSnapshots);
+    })();
+    return () => { cancelled = true; };
+  }, [periodPreset, prevRange.prevStart, prevRange.prevEnd]);
+
+  // ===== Account KPIs derived from accountSnapshots (sobre o período inteiro selecionado) =====
   const accountKpis = useMemo(() => {
     if (!accountSnapshots || accountSnapshots.length === 0) return null;
-    const last7 = accountSnapshots.slice(-7);
-    const prev7 = accountSnapshots.slice(-14, -7);
 
     const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day' | 'profile_views_day') =>
       arr.reduce((s, snap) => s + (snap[key] ?? 0), 0);
 
-    const followersDelta7 = last7.reduce((s, snap) => s + (snap.followers_delta ?? 0), 0);
+    const followersDeltaPeriod = accountSnapshots.reduce(
+      (s, snap) => s + (snap.followers_delta ?? 0),
+      0
+    );
 
-    const reach7 = sumKey(last7, 'reach_day');
-    const reachPrev7 = sumKey(prev7, 'reach_day');
-    const profileViews7 = sumKey(last7, 'profile_views_day');
-    const profileViewsPrev7 = sumKey(prev7, 'profile_views_day');
+    const reachPeriod = sumKey(accountSnapshots, 'reach_day');
+    const reachPrev = sumKey(prevAccountSnapshots, 'reach_day');
+    const profileViewsPeriod = sumKey(accountSnapshots, 'profile_views_day');
+    const profileViewsPrev = sumKey(prevAccountSnapshots, 'profile_views_day');
 
-    // posts delta: latest media_count - media_count from 7 days ago
-    const earliestIn7 = last7[0];
-    const newPosts7 = latestAccount && earliestIn7 && latestAccount.media_count != null && earliestIn7.media_count != null
-      ? Math.max(0, latestAccount.media_count - earliestIn7.media_count)
-      : 0;
+    // Novos posts no período: media_count do último - do primeiro snapshot do range
+    const firstInPeriod = accountSnapshots[0];
+    const newPostsPeriod =
+      latestAccount && firstInPeriod &&
+      latestAccount.media_count != null && firstInPeriod.media_count != null
+        ? Math.max(0, latestAccount.media_count - firstInPeriod.media_count)
+        : 0;
 
     return {
-      followersDelta7,
-      reach7,
-      reachChange: pctChange(reach7, reachPrev7),
-      profileViews7,
-      profileViewsChange: pctChange(profileViews7, profileViewsPrev7),
-      newPosts7,
+      followersDeltaPeriod,
+      reachPeriod,
+      reachChange: pctChange(reachPeriod, reachPrev),
+      profileViewsPeriod,
+      profileViewsChange: pctChange(profileViewsPeriod, profileViewsPrev),
+      newPostsPeriod,
     };
-  }, [accountSnapshots, latestAccount]);
+  }, [accountSnapshots, prevAccountSnapshots, latestAccount]);
 
-  // ===== Daily series for charts =====
+  // ===== Daily series for charts (já vem filtrado pelo período do hook) =====
   const followersSeries = useMemo(
     () =>
       accountSnapshots
@@ -747,7 +771,7 @@ export default function MarketingDashboard() {
 
   const reachSeries = useMemo(
     () =>
-      accountSnapshots.slice(-14).map((s) => ({
+      accountSnapshots.map((s) => ({
         date: s.captured_at.slice(0, 10),
         reach: s.reach_day,
       })),
@@ -756,12 +780,13 @@ export default function MarketingDashboard() {
 
   const profileViewsSeries = useMemo(
     () =>
-      accountSnapshots.slice(-14).map((s) => ({
+      accountSnapshots.map((s) => ({
         date: s.captured_at.slice(0, 10),
         views: s.profile_views_day,
       })),
     [accountSnapshots]
   );
+
 
   const topPosts = useMemo(
     () => [...currentPosts].sort((a, b) => (b.views ?? 0) - (a.views ?? 0)).slice(0, 5),
