@@ -259,7 +259,7 @@ export default function MarketingPosts() {
 
       {/* Stats line */}
       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-        <span><strong className="text-foreground tabular-nums">{filtered.length}</strong> de {counts.total} posts</span>
+        <span><strong className="text-foreground font-numeric">{filtered.length}</strong> de {counts.total} posts</span>
         <span>•</span>
         <span>{counts.reels} Reels</span>
         <span>•</span>
@@ -403,22 +403,22 @@ export default function MarketingPosts() {
                 <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-muted/30 p-3">
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Curtidas</p>
-                    <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.likes ?? 0)}</p>
+                    <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.likes ?? 0)}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Comentários</p>
-                    <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.comments ?? 0)}</p>
+                    <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.comments ?? 0)}</p>
                   </div>
                   {selectedPost.reach > 0 && (
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Alcance</p>
-                      <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.reach)}</p>
+                      <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.reach)}</p>
                     </div>
                   )}
                   {selectedPost.saves > 0 && (
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Salvos</p>
-                      <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.saves)}</p>
+                      <p className="text-lg font-bold font-numeric">{compactNumber(selectedPost.saves)}</p>
                     </div>
                   )}
                 </div>

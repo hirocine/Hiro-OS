@@ -174,13 +174,13 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-sm font-semibold tabular-nums">
+                        <span className="text-sm font-semibold font-numeric">
                           {d.realPct.toFixed(0)}%
                         </span>
                         {d.variance !== null && (
                           <span
                             className={cn(
-                              'text-[11px] tabular-nums',
+                              'text-[11px] font-numeric',
                               Math.abs(d.variance) < 5 && 'text-emerald-500',
                               Math.abs(d.variance) >= 5 && Math.abs(d.variance) < 15 && 'text-amber-500',
                               Math.abs(d.variance) >= 15 && 'text-destructive',
@@ -209,7 +209,7 @@ export function StrategyOverview({ persona, pillars, postsThisMonth }: Props) {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-numeric">
                       <span>
                         {d.count} {d.count === 1 ? 'post' : 'posts'}
                       </span>
