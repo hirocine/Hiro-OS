@@ -1158,9 +1158,7 @@ export default function MarketingDashboard() {
                   Evolução de seguidores
                 </CardTitle>
                 <span className="text-xs text-muted-foreground font-numeric">
-                  {periodPreset === 'all' && oldestAccount?.captured_at
-                    ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
-                    : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+                  {periodLabel}
                 </span>
               </CardHeader>
               <CardContent>
