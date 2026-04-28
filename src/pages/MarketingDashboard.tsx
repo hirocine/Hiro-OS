@@ -621,6 +621,8 @@ export default function MarketingDashboard() {
     return { start: resolvedRange.start, end: resolvedRange.end };
   }, [periodPreset, resolvedRange]);
 
+  const ga4 = useMarketingGA4(snapshotsRange);
+
   const {
     snapshots: accountSnapshots,
     audience,
