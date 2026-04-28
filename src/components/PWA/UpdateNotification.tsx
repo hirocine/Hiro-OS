@@ -18,8 +18,7 @@ export function UpdateNotification() {
 
     const isPreviewHost =
       window.location.hostname.includes('id-preview--') ||
-      window.location.hostname.includes('lovableproject.com') ||
-      window.location.hostname.includes('lovable.app');
+      window.location.hostname.includes('lovableproject.com');
 
     if (isInIframe || isPreviewHost) return;
 
