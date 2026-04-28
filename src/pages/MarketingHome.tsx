@@ -62,7 +62,7 @@ export default function MarketingHome() {
               Próximos posts
             </CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/marketing/calendario">
+              <Link to="/marketing">
                 Ver calendário <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </Button>
@@ -74,7 +74,7 @@ export default function MarketingHome() {
                   Nenhum post agendado.
                 </p>
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/marketing/calendario">
+                  <Link to="/marketing">
                     <Plus className="h-4 w-4 mr-2" /> Criar primeiro post
                   </Link>
                 </Button>
@@ -88,7 +88,7 @@ export default function MarketingHome() {
                   return (
                     <Link
                       key={p.id}
-                      to="/marketing/calendario"
+                      to="/marketing"
                       className="flex items-center gap-3 py-2.5 hover:bg-muted/40 -mx-2 px-2 rounded-md transition"
                     >
                       <div className="w-24 shrink-0 text-xs text-muted-foreground">

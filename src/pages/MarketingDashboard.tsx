@@ -357,7 +357,7 @@ export default function MarketingDashboard() {
               </p>
             </div>
             <Button asChild>
-              <Link to="/marketing/calendario">Ir ao Calendário</Link>
+              <Link to="/marketing">Ir ao Calendário</Link>
             </Button>
           </CardContent>
         </Card>

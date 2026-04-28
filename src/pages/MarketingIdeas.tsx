@@ -467,7 +467,7 @@ export default function MarketingIdeas() {
         onSaved={(_p, isNew) => {
           if (isNew) {
             toast.success('Post criado no calendário 🚀', {
-              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing/calendario') },
+              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing') },
             });
           }
         }}
