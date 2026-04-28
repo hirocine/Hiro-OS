@@ -102,7 +102,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
   const location = useLocation();
   const navigate = useNavigate();
   const Icon = item.icon;
-  const childActive = item.children?.some(c => isActive(c.href)) ?? false;
+  const childActive = item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false) ?? false;
   const parentActive = location.pathname === item.href;
 
   const handleParentClick = () => {
@@ -187,7 +187,7 @@ export function MobileSidebar() {
   useEffect(() => {
     const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
-      if (item.children?.some(c => isActive(c.href))) {
+      if (item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false)) {
         setExpandedItem(item.name);
         return;
       }
@@ -205,7 +205,7 @@ export function MobileSidebar() {
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
-      item.children?.some(c => c.name.toLowerCase().includes(query))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(query))
     );
     if (match) setExpandedItem(match.name);
   }, [searchQuery, canAccessSuppliers, isAdmin]);
@@ -229,28 +229,28 @@ export function MobileSidebar() {
   const filteredOperacoesNav = useMemo(() =>
     operacoesNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
     adminNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredProducaoNav = useMemo(() =>
     producaoNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredMarketingNav = useMemo(() =>
     marketingNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );

@@ -247,7 +247,7 @@ export function DesktopSidebar() {
   useEffect(() => {
     const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
-      if (item.children?.some(c => isActive(c.href))) {
+      if (item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false)) {
         setExpandedItem(item.name);
         return;
       }
@@ -265,7 +265,7 @@ export function DesktopSidebar() {
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
-      item.children?.some(c => c.name.toLowerCase().includes(query))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(query))
     );
     if (match) setExpandedItem(match.name);
   }, [searchQuery, canAccessSuppliers, isAdmin]);
@@ -285,28 +285,28 @@ export function DesktopSidebar() {
   const filteredOperacoesNav = useMemo(() =>
     operacoesNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
     adminNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredProducaoNav = useMemo(() =>
     producaoNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredMarketingNav = useMemo(() =>
     marketingNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
