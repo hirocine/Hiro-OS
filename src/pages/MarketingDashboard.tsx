@@ -52,16 +52,55 @@ import { getPillarColor } from '@/lib/marketing-colors';
 import { getPostPlatformLabel, getPostFormatLabel } from '@/lib/marketing-posts-config';
 import { supabase } from '@/integrations/supabase/client';
 
-type Period = '7' | '30' | '90' | 'this_month' | 'last_month';
-type AccountPeriod = 7 | 30 | 90;
+import { PeriodPicker, type PeriodPreset, type PeriodDateRange, PERIOD_OPTIONS } from '@/components/Marketing/PeriodPicker';
+import { format as formatDate } from 'date-fns';
+import { ptBR as ptBRLocale } from 'date-fns/locale';
 
-const PERIOD_OPTIONS: { value: Period; label: string }[] = [
-  { value: '7', label: 'Últimos 7 dias' },
-  { value: '30', label: 'Últimos 30 dias' },
-  { value: '90', label: 'Últimos 90 dias' },
-  { value: 'this_month', label: 'Este mês' },
-  { value: 'last_month', label: 'Mês passado' },
-];
+function resolvePeriod(
+  preset: PeriodPreset,
+  customRange: PeriodDateRange | null
+): { start: Date; end: Date } {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  if (preset === 'custom' && customRange) {
+    const s = new Date(customRange.start);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(customRange.end);
+    e.setHours(23, 59, 59, 999);
+    return { start: s, end: e };
+  }
+
+  if (preset === 'all') {
+    return { start: new Date(0), end };
+  }
+
+  if (preset === 'this_month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { start, end };
+  }
+
+  if (preset === 'last_month') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    lastDayOfPrevMonth.setHours(23, 59, 59, 999);
+    return { start, end: lastDayOfPrevMonth };
+  }
+
+  const days = Number(preset);
+  const start = new Date(now);
+  start.setDate(start.getDate() - days);
+  start.setHours(0, 0, 0, 0);
+  return { start, end };
+}
+
+function resolvePrevRange(curr: { start: Date; end: Date }) {
+  const ms = curr.end.getTime() - curr.start.getTime();
+  const prevEnd = new Date(curr.start.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - ms);
+  return { prevStart, prevEnd };
+}
 
 const PLATFORM_COLORS: Record<string, string> = {
   instagram: '#ec4899',
@@ -78,29 +117,8 @@ interface DateRange {
   prevEnd: Date;
 }
 
-function getRange(period: Period): DateRange {
-  const now = new Date();
-  if (period === 'this_month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = now;
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    return { start, end, prevStart, prevEnd };
-  }
-  if (period === 'last_month') {
-    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth() - 1, 0, 23, 59, 59);
-    return { start, end, prevStart, prevEnd };
-  }
-  const days = parseInt(period, 10);
-  const end = now;
-  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const prevEnd = new Date(start.getTime() - 1);
-  const prevStart = new Date(prevEnd.getTime() - days * 24 * 60 * 60 * 1000);
-  return { start, end, prevStart, prevEnd };
-}
+// (getRange substituído por resolvePeriod + resolvePrevRange acima)
+
 
 function inRange(d: Date | null, r: { start: Date; end: Date }) {
   if (!d) return false;
@@ -582,23 +600,40 @@ export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
   const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading, fetchIntegrations } = useMarketingIntegrations();
-  const [period, setPeriod] = useState<Period>('30');
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('30');
+  const [customRange, setCustomRange] = useState<PeriodDateRange | null>(null);
+  const [customPickerOpen, setCustomPickerOpen] = useState(false);
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
 
-  // Account-level snapshots
-  const [accountPeriod, setAccountPeriod] = useState<AccountPeriod>(30);
+  const resolvedRange = useMemo(
+    () => resolvePeriod(periodPreset, customRange),
+    [periodPreset, customRange]
+  );
+
+  // Range pro hook de snapshots: 'all' = sem limite
+  const snapshotsRange = useMemo(() => {
+    if (periodPreset === 'all') {
+      return { start: null, end: null };
+    }
+    return { start: resolvedRange.start, end: resolvedRange.end };
+  }, [periodPreset, resolvedRange]);
+
   const {
     snapshots: accountSnapshots,
     audience,
     latest: latestAccount,
+    oldest: oldestAccount,
     loading: accountLoading,
     syncNow,
     syncAudience,
-  } = useMarketingAccountSnapshots(accountPeriod);
+  } = useMarketingAccountSnapshots(snapshotsRange);
   const [syncing, setSyncing] = useState(false);
   const [syncingAudience, setSyncingAudience] = useState(false);
 
-  const range = useMemo(() => getRange(period), [period]);
+  // Range "anterior" (mesmo tamanho, imediatamente antes) para comparações
+  const prevRange = useMemo(() => resolvePrevRange(resolvedRange), [resolvedRange]);
+
+  const range = resolvedRange;
 
   const currentPosts = useMemo<PostWithMetrics[]>(
     () =>
@@ -611,12 +646,13 @@ export default function MarketingDashboard() {
     () =>
       publishedPosts.filter((p) =>
         inRange(p.scheduled_at ? new Date(p.scheduled_at) : null, {
-          start: range.prevStart,
-          end: range.prevEnd,
+          start: prevRange.prevStart,
+          end: prevRange.prevEnd,
         })
       ),
-    [publishedPosts, range]
+    [publishedPosts, prevRange]
   );
+
 
   useEffect(() => {
     let cancelled = false;
@@ -907,10 +943,32 @@ export default function MarketingDashboard() {
         title="Dashboard de Marketing"
         subtitle="Visão consolidada da conta Instagram e dos seus conteúdos"
         actions={
-          <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
-            <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-            {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <PeriodPicker
+              preset={periodPreset}
+              customRange={customRange}
+              oldestSnapshotDate={oldestAccount?.captured_at ? new Date(oldestAccount.captured_at) : null}
+              onPresetChange={(p) => {
+                if (p === 'custom') {
+                  setCustomPickerOpen(true);
+                } else {
+                  setPeriodPreset(p);
+                  setCustomRange(null);
+                }
+              }}
+              onCustomRangeChange={(range) => {
+                setCustomRange(range);
+                setPeriodPreset('custom');
+                setCustomPickerOpen(false);
+              }}
+              customPickerOpen={customPickerOpen}
+              onCustomPickerOpenChange={setCustomPickerOpen}
+            />
+            <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
+              <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
+              {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
+            </Button>
+          </div>
         }
       />
 
@@ -1060,19 +1118,11 @@ export default function MarketingDashboard() {
                   <Users className="h-4 w-4" />
                   Evolução de seguidores
                 </CardTitle>
-                <Select
-                  value={String(accountPeriod)}
-                  onValueChange={(v) => setAccountPeriod(Number(v) as AccountPeriod)}
-                >
-                  <SelectTrigger className="h-8 w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 dias</SelectItem>
-                    <SelectItem value="30">30 dias</SelectItem>
-                    <SelectItem value="90">90 dias</SelectItem>
-                  </SelectContent>
-                </Select>
+                <span className="text-xs text-muted-foreground font-numeric">
+                  {periodPreset === 'all' && oldestAccount?.captured_at
+                    ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
+                    : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+                </span>
               </CardHeader>
               <CardContent>
                 <div className="h-64">
@@ -1308,18 +1358,11 @@ export default function MarketingDashboard() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Performance dos conteúdos
           </h2>
-          <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
-            <SelectTrigger className="h-9 w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PERIOD_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <span className="text-xs text-muted-foreground font-numeric">
+            {periodPreset === 'custom' && customRange
+              ? `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`
+              : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+          </span>
         </div>
 
         {!loading && publishedPosts.length === 0 ? (
