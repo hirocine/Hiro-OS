@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -29,16 +30,20 @@ import {
   Image as ImageIcon,
   Layers as LayersIcon,
   Calendar as CalendarIcon,
+  LayoutGrid,
+  Trophy,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useMarketingGallery, type GalleryPost } from '@/hooks/useMarketingGallery';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { getPillarColor } from '@/lib/marketing-colors';
+import { RankingList } from '@/components/Marketing/RankingList';
 
 type FormatFilter = 'all' | 'foto' | 'reels' | 'carrossel';
 type SourceFilter = 'all' | 'auto_discovered' | 'manual';
 type PillarFilter = 'all' | 'none' | string;
+type ViewMode = 'gallery' | 'ranking';
 
 const FORMAT_OPTIONS: { value: FormatFilter; label: string }[] = [
   { value: 'all', label: 'Todos os formatos' },
@@ -91,7 +96,7 @@ function compactNumber(n: number) {
   return String(n);
 }
 
-export default function MarketingGallery() {
+export default function MarketingPosts() {
   const { posts, loading, refresh: refetch } = useMarketingGallery();
   const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
@@ -100,6 +105,19 @@ export default function MarketingGallery() {
   const [pillarFilter, setPillarFilter] = useState<PillarFilter>('all');
   const [discovering, setDiscovering] = useState(false);
   const [selected, setSelected] = useState<GalleryPost | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialView: ViewMode = searchParams.get('view') === 'ranking' ? 'ranking' : 'gallery';
+  const [viewMode, setViewMode] = useState<ViewMode>(initialView);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === 'ranking') {
+      setSearchParams({ view: 'ranking' }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
   const pillarMap = useMemo(() => {
     const map = new Map<string, { name: string; color?: string | null }>();
@@ -129,7 +147,7 @@ export default function MarketingGallery() {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error ?? 'Falha ao descobrir posts');
       toast.success(
-        `Galeria atualizada — ${data.created} novos, ${data.updated} atualizados`,
+        `Posts atualizados — ${data.created} novos, ${data.updated} atualizados`,
       );
       await refetch();
     } catch (err) {
@@ -149,16 +167,54 @@ export default function MarketingGallery() {
     };
   }, [posts]);
 
+  const selectedPost = selected;
+  const handleOpenById = (id: string) => {
+    const p = posts.find((x) => x.id === id) ?? null;
+    setSelected(p);
+  };
+
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
-        title="Galeria"
+        title="Posts"
         subtitle="Todos os posts publicados no Instagram, importados automaticamente."
         actions={
-          <Button onClick={handleDiscover} disabled={discovering} size="sm">
-            <RefreshCw className={cn('mr-2 h-4 w-4', discovering && 'animate-spin')} />
-            {discovering ? 'Buscando...' : 'Atualizar agora'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Toggle de modo */}
+            <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/30 p-1">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('gallery')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
+                  viewMode === 'gallery'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Galeria
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('ranking')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
+                  viewMode === 'ranking'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <Trophy className="h-3.5 w-3.5" />
+                Ranking
+              </button>
+            </div>
+
+            <Button onClick={handleDiscover} disabled={discovering} size="sm">
+              <RefreshCw className={cn('mr-2 h-4 w-4', discovering && 'animate-spin')} />
+              {discovering ? 'Buscando...' : 'Atualizar agora'}
+            </Button>
+          </div>
         }
       />
 
@@ -212,7 +268,7 @@ export default function MarketingGallery() {
         <span>{counts.foto} Fotos</span>
       </div>
 
-      {/* Grid */}
+      {/* Conteúdo */}
       <div className="mt-6">
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -223,7 +279,7 @@ export default function MarketingGallery() {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={Images}
-            title={posts.length === 0 ? 'Galeria vazia' : 'Nenhum post encontrado'}
+            title={posts.length === 0 ? 'Nenhum post ainda' : 'Nenhum post encontrado'}
             description={
               posts.length === 0
                 ? 'Clique em "Atualizar agora" para importar seus posts publicados no Instagram.'
@@ -235,7 +291,7 @@ export default function MarketingGallery() {
                 : undefined
             }
           />
-        ) : (
+        ) : viewMode === 'gallery' ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filtered.map((post) => {
               const pillar = post.pillar_id ? pillarMap.get(post.pillar_id) : undefined;
@@ -260,12 +316,10 @@ export default function MarketingGallery() {
                     </div>
                   )}
 
-                  {/* Top-left badge: media type */}
                   <div className="absolute left-2 top-2">
                     <MediaTypeBadge post={post} />
                   </div>
 
-                  {/* Top-right badge: pillar */}
                   {pillar && (
                     <div className="absolute right-2 top-2">
                       <span
@@ -277,7 +331,6 @@ export default function MarketingGallery() {
                     </div>
                   )}
 
-                  {/* Bottom overlay on hover: stats */}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                     <div className="flex items-center justify-between text-xs text-white">
                       <span className="inline-flex items-center gap-1">
@@ -295,20 +348,21 @@ export default function MarketingGallery() {
               );
             })}
           </div>
+        ) : (
+          <RankingList posts={filtered} pillars={pillars} onClick={handleOpenById} />
         )}
       </div>
 
       {/* Modal de detalhes */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-3xl">
-          {selected && (
+          {selectedPost && (
             <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Mídia */}
               <div className="relative aspect-square bg-black md:aspect-auto md:min-h-[480px]">
-                {(selected.cover_url ?? selected.thumbnail_url ?? selected.file_url) ? (
+                {(selectedPost.cover_url ?? selectedPost.thumbnail_url ?? selectedPost.file_url) ? (
                   <img
-                    src={selected.cover_url ?? selected.thumbnail_url ?? selected.file_url ?? ''}
-                    alt={selected.title}
+                    src={selectedPost.cover_url ?? selectedPost.thumbnail_url ?? selectedPost.file_url ?? ''}
+                    alt={selectedPost.title}
                     className="h-full w-full object-contain"
                   />
                 ) : (
@@ -317,75 +371,70 @@ export default function MarketingGallery() {
                   </div>
                 )}
                 <div className="absolute left-3 top-3">
-                  <MediaTypeBadge post={selected} />
+                  <MediaTypeBadge post={selectedPost} />
                 </div>
               </div>
 
-              {/* Detalhes */}
               <div className="flex flex-col gap-4 p-6">
                 <div className="space-y-1">
                   <DialogTitle className="text-base font-semibold leading-snug">
-                    {selected.title}
+                    {selectedPost.title}
                   </DialogTitle>
                   <p className="text-xs text-muted-foreground">
-                    Publicado em {formatDate(selected.published_at)}
+                    Publicado em {formatDate(selectedPost.published_at)}
                   </p>
                 </div>
 
-                {/* Pilar */}
-                {selected.pillar_id && pillarMap.get(selected.pillar_id) && (
+                {selectedPost.pillar_id && pillarMap.get(selectedPost.pillar_id) && (
                   <div>
                     <Badge
                       style={{
-                        backgroundColor: (pillarMap.get(selected.pillar_id)?.color
-                          ?? getPillarColor(pillarMap.get(selected.pillar_id)?.name ?? '')) as string,
+                        backgroundColor: (pillarMap.get(selectedPost.pillar_id)?.color
+                          ?? getPillarColor(pillarMap.get(selectedPost.pillar_id)?.name ?? '')) as string,
                         color: 'white',
                       }}
                       className="border-transparent"
                     >
-                      {pillarMap.get(selected.pillar_id)?.name}
+                      {pillarMap.get(selectedPost.pillar_id)?.name}
                     </Badge>
                   </div>
                 )}
 
-                {/* Métricas */}
                 <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-muted/30 p-3">
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Curtidas</p>
-                    <p className="text-lg font-bold tabular-nums">{compactNumber(selected.likes ?? 0)}</p>
+                    <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.likes ?? 0)}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Comentários</p>
-                    <p className="text-lg font-bold tabular-nums">{compactNumber(selected.comments ?? 0)}</p>
+                    <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.comments ?? 0)}</p>
                   </div>
-                  {selected.reach > 0 && (
+                  {selectedPost.reach > 0 && (
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Alcance</p>
-                      <p className="text-lg font-bold tabular-nums">{compactNumber(selected.reach)}</p>
+                      <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.reach)}</p>
                     </div>
                   )}
-                  {selected.saves > 0 && (
+                  {selectedPost.saves > 0 && (
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Salvos</p>
-                      <p className="text-lg font-bold tabular-nums">{compactNumber(selected.saves)}</p>
+                      <p className="text-lg font-bold tabular-nums">{compactNumber(selectedPost.saves)}</p>
                     </div>
                   )}
                 </div>
 
-                {/* Caption */}
-                {selected.caption && (
+                {selectedPost.caption && (
                   <div className="space-y-1">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Legenda</p>
                     <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                      {selected.caption}
+                      {selectedPost.caption}
                     </p>
                   </div>
                 )}
 
-                {/* Hashtags */}
-                {selected.hashtags && selected.hashtags.length > 0 && (
+                {selectedPost.hashtags && selectedPost.hashtags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {selected.hashtags.slice(0, 12).map((h) => (
+                    {selectedPost.hashtags.slice(0, 12).map((h) => (
                       <span key={h} className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                         #{h}
                       </span>
@@ -395,11 +444,11 @@ export default function MarketingGallery() {
 
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                   <span className="text-[10px] text-muted-foreground">
-                    {selected.source === 'auto_discovered' ? 'Auto-descoberto' : 'Criado manualmente'}
+                    {selectedPost.source === 'auto_discovered' ? 'Auto-descoberto' : 'Criado manualmente'}
                   </span>
-                  {selected.published_url && (
+                  {selectedPost.published_url && (
                     <Button asChild variant="outline" size="sm">
-                      <a href={selected.published_url} target="_blank" rel="noopener noreferrer">
+                      <a href={selectedPost.published_url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="mr-2 h-3.5 w-3.5" />
                         Ver no Instagram
                       </a>

@@ -1,14 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, Calendar, Layers, Plus, Trophy, Bell, CheckCircle,
+  ArrowRight, Calendar, Plus, Trophy, Bell, CheckCircle,
   FileText, Eye, Heart, UserPlus, TrendingUp, TrendingDown, X,
 } from 'lucide-react';
 import { format, parseISO, subDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import {
-  PieChart, Pie, Cell, ResponsiveContainer as RechartsContainer, Tooltip,
-} from 'recharts';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +17,10 @@ import {
 } from '@/components/ui/select';
 import { PostsCalendar } from '@/components/Marketing/PostsCalendar';
 import { MarketingPostDialog } from '@/components/Marketing/MarketingPostDialog';
+import { StrategyOverview } from '@/components/Marketing/StrategyOverview';
 import { useMarketingPosts, type MarketingPost } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingActivePersona } from '@/hooks/useMarketingActivePersona';
 import { getPillarColor } from '@/lib/marketing-colors';
 import {
   POST_PLATFORMS, POST_STATUSES, getPostPlatformLabel,
@@ -82,6 +81,7 @@ function KpiCard({ label, value, icon: Icon, current, previous }: KpiProps) {
 export default function MarketingHome() {
   const { posts, deletePost } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
+  const { persona: activePersona } = useMarketingActivePersona();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -183,7 +183,17 @@ export default function MarketingHome() {
       };
     });
   }, [posts, pillars]);
-  const distributionData = distribution.filter((d) => d.value > 0);
+  
+
+  // === Posts publicados nos últimos 30 dias (para Estratégia) ===
+  const postsThisMonth = useMemo(() => {
+    const cutoff = subDays(new Date(), 30);
+    return posts.filter((p) => {
+      if (p.status !== 'publicado') return false;
+      const d = getPostTimestamp(p);
+      return d ? isAfter(d, cutoff) : false;
+    });
+  }, [posts]);
 
   // === Alerts ===
   const alerts = useMemo(() => {
@@ -336,8 +346,15 @@ export default function MarketingHome() {
           </CardContent>
         </Card>
 
-        {/* Insights grid 2x2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Estratégia ativa */}
+        <StrategyOverview
+          persona={activePersona}
+          pillars={pillars}
+          postsThisMonth={postsThisMonth}
+        />
+
+        {/* Insights grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Top 5 posts */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -345,7 +362,7 @@ export default function MarketingHome() {
                 <Trophy className="h-4 w-4" /> Top 5 posts
               </CardTitle>
               <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/ranking">
+                <Link to="/marketing/posts?view=ranking">
                   Ver ranking completo <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
@@ -428,61 +445,6 @@ export default function MarketingHome() {
             </CardContent>
           </Card>
 
-          {/* Distribuição por pilar */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Layers className="h-4 w-4" /> Distribuição por pilar
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/pilares">
-                  Gerenciar pilares <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {distributionData.length === 0 ? (
-                <EmptyState compact icon={Layers} title="" description="Defina pilares para ver a distribuição" />
-              ) : (
-                <div>
-                  <div className="h-36">
-                    <RechartsContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={distributionData} dataKey="value" innerRadius={36} outerRadius={60} paddingAngle={2}>
-                          {distributionData.map((d) => (
-                            <Cell key={d.id} fill={d.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            background: 'hsl(var(--background))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: 8,
-                            fontSize: 12,
-                          }}
-                        />
-                      </PieChart>
-                    </RechartsContainer>
-                  </div>
-                  <div className="space-y-1.5 mt-2">
-                    {distribution.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                          <span className="truncate">{d.name}</span>
-                        </div>
-                        <span className="text-muted-foreground tabular-nums shrink-0">
-                          {d.value} ({d.pct.toFixed(0)}%)
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Alertas */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base flex items-center gap-2">

@@ -17,10 +17,11 @@ import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
   name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  href?: string;
+  icon?: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
   children?: NavigationItem[];
+  isSection?: boolean;
 }
 
 const operacoesNavigation: NavigationItem[] = [
@@ -51,13 +52,15 @@ const marketingNavigation: NavigationItem[] = [
     href: '/marketing',
     icon: Megaphone,
     children: [
+      { name: 'Métricas', isSection: true },
       { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
-      { name: 'Galeria', href: '/marketing/galeria', icon: Images },
-      { name: 'Ranking', href: '/marketing/ranking', icon: Trophy },
+      { name: 'Posts', href: '/marketing/posts', icon: Images },
+
+      { name: 'Estratégia', isSection: true },
       { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
-      { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
-      { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
       { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
+      { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
+      { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
     ],
   },
 ];
@@ -102,7 +105,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
   const location = useLocation();
   const navigate = useNavigate();
   const Icon = item.icon;
-  const childActive = item.children?.some(c => isActive(c.href)) ?? false;
+  const childActive = item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false) ?? false;
   const parentActive = location.pathname === item.href;
 
   const handleParentClick = () => {
@@ -147,13 +150,26 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
       <Collapsible open={expanded}>
         <CollapsibleContent>
           <div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
-            {item.children!.map((child) => {
-              const active = isActive(child.href);
+            {item.children!.map((child, idx) => {
+              if (child.isSection) {
+                return (
+                  <p
+                    key={`section-${idx}`}
+                    className={cn(
+                      "text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 pt-2 pb-1",
+                      idx === 0 && "pt-1"
+                    )}
+                  >
+                    {child.name}
+                  </p>
+                );
+              }
+              const active = isActive(child.href!);
               return (
                 <NavLink
                   key={child.href}
-                  to={child.href}
-                  onClick={(e) => onNavClick(e, child.href)}
+                  to={child.href!}
+                  onClick={(e) => onNavClick(e, child.href!)}
                   className={cn(
                     "flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
@@ -187,7 +203,7 @@ export function MobileSidebar() {
   useEffect(() => {
     const allItems = [...operacoesNavigation, ...producaoNavigation, ...marketingNavigation, ...adminNavigation];
     for (const item of allItems) {
-      if (item.children?.some(c => isActive(c.href))) {
+      if (item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false)) {
         setExpandedItem(item.name);
         return;
       }
@@ -205,7 +221,7 @@ export function MobileSidebar() {
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
-      item.children?.some(c => c.name.toLowerCase().includes(query))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(query))
     );
     if (match) setExpandedItem(match.name);
   }, [searchQuery, canAccessSuppliers, isAdmin]);
@@ -229,28 +245,28 @@ export function MobileSidebar() {
   const filteredOperacoesNav = useMemo(() =>
     operacoesNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredAdminNav = useMemo(() =>
     adminNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredProducaoNav = useMemo(() =>
     producaoNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
   const filteredMarketingNav = useMemo(() =>
     marketingNavigation.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.children?.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
     [searchQuery]
   );
