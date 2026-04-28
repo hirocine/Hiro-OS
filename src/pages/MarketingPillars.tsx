@@ -83,9 +83,12 @@ export default function MarketingPillars() {
           <Card className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4">Distribuição real (posts publicados)</h3>
             {totalPublished === 0 ? (
-              <div className="text-center py-8 text-sm text-muted-foreground">
-                Nenhum post publicado ainda. A distribuição aparecerá aqui conforme posts forem publicados.
-              </div>
+              <EmptyState
+                compact
+                icon={Layers}
+                title=""
+                description="Nenhum post publicado ainda. A distribuição aparecerá conforme posts forem publicados."
+              />
             ) : (
               <div className="h-64 relative">
                 <ResponsiveContainer width="100%" height="100%">
