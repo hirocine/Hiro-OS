@@ -97,9 +97,11 @@ export function PeriodPicker({
 
       <Popover open={customPickerOpen} onOpenChange={onCustomPickerOpenChange}>
         <PopoverTrigger asChild>
-          <span
+          <button
+            type="button"
             aria-hidden
-            className="absolute inset-0 pointer-events-none"
+            tabIndex={-1}
+            className="absolute right-0 top-1/2 h-0 w-0 -translate-y-1/2 opacity-0 pointer-events-none"
           />
         </PopoverTrigger>
         <PopoverContent
