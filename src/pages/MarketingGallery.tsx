@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useMarketingGalleryPosts, type GalleryPost } from '@/hooks/useMarketingGalleryPosts';
+import { useMarketingGallery, type GalleryPost } from '@/hooks/useMarketingGallery';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { getPillarColor } from '@/lib/marketing-colors';
 
@@ -92,7 +92,7 @@ function compactNumber(n: number) {
 }
 
 export default function MarketingGallery() {
-  const { posts, loading, refetch } = useMarketingGalleryPosts();
+  const { posts, loading, refresh: refetch } = useMarketingGallery();
   const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
