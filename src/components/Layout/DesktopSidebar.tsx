@@ -1,5 +1,5 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
@@ -129,11 +129,19 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
   onToggle: () => void;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const Icon = item.icon;
   const [hovered, setHovered] = useState(false);
 
   const childActive = item.children?.some(c => isActive(c.href)) ?? false;
   const parentActive = location.pathname === item.href;
+
+  const handleParentClick = () => {
+    onToggle();
+    if (item.href && location.pathname !== item.href) {
+      navigate(item.href);
+    }
+  };
 
   return (
     <div className={cn(
@@ -152,7 +160,7 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
               ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               : ""
         )}
-        onClick={onToggle}
+        onClick={handleParentClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >

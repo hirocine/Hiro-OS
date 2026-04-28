@@ -1,5 +1,5 @@
 import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigationBlocker } from '@/contexts/NavigationBlockerContext';
@@ -99,9 +99,17 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
   onToggle: () => void;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const Icon = item.icon;
   const childActive = item.children?.some(c => isActive(c.href)) ?? false;
   const parentActive = location.pathname === item.href;
+
+  const handleParentClick = () => {
+    onToggle();
+    if (item.href && location.pathname !== item.href) {
+      navigate(item.href);
+    }
+  };
 
   return (
     <div className={cn(
@@ -120,7 +128,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
               ? isAdminItem ? "hover:bg-destructive/5 text-muted-foreground hover:text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
               : ""
         )}
-        onClick={onToggle}
+        onClick={handleParentClick}
       >
         {(parentActive && !expanded || childActive && expanded) && (
           <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full", isAdminItem ? "bg-destructive" : "bg-primary")} />
