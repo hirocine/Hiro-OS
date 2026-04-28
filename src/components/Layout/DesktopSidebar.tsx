@@ -92,12 +92,13 @@ function NavItem({ item, active, isAdmin: isAdminItem, onNavClick, onClearExpand
   onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
   onClearExpanded?: () => void;
 }) {
-  const Icon = item.icon;
+  const Icon = item.icon!;
+  const href = item.href!;
 
   return (
     <NavLink
-      to={item.href}
-      onClick={(e) => { onClearExpanded?.(); onNavClick(e, item.href); }}
+      to={href}
+      onClick={(e) => { onClearExpanded?.(); onNavClick(e, href); }}
       className={cn(
         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group",
         active
@@ -137,8 +138,8 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
   const Icon = item.icon;
   const [hovered, setHovered] = useState(false);
 
-  const childActive = item.children?.some(c => isActive(c.href)) ?? false;
-  const parentActive = location.pathname === item.href;
+  const childActive = item.children?.some(c => !c.isSection && c.href ? isActive(c.href) : false) ?? false;
+  const parentActive = item.href ? location.pathname === item.href : false;
 
   const handleParentClick = () => {
     onToggle();
@@ -193,13 +194,26 @@ function NavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdminItem,
       <Collapsible open={expanded}>
         <CollapsibleContent>
           <div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
-            {item.children!.map((child) => {
-              const active = isActive(child.href);
+            {item.children!.map((child, idx) => {
+              if (child.isSection) {
+                return (
+                  <p
+                    key={`section-${idx}`}
+                    className={cn(
+                      "text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 pt-2 pb-1",
+                      idx === 0 && "pt-1"
+                    )}
+                  >
+                    {child.name}
+                  </p>
+                );
+              }
+              const active = isActive(child.href!);
               return (
                 <NavLink
                   key={child.href}
-                  to={child.href}
-                  onClick={(e) => onNavClick(e, child.href)}
+                  to={child.href!}
+                  onClick={(e) => onNavClick(e, child.href!)}
                   className={cn(
                     "flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
