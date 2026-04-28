@@ -91,14 +91,16 @@ interface IdeaCardProps {
   idea: MarketingIdea;
   profile?: ProfileMini;
   pillar?: MarketingPillar;
+  postLink?: IdeaPostLink;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
   onPromote: (idea: MarketingIdea) => void;
+  onOpenPost?: (postId: string) => void;
   dragging?: boolean;
 }
 
-function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onPromote, dragging }: IdeaCardProps) {
+function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplicate, onPromote, onOpenPost, dragging }: IdeaCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: idea.id });
   const initials = (profile?.display_name || '?').slice(0, 2).toUpperCase();
   const pillarColor = pillar ? getPillarColor(pillar.color) : null;
