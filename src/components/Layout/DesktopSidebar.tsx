@@ -71,6 +71,7 @@ const adminNavigation: NavigationItem[] = [
       { name: 'Categorias', href: '/administracao/categorias', icon: Layers },
       { name: 'Notificações', href: '/administracao/notificacoes', icon: Bell },
       { name: 'Sistema', href: '/administracao/sistema', icon: Cog },
+      { name: 'Integrações', href: '/administracao/integracoes', icon: Megaphone },
     ],
   },
 ];
