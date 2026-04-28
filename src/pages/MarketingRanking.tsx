@@ -258,8 +258,11 @@ export default function MarketingRanking() {
     );
   }
 
+  const hasActiveFilters =
+    platforms.length > 0 || pillarIds.length > 0 || formats.length > 0 || period !== 'all';
+
   const filtersRow = (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <MultiSelect
         label="Plataforma"
         options={POST_PLATFORMS}
@@ -279,7 +282,7 @@ export default function MarketingRanking() {
         onChange={setFormats}
       />
       <Select value={period} onValueChange={(v) => setPeriod(v as PeriodOption)}>
-        <SelectTrigger className="h-9 w-[180px]">
+        <SelectTrigger className="h-9 w-[160px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -288,6 +291,21 @@ export default function MarketingRanking() {
           ))}
         </SelectContent>
       </Select>
+      {hasActiveFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 text-muted-foreground"
+          onClick={() => {
+            setPlatforms([]);
+            setPillarIds([]);
+            setFormats([]);
+            setPeriod('all');
+          }}
+        >
+          Limpar
+        </Button>
+      )}
     </div>
   );
 
