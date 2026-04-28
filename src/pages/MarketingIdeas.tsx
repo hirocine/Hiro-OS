@@ -472,11 +472,13 @@ export default function MarketingIdeas() {
                 ideas={grouped[s.value]}
                 profiles={profilesMap}
                 pillarsMap={pillarsMap}
+                ideaLinks={ideaLinks}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={setDeleteTarget}
                 onDuplicate={duplicateIdea}
                 onPromote={handlePromote}
+                onOpenPost={handleOpenPost}
                 activeId={activeId}
               />
             ))}
