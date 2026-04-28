@@ -169,19 +169,40 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     return ((likes + commentsCount + shares + saves) / reach) * 100;
   }, [likes, commentsCount, shares, saves, reach]);
 
+  const effectiveUtm = useMemo(() => {
+    const has = !!destinationUrl.trim();
+    if (!has) return { source: '', medium: '', campaign: '', content: '' };
+    return {
+      source: utmSource || 'instagram',
+      medium: utmMedium || 'social',
+      campaign: utmCampaign || slugify(title) || 'post',
+      content: utmContent || '',
+    };
+  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent, title]);
+
   const generatedUtmUrl = useMemo(() => {
     if (!destinationUrl.trim()) return '';
     try {
       const u = new URL(destinationUrl.trim());
-      if (utmSource) u.searchParams.set('utm_source', utmSource);
-      if (utmMedium) u.searchParams.set('utm_medium', utmMedium);
-      if (utmCampaign) u.searchParams.set('utm_campaign', utmCampaign);
-      if (utmContent) u.searchParams.set('utm_content', utmContent);
+      if (effectiveUtm.source) u.searchParams.set('utm_source', effectiveUtm.source);
+      if (effectiveUtm.medium) u.searchParams.set('utm_medium', effectiveUtm.medium);
+      if (effectiveUtm.campaign) u.searchParams.set('utm_campaign', effectiveUtm.campaign);
+      if (effectiveUtm.content) u.searchParams.set('utm_content', effectiveUtm.content);
       return u.toString();
     } catch {
       return destinationUrl.trim();
     }
-  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent]);
+  }, [destinationUrl, effectiveUtm]);
+
+  const copyUtmUrl = async () => {
+    if (!generatedUtmUrl) return;
+    try {
+      await navigator.clipboard.writeText(generatedUtmUrl);
+      toast.success('Link copiado');
+    } catch {
+      toast.error('Não foi possível copiar');
+    }
+  };
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
