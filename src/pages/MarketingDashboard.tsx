@@ -547,7 +547,7 @@ export default function MarketingDashboard() {
           description="Configure a integração em Admin → Integrações de Marketing para ver seguidores, alcance, demografia e métricas dos seus posts atualizadas automaticamente todos os dias."
           action={{
             label: 'Ir para Integrações',
-            onClick: () => navigate('/admin/integracoes-marketing'),
+            onClick: () => navigate('/administracao/integracoes'),
           }}
         />
       </ResponsiveContainer>
