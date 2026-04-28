@@ -923,8 +923,8 @@ export default function MarketingDashboard() {
                       alt={instagramIntegration.account_name ?? 'Instagram'}
                     />
                   ) : null}
-                  <AvatarFallback className="bg-muted">
-                    <Instagram className="h-6 w-6 text-muted-foreground" />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-yellow-500/20 animate-pulse">
+                    <Instagram className="h-6 w-6 text-foreground/70" />
                   </AvatarFallback>
                 </Avatar>
                 <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center ring-2 ring-card">
@@ -963,18 +963,6 @@ export default function MarketingDashboard() {
                     : syncStatus.text}
                 </p>
               </div>
-
-              {/* Ação */}
-              <Button
-                onClick={handleSync}
-                disabled={syncing}
-                variant="outline"
-                size="sm"
-                className="hidden sm:inline-flex gap-2"
-              >
-                <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-                Sincronizar
-              </Button>
             </div>
           </CardContent>
         </Card>
