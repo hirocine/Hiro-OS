@@ -623,9 +623,7 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {alerts.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-6 text-center">
-                  Tudo certo por aqui ✨
-                </div>
+                <EmptyState compact icon={CheckCircle} title="" description="Tudo certo por aqui ✨" />
               ) : (
                 <ul className="space-y-2">
                   {alerts.map((a, i) => (
