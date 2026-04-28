@@ -347,6 +347,8 @@ export default function MarketingIdeas() {
     return m;
   }, [pillars]);
 
+  const ideaLinks = useIdeasWithPosts(ideas.map((i) => i.id));
+
   const grouped = useMemo(() => {
     const g: Record<IdeaStatus, MarketingIdea[]> = {
       rascunho: [],
