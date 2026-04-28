@@ -9,10 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip as RTooltip,
@@ -42,8 +41,9 @@ import {
   Plug,
   Globe,
   MapPin,
+  Instagram,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapshots';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
