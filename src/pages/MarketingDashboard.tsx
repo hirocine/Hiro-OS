@@ -275,6 +275,82 @@ function topEntries(obj: Record<string, number> | null | undefined, n: number) {
   return entries.map((e) => ({ ...e, pct: total > 0 ? (e.value / total) * 100 : 0 }));
 }
 
+// Separa as chaves prefixadas (`age:`, `gender:`) em buckets distintos
+function splitGenderAge(obj: Record<string, number> | null | undefined) {
+  const ages: Record<string, number> = {};
+  const genders: Record<string, number> = {};
+  if (!obj) return { ages, genders };
+  for (const [key, value] of Object.entries(obj)) {
+    const v = Number(value) || 0;
+    if (key.startsWith('age:')) {
+      ages[key.replace('age:', '')] = v;
+    } else if (key.startsWith('gender:')) {
+      genders[key.replace('gender:', '')] = v;
+    }
+  }
+  return { ages, genders };
+}
+
+const AGE_ORDER = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+
+function ageEntries(ages: Record<string, number>) {
+  const total = Object.values(ages).reduce((s, v) => s + v, 0);
+  if (total === 0) return [] as Array<{ key: string; value: number; pct: number }>;
+  return AGE_ORDER.filter((age) => ages[age] !== undefined).map((age) => ({
+    key: age,
+    value: ages[age],
+    pct: (ages[age] / total) * 100,
+  }));
+}
+
+function genderEntries(genders: Record<string, number>) {
+  const total = Object.values(genders).reduce((s, v) => s + v, 0);
+  if (total === 0) return [] as Array<{ key: string; value: number; pct: number; label: string; color: string }>;
+  const LABEL: Record<string, string> = { F: 'Mulheres', M: 'Homens', U: 'Outros' };
+  return Object.entries(genders)
+    .map(([key, value]) => {
+      const k = key.toUpperCase();
+      return {
+        key: k,
+        value,
+        pct: (value / total) * 100,
+        label: LABEL[k] ?? key,
+        color: GENDER_COLORS[k] ?? GENDER_COLORS.U,
+      };
+    })
+    .sort((a, b) => b.value - a.value);
+}
+
+function localeFlag(locale: string): string {
+  const map: Record<string, string> = {
+    pt_BR: '🇧🇷', pt_PT: '🇵🇹',
+    en_US: '🇺🇸', en_GB: '🇬🇧',
+    es_ES: '🇪🇸', es_MX: '🇲🇽',
+    fr_FR: '🇫🇷', it_IT: '🇮🇹',
+    de_DE: '🇩🇪', ja_JP: '🇯🇵',
+    zh_CN: '🇨🇳', ko_KR: '🇰🇷',
+  };
+  return map[locale] ?? map[locale.replace('-', '_')] ?? '🌐';
+}
+
+function localeLabel(locale: string): string {
+  const map: Record<string, string> = {
+    pt_BR: 'Português (BR)',
+    pt_PT: 'Português (PT)',
+    en_US: 'Inglês (US)',
+    en_GB: 'Inglês (UK)',
+    es_ES: 'Espanhol (ES)',
+    es_MX: 'Espanhol (MX)',
+    fr_FR: 'Francês',
+    it_IT: 'Italiano',
+    de_DE: 'Alemão',
+    ja_JP: 'Japonês',
+    zh_CN: 'Chinês',
+    ko_KR: 'Coreano',
+  };
+  return map[locale] ?? map[locale.replace('-', '_')] ?? locale;
+}
+
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
@@ -932,11 +1008,22 @@ export default function MarketingDashboard() {
             </div>
 
             {/* Sobre sua audiência */}
-            <Card>
-              <CardHeader className="pb-2 flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base">Sobre sua audiência</CardTitle>
+            <Card className="shadow-card overflow-hidden">
+              <CardHeader className="pb-4 flex-row items-start justify-between space-y-0 gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg">Sobre sua audiência</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Quem te segue no Instagram
+                    </p>
+                  </div>
+                </div>
                 {audience && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success" />
                     Atualizado {formatTimeAgo(audience.captured_at).text}
                   </span>
                 )}
@@ -952,90 +1039,177 @@ export default function MarketingDashboard() {
                       onClick: handleSyncAudience,
                     }}
                   />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Gênero e Idade */}
-                    <div>
-                      <div className="text-xs font-medium text-muted-foreground mb-3">Gênero e Idade</div>
-                      {topEntries(audience.gender_age, 8).length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Sem dados</p>
-                      ) : (
-                        <ul className="space-y-2">
-                          {topEntries(audience.gender_age, 8).map((e) => (
-                            <li key={e.key} className="text-xs">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium">{e.key}</span>
-                                <span className="tabular-nums text-muted-foreground">{e.pct.toFixed(1)}%</span>
-                              </div>
-                              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                <div
-                                  className="h-full rounded-full"
-                                  style={{
-                                    width: `${e.pct}%`,
-                                    backgroundColor: genderColor(e.key),
-                                  }}
-                                />
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                ) : (() => {
+                  const { ages, genders } = splitGenderAge(audience.gender_age);
+                  const genderList = genderEntries(genders);
+                  const ageList = ageEntries(ages);
+                  const cityList = topEntries(audience.cities, 6);
+                  const localeList = topEntries(audience.locales, 5);
+                  const maxAge = Math.max(...ageList.map((a) => a.pct), 1);
+                  const maxCity = Math.max(...cityList.map((c) => c.pct), 1);
 
-                    {/* Top cidades */}
-                    <div>
-                      <div className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5" />
-                        Top cidades
-                      </div>
-                      {topEntries(audience.cities, 5).length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Sem dados</p>
-                      ) : (
-                        <ul className="space-y-2">
-                          {topEntries(audience.cities, 5).map((e) => (
-                            <li key={e.key} className="text-xs">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium truncate pr-2">{e.key}</span>
-                                <span className="tabular-nums text-muted-foreground">{e.pct.toFixed(1)}%</span>
-                              </div>
-                              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                <div
-                                  className="h-full rounded-full bg-primary"
-                                  style={{ width: `${e.pct}%` }}
-                                />
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-
-                    {/* Idiomas */}
-                    <div>
-                      <div className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
-                        <Globe className="h-3.5 w-3.5" />
-                        Idiomas
-                      </div>
-                      {topEntries(audience.locales, 3).length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Sem dados</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {topEntries(audience.locales, 3).map((e) => (
-                            <div
-                              key={e.key}
-                              className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2"
-                            >
-                              <span className="text-sm font-medium">{e.key}</span>
-                              <span className="text-xs tabular-nums text-muted-foreground">
-                                {e.pct.toFixed(1)}%
-                              </span>
+                  return (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                      {/* HERO: Gênero + Idade */}
+                      <div className="lg:col-span-12 rounded-xl border border-border bg-gradient-to-br from-muted/30 to-transparent p-5 sm:p-6 space-y-6">
+                        {/* Gênero */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                              Gênero
                             </div>
-                          ))}
+                            {genderList.length === 0 && (
+                              <span className="text-xs text-muted-foreground">Sem dados</span>
+                            )}
+                          </div>
+                          {genderList.length > 0 && (
+                            <>
+                              <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
+                                {genderList.map((g) => (
+                                  <div
+                                    key={g.key}
+                                    style={{ width: `${g.pct}%`, backgroundColor: g.color }}
+                                    className="h-full transition-all"
+                                  />
+                                ))}
+                              </div>
+                              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                                {genderList.map((g) => (
+                                  <div key={g.key} className="flex items-center gap-2">
+                                    <span
+                                      className="w-2.5 h-2.5 rounded-full"
+                                      style={{ backgroundColor: g.color }}
+                                    />
+                                    <span className="text-sm font-medium">{g.label}</span>
+                                    <span className="text-sm tabular-nums text-muted-foreground">
+                                      {g.pct.toFixed(0)}%
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
-                      )}
+
+                        {/* Idade */}
+                        <div className="space-y-3 pt-2 border-t border-border/50">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                              Faixa etária
+                            </div>
+                            {ageList.length === 0 && (
+                              <span className="text-xs text-muted-foreground">Sem dados</span>
+                            )}
+                          </div>
+                          {ageList.length > 0 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                              {ageList.map((a) => {
+                                const isMax = a.pct === maxAge;
+                                return (
+                                  <div key={a.key} className="flex items-center gap-3">
+                                    <span
+                                      className={cn(
+                                        'text-xs font-medium tabular-nums w-12 shrink-0',
+                                        isMax ? 'text-foreground' : 'text-muted-foreground'
+                                      )}
+                                    >
+                                      {a.key}
+                                    </span>
+                                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                                      <div
+                                        className={cn(
+                                          'h-full rounded-full transition-all',
+                                          isMax ? 'bg-primary' : 'bg-primary/40'
+                                        )}
+                                        style={{ width: `${(a.pct / maxAge) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span
+                                      className={cn(
+                                        'text-xs tabular-nums w-12 text-right shrink-0',
+                                        isMax ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                                      )}
+                                    >
+                                      {a.pct.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Top cidades */}
+                      <div className="lg:col-span-7 rounded-xl border border-border p-5 sm:p-6 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <h3 className="text-sm font-semibold">Top cidades</h3>
+                        </div>
+                        {cityList.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">Sem dados</p>
+                        ) : (
+                          <ul className="space-y-3">
+                            {cityList.map((e, idx) => (
+                              <li key={e.key} className="space-y-1.5">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium truncate pr-2 flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground tabular-nums w-4">
+                                      {idx + 1}
+                                    </span>
+                                    {e.key}
+                                  </span>
+                                  <span className="tabular-nums text-muted-foreground text-xs">
+                                    {e.pct.toFixed(1)}%
+                                  </span>
+                                </div>
+                                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                  <div
+                                    className={cn(
+                                      'h-full rounded-full',
+                                      idx === 0 ? 'bg-primary' : 'bg-primary/50'
+                                    )}
+                                    style={{ width: `${(e.pct / maxCity) * 100}%` }}
+                                  />
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+
+                      {/* Idiomas */}
+                      <div className="lg:col-span-5 rounded-xl border border-border p-5 sm:p-6 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-primary" />
+                          <h3 className="text-sm font-semibold">Idiomas</h3>
+                        </div>
+                        {localeList.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">Sem dados</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {localeList.map((e) => (
+                              <div
+                                key={e.key}
+                                className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 hover:bg-muted/50 transition-colors"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <span className="text-xl leading-none">{localeFlag(e.key)}</span>
+                                  <span className="text-sm font-medium truncate">
+                                    {localeLabel(e.key)}
+                                  </span>
+                                </div>
+                                <span className="text-sm tabular-nums font-semibold text-foreground shrink-0">
+                                  {e.pct.toFixed(1)}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </CardContent>
             </Card>
           </>
