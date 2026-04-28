@@ -784,31 +784,39 @@ export default function MarketingDashboard() {
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
-                      <LineChart data={followersSeries}>
+                      <AreaChart data={followersSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="followersGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fontSize: 11 }}
-                          tickFormatter={(v) =>
-                            new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                            })
-                          }
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={fmtChartDate}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <YAxis tick={{ fontSize: 11 }} domain={['dataMin - 5', 'dataMax + 5']} />
-                        <RTooltip
-                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                          labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                          formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Seguidores']}
+                        <YAxis
+                          tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                          axisLine={false}
+                          tickLine={false}
+                          domain={['dataMin - 10', 'dataMax + 10']}
                         />
-                        <Line
+                        <RTooltip content={<ChartTooltip unit="seguidores" />} />
+                        <Area
                           type="monotone"
                           dataKey="followers"
                           stroke="hsl(var(--primary))"
-                          strokeWidth={2}
-                          dot={false}
+                          strokeWidth={3}
+                          fill="url(#followersGradient)"
+                          dot={{ fill: 'hsl(var(--primary))', r: 3, strokeWidth: 0 }}
+                          activeDot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                         />
-                      </LineChart>
+                      </AreaChart>
                     </RechartsContainer>
                   )}
                 </div>
@@ -817,9 +825,12 @@ export default function MarketingDashboard() {
 
             {/* Daily reach + profile views */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card>
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Alcance diário (14 dias)</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Alcance diário (14 dias)
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-56">
@@ -827,34 +838,50 @@ export default function MarketingDashboard() {
                       <EmptyState compact icon={BarChart3} title="" description="Sem dados no período." />
                     ) : (
                       <RechartsContainer width="100%" height="100%">
-                        <BarChart data={reachSeries}>
+                        <AreaChart data={reachSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="reachGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--warning))" stopOpacity={0.35} />
+                              <stop offset="95%" stopColor="hsl(var(--warning))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                           <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 11 }}
-                            tickFormatter={(v) =>
-                              new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              })
-                            }
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                            tickFormatter={fmtChartDate}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <YAxis tick={{ fontSize: 11 }} />
-                          <RTooltip
-                            contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                            labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                            formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Alcance']}
+                          <YAxis
+                            tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <Bar dataKey="reach" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                          <RTooltip content={<ChartTooltip unit="alcance" />} />
+                          <Area
+                            type="monotone"
+                            dataKey="reach"
+                            stroke="hsl(var(--warning))"
+                            strokeWidth={2.5}
+                            fill="url(#reachGradient)"
+                            dot={false}
+                            activeDot={{ fill: 'hsl(var(--warning))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                          />
+                        </AreaChart>
                       </RechartsContainer>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Visitas no perfil (14 dias)</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Visitas no perfil (14 dias)
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-56">
@@ -862,25 +889,38 @@ export default function MarketingDashboard() {
                       <EmptyState compact icon={Eye} title="" description="Sem dados no período." />
                     ) : (
                       <RechartsContainer width="100%" height="100%">
-                        <BarChart data={profileViewsSeries}>
+                        <AreaChart data={profileViewsSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="visitsGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.35} />
+                              <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                           <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 11 }}
-                            tickFormatter={(v) =>
-                              new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              })
-                            }
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                            tickFormatter={fmtChartDate}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <YAxis tick={{ fontSize: 11 }} />
-                          <RTooltip
-                            contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                            labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                            formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Visitas']}
+                          <YAxis
+                            tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <Bar dataKey="views" fill="hsl(var(--accent-foreground))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                          <RTooltip content={<ChartTooltip unit="visitas" />} />
+                          <Area
+                            type="monotone"
+                            dataKey="views"
+                            stroke="hsl(var(--success))"
+                            strokeWidth={2.5}
+                            fill="url(#visitsGradient)"
+                            dot={false}
+                            activeDot={{ fill: 'hsl(var(--success))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                          />
+                        </AreaChart>
                       </RechartsContainer>
                     )}
                   </div>
