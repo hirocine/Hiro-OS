@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Loader2, User, MoreVertical } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
@@ -61,24 +62,12 @@ export default function MarketingPersonaPage() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : personas.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-16 flex flex-col items-center text-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <User className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Defina sua primeira persona</h3>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md">
-                Quem é o cliente ideal da Hiro Films? Detalhe segmento, dores, gatilhos e canais
-                para guiar todo o conteúdo de marketing.
-              </p>
-            </div>
-            <Button onClick={openNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Persona
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={UserCircle}
+          title="Defina sua primeira persona"
+          description="Quem é o cliente ideal da Hiro Films? Detalhe segmento, dores, gatilhos e canais para guiar todo o conteúdo de marketing."
+          action={{ label: 'Criar Persona', onClick: openNew }}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {personas.map((p) => (

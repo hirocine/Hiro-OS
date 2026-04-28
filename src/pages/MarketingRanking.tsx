@@ -25,7 +25,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronsUpDown, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronsUpDown, ExternalLink, Image as ImageIcon, Trophy } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { getPillarColor } from '@/lib/marketing-colors';
@@ -332,9 +333,11 @@ export default function MarketingRanking() {
   );
 
   const empty = (
-    <div className="rounded-xl border border-dashed border-border p-12 text-center text-muted-foreground">
-      Nenhum post publicado ainda. Quando você marcar posts como "Publicado" eles aparecerão aqui.
-    </div>
+    <EmptyState
+      icon={Trophy}
+      title="Nenhum post publicado ainda"
+      description='Quando você marcar posts como "Publicado" eles aparecerão aqui ranqueados por performance.'
+    />
   );
 
   const sortOptions: { key: SortKey; label: string }[] = [

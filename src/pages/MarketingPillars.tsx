@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getPillarColor } from '@/lib/marketing-colors';
 import { MarketingPillarDialog } from '@/components/Marketing/MarketingPillarDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
 interface PostCount { pillar_id: string | null }
@@ -70,27 +71,24 @@ export default function MarketingPillars() {
       {loading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
       ) : pillars.length === 0 ? (
-        <Card className="p-12 text-center max-w-2xl mx-auto">
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <Layers className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Defina seus pilares de conteúdo</h3>
-          <p className="text-muted-foreground mb-6">
-            Os 3 a 5 temas centrais que sua marca representa. Pilares organizam suas ideias e posts em torno de uma narrativa coerente.
-          </p>
-          <Button onClick={openNew}>
-            <Plus className="h-4 w-4 mr-2" /> Criar primeiro pilar
-          </Button>
-        </Card>
+        <EmptyState
+          icon={Layers}
+          title="Defina seus pilares de conteúdo"
+          description="Os 3 a 5 temas centrais que sua marca representa. Pilares organizam suas ideias e posts em torno de uma narrativa coerente."
+          action={{ label: 'Criar primeiro pilar', onClick: openNew }}
+        />
       ) : (
         <>
           {/* Donut chart */}
           <Card className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4">Distribuição real (posts publicados)</h3>
             {totalPublished === 0 ? (
-              <div className="text-center py-8 text-sm text-muted-foreground">
-                Nenhum post publicado ainda. A distribuição aparecerá aqui conforme posts forem publicados.
-              </div>
+              <EmptyState
+                compact
+                icon={Layers}
+                title=""
+                description="Nenhum post publicado ainda. A distribuição aparecerá conforme posts forem publicados."
+              />
             ) : (
               <div className="h-64 relative">
                 <ResponsiveContainer width="100%" height="100%">

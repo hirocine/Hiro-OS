@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { ArrowDown, ArrowUp, Image as ImageIcon, Minus, AlertTriangle, Sparkles, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, Image as ImageIcon, Minus, AlertTriangle, Sparkles, Calendar as CalendarIcon, BarChart3, Trophy, Layers, CheckCircle, PieChart as PieIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { getPillarColor } from '@/lib/marketing-colors';
@@ -142,6 +143,7 @@ interface DailySnapshot {
 }
 
 export default function MarketingDashboard() {
+  const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
   const [period, setPeriod] = useState<Period>('30');
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
@@ -345,22 +347,12 @@ export default function MarketingDashboard() {
     return (
       <ResponsiveContainer maxWidth="7xl">
         <PageHeader title="Dashboard de Marketing" subtitle="KPIs consolidados, evolução e top conteúdos." />
-        <Card>
-          <CardContent className="p-12 flex flex-col items-center text-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">Publique seu primeiro post para ver métricas aqui</h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md">
-                Quando você marcar posts como "Publicado" e adicionar métricas, esta tela vai consolidar a performance.
-              </p>
-            </div>
-            <Button asChild>
-              <Link to="/marketing">Ir ao Calendário</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BarChart3}
+          title="Publique seu primeiro post para ver métricas aqui"
+          description='Quando você marcar posts como "Publicado" e adicionar métricas, esta tela vai consolidar a performance.'
+          action={{ label: 'Ir ao Calendário', onClick: () => navigate('/marketing') }}
+        />
       </ResponsiveContainer>
     );
   }
@@ -421,8 +413,8 @@ export default function MarketingDashboard() {
           <CardContent>
             <div className="h-64">
               {snapshots.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                  Sem snapshots no período. As métricas começam a gerar histórico ao serem atualizadas.
+                <div className="h-full flex items-center justify-center">
+                  <EmptyState compact icon={CalendarIcon} title="" description="Sem snapshots no período. As métricas começam a gerar histórico ao serem atualizadas." />
                 </div>
               ) : (
                 <RechartsContainer width="100%" height="100%">
@@ -466,9 +458,7 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {topPosts.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-6 text-center">
-                  Nenhum post publicado no período.
-                </div>
+                <EmptyState compact icon={Trophy} title="" description="Nenhum post publicado no período." />
               ) : (
                 <ul className="divide-y divide-border">
                   {topPosts.map((p, i) => (
@@ -509,8 +499,8 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {platformData.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">
-                  Sem dados.
+                <div className="h-48 flex items-center justify-center">
+                  <EmptyState compact icon={PieIcon} title="" description="Sem dados." />
                 </div>
               ) : (
                 <div className="h-48">
@@ -549,8 +539,8 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               {pillarPerformance.length === 0 ? (
-                <div className="px-4 py-6 text-sm text-muted-foreground text-center">
-                  Sem dados de pilares.
+                <div className="px-4 py-2">
+                  <EmptyState compact icon={Layers} title="" description="Sem dados de pilares." />
                 </div>
               ) : (
                 <table className="w-full text-sm">
@@ -595,8 +585,8 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               {formatPerformance.length === 0 ? (
-                <div className="px-4 py-6 text-sm text-muted-foreground text-center">
-                  Sem dados de formatos.
+                <div className="px-4 py-2">
+                  <EmptyState compact icon={ImageIcon} title="" description="Sem dados de formatos." />
                 </div>
               ) : (
                 <table className="w-full text-sm">
@@ -633,9 +623,7 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {alerts.length === 0 ? (
-                <div className="text-sm text-muted-foreground py-6 text-center">
-                  Tudo certo por aqui ✨
-                </div>
+                <EmptyState compact icon={CheckCircle} title="" description="Tudo certo por aqui ✨" />
               ) : (
                 <ul className="space-y-2">
                   {alerts.map((a, i) => (
