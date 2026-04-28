@@ -220,11 +220,13 @@ interface ColumnProps {
   ideas: MarketingIdea[];
   profiles: Record<string, ProfileMini>;
   pillarsMap: Record<string, MarketingPillar>;
+  ideaLinks: Map<string, IdeaPostLink>;
   onAdd: (status: IdeaStatus) => void;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
   onPromote: (idea: MarketingIdea) => void;
+  onOpenPost: (postId: string) => void;
   activeId: string | null;
 }
 
@@ -235,11 +237,13 @@ function KanbanColumn({
   ideas,
   profiles,
   pillarsMap,
+  ideaLinks,
   onAdd,
   onEdit,
   onDelete,
   onDuplicate,
   onPromote,
+  onOpenPost,
   activeId,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
@@ -276,10 +280,12 @@ function KanbanColumn({
             idea={idea}
             profile={idea.created_by ? profiles[idea.created_by] : undefined}
             pillar={idea.pillar_id ? pillarsMap[idea.pillar_id] : undefined}
+            postLink={ideaLinks.get(idea.id)}
             onEdit={onEdit}
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             onPromote={onPromote}
+            onOpenPost={onOpenPost}
             dragging={activeId === idea.id}
           />
         ))}
