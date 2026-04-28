@@ -161,7 +161,13 @@ const getActionDescription = (log: { action: string; new_values: any; old_values
     
     // User role change
     if (log.action === 'UPDATE_USER_ROLE' && values.role) {
-      return `Permissão alterada para: ${values.role === 'admin' ? 'Administrador' : values.role === 'producao' ? 'Produção' : 'Usuário'}`;
+      const roleLabels: Record<string, string> = {
+        admin: 'Administrador',
+        producao: 'Produção',
+        marketing: 'Marketing',
+        user: 'Usuário',
+      };
+      return `Permissão alterada para: ${roleLabels[values.role as string] ?? 'Usuário'}`;
     }
     
     // Equipment specific
@@ -190,7 +196,7 @@ interface User {
   position: string;
   department: string;
   created_at: string;
-  role: 'admin' | 'user' | 'producao';
+  role: 'admin' | 'user' | 'producao' | 'marketing';
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
   is_active: boolean;
@@ -418,7 +424,7 @@ export default function Admin() {
     fetchUsers();
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'producao' | 'marketing') => {
     try {
       logger.debug('Updating user role', { 
         module: 'admin',
@@ -617,6 +623,7 @@ export default function Admin() {
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="admin">Administradores</SelectItem>
                 <SelectItem value="producao">Produção</SelectItem>
+                <SelectItem value="marketing">Marketing</SelectItem>
                 <SelectItem value="user">Usuários</SelectItem>
               </SelectContent>
             </Select>
@@ -670,10 +677,20 @@ export default function Admin() {
                             <span className="text-sm">{tableUser.department}</span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={tableUser.role === 'admin' ? 'default' : tableUser.role === 'producao' ? 'outline' : 'secondary'} className="gap-1">
-                              <Shield className="h-3 w-3" />
-                              {tableUser.role === 'admin' ? 'Admin' : tableUser.role === 'producao' ? 'Produção' : 'Usuário'}
-                            </Badge>
+                            {(() => {
+                              const roleLabel: Record<string, string> = { admin: 'Admin', producao: 'Produção', marketing: 'Marketing', user: 'Usuário' };
+                              const variant = tableUser.role === 'admin'
+                                ? 'default'
+                                : tableUser.role === 'producao' || tableUser.role === 'marketing'
+                                  ? 'outline'
+                                  : 'secondary';
+                              return (
+                                <Badge variant={variant} className="gap-1">
+                                  <Shield className="h-3 w-3" />
+                                  {roleLabel[tableUser.role] ?? 'Usuário'}
+                                </Badge>
+                              );
+                            })()}
                           </TableCell>
                           <TableCell>
                             {getStatusBadge(tableUser.is_active, !!tableUser.email_confirmed_at)}
