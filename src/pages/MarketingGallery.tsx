@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useMarketingGalleryPosts, type GalleryPost } from '@/hooks/useMarketingGalleryPosts';
+import { useMarketingGallery, type GalleryPost } from '@/hooks/useMarketingGallery';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { getPillarColor } from '@/lib/marketing-colors';
 
