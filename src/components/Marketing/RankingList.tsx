@@ -102,7 +102,7 @@ export function RankingList({ posts, pillars, onClick }: Props) {
               >
                 <div
                   className={cn(
-                    'shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold tabular-nums',
+                    'shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold font-numeric',
                     isTop3
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground',
@@ -160,7 +160,7 @@ export function RankingList({ posts, pillars, onClick }: Props) {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-lg font-bold tabular-nums leading-tight">
+                  <p className="text-lg font-bold font-numeric leading-tight">
                     {primaryDisplay}
                   </p>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground">

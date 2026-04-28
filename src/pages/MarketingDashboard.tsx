@@ -164,7 +164,7 @@ function KpiCard({
           <span>{emoji}</span>
           <span>{label}</span>
         </div>
-        <div className="text-3xl font-semibold mt-2 tabular-nums">{value}</div>
+        <div className="text-3xl font-semibold mt-2 font-numeric">{value}</div>
         <div className="mt-1">
           <ChangeBadge value={change} />
           <span className="text-[10px] text-muted-foreground ml-1">vs período anterior</span>
@@ -196,13 +196,13 @@ function AccountKpiCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight text-foreground">
+        <div className="text-3xl sm:text-4xl font-bold font-numeric tracking-tight text-foreground">
           {value}
         </div>
         {subtitle && (
           <p
             className={cn(
-              'text-xs font-medium tabular-nums',
+              'text-xs font-medium font-numeric',
               subtone === 'positive' && 'text-success',
               subtone === 'negative' && 'text-destructive',
               subtone === 'muted' && 'text-muted-foreground'
@@ -247,7 +247,7 @@ function ChartTooltip({
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
       <p className="font-semibold text-foreground mb-1">{labelStr}</p>
-      <p className="text-primary font-medium tabular-nums">
+      <p className="text-primary font-medium font-numeric">
         {val.toLocaleString('pt-BR')} {unit}
       </p>
     </div>
@@ -381,7 +381,7 @@ function GenderAgeHero({ audience }: { audience: { gender_age: Record<string, nu
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Perfil dominante
           </p>
-          <p className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight mt-1">
+          <p className="text-2xl sm:text-3xl font-bold font-numeric tracking-tight mt-1">
             {dominantAge ? `${dominantAge.key} anos` : '—'}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -424,18 +424,18 @@ function GenderAgeHero({ audience }: { audience: { gender_age: Record<string, nu
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2.5 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.F }} />
-              <span className="font-medium tabular-nums">{fPct.toFixed(1)}%</span>
+              <span className="font-medium font-numeric">{fPct.toFixed(1)}%</span>
               <span className="text-muted-foreground">mulheres</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.M }} />
-              <span className="font-medium tabular-nums">{mPct.toFixed(1)}%</span>
+              <span className="font-medium font-numeric">{mPct.toFixed(1)}%</span>
               <span className="text-muted-foreground">homens</span>
             </div>
             {uPct > 0.1 && (
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GENDER_COLORS.U }} />
-                <span className="font-medium tabular-nums">{uPct.toFixed(1)}%</span>
+                <span className="font-medium font-numeric">{uPct.toFixed(1)}%</span>
                 <span className="text-muted-foreground">outros</span>
               </div>
             )}
@@ -455,7 +455,7 @@ function GenderAgeHero({ audience }: { audience: { gender_age: Record<string, nu
                 <li key={e.key} className="grid grid-cols-[60px_1fr_50px] items-center gap-3">
                   <span
                     className={cn(
-                      'text-xs font-medium tabular-nums',
+                      'text-xs font-medium font-numeric',
                       isDominant ? 'text-foreground' : 'text-muted-foreground',
                     )}
                   >
@@ -474,7 +474,7 @@ function GenderAgeHero({ audience }: { audience: { gender_age: Record<string, nu
                   </div>
                   <span
                     className={cn(
-                      'text-xs tabular-nums text-right',
+                      'text-xs font-numeric text-right',
                       isDominant ? 'font-semibold text-foreground' : 'text-muted-foreground',
                     )}
                   >
@@ -513,7 +513,7 @@ function CityRanking({ cities }: { cities: Record<string, number> }) {
               <div className="flex items-center gap-2.5 min-w-0">
                 <span
                   className={cn(
-                    'shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold tabular-nums',
+                    'shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold font-numeric',
                     i === 0 && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
                     i === 1 && 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
                     i === 2 && 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
@@ -524,7 +524,7 @@ function CityRanking({ cities }: { cities: Record<string, number> }) {
                 </span>
                 <span className="text-sm font-medium truncate">{e.key}</span>
               </div>
-              <span className="text-sm tabular-nums font-semibold shrink-0">
+              <span className="text-sm font-numeric font-semibold shrink-0">
                 {e.pct.toFixed(1)}%
               </span>
             </div>
@@ -562,11 +562,11 @@ function LocaleList({ locales }: { locales: Record<string, number> }) {
             </span>
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{localeLabel(e.key)}</p>
-              <p className="text-xs text-muted-foreground tabular-nums">{e.key}</p>
+              <p className="text-xs text-muted-foreground font-numeric">{e.key}</p>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-base font-bold tabular-nums">{e.pct.toFixed(1)}%</p>
+            <p className="text-base font-bold font-numeric">{e.pct.toFixed(1)}%</p>
           </div>
         </li>
       ))}
@@ -1083,7 +1083,7 @@ export default function MarketingDashboard() {
                         A API do Instagram não fornece histórico de seguidores. O gráfico
                         ganha forma à medida que cada dia é capturado pelo sistema.
                       </p>
-                      <p className="text-xs text-muted-foreground tabular-nums mt-1">
+                      <p className="text-xs text-muted-foreground font-numeric mt-1">
                         {followersSeries.length}/7 dias coletados
                       </p>
                     </div>
@@ -1106,7 +1106,7 @@ export default function MarketingDashboard() {
                         />
                         <YAxis
                           tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'font-numeric' } } as any}
                           axisLine={false}
                           tickLine={false}
                           domain={['dataMin - 10', 'dataMax + 10']}
@@ -1160,7 +1160,7 @@ export default function MarketingDashboard() {
                           />
                           <YAxis
                             tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'font-numeric' } } as any}
                             axisLine={false}
                             tickLine={false}
                           />
@@ -1211,7 +1211,7 @@ export default function MarketingDashboard() {
                           />
                           <YAxis
                             tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'font-numeric' } } as any}
                             axisLine={false}
                             tickLine={false}
                           />
@@ -1393,7 +1393,7 @@ export default function MarketingDashboard() {
                         />
                         <YAxis
                           tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'font-numeric' } } as any}
                           axisLine={false}
                           tickLine={false}
                         />
@@ -1426,7 +1426,7 @@ export default function MarketingDashboard() {
                     <ul className="divide-y divide-border">
                       {topPosts.map((p, i) => (
                         <li key={p.id} className="flex items-center gap-3 py-2.5">
-                          <span className="w-5 text-xs text-muted-foreground tabular-nums">{i + 1}</span>
+                          <span className="w-5 text-xs text-muted-foreground font-numeric">{i + 1}</span>
                           {p.cover_url ? (
                             <img
                               src={p.cover_url}
@@ -1448,7 +1448,7 @@ export default function MarketingDashboard() {
                               )}
                             </div>
                           </div>
-                          <div className="text-sm font-semibold tabular-nums">
+                          <div className="text-sm font-semibold font-numeric">
                             {(p.views ?? 0).toLocaleString('pt-BR')} views
                           </div>
                         </li>
@@ -1528,11 +1528,11 @@ export default function MarketingDashboard() {
                                 <span className="truncate">{r.name}</span>
                               </div>
                             </td>
-                            <td className="px-2 py-2 text-right tabular-nums">{r.posts}</td>
-                            <td className="px-2 py-2 text-right tabular-nums">
+                            <td className="px-2 py-2 text-right font-numeric">{r.posts}</td>
+                            <td className="px-2 py-2 text-right font-numeric">
                               {r.avgViews.toLocaleString('pt-BR')}
                             </td>
-                            <td className="px-4 py-2 text-right tabular-nums">{r.avgEng.toFixed(2)}%</td>
+                            <td className="px-4 py-2 text-right font-numeric">{r.avgEng.toFixed(2)}%</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1564,11 +1564,11 @@ export default function MarketingDashboard() {
                         {formatPerformance.map((r) => (
                           <tr key={r.key} className="border-t border-border">
                             <td className="px-4 py-2 truncate">{r.label}</td>
-                            <td className="px-2 py-2 text-right tabular-nums">{r.posts}</td>
-                            <td className="px-2 py-2 text-right tabular-nums">
+                            <td className="px-2 py-2 text-right font-numeric">{r.posts}</td>
+                            <td className="px-2 py-2 text-right font-numeric">
                               {r.avgViews.toLocaleString('pt-BR')}
                             </td>
-                            <td className="px-4 py-2 text-right tabular-nums">{r.avgEng.toFixed(2)}%</td>
+                            <td className="px-4 py-2 text-right font-numeric">{r.avgEng.toFixed(2)}%</td>
                           </tr>
                         ))}
                       </tbody>

@@ -71,7 +71,7 @@ function KpiCard({ label, value, icon: Icon, current, previous }: KpiProps) {
           <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
           <Icon className="h-4 w-4 text-muted-foreground" />
         </div>
-        <div className="text-2xl font-semibold tabular-nums">{value}</div>
+        <div className="text-2xl font-semibold font-numeric">{value}</div>
         <VariationBadge current={current} previous={previous} />
       </CardContent>
     </Card>
@@ -374,7 +374,7 @@ export default function MarketingHome() {
                 <ul className="divide-y divide-border">
                   {topPosts.map((p, i) => (
                     <li key={p.id} className="flex items-center gap-3 py-2.5">
-                      <span className="w-5 text-sm font-semibold text-muted-foreground tabular-nums">{i + 1}</span>
+                      <span className="w-5 text-sm font-semibold text-muted-foreground font-numeric">{i + 1}</span>
                       {p.cover_url ? (
                         <img src={p.cover_url} alt="" className="w-10 h-10 rounded-md object-cover shrink-0" />
                       ) : (
@@ -390,7 +390,7 @@ export default function MarketingHome() {
                           </Badge>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+                      <span className="text-xs text-muted-foreground font-numeric shrink-0">
                         {formatNumber(p.views || 0)} views
                       </span>
                     </li>
