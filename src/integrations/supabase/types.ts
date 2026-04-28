@@ -1190,6 +1190,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          format: string | null
           id: string
           pillar_id: string | null
           reference_ids: string[]
@@ -1203,6 +1204,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          format?: string | null
           id?: string
           pillar_id?: string | null
           reference_ids?: string[]
@@ -1216,6 +1218,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          format?: string | null
           id?: string
           pillar_id?: string | null
           reference_ids?: string[]
