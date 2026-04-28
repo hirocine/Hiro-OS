@@ -154,7 +154,6 @@ export default function MarketingGallery() {
       <PageHeader
         title="Galeria"
         subtitle="Todos os posts publicados no Instagram, importados automaticamente."
-        icon={Images}
         actions={
           <Button onClick={handleDiscover} disabled={discovering} size="sm">
             <RefreshCw className={cn('mr-2 h-4 w-4', discovering && 'animate-spin')} />
