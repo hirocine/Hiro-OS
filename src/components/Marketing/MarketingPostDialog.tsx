@@ -42,6 +42,18 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function slugify(s: string | undefined | null): string {
+  if (!s) return '';
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 50);
+}
+
 export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
@@ -157,19 +169,40 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     return ((likes + commentsCount + shares + saves) / reach) * 100;
   }, [likes, commentsCount, shares, saves, reach]);
 
+  const effectiveUtm = useMemo(() => {
+    const has = !!destinationUrl.trim();
+    if (!has) return { source: '', medium: '', campaign: '', content: '' };
+    return {
+      source: utmSource || 'instagram',
+      medium: utmMedium || 'social',
+      campaign: utmCampaign || slugify(title) || 'post',
+      content: utmContent || '',
+    };
+  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent, title]);
+
   const generatedUtmUrl = useMemo(() => {
     if (!destinationUrl.trim()) return '';
     try {
       const u = new URL(destinationUrl.trim());
-      if (utmSource) u.searchParams.set('utm_source', utmSource);
-      if (utmMedium) u.searchParams.set('utm_medium', utmMedium);
-      if (utmCampaign) u.searchParams.set('utm_campaign', utmCampaign);
-      if (utmContent) u.searchParams.set('utm_content', utmContent);
+      if (effectiveUtm.source) u.searchParams.set('utm_source', effectiveUtm.source);
+      if (effectiveUtm.medium) u.searchParams.set('utm_medium', effectiveUtm.medium);
+      if (effectiveUtm.campaign) u.searchParams.set('utm_campaign', effectiveUtm.campaign);
+      if (effectiveUtm.content) u.searchParams.set('utm_content', effectiveUtm.content);
       return u.toString();
     } catch {
       return destinationUrl.trim();
     }
-  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent]);
+  }, [destinationUrl, effectiveUtm]);
+
+  const copyUtmUrl = async () => {
+    if (!generatedUtmUrl) return;
+    try {
+      await navigator.clipboard.writeText(generatedUtmUrl);
+      toast.success('Link copiado');
+    } catch {
+      toast.error('Não foi possível copiar');
+    }
+  };
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
@@ -194,7 +227,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     if (!title.trim()) return;
     const currentMetrics = JSON.stringify([views, likes, commentsCount, shares, saves, reach, profileClicks, newFollowers]);
     const metricsChanged = currentMetrics !== initialMetricsRef.current;
-    const payload: MarketingPostInput = {
+    const payload = {
       title: title.trim(),
       caption: caption.trim() || null,
       hashtags,
@@ -209,10 +242,16 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       idea_id: ideaId || null,
       views, likes, comments: commentsCount, shares, saves, reach,
       profile_clicks: profileClicks, new_followers: newFollowers,
+      destination_url: destinationUrl.trim() || null,
+      utm_source: destinationUrl.trim() ? effectiveUtm.source || null : null,
+      utm_medium: destinationUrl.trim() ? effectiveUtm.medium || null : null,
+      utm_campaign: destinationUrl.trim() ? effectiveUtm.campaign || null : null,
+      utm_content: effectiveUtm.content || null,
+      utm_url: generatedUtmUrl || null,
       ...(metricsChanged
         ? { metrics_updated_at: new Date().toISOString(), metrics_source: 'manual' }
         : {}),
-    };
+    } as MarketingPostInput;
     try {
       setSaving(true);
       let saved: MarketingPost;
@@ -483,6 +522,60 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
               </Popover>
             </div>
           </div>
+        </div>
+
+        {/* ===== Link e rastreamento (UTM Builder) ===== */}
+        <div className="border border-border rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Link2 className="h-4 w-4" />
+            Link e rastreamento
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs">URL de destino (sem UTM)</Label>
+            <Input
+              value={destinationUrl}
+              onChange={(e) => setDestinationUrl(e.target.value)}
+              placeholder="https://hiro.film/portfolio"
+              type="url"
+            />
+          </div>
+
+          {destinationUrl.trim() && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">utm_source</Label>
+                  <Input value={utmSource} onChange={(e) => setUtmSource(e.target.value)} placeholder="instagram" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">utm_medium</Label>
+                  <Input value={utmMedium} onChange={(e) => setUtmMedium(e.target.value)} placeholder="social" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">utm_campaign</Label>
+                  <Input value={utmCampaign} onChange={(e) => setUtmCampaign(e.target.value)} placeholder={slugify(title) || 'campanha'} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">utm_content (opcional)</Label>
+                  <Input value={utmContent} onChange={(e) => setUtmContent(e.target.value)} placeholder="ex: cta-bio" />
+                </div>
+              </div>
+
+              {generatedUtmUrl && (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs text-primary">Link com rastreamento</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={copyUtmUrl} className="h-7 gap-1.5">
+                      <Copy className="h-3 w-3" />
+                      Copiar
+                    </Button>
+                  </div>
+                  <p className="text-xs font-mono break-all text-foreground">{generatedUtmUrl}</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {status === 'publicado' && (
