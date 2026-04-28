@@ -899,7 +899,7 @@ export default function MarketingDashboard() {
     );
   }
 
-  const syncStatus = formatTimeAgo(latestAccount?.captured_at);
+  const syncStatus = formatTimeAgo(instagramIntegration?.last_sync_at);
 
   return (
     <ResponsiveContainer maxWidth="7xl">
@@ -963,8 +963,8 @@ export default function MarketingDashboard() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {latestAccount
-                    ? `Última sincronização ${formatRelativeTime(new Date(latestAccount.captured_at))}`
+                  {instagramIntegration?.last_sync_at
+                    ? `Última sincronização ${formatRelativeTime(new Date(instagramIntegration.last_sync_at))}`
                     : syncStatus.text}
                 </p>
               </div>
