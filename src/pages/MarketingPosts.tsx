@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
@@ -172,6 +172,19 @@ export default function MarketingPosts() {
     const p = posts.find((x) => x.id === id) ?? null;
     setSelected(p);
   };
+
+  // Open a post directly via ?postId=... (used when navigating from the Ideas page)
+  useEffect(() => {
+    const postId = searchParams.get('postId');
+    if (!postId || posts.length === 0) return;
+    const p = posts.find((x) => x.id === postId);
+    if (p) {
+      setSelected(p);
+      const next = new URLSearchParams(searchParams);
+      next.delete('postId');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, posts, setSearchParams]);
 
   return (
     <ResponsiveContainer maxWidth="7xl">

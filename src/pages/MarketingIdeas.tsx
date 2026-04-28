@@ -11,7 +11,8 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus, Lightbulb } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus, Lightbulb, CheckCircle2, ExternalLink } from 'lucide-react';
+import { useIdeasWithPosts, type IdeaPostLink } from '@/hooks/useIdeasWithPosts';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -90,14 +91,16 @@ interface IdeaCardProps {
   idea: MarketingIdea;
   profile?: ProfileMini;
   pillar?: MarketingPillar;
+  postLink?: IdeaPostLink;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
   onPromote: (idea: MarketingIdea) => void;
+  onOpenPost?: (postId: string) => void;
   dragging?: boolean;
 }
 
-function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onPromote, dragging }: IdeaCardProps) {
+function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplicate, onPromote, onOpenPost, dragging }: IdeaCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: idea.id });
   const initials = (profile?.display_name || '?').slice(0, 2).toUpperCase();
   const pillarColor = pillar ? getPillarColor(pillar.color) : null;
@@ -137,9 +140,16 @@ function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onProm
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => onPromote(idea)}>
-              <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
-            </DropdownMenuItem>
+            {!postLink && (
+              <DropdownMenuItem onClick={() => onPromote(idea)}>
+                <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
+              </DropdownMenuItem>
+            )}
+            {postLink && onOpenPost && (
+              <DropdownMenuItem onClick={() => onOpenPost(postLink.post_id)}>
+                <ExternalLink className="h-3.5 w-3.5 mr-2" /> Abrir post no calendário
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onEdit(idea)}>
               <Edit2 className="h-3.5 w-3.5 mr-2" /> Editar
             </DropdownMenuItem>
@@ -182,6 +192,23 @@ function IdeaCard({ idea, profile, pillar, onEdit, onDelete, onDuplicate, onProm
           </div>
         )}
       </div>
+
+      {postLink && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenPost?.(postLink.post_id);
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 transition cursor-pointer"
+          title="Abrir post no calendário"
+        >
+          <CheckCircle2 className="h-3 w-3" />
+          <span>Virou post</span>
+          <ExternalLink className="h-3 w-3 ml-0.5 opacity-60" />
+        </button>
+      )}
     </div>
   );
 }
@@ -193,11 +220,13 @@ interface ColumnProps {
   ideas: MarketingIdea[];
   profiles: Record<string, ProfileMini>;
   pillarsMap: Record<string, MarketingPillar>;
+  ideaLinks: Map<string, IdeaPostLink>;
   onAdd: (status: IdeaStatus) => void;
   onEdit: (idea: MarketingIdea) => void;
   onDelete: (idea: MarketingIdea) => void;
   onDuplicate: (idea: MarketingIdea) => void;
   onPromote: (idea: MarketingIdea) => void;
+  onOpenPost: (postId: string) => void;
   activeId: string | null;
 }
 
@@ -208,11 +237,13 @@ function KanbanColumn({
   ideas,
   profiles,
   pillarsMap,
+  ideaLinks,
   onAdd,
   onEdit,
   onDelete,
   onDuplicate,
   onPromote,
+  onOpenPost,
   activeId,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
@@ -249,10 +280,12 @@ function KanbanColumn({
             idea={idea}
             profile={idea.created_by ? profiles[idea.created_by] : undefined}
             pillar={idea.pillar_id ? pillarsMap[idea.pillar_id] : undefined}
+            postLink={ideaLinks.get(idea.id)}
             onEdit={onEdit}
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             onPromote={onPromote}
+            onOpenPost={onOpenPost}
             dragging={activeId === idea.id}
           />
         ))}
@@ -266,7 +299,7 @@ function KanbanColumn({
 
 export default function MarketingIdeas() {
   const navigate = useNavigate();
-  const { ideas, loading, updateStatus, deleteIdea, duplicateIdea } = useMarketingIdeas();
+  const { ideas, loading, updateStatus, deleteIdea, duplicateIdea, fetchIdeas } = useMarketingIdeas();
   const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 200);
@@ -313,6 +346,8 @@ export default function MarketingIdeas() {
     pillars.forEach((p) => { m[p.id] = p; });
     return m;
   }, [pillars]);
+
+  const ideaLinks = useIdeasWithPosts(ideas.map((i) => i.id));
 
   const grouped = useMemo(() => {
     const g: Record<IdeaStatus, MarketingIdea[]> = {
@@ -362,12 +397,16 @@ export default function MarketingIdeas() {
       scheduled_at: null,
       hashtags: [],
       platform: null,
-      format: null,
+      format: idea.format,
       cover_url: null,
       file_url: null,
       published_url: null,
     });
     setPostDialogOpen(true);
+  };
+
+  const handleOpenPost = (postId: string) => {
+    navigate(`/marketing/posts?postId=${postId}`);
   };
 
   const handlePostDialogChange = (open: boolean) => {
@@ -433,11 +472,13 @@ export default function MarketingIdeas() {
                 ideas={grouped[s.value]}
                 profiles={profilesMap}
                 pillarsMap={pillarsMap}
+                ideaLinks={ideaLinks}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={setDeleteTarget}
                 onDuplicate={duplicateIdea}
                 onPromote={handlePromote}
+                onOpenPost={handleOpenPost}
                 activeId={activeId}
               />
             ))}
@@ -463,11 +504,16 @@ export default function MarketingIdeas() {
         open={postDialogOpen}
         onOpenChange={handlePostDialogChange}
         prefill={postPrefill}
-        onSaved={(_p, isNew) => {
+        onSaved={(post, isNew) => {
           if (isNew) {
-            toast.success('Post criado no calendário 🚀', {
-              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing') },
+            toast.success('Post criado e ideia atualizada 🚀', {
+              description: 'A ideia foi movida para "Em produção" automaticamente.',
+              action: {
+                label: 'Abrir post',
+                onClick: () => navigate(`/marketing/posts?postId=${post.id}`),
+              },
             });
+            fetchIdeas?.();
           }
         }}
       />
