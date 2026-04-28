@@ -19,7 +19,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { ArrowDown, ArrowUp, Image as ImageIcon, Minus, AlertTriangle, Sparkles, Calendar as CalendarIcon, BarChart3 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Image as ImageIcon, Minus, AlertTriangle, Sparkles, Calendar as CalendarIcon, BarChart3, Trophy, Layers, CheckCircle, PieChart as PieIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { getPillarColor } from '@/lib/marketing-colors';
