@@ -1076,12 +1076,12 @@ export default function MarketingDashboard() {
                 value={(latestAccount?.followers_count ?? 0).toLocaleString('pt-BR')}
                 subtitle={
                   accountKpis
-                    ? `${accountKpis.followersDelta7 >= 0 ? '+' : ''}${accountKpis.followersDelta7} esta semana`
+                    ? `${accountKpis.followersDeltaPeriod >= 0 ? '+' : ''}${accountKpis.followersDeltaPeriod} no período`
                     : undefined
                 }
                 subtone={
                   accountKpis
-                    ? accountKpis.followersDelta7 >= 0
+                    ? accountKpis.followersDeltaPeriod >= 0
                       ? 'positive'
                       : 'negative'
                     : 'muted'
@@ -1089,11 +1089,11 @@ export default function MarketingDashboard() {
               />
               <AccountKpiCard
                 icon={BarChart3}
-                label="Alcance (7 dias)"
-                value={(accountKpis?.reach7 ?? 0).toLocaleString('pt-BR')}
+                label="Alcance no período"
+                value={(accountKpis?.reachPeriod ?? 0).toLocaleString('pt-BR')}
                 subtitle={
                   accountKpis?.reachChange !== null && accountKpis?.reachChange !== undefined
-                    ? `${accountKpis.reachChange >= 0 ? '+' : ''}${accountKpis.reachChange.toFixed(1)}% vs 7d ant.`
+                    ? `${accountKpis.reachChange >= 0 ? '+' : ''}${accountKpis.reachChange.toFixed(1)}% vs período anterior`
                     : 'sem comparação'
                 }
                 subtone={
@@ -1106,12 +1106,12 @@ export default function MarketingDashboard() {
               />
               <AccountKpiCard
                 icon={Eye}
-                label="Visitas no perfil (7d)"
-                value={(accountKpis?.profileViews7 ?? 0).toLocaleString('pt-BR')}
+                label="Visitas no perfil"
+                value={(accountKpis?.profileViewsPeriod ?? 0).toLocaleString('pt-BR')}
                 subtitle={
                   accountKpis?.profileViewsChange !== null &&
                   accountKpis?.profileViewsChange !== undefined
-                    ? `${accountKpis.profileViewsChange >= 0 ? '+' : ''}${accountKpis.profileViewsChange.toFixed(1)}% vs 7d ant.`
+                    ? `${accountKpis.profileViewsChange >= 0 ? '+' : ''}${accountKpis.profileViewsChange.toFixed(1)}% vs período anterior`
                     : 'sem comparação'
                 }
                 subtone={
@@ -1128,9 +1128,9 @@ export default function MarketingDashboard() {
                 label="Posts publicados"
                 value={(latestAccount?.media_count ?? 0).toLocaleString('pt-BR')}
                 subtitle={
-                  accountKpis && accountKpis.newPosts7 > 0
-                    ? `+${accountKpis.newPosts7} esta semana`
-                    : 'lifetime'
+                  accountKpis && accountKpis.newPostsPeriod > 0
+                    ? `+${accountKpis.newPostsPeriod} no período`
+                    : 'total acumulado'
                 }
                 subtone="muted"
               />
