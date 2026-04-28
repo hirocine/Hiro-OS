@@ -11,7 +11,8 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus, Lightbulb } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus, Lightbulb, CheckCircle2, ExternalLink } from 'lucide-react';
+import { useIdeasWithPosts, type IdeaPostLink } from '@/hooks/useIdeasWithPosts';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
