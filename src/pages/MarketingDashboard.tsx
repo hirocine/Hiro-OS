@@ -7,6 +7,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AreaChart,
@@ -607,26 +608,71 @@ export default function MarketingDashboard() {
       />
 
       <div className="space-y-6">
-        {/* Banner de status do sync */}
-        <Card>
-          <CardContent className="p-3 flex items-center gap-3 text-sm">
-            <span
-              className={cn(
-                'h-2 w-2 rounded-full',
-                syncStatus.tone === 'ok' && 'bg-emerald-500',
-                syncStatus.tone === 'warn' && 'bg-amber-500',
-                syncStatus.tone === 'idle' && 'bg-muted-foreground/50'
-              )}
-            />
-            <div className="flex-1">
-              {latestAccount ? (
-                <span>
-                  Conta Instagram sincronizada —{' '}
-                  <span className="text-muted-foreground">última atualização {syncStatus.text}</span>
+        {/* Banner com identidade do Instagram */}
+        <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {/* Avatar com badge do Instagram */}
+              <div className="relative shrink-0">
+                <Avatar className="h-14 w-14 ring-2 ring-border">
+                  {instagramIntegration?.profile_picture_url ? (
+                    <AvatarImage
+                      src={instagramIntegration.profile_picture_url}
+                      alt={instagramIntegration.account_name ?? 'Instagram'}
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-muted">
+                    <Instagram className="h-6 w-6 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center ring-2 ring-card">
+                  <Instagram className="h-3 w-3 text-white" />
                 </span>
-              ) : (
-                <span className="text-muted-foreground">{syncStatus.text}</span>
-              )}
+              </div>
+
+              {/* Informações */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-foreground truncate">
+                    {instagramIntegration?.account_name ?? '@hirofilm'}
+                  </span>
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium',
+                      syncStatus.tone === 'ok' && 'bg-success/10 text-success',
+                      syncStatus.tone === 'warn' && 'bg-warning/10 text-warning',
+                      syncStatus.tone === 'idle' && 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        syncStatus.tone === 'ok' && 'bg-success',
+                        syncStatus.tone === 'warn' && 'bg-warning',
+                        syncStatus.tone === 'idle' && 'bg-muted-foreground'
+                      )}
+                    />
+                    Conectado
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {latestAccount
+                    ? `Última sincronização ${formatRelativeTime(new Date(latestAccount.captured_at))}`
+                    : syncStatus.text}
+                </p>
+              </div>
+
+              {/* Ação */}
+              <Button
+                onClick={handleSync}
+                disabled={syncing}
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex gap-2"
+              >
+                <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
+                Sincronizar
+              </Button>
             </div>
           </CardContent>
         </Card>
