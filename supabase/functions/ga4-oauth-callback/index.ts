@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const errorParam = url.searchParams.get("error");
 
     if (errorParam) {
-      const errUrl = `${APP_URL}/marketing/integracoes?ga4=error&reason=${encodeURIComponent(errorParam)}`;
+      const errUrl = `${APP_URL}/administracao/integracoes?ga4=error&reason=${encodeURIComponent(errorParam)}`;
       return new Response(null, { status: 302, headers: { ...corsHeaders, Location: errUrl } });
     }
 
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
     if (upsertError) throw upsertError;
 
-    const redirectUrl = `${APP_URL}/marketing/integracoes?ga4=connected`;
+    const redirectUrl = `${APP_URL}/administracao/integracoes?ga4=connected`;
     return new Response(null, {
       status: 302,
       headers: { ...corsHeaders, Location: redirectUrl },
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const errorMsg = e instanceof Error ? e.message : String(e);
     console.error("ga4-oauth-callback error:", errorMsg);
-    const errUrl = `${APP_URL}/marketing/integracoes?ga4=error&reason=${encodeURIComponent(errorMsg)}`;
+    const errUrl = `${APP_URL}/administracao/integracoes?ga4=error&reason=${encodeURIComponent(errorMsg)}`;
     return new Response(null, { status: 302, headers: { ...corsHeaders, Location: errUrl } });
   }
 });
