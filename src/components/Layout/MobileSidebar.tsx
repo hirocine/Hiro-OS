@@ -433,7 +433,7 @@ export function MobileSidebar() {
             )}
 
             {/* Marketing Section */}
-            {(filteredMarketingNav.length > 0 || !searchQuery) && (
+            {canAccessMarketing && (filteredMarketingNav.length > 0 || !searchQuery) && (
               <>
                 <div className="px-4 my-3">
                   <Separator />
