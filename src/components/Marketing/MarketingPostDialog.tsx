@@ -22,6 +22,9 @@ import { PILLAR_COLORS, getPillarColor } from '@/lib/marketing-colors';
 import { type MarketingPost, type MarketingPostInput, useMarketingPosts } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
+import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -43,9 +46,11 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
   const { ideas } = useMarketingIdeas();
+  const { instagramConnected, linkedinConnected } = useMarketingIntegrations();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
+  const [syncingPlatform, setSyncingPlatform] = useState<'instagram' | 'linkedin' | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const [title, setTitle] = useState('');
