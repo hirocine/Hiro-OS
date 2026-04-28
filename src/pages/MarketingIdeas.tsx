@@ -192,6 +192,23 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
           </div>
         )}
       </div>
+
+      {postLink && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenPost?.(postLink.post_id);
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/15 transition cursor-pointer"
+          title="Abrir post no calendário"
+        >
+          <CheckCircle2 className="h-3 w-3" />
+          <span>Virou post</span>
+          <ExternalLink className="h-3 w-3 ml-0.5 opacity-60" />
+        </button>
+      )}
     </div>
   );
 }
