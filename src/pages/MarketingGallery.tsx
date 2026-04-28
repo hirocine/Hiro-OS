@@ -92,7 +92,7 @@ function compactNumber(n: number) {
 }
 
 export default function MarketingGallery() {
-  const { posts, loading, refetch } = useMarketingGalleryPosts();
+  const { posts, loading, refresh: refetch } = useMarketingGallery();
   const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
