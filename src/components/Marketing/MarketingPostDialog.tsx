@@ -203,6 +203,34 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     }
   };
 
+  const handleSync = async (target: 'instagram' | 'linkedin') => {
+    if (!post) return;
+    try {
+      setSyncingPlatform(target);
+      const fnName = target === 'instagram' ? 'sync-instagram-post' : 'sync-linkedin-post';
+      const { data, error } = await supabase.functions.invoke(fnName, { body: { post_id: post.id } });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Erro desconhecido');
+      const m = data.metrics ?? {};
+      if (m.views != null) setViews(Number(m.views) || 0);
+      if (m.likes != null) setLikes(Number(m.likes) || 0);
+      if (m.comments != null) setCommentsCount(Number(m.comments) || 0);
+      if (m.shares != null) setShares(Number(m.shares) || 0);
+      if (m.saved != null) setSaves(Number(m.saved) || 0);
+      if (m.saves != null) setSaves(Number(m.saves) || 0);
+      if (m.reach != null) setReach(Number(m.reach) || 0);
+      if (m.profile_clicks != null) setProfileClicks(Number(m.profile_clicks) || 0);
+      setMetricsUpdatedAt(new Date().toISOString());
+      setMetricsSource(target === 'instagram' ? 'api_instagram' : 'api_linkedin');
+      toast.success(`Métricas sincronizadas do ${target === 'instagram' ? 'Instagram' : 'LinkedIn'}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao sincronizar';
+      toast.error(msg);
+    } finally {
+      setSyncingPlatform(null);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
