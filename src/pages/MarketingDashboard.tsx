@@ -187,24 +187,28 @@ function AccountKpiCard({
   subtone?: 'muted' | 'positive' | 'negative';
 }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <Icon className="h-3.5 w-3.5" />
-          <span>{label}</span>
+    <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <Icon className="h-4 w-4" />
+          {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight text-foreground">
+          {value}
         </div>
-        <div className="text-3xl font-semibold mt-2 tabular-nums">{value}</div>
         {subtitle && (
-          <div
+          <p
             className={cn(
-              'mt-1 text-xs font-medium',
-              subtone === 'positive' && 'text-emerald-500',
-              subtone === 'negative' && 'text-red-500',
+              'text-xs font-medium tabular-nums',
+              subtone === 'positive' && 'text-success',
+              subtone === 'negative' && 'text-destructive',
               subtone === 'muted' && 'text-muted-foreground'
             )}
           >
             {subtitle}
-          </div>
+          </p>
         )}
       </CardContent>
     </Card>
