@@ -88,7 +88,7 @@ function MultiSelect({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-9 justify-between min-w-[160px]">
+        <Button variant="outline" size="sm" className="h-9 justify-between w-[160px]">
           <span className="truncate">{selectedLabel}</span>
           <ChevronsUpDown className="h-3.5 w-3.5 opacity-50 ml-2" />
         </Button>
