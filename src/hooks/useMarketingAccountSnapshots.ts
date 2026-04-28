@@ -25,20 +25,42 @@ export interface AccountAudience {
   captured_at: string;
 }
 
-export function useMarketingAccountSnapshots(daysBack = 30) {
+export interface SnapshotsRange {
+  /** Data de início (inclusive) — null significa "sem limite inferior" (todo o histórico) */
+  start: Date | null;
+  /** Data de fim (inclusive) — null significa "até hoje" */
+  end: Date | null;
+}
+
+export function useMarketingAccountSnapshots(
+  range: SnapshotsRange = { start: null, end: null }
+) {
   const [snapshots, setSnapshots] = useState<AccountSnapshot[]>([]);
   const [audience, setAudience] = useState<AccountAudience | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Estabilizar referência (strings) pra evitar loop infinito caso caller passe novo objeto
+  const startKey = range.start ? range.start.toISOString().slice(0, 10) : 'all';
+  const endKey = range.end ? range.end.toISOString().slice(0, 10) : 'today';
+
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const since = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: snapshotsData } = await supabase
+    let query = supabase
       .from('marketing_account_snapshots')
       .select('*')
-      .gte('captured_at', since)
       .order('captured_at', { ascending: true });
+
+    if (range.start) {
+      query = query.gte('captured_at', range.start.toISOString());
+    }
+    if (range.end) {
+      const endOfDay = new Date(range.end);
+      endOfDay.setHours(23, 59, 59, 999);
+      query = query.lte('captured_at', endOfDay.toISOString());
+    }
+
+    const { data: snapshotsData } = await query;
 
     const { data: audienceData } = await supabase
       .from('marketing_account_audience')
@@ -50,7 +72,8 @@ export function useMarketingAccountSnapshots(daysBack = 30) {
     setSnapshots((snapshotsData ?? []) as AccountSnapshot[]);
     setAudience((audienceData ?? null) as AccountAudience | null);
     setLoading(false);
-  }, [daysBack]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startKey, endKey]);
 
   useEffect(() => {
     fetchData();
