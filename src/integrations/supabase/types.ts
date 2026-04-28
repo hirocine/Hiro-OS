@@ -1008,6 +1008,96 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_account_audience: {
+        Row: {
+          account_id: string
+          captured_at: string
+          cities: Json | null
+          countries: Json | null
+          created_at: string
+          gender_age: Json | null
+          id: string
+          locales: Json | null
+          platform: string
+          raw_response: Json | null
+        }
+        Insert: {
+          account_id: string
+          captured_at?: string
+          cities?: Json | null
+          countries?: Json | null
+          created_at?: string
+          gender_age?: Json | null
+          id?: string
+          locales?: Json | null
+          platform?: string
+          raw_response?: Json | null
+        }
+        Update: {
+          account_id?: string
+          captured_at?: string
+          cities?: Json | null
+          countries?: Json | null
+          created_at?: string
+          gender_age?: Json | null
+          id?: string
+          locales?: Json | null
+          platform?: string
+          raw_response?: Json | null
+        }
+        Relationships: []
+      }
+      marketing_account_snapshots: {
+        Row: {
+          account_id: string
+          captured_at: string
+          captured_date: string | null
+          created_at: string
+          followers_count: number
+          followers_delta: number | null
+          follows_count: number
+          id: string
+          media_count: number
+          platform: string
+          profile_views_day: number
+          raw_response: Json | null
+          reach_day: number
+          views_day: number
+        }
+        Insert: {
+          account_id: string
+          captured_at?: string
+          captured_date?: string | null
+          created_at?: string
+          followers_count?: number
+          followers_delta?: number | null
+          follows_count?: number
+          id?: string
+          media_count?: number
+          platform?: string
+          profile_views_day?: number
+          raw_response?: Json | null
+          reach_day?: number
+          views_day?: number
+        }
+        Update: {
+          account_id?: string
+          captured_at?: string
+          captured_date?: string | null
+          created_at?: string
+          followers_count?: number
+          followers_delta?: number | null
+          follows_count?: number
+          id?: string
+          media_count?: number
+          platform?: string
+          profile_views_day?: number
+          raw_response?: Json | null
+          reach_day?: number
+          views_day?: number
+        }
+        Relationships: []
+      }
       marketing_ideas: {
         Row: {
           created_at: string
