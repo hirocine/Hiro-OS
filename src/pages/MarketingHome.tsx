@@ -448,61 +448,6 @@ export default function MarketingHome() {
             </CardContent>
           </Card>
 
-          {/* Distribuição por pilar */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Layers className="h-4 w-4" /> Distribuição por pilar
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/pilares">
-                  Gerenciar pilares <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {distributionData.length === 0 ? (
-                <EmptyState compact icon={Layers} title="" description="Defina pilares para ver a distribuição" />
-              ) : (
-                <div>
-                  <div className="h-36">
-                    <RechartsContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={distributionData} dataKey="value" innerRadius={36} outerRadius={60} paddingAngle={2}>
-                          {distributionData.map((d) => (
-                            <Cell key={d.id} fill={d.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            background: 'hsl(var(--background))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: 8,
-                            fontSize: 12,
-                          }}
-                        />
-                      </PieChart>
-                    </RechartsContainer>
-                  </div>
-                  <div className="space-y-1.5 mt-2">
-                    {distribution.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                          <span className="truncate">{d.name}</span>
-                        </div>
-                        <span className="text-muted-foreground tabular-nums shrink-0">
-                          {d.value} ({d.pct.toFixed(0)}%)
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Alertas */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base flex items-center gap-2">
