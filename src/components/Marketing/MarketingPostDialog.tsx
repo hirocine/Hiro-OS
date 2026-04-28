@@ -227,7 +227,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     if (!title.trim()) return;
     const currentMetrics = JSON.stringify([views, likes, commentsCount, shares, saves, reach, profileClicks, newFollowers]);
     const metricsChanged = currentMetrics !== initialMetricsRef.current;
-    const payload: MarketingPostInput = {
+    const payload = {
       title: title.trim(),
       caption: caption.trim() || null,
       hashtags,
@@ -242,10 +242,16 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       idea_id: ideaId || null,
       views, likes, comments: commentsCount, shares, saves, reach,
       profile_clicks: profileClicks, new_followers: newFollowers,
+      destination_url: destinationUrl.trim() || null,
+      utm_source: destinationUrl.trim() ? effectiveUtm.source || null : null,
+      utm_medium: destinationUrl.trim() ? effectiveUtm.medium || null : null,
+      utm_campaign: destinationUrl.trim() ? effectiveUtm.campaign || null : null,
+      utm_content: effectiveUtm.content || null,
+      utm_url: generatedUtmUrl || null,
       ...(metricsChanged
         ? { metrics_updated_at: new Date().toISOString(), metrics_source: 'manual' }
         : {}),
-    };
+    } as MarketingPostInput;
     try {
       setSaving(true);
       let saved: MarketingPost;
