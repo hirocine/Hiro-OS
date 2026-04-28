@@ -578,7 +578,7 @@ function LocaleList({ locales }: { locales: Record<string, number> }) {
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
-  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading } = useMarketingIntegrations();
+  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading, fetchIntegrations } = useMarketingIntegrations();
   const [period, setPeriod] = useState<Period>('30');
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
 
@@ -849,6 +849,7 @@ export default function MarketingDashboard() {
     try {
       setSyncing(true);
       await syncNow();
+      await fetchIntegrations();
       toast.success('Conta Instagram sincronizada com sucesso');
     } catch (e) {
       toast.error('Falha ao sincronizar', {
@@ -863,6 +864,7 @@ export default function MarketingDashboard() {
     try {
       setSyncingAudience(true);
       await syncAudience();
+      await fetchIntegrations();
       toast.success('Audiência sincronizada');
     } catch (e) {
       toast.error('Falha ao sincronizar audiência', {
