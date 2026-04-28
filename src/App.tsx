@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, ReactNode } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -6,8 +6,15 @@ import { Layout } from "./components/Layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingScreenSkeleton } from "./components/ui/loading-screen";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuthContext } from "./contexts/AuthContext";
 import { NavigationBlockerProvider } from "./contexts/NavigationBlockerContext";
+
+function MarketingGuard({ children }: { children: ReactNode }) {
+  const { canAccessMarketing, roleLoading } = useAuthContext();
+  if (roleLoading) return null;
+  if (!canAccessMarketing) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -112,14 +119,14 @@ const App = () => (
                 <Route path="crm" element={<CRM />} />
                 <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
                 <Route path="crm/deals/:id" element={<CRMDealDetail />} />
-                <Route path="marketing" element={<MarketingHome />} />
-                <Route path="marketing/referencias" element={<MarketingReferences />} />
-                <Route path="marketing/ideias" element={<MarketingIdeas />} />
-                <Route path="marketing/estrategia" element={<MarketingStrategy />} />
+                <Route path="marketing" element={<MarketingGuard><MarketingHome /></MarketingGuard>} />
+                <Route path="marketing/referencias" element={<MarketingGuard><MarketingReferences /></MarketingGuard>} />
+                <Route path="marketing/ideias" element={<MarketingGuard><MarketingIdeas /></MarketingGuard>} />
+                <Route path="marketing/estrategia" element={<MarketingGuard><MarketingStrategy /></MarketingGuard>} />
                 <Route path="marketing/persona" element={<Navigate to="/marketing/estrategia?aba=persona" replace />} />
                 <Route path="marketing/pilares" element={<Navigate to="/marketing/estrategia?aba=pilares" replace />} />
-                <Route path="marketing/dashboard" element={<MarketingDashboard />} />
-                <Route path="marketing/posts" element={<MarketingPosts />} />
+                <Route path="marketing/dashboard" element={<MarketingGuard><MarketingDashboard /></MarketingGuard>} />
+                <Route path="marketing/posts" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
                 <Route path="marketing/galeria" element={<Navigate to="/marketing/posts" replace />} />
                 <Route path="marketing/ranking" element={<Navigate to="/marketing/posts?view=ranking" replace />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
