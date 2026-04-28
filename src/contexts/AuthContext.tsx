@@ -152,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (existingSession?.user) {
         fetchUserRole(existingSession.user.id);
+        pingLastSeen(existingSession.user.id);
       } else {
         setRoleLoading(false);
       }
@@ -161,7 +162,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
       isInitialized.current = false;
     };
-  }, [fetchUserRole]);
+  }, [fetchUserRole, pingLastSeen]);
+
+  // Ping last_seen when tab returns to focus
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && user?.id) {
+        pingLastSeen(user.id);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [user?.id, pingLastSeen]);
 
   const signUp = async (email: string, password: string, metadata?: { 
     full_name?: string; 
