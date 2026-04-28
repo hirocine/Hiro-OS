@@ -1438,7 +1438,7 @@ export default function MarketingDashboard() {
                   <EmptyState
                     icon={BarChart3}
                     title="Aguardando primeiros dados do GA4"
-                    description="A sincronização roda diariamente às 8h UTC. Você também pode sincronizar manualmente em Admin → Integrações."
+                    description="A sincronização roda diariamente às 8h UTC. Você também pode sincronizar manualmente no topo da página."
                   />
                 </CardContent>
               </Card>
