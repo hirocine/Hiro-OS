@@ -3281,6 +3281,7 @@ export type Database = {
       get_users_for_admin: {
         Args: never
         Returns: {
+          avatar_url: string
           created_at: string
           department: string
           display_name: string
@@ -3291,6 +3292,7 @@ export type Database = {
           last_sign_in_at: string
           position: string
           role: Database["public"]["Enums"]["app_role"]
+          user_metadata: Json
         }[]
       }
       has_marketing_access: { Args: { _user_id: string }; Returns: boolean }
