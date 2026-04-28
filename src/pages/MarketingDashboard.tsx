@@ -216,6 +216,39 @@ interface DailySnapshot {
   views: number;
 }
 
+function fmtChartDate(v: string) {
+  return new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  });
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  unit,
+}: {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+  unit: string;
+}) {
+  if (!active || !payload?.length) return null;
+  const val = Number(payload[0]?.value ?? 0);
+  const labelStr = label
+    ? new Date(String(label) + 'T12:00:00').toLocaleDateString('pt-BR')
+    : '';
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
+      <p className="font-semibold text-foreground mb-1">{labelStr}</p>
+      <p className="text-primary font-medium tabular-nums">
+        {val.toLocaleString('pt-BR')} {unit}
+      </p>
+    </div>
+  );
+}
+
 const GENDER_COLORS: Record<string, string> = {
   F: '#ec4899',
   M: '#3b82f6',
