@@ -52,16 +52,55 @@ import { getPillarColor } from '@/lib/marketing-colors';
 import { getPostPlatformLabel, getPostFormatLabel } from '@/lib/marketing-posts-config';
 import { supabase } from '@/integrations/supabase/client';
 
-type Period = '7' | '30' | '90' | 'this_month' | 'last_month';
-type AccountPeriod = 7 | 30 | 90;
+import { PeriodPicker, type PeriodPreset, type PeriodDateRange, PERIOD_OPTIONS } from '@/components/Marketing/PeriodPicker';
+import { format as formatDate } from 'date-fns';
+import { ptBR as ptBRLocale } from 'date-fns/locale';
 
-const PERIOD_OPTIONS: { value: Period; label: string }[] = [
-  { value: '7', label: 'Últimos 7 dias' },
-  { value: '30', label: 'Últimos 30 dias' },
-  { value: '90', label: 'Últimos 90 dias' },
-  { value: 'this_month', label: 'Este mês' },
-  { value: 'last_month', label: 'Mês passado' },
-];
+function resolvePeriod(
+  preset: PeriodPreset,
+  customRange: PeriodDateRange | null
+): { start: Date; end: Date } {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  if (preset === 'custom' && customRange) {
+    const s = new Date(customRange.start);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(customRange.end);
+    e.setHours(23, 59, 59, 999);
+    return { start: s, end: e };
+  }
+
+  if (preset === 'all') {
+    return { start: new Date(0), end };
+  }
+
+  if (preset === 'this_month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { start, end };
+  }
+
+  if (preset === 'last_month') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    lastDayOfPrevMonth.setHours(23, 59, 59, 999);
+    return { start, end: lastDayOfPrevMonth };
+  }
+
+  const days = Number(preset);
+  const start = new Date(now);
+  start.setDate(start.getDate() - days);
+  start.setHours(0, 0, 0, 0);
+  return { start, end };
+}
+
+function resolvePrevRange(curr: { start: Date; end: Date }) {
+  const ms = curr.end.getTime() - curr.start.getTime();
+  const prevEnd = new Date(curr.start.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - ms);
+  return { prevStart, prevEnd };
+}
 
 const PLATFORM_COLORS: Record<string, string> = {
   instagram: '#ec4899',
