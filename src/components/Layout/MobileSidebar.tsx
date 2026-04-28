@@ -17,10 +17,11 @@ import hiroLogo from '@/assets/hiro-logo.png';
 
 interface NavigationItem {
   name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  href?: string;
+  icon?: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
   children?: NavigationItem[];
+  isSection?: boolean;
 }
 
 const operacoesNavigation: NavigationItem[] = [
@@ -51,13 +52,15 @@ const marketingNavigation: NavigationItem[] = [
     href: '/marketing',
     icon: Megaphone,
     children: [
+      { name: 'Métricas', isSection: true },
       { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
-      { name: 'Galeria', href: '/marketing/galeria', icon: Images },
-      { name: 'Ranking', href: '/marketing/ranking', icon: Trophy },
+      { name: 'Posts', href: '/marketing/posts', icon: Images },
+
+      { name: 'Estratégia', isSection: true },
       { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
-      { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
-      { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
       { name: 'Persona / ICP', href: '/marketing/persona', icon: UserCircle },
+      { name: 'Ideias', href: '/marketing/ideias', icon: Lightbulb },
+      { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
     ],
   },
 ];
