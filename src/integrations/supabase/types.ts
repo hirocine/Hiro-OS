@@ -1335,88 +1335,109 @@ export type Database = {
       }
       marketing_posts: {
         Row: {
+          auto_discovered_at: string | null
           caption: string | null
+          carousel_media_urls: Json | null
           comments: number
           cover_url: string | null
           created_at: string
           created_by: string | null
           engagement_rate: number | null
+          external_id: string | null
           file_url: string | null
           format: string | null
           hashtags: string[]
           id: string
           idea_id: string | null
           likes: number
+          media_type: string | null
           metrics_source: string | null
           metrics_updated_at: string | null
           new_followers: number
           pillar_id: string | null
           platform: string | null
           profile_clicks: number
+          published_at: string | null
           published_url: string | null
           reach: number
           saves: number
           scheduled_at: string | null
           shares: number
+          source: string
           status: string
+          thumbnail_url: string | null
           title: string
           updated_at: string
           views: number
         }
         Insert: {
+          auto_discovered_at?: string | null
           caption?: string | null
+          carousel_media_urls?: Json | null
           comments?: number
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
           engagement_rate?: number | null
+          external_id?: string | null
           file_url?: string | null
           format?: string | null
           hashtags?: string[]
           id?: string
           idea_id?: string | null
           likes?: number
+          media_type?: string | null
           metrics_source?: string | null
           metrics_updated_at?: string | null
           new_followers?: number
           pillar_id?: string | null
           platform?: string | null
           profile_clicks?: number
+          published_at?: string | null
           published_url?: string | null
           reach?: number
           saves?: number
           scheduled_at?: string | null
           shares?: number
+          source?: string
           status?: string
+          thumbnail_url?: string | null
           title: string
           updated_at?: string
           views?: number
         }
         Update: {
+          auto_discovered_at?: string | null
           caption?: string | null
+          carousel_media_urls?: Json | null
           comments?: number
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
           engagement_rate?: number | null
+          external_id?: string | null
           file_url?: string | null
           format?: string | null
           hashtags?: string[]
           id?: string
           idea_id?: string | null
           likes?: number
+          media_type?: string | null
           metrics_source?: string | null
           metrics_updated_at?: string | null
           new_followers?: number
           pillar_id?: string | null
           platform?: string | null
           profile_clicks?: number
+          published_at?: string | null
           published_url?: string | null
           reach?: number
           saves?: number
           scheduled_at?: string | null
           shares?: number
+          source?: string
           status?: string
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string
           views?: number

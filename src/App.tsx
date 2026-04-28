@@ -53,6 +53,7 @@ const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
 
 const MarketingPillars = lazy(() => import("./pages/MarketingPillars"));
 const MarketingDashboard = lazy(() => import("./pages/MarketingDashboard"));
+const MarketingGallery = lazy(() => import("./pages/MarketingGallery"));
 const MarketingRanking = lazy(() => import("./pages/MarketingRanking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -121,6 +122,7 @@ const App = () => (
                 
                 <Route path="marketing/pilares" element={<MarketingPillars />} />
                 <Route path="marketing/dashboard" element={<MarketingDashboard />} />
+                <Route path="marketing/galeria" element={<MarketingGallery />} />
                 <Route path="marketing/ranking" element={<MarketingRanking />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
