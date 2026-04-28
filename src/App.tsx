@@ -118,7 +118,7 @@ const App = () => (
                 <Route path="marketing/referencias" element={<MarketingReferences />} />
                 <Route path="marketing/ideias" element={<MarketingIdeas />} />
                 <Route path="marketing/persona" element={<MarketingPersona />} />
-                <Route path="marketing/calendario" element={<MarketingCalendar />} />
+                
                 <Route path="marketing/pilares" element={<MarketingPillars />} />
                 <Route path="marketing/dashboard" element={<MarketingDashboard />} />
                 <Route path="marketing/ranking" element={<MarketingRanking />} />
