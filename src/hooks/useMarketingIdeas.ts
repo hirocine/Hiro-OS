@@ -11,6 +11,7 @@ export interface MarketingIdea {
   description: string | null;
   status: IdeaStatus;
   source: string | null;
+  format: string | null;
   pillar_id: string | null;
   tags: string[];
   reference_ids: string[];
@@ -131,6 +132,7 @@ export function useMarketingIdeas() {
       description: idea.description,
       status: 'rascunho',
       source: idea.source,
+      format: idea.format,
       pillar_id: idea.pillar_id,
       tags: idea.tags,
       reference_ids: idea.reference_ids,

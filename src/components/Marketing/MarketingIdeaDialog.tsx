@@ -19,6 +19,7 @@ import {
 import { useMarketingReferences } from '@/hooks/useMarketingReferences';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
 import { getPillarColor } from '@/lib/marketing-colors';
+import { POST_FORMATS } from '@/lib/marketing-posts-config';
 
 interface Props {
   open: boolean;
@@ -37,6 +38,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IdeaStatus>('rascunho');
   const [source, setSource] = useState<string>('');
+  const [format, setFormat] = useState<string>('');
   const [pillarId, setPillarId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -49,6 +51,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setDescription(idea.description ?? '');
         setStatus(idea.status);
         setSource(idea.source ?? '');
+        setFormat(idea.format ?? '');
         setPillarId(idea.pillar_id ?? '');
         setTags(idea.tags ?? []);
         setReferenceIds(idea.reference_ids ?? []);
@@ -57,6 +60,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setDescription('');
         setStatus(defaultStatus ?? 'rascunho');
         setSource('');
+        setFormat('');
         setPillarId('');
         setTags([]);
         setTagInput('');
@@ -78,6 +82,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
       description: description.trim() || null,
       status,
       source: source || null,
+      format: format || null,
       pillar_id: pillarId || null,
       tags,
       reference_ids: referenceIds,
@@ -119,7 +124,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as IdeaStatus)}>
@@ -140,6 +145,17 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                 <SelectContent>
                   {IDEA_SOURCES.map((s) => (
                     <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Formato</Label>
+              <Select value={format} onValueChange={setFormat}>
+                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectContent>
+                  {POST_FORMATS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
