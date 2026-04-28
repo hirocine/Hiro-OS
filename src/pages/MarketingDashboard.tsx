@@ -943,10 +943,32 @@ export default function MarketingDashboard() {
         title="Dashboard de Marketing"
         subtitle="Visão consolidada da conta Instagram e dos seus conteúdos"
         actions={
-          <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
-            <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-            {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <PeriodPicker
+              preset={periodPreset}
+              customRange={customRange}
+              oldestSnapshotDate={oldestAccount?.captured_at ? new Date(oldestAccount.captured_at) : null}
+              onPresetChange={(p) => {
+                if (p === 'custom') {
+                  setCustomPickerOpen(true);
+                } else {
+                  setPeriodPreset(p);
+                  setCustomRange(null);
+                }
+              }}
+              onCustomRangeChange={(range) => {
+                setCustomRange(range);
+                setPeriodPreset('custom');
+                setCustomPickerOpen(false);
+              }}
+              customPickerOpen={customPickerOpen}
+              onCustomPickerOpenChange={setCustomPickerOpen}
+            />
+            <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
+              <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
+              {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
+            </Button>
+          </div>
         }
       />
 
