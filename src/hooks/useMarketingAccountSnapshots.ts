@@ -5,9 +5,9 @@ export interface AccountSnapshot {
   id: string;
   platform: string;
   account_id: string;
-  followers_count: number;
-  follows_count: number;
-  media_count: number;
+  followers_count: number | null;
+  follows_count: number | null;
+  media_count: number | null;
   reach_day: number;
   views_day: number;
   profile_views_day: number;
