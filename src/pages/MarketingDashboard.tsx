@@ -697,10 +697,12 @@ export default function MarketingDashboard() {
   // ===== Daily series for charts =====
   const followersSeries = useMemo(
     () =>
-      accountSnapshots.map((s) => ({
-        date: s.captured_at.slice(0, 10),
-        followers: s.followers_count,
-      })),
+      accountSnapshots
+        .filter((s) => s.followers_count != null)
+        .map((s) => ({
+          date: s.captured_at.slice(0, 10),
+          followers: s.followers_count as number,
+        })),
     [accountSnapshots]
   );
 
