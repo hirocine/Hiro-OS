@@ -153,7 +153,7 @@ export default function MarketingGallery() {
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Galeria"
-        description="Todos os posts publicados no Instagram, importados automaticamente."
+        subtitle="Todos os posts publicados no Instagram, importados automaticamente."
         icon={Images}
         actions={
           <Button onClick={handleDiscover} disabled={discovering} size="sm">
@@ -271,7 +271,7 @@ export default function MarketingGallery() {
                     <div className="absolute right-2 top-2">
                       <span
                         className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm"
-                        style={{ backgroundColor: pillar.color ?? getPillarColor(pillar.name) }}
+                        style={{ backgroundColor: (pillar.color ?? getPillarColor(pillar.name)) as string }}
                       >
                         {pillar.name}
                       </span>
@@ -338,8 +338,8 @@ export default function MarketingGallery() {
                   <div>
                     <Badge
                       style={{
-                        backgroundColor: pillarMap.get(selected.pillar_id)?.color
-                          ?? getPillarColor(pillarMap.get(selected.pillar_id)?.name ?? ''),
+                        backgroundColor: (pillarMap.get(selected.pillar_id)?.color
+                          ?? getPillarColor(pillarMap.get(selected.pillar_id)?.name ?? '')) as string,
                         color: 'white',
                       }}
                       className="border-transparent"

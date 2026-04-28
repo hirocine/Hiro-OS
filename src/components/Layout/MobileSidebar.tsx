@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, X, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -52,6 +52,7 @@ const marketingNavigation: NavigationItem[] = [
     icon: Megaphone,
     children: [
       { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
+      { name: 'Galeria', href: '/marketing/galeria', icon: Images },
       { name: 'Ranking', href: '/marketing/ranking', icon: Trophy },
       { name: 'Pilares', href: '/marketing/pilares', icon: Layers },
       { name: 'Referências', href: '/marketing/referencias', icon: Bookmark },
