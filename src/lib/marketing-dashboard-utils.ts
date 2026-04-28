@@ -11,7 +11,7 @@ export const PLATFORM_COLORS: Record<string, string> = {
   other: '#6b7280',
 };
 
-const GENDER_COLORS: Record<string, string> = {
+export const GENDER_COLORS: Record<string, string> = {
   F: '#ec4899',
   M: '#3b82f6',
   U: '#94a3b8',

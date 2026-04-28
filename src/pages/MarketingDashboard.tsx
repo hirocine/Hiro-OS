@@ -72,6 +72,7 @@ import {
   localeFlag,
   localeLabel,
   PLATFORM_COLORS,
+  GENDER_COLORS,
   type DailySnapshot,
   type DateRange,
 } from '@/lib/marketing-dashboard-utils';
