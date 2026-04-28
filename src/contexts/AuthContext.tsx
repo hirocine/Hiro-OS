@@ -39,6 +39,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const isInitialized = useRef(false);
   const roleCache = useRef<{ [userId: string]: UserRole }>({});
+  const lastSeenSentAt = useRef<number>(0);
+
+  const pingLastSeen = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    const now = Date.now();
+    if (now - lastSeenSentAt.current < FIVE_MINUTES) return;
+    lastSeenSentAt.current = now;
+    try {
+      await supabase.rpc('update_last_seen');
+    } catch (err) {
+      logger.debug('update_last_seen failed', { module: 'auth', error: err instanceof Error ? err.message : String(err) });
+    }
+  }, []);
 
   const fetchUserRole = useCallback(async (userId: string) => {
     // Use cached value if available
@@ -102,6 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchUserRole(newSession.user.id);
           }, 0);
 
+          setTimeout(() => {
+            pingLastSeen(newSession.user.id);
+          }, 0);
+
           // Check approval asynchronously without blocking the callback
           if (event === 'SIGNED_IN') {
             setTimeout(async () => {
@@ -134,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (existingSession?.user) {
         fetchUserRole(existingSession.user.id);
+        pingLastSeen(existingSession.user.id);
       } else {
         setRoleLoading(false);
       }
@@ -143,7 +162,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
       isInitialized.current = false;
     };
-  }, [fetchUserRole]);
+  }, [fetchUserRole, pingLastSeen]);
+
+  // Ping last_seen when tab returns to focus
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && user?.id) {
+        pingLastSeen(user.id);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [user?.id, pingLastSeen]);
 
   const signUp = async (email: string, password: string, metadata?: { 
     full_name?: string; 

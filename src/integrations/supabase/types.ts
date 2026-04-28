@@ -2020,6 +2020,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_approved: boolean
+          last_seen_at: string | null
           position: string | null
           updated_at: string
           user_id: string
@@ -2031,6 +2032,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_approved?: boolean
+          last_seen_at?: string | null
           position?: string | null
           updated_at?: string
           user_id: string
@@ -2042,6 +2044,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_approved?: boolean
+          last_seen_at?: string | null
           position?: string | null
           updated_at?: string
           user_id?: string
@@ -3355,6 +3358,7 @@ export type Database = {
       }
       run_security_maintenance: { Args: never; Returns: undefined }
       sanitize_audit_logs: { Args: never; Returns: undefined }
+      update_last_seen: { Args: never; Returns: undefined }
       user_can_access_equipment: {
         Args: { equipment_id: string }
         Returns: boolean
