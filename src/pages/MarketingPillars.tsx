@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getPillarColor } from '@/lib/marketing-colors';
 import { MarketingPillarDialog } from '@/components/Marketing/MarketingPillarDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
 interface PostCount { pillar_id: string | null }
