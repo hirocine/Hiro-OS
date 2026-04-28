@@ -11,7 +11,8 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Link2, MoreVertical, Loader2, CalendarPlus, Lightbulb } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
