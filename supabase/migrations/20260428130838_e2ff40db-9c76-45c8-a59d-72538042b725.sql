@@ -1,0 +1,1 @@
+ALTER TABLE public.marketing_integrations ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;

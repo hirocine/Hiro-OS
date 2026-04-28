@@ -1159,6 +1159,7 @@ export type Database = {
           id: string
           last_sync_at: string | null
           platform: string
+          profile_picture_url: string | null
           status: string
           status_message: string | null
           token_expires_at: string | null
@@ -1174,6 +1175,7 @@ export type Database = {
           id?: string
           last_sync_at?: string | null
           platform: string
+          profile_picture_url?: string | null
           status?: string
           status_message?: string | null
           token_expires_at?: string | null
@@ -1189,6 +1191,7 @@ export type Database = {
           id?: string
           last_sync_at?: string | null
           platform?: string
+          profile_picture_url?: string | null
           status?: string
           status_message?: string | null
           token_expires_at?: string | null
