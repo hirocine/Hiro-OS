@@ -143,6 +143,7 @@ interface DailySnapshot {
 }
 
 export default function MarketingDashboard() {
+  const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
   const [period, setPeriod] = useState<Period>('30');
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
