@@ -7,12 +7,12 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip as RTooltip,
@@ -42,8 +42,9 @@ import {
   Plug,
   Globe,
   MapPin,
+  Instagram,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapshots';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
@@ -187,24 +188,28 @@ function AccountKpiCard({
   subtone?: 'muted' | 'positive' | 'negative';
 }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <Icon className="h-3.5 w-3.5" />
-          <span>{label}</span>
+    <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <Icon className="h-4 w-4" />
+          {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight text-foreground">
+          {value}
         </div>
-        <div className="text-3xl font-semibold mt-2 tabular-nums">{value}</div>
         {subtitle && (
-          <div
+          <p
             className={cn(
-              'mt-1 text-xs font-medium',
-              subtone === 'positive' && 'text-emerald-500',
-              subtone === 'negative' && 'text-red-500',
+              'text-xs font-medium tabular-nums',
+              subtone === 'positive' && 'text-success',
+              subtone === 'negative' && 'text-destructive',
               subtone === 'muted' && 'text-muted-foreground'
             )}
           >
             {subtitle}
-          </div>
+          </p>
         )}
       </CardContent>
     </Card>
@@ -214,6 +219,39 @@ function AccountKpiCard({
 interface DailySnapshot {
   date: string; // yyyy-mm-dd
   views: number;
+}
+
+function fmtChartDate(v: string) {
+  return new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  });
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  unit,
+}: {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+  unit: string;
+}) {
+  if (!active || !payload?.length) return null;
+  const val = Number(payload[0]?.value ?? 0);
+  const labelStr = label
+    ? new Date(String(label) + 'T12:00:00').toLocaleDateString('pt-BR')
+    : '';
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-sm">
+      <p className="font-semibold text-foreground mb-1">{labelStr}</p>
+      <p className="text-primary font-medium tabular-nums">
+        {val.toLocaleString('pt-BR')} {unit}
+      </p>
+    </div>
+  );
 }
 
 const GENDER_COLORS: Record<string, string> = {
@@ -240,7 +278,7 @@ function topEntries(obj: Record<string, number> | null | undefined, n: number) {
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
-  const { instagramConnected, loading: integrationsLoading } = useMarketingIntegrations();
+  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading } = useMarketingIntegrations();
   const [period, setPeriod] = useState<Period>('30');
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
 
@@ -570,26 +608,71 @@ export default function MarketingDashboard() {
       />
 
       <div className="space-y-6">
-        {/* Banner de status do sync */}
-        <Card>
-          <CardContent className="p-3 flex items-center gap-3 text-sm">
-            <span
-              className={cn(
-                'h-2 w-2 rounded-full',
-                syncStatus.tone === 'ok' && 'bg-emerald-500',
-                syncStatus.tone === 'warn' && 'bg-amber-500',
-                syncStatus.tone === 'idle' && 'bg-muted-foreground/50'
-              )}
-            />
-            <div className="flex-1">
-              {latestAccount ? (
-                <span>
-                  Conta Instagram sincronizada —{' '}
-                  <span className="text-muted-foreground">última atualização {syncStatus.text}</span>
+        {/* Banner com identidade do Instagram */}
+        <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {/* Avatar com badge do Instagram */}
+              <div className="relative shrink-0">
+                <Avatar className="h-14 w-14 ring-2 ring-border">
+                  {instagramIntegration?.profile_picture_url ? (
+                    <AvatarImage
+                      src={instagramIntegration.profile_picture_url}
+                      alt={instagramIntegration.account_name ?? 'Instagram'}
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-muted">
+                    <Instagram className="h-6 w-6 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center ring-2 ring-card">
+                  <Instagram className="h-3 w-3 text-white" />
                 </span>
-              ) : (
-                <span className="text-muted-foreground">{syncStatus.text}</span>
-              )}
+              </div>
+
+              {/* Informações */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-foreground truncate">
+                    {instagramIntegration?.account_name ?? '@hirofilm'}
+                  </span>
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium',
+                      syncStatus.tone === 'ok' && 'bg-success/10 text-success',
+                      syncStatus.tone === 'warn' && 'bg-warning/10 text-warning',
+                      syncStatus.tone === 'idle' && 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        syncStatus.tone === 'ok' && 'bg-success',
+                        syncStatus.tone === 'warn' && 'bg-warning',
+                        syncStatus.tone === 'idle' && 'bg-muted-foreground'
+                      )}
+                    />
+                    Conectado
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {latestAccount
+                    ? `Última sincronização ${formatRelativeTime(new Date(latestAccount.captured_at))}`
+                    : syncStatus.text}
+                </p>
+              </div>
+
+              {/* Ação */}
+              <Button
+                onClick={handleSync}
+                disabled={syncing}
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex gap-2"
+              >
+                <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
+                Sincronizar
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -676,9 +759,12 @@ export default function MarketingDashboard() {
             </div>
 
             {/* Followers evolution chart */}
-            <Card>
+            <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
               <CardHeader className="pb-2 flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base">Evolução de seguidores</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Evolução de seguidores
+                </CardTitle>
                 <Select
                   value={String(accountPeriod)}
                   onValueChange={(v) => setAccountPeriod(Number(v) as AccountPeriod)}
@@ -701,31 +787,39 @@ export default function MarketingDashboard() {
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
-                      <LineChart data={followersSeries}>
+                      <AreaChart data={followersSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="followersGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fontSize: 11 }}
-                          tickFormatter={(v) =>
-                            new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                            })
-                          }
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={fmtChartDate}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <YAxis tick={{ fontSize: 11 }} domain={['dataMin - 5', 'dataMax + 5']} />
-                        <RTooltip
-                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                          labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                          formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Seguidores']}
+                        <YAxis
+                          tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                          axisLine={false}
+                          tickLine={false}
+                          domain={['dataMin - 10', 'dataMax + 10']}
                         />
-                        <Line
+                        <RTooltip content={<ChartTooltip unit="seguidores" />} />
+                        <Area
                           type="monotone"
                           dataKey="followers"
                           stroke="hsl(var(--primary))"
-                          strokeWidth={2}
-                          dot={false}
+                          strokeWidth={3}
+                          fill="url(#followersGradient)"
+                          dot={{ fill: 'hsl(var(--primary))', r: 3, strokeWidth: 0 }}
+                          activeDot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                         />
-                      </LineChart>
+                      </AreaChart>
                     </RechartsContainer>
                   )}
                 </div>
@@ -734,9 +828,12 @@ export default function MarketingDashboard() {
 
             {/* Daily reach + profile views */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card>
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Alcance diário (14 dias)</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Alcance diário (14 dias)
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-56">
@@ -744,34 +841,50 @@ export default function MarketingDashboard() {
                       <EmptyState compact icon={BarChart3} title="" description="Sem dados no período." />
                     ) : (
                       <RechartsContainer width="100%" height="100%">
-                        <BarChart data={reachSeries}>
+                        <AreaChart data={reachSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="reachGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--warning))" stopOpacity={0.35} />
+                              <stop offset="95%" stopColor="hsl(var(--warning))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                           <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 11 }}
-                            tickFormatter={(v) =>
-                              new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              })
-                            }
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                            tickFormatter={fmtChartDate}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <YAxis tick={{ fontSize: 11 }} />
-                          <RTooltip
-                            contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                            labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                            formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Alcance']}
+                          <YAxis
+                            tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <Bar dataKey="reach" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                          <RTooltip content={<ChartTooltip unit="alcance" />} />
+                          <Area
+                            type="monotone"
+                            dataKey="reach"
+                            stroke="hsl(var(--warning))"
+                            strokeWidth={2.5}
+                            fill="url(#reachGradient)"
+                            dot={false}
+                            activeDot={{ fill: 'hsl(var(--warning))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                          />
+                        </AreaChart>
                       </RechartsContainer>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Visitas no perfil (14 dias)</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Visitas no perfil (14 dias)
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-56">
@@ -779,25 +892,38 @@ export default function MarketingDashboard() {
                       <EmptyState compact icon={Eye} title="" description="Sem dados no período." />
                     ) : (
                       <RechartsContainer width="100%" height="100%">
-                        <BarChart data={profileViewsSeries}>
+                        <AreaChart data={profileViewsSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="visitsGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.35} />
+                              <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                           <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 11 }}
-                            tickFormatter={(v) =>
-                              new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              })
-                            }
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                            tickFormatter={fmtChartDate}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <YAxis tick={{ fontSize: 11 }} />
-                          <RTooltip
-                            contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                            labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
-                            formatter={(v: number) => [v.toLocaleString('pt-BR'), 'Visitas']}
+                          <YAxis
+                            tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                            axisLine={false}
+                            tickLine={false}
                           />
-                          <Bar dataKey="views" fill="hsl(var(--accent-foreground))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                          <RTooltip content={<ChartTooltip unit="visitas" />} />
+                          <Area
+                            type="monotone"
+                            dataKey="views"
+                            stroke="hsl(var(--success))"
+                            strokeWidth={2.5}
+                            fill="url(#visitsGradient)"
+                            dot={false}
+                            activeDot={{ fill: 'hsl(var(--success))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                          />
+                        </AreaChart>
                       </RechartsContainer>
                     )}
                   </div>
@@ -991,30 +1117,38 @@ export default function MarketingDashboard() {
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
-                      <LineChart data={snapshots}>
+                      <AreaChart data={snapshots} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="postsViewsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fontSize: 11 }}
-                          tickFormatter={(v) =>
-                            new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                            })
-                          }
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={fmtChartDate}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <RTooltip
-                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                          labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
+                        <YAxis
+                          tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <Line
+                        <RTooltip content={<ChartTooltip unit="views" />} />
+                        <Area
                           type="monotone"
                           dataKey="views"
                           stroke="hsl(var(--primary))"
-                          strokeWidth={2}
+                          strokeWidth={2.5}
+                          fill="url(#postsViewsGradient)"
                           dot={false}
+                          activeDot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                         />
-                      </LineChart>
+                      </AreaChart>
                     </RechartsContainer>
                   )}
                 </div>
