@@ -41,9 +41,11 @@ Deno.serve(async (req) => {
       throw new Error(`Account fetch error: ${userData.error.message}`);
     }
 
-    // 3. Insights do dia (reach, views) — views substituiu impressions em 2025
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    // 3. Insights (reach, views) — janela de 7 dias para garantir dados disponíveis
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    const sinceStr = sevenDaysAgo.toISOString().split("T")[0];
+    const untilStr = today.toISOString().split("T")[0];
 
     let reach_day = 0;
     let views_day = 0;
@@ -52,16 +54,17 @@ Deno.serve(async (req) => {
 
     try {
       const insightsRes = await fetch(
-        `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=reach,views&period=day&since=${yesterdayStr}&until=${yesterdayStr}&access_token=${token}`,
+        `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=reach,views&period=day&since=${sinceStr}&until=${untilStr}&access_token=${token}`,
       );
       const insightsData = await insightsRes.json();
       insightsRaw = insightsData;
 
       if (insightsData.data) {
         for (const m of insightsData.data) {
-          const value = m.values?.[0]?.value ?? 0;
-          if (m.name === "reach") reach_day = value;
-          if (m.name === "views") views_day = value;
+          const values = m.values ?? [];
+          const lastValue = values.length > 0 ? values[values.length - 1].value ?? 0 : 0;
+          if (m.name === "reach") reach_day = lastValue;
+          if (m.name === "views") views_day = lastValue;
         }
       }
     } catch (e) {
@@ -74,12 +77,13 @@ Deno.serve(async (req) => {
     // profile_views (pode estar deprecated em algumas contas)
     try {
       const pvRes = await fetch(
-        `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=profile_views&period=day&since=${yesterdayStr}&until=${yesterdayStr}&access_token=${token}`,
+        `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=profile_views&period=day&since=${sinceStr}&until=${untilStr}&access_token=${token}`,
       );
       const pvData = await pvRes.json();
-      if (pvData.data?.[0]?.values?.[0]?.value) {
-        profile_views_day = pvData.data[0].values[0].value;
-      }
+      const pvValues = pvData?.data?.[0]?.values ?? [];
+      profile_views_day = pvValues.length > 0
+        ? pvValues[pvValues.length - 1].value ?? 0
+        : 0;
     } catch {
       console.warn("profile_views not available (deprecated for some accounts)");
     }
