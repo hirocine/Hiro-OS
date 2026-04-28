@@ -140,9 +140,16 @@ function IdeaCard({ idea, profile, pillar, postLink, onEdit, onDelete, onDuplica
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => onPromote(idea)}>
-              <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
-            </DropdownMenuItem>
+            {!postLink && (
+              <DropdownMenuItem onClick={() => onPromote(idea)}>
+                <CalendarPlus className="h-3.5 w-3.5 mr-2" /> Criar post no calendário
+              </DropdownMenuItem>
+            )}
+            {postLink && onOpenPost && (
+              <DropdownMenuItem onClick={() => onOpenPost(postLink.post_id)}>
+                <ExternalLink className="h-3.5 w-3.5 mr-2" /> Abrir post no calendário
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onEdit(idea)}>
               <Edit2 className="h-3.5 w-3.5 mr-2" /> Editar
             </DropdownMenuItem>
