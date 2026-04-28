@@ -123,11 +123,12 @@ function formatTimeAgo(iso: string | null | undefined): { text: string; tone: 'o
   return { text: `há ${days} ${days === 1 ? 'dia' : 'dias'}`, tone: hours > 36 ? 'warn' : 'ok' };
 }
 
-function ChangeBadge({ value }: { value: number | null }) {
+function ChangeBadge({ value, withContext = true }: { value: number | null; withContext?: boolean }) {
   if (value === null) {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" /> sem dados
+        <Minus className="h-3 w-3" />
+        Sem comparação ainda
       </span>
     );
   }
@@ -141,7 +142,10 @@ function ChangeBadge({ value }: { value: number | null }) {
       )}
     >
       <Icon className="h-3 w-3" />
-      {Math.abs(value).toFixed(1)}%
+      <span className="font-numeric">{Math.abs(value).toFixed(1)}%</span>
+      {withContext && (
+        <span className="text-muted-foreground font-normal ml-0.5">vs período anterior</span>
+      )}
     </span>
   );
 }
@@ -167,7 +171,6 @@ function KpiCard({
         <div className="text-3xl font-semibold mt-2 font-numeric">{value}</div>
         <div className="mt-1">
           <ChangeBadge value={change} />
-          <span className="text-[10px] text-muted-foreground ml-1">vs período anterior</span>
         </div>
       </CardContent>
     </Card>

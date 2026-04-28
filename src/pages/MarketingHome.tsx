@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Calendar, Plus, Trophy, Bell, CheckCircle,
-  FileText, Eye, Heart, UserPlus, TrendingUp, TrendingDown, X,
+  FileText, Eye, Heart, UserPlus, TrendingUp, TrendingDown, X, Minus,
 } from 'lucide-react';
 import { format, parseISO, subDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -39,9 +39,23 @@ function getPostTimestamp(p: MarketingPost): Date | null {
 }
 
 function VariationBadge({ current, previous }: { current: number; previous: number }) {
-  if (previous === 0) return null;
+  if (previous === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <Minus className="h-3 w-3" />
+        Sem comparação ainda
+      </span>
+    );
+  }
   const diff = ((current - previous) / previous) * 100;
-  if (!Number.isFinite(diff)) return null;
+  if (!Number.isFinite(diff)) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <Minus className="h-3 w-3" />
+        Sem comparação ainda
+      </span>
+    );
+  }
   const up = diff >= 0;
   const Icon = up ? TrendingUp : TrendingDown;
   return (
@@ -50,7 +64,8 @@ function VariationBadge({ current, previous }: { current: number; previous: numb
       up ? 'text-emerald-500' : 'text-red-500'
     )}>
       <Icon className="h-3 w-3" />
-      {up ? '↑' : '↓'} {Math.abs(diff).toFixed(0)}% vs semana passada
+      <span className="font-numeric">{Math.abs(diff).toFixed(0)}%</span>
+      <span className="text-muted-foreground font-normal ml-0.5">vs semana passada</span>
     </span>
   );
 }
