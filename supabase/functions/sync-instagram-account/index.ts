@@ -41,30 +41,39 @@ Deno.serve(async (req) => {
       throw new Error(`Account fetch error: ${userData.error.message}`);
     }
 
-    // 3. Insights (reach, views) — janela de 7 dias para garantir dados disponíveis
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    // 3. Insights (reach, views) — janela de 30 dias para BACKFILL completo
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const today = new Date();
-    const sinceStr = sevenDaysAgo.toISOString().split("T")[0];
+    const sinceStr = thirtyDaysAgo.toISOString().split("T")[0];
     const untilStr = today.toISOString().split("T")[0];
 
-    let reach_day = 0;
-    let views_day = 0;
-    let profile_views_day = 0;
-    let insightsRaw: unknown = null;
+    // Map: date (YYYY-MM-DD) → { reach, views, profile_views }
+    const dailyMetrics: Record<string, { reach: number; views: number; profile_views: number }> = {};
 
+    // 3.1 Buscar reach + views
     try {
       const insightsRes = await fetch(
         `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=reach,views&period=day&since=${sinceStr}&until=${untilStr}&access_token=${token}`,
       );
       const insightsData = await insightsRes.json();
-      insightsRaw = insightsData;
+
+      console.log(
+        "[sync-account] reach/views response:",
+        JSON.stringify(insightsData).slice(0, 500),
+      );
 
       if (insightsData.data) {
         for (const m of insightsData.data) {
           const values = m.values ?? [];
-          const lastValue = values.length > 0 ? values[values.length - 1].value ?? 0 : 0;
-          if (m.name === "reach") reach_day = lastValue;
-          if (m.name === "views") views_day = lastValue;
+          for (const v of values) {
+            const day = String(v.end_time ?? "").split("T")[0];
+            if (!day) continue;
+            if (!dailyMetrics[day]) {
+              dailyMetrics[day] = { reach: 0, views: 0, profile_views: 0 };
+            }
+            if (m.name === "reach") dailyMetrics[day].reach = v.value ?? 0;
+            if (m.name === "views") dailyMetrics[day].views = v.value ?? 0;
+          }
         }
       }
     } catch (e) {
@@ -74,24 +83,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    // profile_views (pode estar deprecated em algumas contas)
+    // 3.2 Buscar profile_views separadamente
     try {
       const pvRes = await fetch(
         `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=profile_views&period=day&since=${sinceStr}&until=${untilStr}&access_token=${token}`,
       );
       const pvData = await pvRes.json();
-      const pvValues = pvData?.data?.[0]?.values ?? [];
-      profile_views_day = pvValues.length > 0
-        ? pvValues[pvValues.length - 1].value ?? 0
-        : 0;
+      console.log(
+        "[sync-account] profile_views response:",
+        JSON.stringify(pvData).slice(0, 500),
+      );
+
+      const pvSeries = pvData?.data?.[0]?.values ?? [];
+      for (const v of pvSeries) {
+        const day = String(v.end_time ?? "").split("T")[0];
+        if (!day) continue;
+        if (!dailyMetrics[day]) {
+          dailyMetrics[day] = { reach: 0, views: 0, profile_views: 0 };
+        }
+        dailyMetrics[day].profile_views = v.value ?? 0;
+      }
     } catch {
       console.warn("profile_views not available (deprecated for some accounts)");
     }
 
-    // 4. Delta de seguidores vs último snapshot
+    console.log(
+      `[sync-account] backfilling ${Object.keys(dailyMetrics).length} days`,
+    );
+
+    // 4. Pegar último snapshot pra calcular delta de seguidores
     const { data: lastSnapshot } = await supabase
       .from("marketing_account_snapshots")
-      .select("followers_count")
+      .select("followers_count, captured_at")
       .eq("platform", "instagram")
       .eq("account_id", accountId)
       .order("captured_at", { ascending: false })
@@ -99,41 +122,50 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const followers_delta = lastSnapshot
-      ? (userData.followers_count ?? 0) - lastSnapshot.followers_count
+      ? (userData.followers_count ?? 0) - (lastSnapshot.followers_count ?? 0)
       : 0;
 
-    // 5. Inserir snapshot
-    const payload = {
-      platform: "instagram",
-      account_id: accountId,
-      followers_count: userData.followers_count ?? 0,
-      follows_count: userData.follows_count ?? 0,
-      media_count: userData.media_count ?? 0,
-      reach_day,
-      views_day,
-      profile_views_day,
-      followers_delta,
-      raw_response: { user: userData, insights: insightsRaw },
-    };
+    // 5. UPSERT um snapshot por dia (backfill)
+    let upsertedDays = 0;
+    const sortedDays = Object.keys(dailyMetrics).sort();
+    const todayStr = new Date().toISOString().split("T")[0];
 
-    const { error: insertError } = await supabase
-      .from("marketing_account_snapshots")
-      .insert(payload);
+    for (const day of sortedDays) {
+      const metrics = dailyMetrics[day];
+      const capturedAt = new Date(`${day}T12:00:00.000Z`).toISOString();
+      const isToday = day === todayStr;
 
-    if (insertError) {
-      // Conflito de unicidade do dia → atualiza snapshot existente
-      if (insertError.code === "23505") {
-        const startOfDay = new Date();
-        startOfDay.setUTCHours(0, 0, 0, 0);
+      const payload = {
+        platform: "instagram",
+        account_id: accountId,
+        followers_count: userData.followers_count ?? 0,
+        follows_count: userData.follows_count ?? 0,
+        media_count: userData.media_count ?? 0,
+        reach_day: metrics.reach,
+        views_day: metrics.views,
+        profile_views_day: metrics.profile_views,
+        followers_delta: isToday ? followers_delta : null,
+        captured_at: capturedAt,
+        raw_response: { user: userData, day_metrics: metrics },
+      };
+
+      const { data: existing } = await supabase
+        .from("marketing_account_snapshots")
+        .select("id")
+        .eq("platform", "instagram")
+        .eq("account_id", accountId)
+        .eq("captured_date", day)
+        .maybeSingle();
+
+      if (existing) {
         await supabase
           .from("marketing_account_snapshots")
           .update(payload)
-          .eq("platform", "instagram")
-          .eq("account_id", accountId)
-          .gte("captured_at", startOfDay.toISOString());
+          .eq("id", existing.id);
       } else {
-        throw insertError;
+        await supabase.from("marketing_account_snapshots").insert(payload);
       }
+      upsertedDays += 1;
     }
 
     // 6. Atualizar last_sync_at
@@ -145,13 +177,13 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        backfilled_days: upsertedDays,
         snapshot: {
           followers: userData.followers_count,
           posts: userData.media_count,
-          reach_day,
-          views_day,
-          profile_views_day,
           followers_delta,
+          sample_day: sortedDays[sortedDays.length - 1],
+          sample_metrics: dailyMetrics[sortedDays[sortedDays.length - 1]],
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },

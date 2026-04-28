@@ -59,11 +59,30 @@ Deno.serve(async (req) => {
           `&breakdown=${breakdown}` +
           `&access_token=${token}`;
 
+        console.log(`[audience] fetching breakdown=${breakdown}`);
         const res = await fetch(url);
         const data = await res.json();
         rawData[`follower_demographics_${breakdown}`] = data;
 
+        console.log(
+          `[audience] breakdown=${breakdown} response:`,
+          JSON.stringify(data).slice(0, 1000),
+        );
+
+        if (data?.error) {
+          console.error(
+            `[audience] breakdown=${breakdown} ERROR:`,
+            JSON.stringify(data.error),
+          );
+          continue;
+        }
+
         const results = data?.data?.[0]?.total_value?.breakdowns?.[0]?.results;
+        console.log(
+          `[audience] breakdown=${breakdown} parsed:`,
+          Array.isArray(results) ? `${results.length} entries` : "no results",
+        );
+
         if (Array.isArray(results)) {
           const dict: Record<string, number> = {};
           for (const r of results) {
@@ -85,11 +104,17 @@ Deno.serve(async (req) => {
         }
       } catch (e) {
         console.warn(
-          `follower_demographics breakdown=${breakdown} failed:`,
+          `[audience] follower_demographics breakdown=${breakdown} failed:`,
           e instanceof Error ? e.message : String(e),
         );
       }
     }
+
+    console.log("[audience] final result keys:", {
+      gender_age: Object.keys(result.gender_age).length,
+      cities: Object.keys(result.cities).length,
+      countries: Object.keys(result.countries).length,
+    });
 
     const { error } = await supabase
       .from("marketing_account_audience")
