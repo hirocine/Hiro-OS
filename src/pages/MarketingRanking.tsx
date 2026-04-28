@@ -25,7 +25,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronsUpDown, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronsUpDown, ExternalLink, Image as ImageIcon, Trophy } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { getPillarColor } from '@/lib/marketing-colors';
