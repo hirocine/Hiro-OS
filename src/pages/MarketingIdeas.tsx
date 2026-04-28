@@ -504,11 +504,16 @@ export default function MarketingIdeas() {
         open={postDialogOpen}
         onOpenChange={handlePostDialogChange}
         prefill={postPrefill}
-        onSaved={(_p, isNew) => {
+        onSaved={(post, isNew) => {
           if (isNew) {
-            toast.success('Post criado no calendário 🚀', {
-              action: { label: 'Ver no calendário', onClick: () => navigate('/marketing') },
+            toast.success('Post criado e ideia atualizada 🚀', {
+              description: 'A ideia foi movida para "Em produção" automaticamente.',
+              action: {
+                label: 'Abrir post',
+                onClick: () => navigate(`/marketing/posts?postId=${post.id}`),
+              },
             });
+            fetchIdeas?.();
           }
         }}
       />
