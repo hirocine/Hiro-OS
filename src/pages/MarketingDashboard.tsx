@@ -680,7 +680,7 @@ export default function MarketingDashboard() {
 
     // posts delta: latest media_count - media_count from 7 days ago
     const earliestIn7 = last7[0];
-    const newPosts7 = latestAccount && earliestIn7
+    const newPosts7 = latestAccount && earliestIn7 && latestAccount.media_count != null && earliestIn7.media_count != null
       ? Math.max(0, latestAccount.media_count - earliestIn7.media_count)
       : 0;
 
