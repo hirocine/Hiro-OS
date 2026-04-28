@@ -653,6 +653,20 @@ export default function MarketingDashboard() {
     [publishedPosts, prevRange]
   );
 
+  // Label do período (preset + datas concretas) — mostrado nos cabeçalhos dos gráficos
+  const periodLabel = useMemo(() => {
+    if (periodPreset === 'all') {
+      return oldestAccount?.captured_at
+        ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
+        : 'Todo o período';
+    }
+    if (periodPreset === 'custom' && customRange) {
+      return `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`;
+    }
+    const preset = PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? '';
+    const range = `${formatDate(resolvedRange.start, 'dd/MM', { locale: ptBRLocale })} → ${formatDate(resolvedRange.end, 'dd/MM', { locale: ptBRLocale })}`;
+    return `${preset} · ${range}`;
+  }, [periodPreset, customRange, resolvedRange, oldestAccount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1144,9 +1158,7 @@ export default function MarketingDashboard() {
                   Evolução de seguidores
                 </CardTitle>
                 <span className="text-xs text-muted-foreground font-numeric">
-                  {periodPreset === 'all' && oldestAccount?.captured_at
-                    ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
-                    : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+                  {periodLabel}
                 </span>
               </CardHeader>
               <CardContent>
@@ -1384,9 +1396,7 @@ export default function MarketingDashboard() {
             Performance dos conteúdos
           </h2>
           <span className="text-xs text-muted-foreground font-numeric">
-            {periodPreset === 'custom' && customRange
-              ? `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`
-              : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+            {periodLabel}
           </span>
         </div>
 
