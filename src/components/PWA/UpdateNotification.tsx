@@ -8,6 +8,21 @@ export function UpdateNotification() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
+    const isInIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
+
+    const isPreviewHost =
+      window.location.hostname.includes('id-preview--') ||
+      window.location.hostname.includes('lovableproject.com') ||
+      window.location.hostname.includes('lovable.app');
+
+    if (isInIframe || isPreviewHost) return;
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then((reg) => {
         setRegistration(reg);
