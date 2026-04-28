@@ -1096,19 +1096,11 @@ export default function MarketingDashboard() {
                   <Users className="h-4 w-4" />
                   Evolução de seguidores
                 </CardTitle>
-                <Select
-                  value={String(accountPeriod)}
-                  onValueChange={(v) => setAccountPeriod(Number(v) as AccountPeriod)}
-                >
-                  <SelectTrigger className="h-8 w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 dias</SelectItem>
-                    <SelectItem value="30">30 dias</SelectItem>
-                    <SelectItem value="90">90 dias</SelectItem>
-                  </SelectContent>
-                </Select>
+                <span className="text-xs text-muted-foreground font-numeric">
+                  {periodPreset === 'all' && oldestAccount?.captured_at
+                    ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
+                    : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+                </span>
               </CardHeader>
               <CardContent>
                 <div className="h-64">
