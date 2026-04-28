@@ -50,7 +50,7 @@ const MarketingIntegrations = lazy(() => import("./pages/MarketingIntegrations")
 const MarketingReferences = lazy(() => import("./pages/MarketingReferences"));
 const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
 const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
-const MarketingCalendar = lazy(() => import("./pages/MarketingCalendar"));
+
 const MarketingPillars = lazy(() => import("./pages/MarketingPillars"));
 const MarketingDashboard = lazy(() => import("./pages/MarketingDashboard"));
 const MarketingRanking = lazy(() => import("./pages/MarketingRanking"));
