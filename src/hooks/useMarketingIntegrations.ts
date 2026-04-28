@@ -16,6 +16,7 @@ export interface MarketingIntegration {
   last_sync_at: string | null;
   status: IntegrationStatus;
   status_message: string | null;
+  profile_picture_url?: string | null;
   created_at: string;
   updated_at: string;
 }
