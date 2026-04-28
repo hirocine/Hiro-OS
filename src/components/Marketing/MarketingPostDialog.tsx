@@ -197,23 +197,6 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setSaving(false);
     }
   };
-    try {
-      setSaving(true);
-      let saved: MarketingPost;
-      if (post) {
-        saved = await updatePost(post.id, payload);
-        onSaved?.(saved, false);
-      } else {
-        saved = await createPost(payload);
-        onSaved?.(saved, true);
-      }
-      onOpenChange(false);
-    } catch {
-      // toast in hook
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
