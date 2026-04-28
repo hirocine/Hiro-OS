@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Upload, X, Loader2, Check, ChevronsUpDown, ChevronDown, BarChart3, RefreshCw } from 'lucide-react';
+import { Upload, X, Loader2, Check, ChevronsUpDown, ChevronDown, BarChart3, RefreshCw, Link2, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   POST_FORMATS,
@@ -67,6 +67,13 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [publishedUrl, setPublishedUrl] = useState('');
   const [ideaId, setIdeaId] = useState<string>('');
   const [ideaPickerOpen, setIdeaPickerOpen] = useState(false);
+
+  // UTM Builder
+  const [destinationUrl, setDestinationUrl] = useState('https://hiro.film');
+  const [utmSource, setUtmSource] = useState('');
+  const [utmMedium, setUtmMedium] = useState('');
+  const [utmCampaign, setUtmCampaign] = useState('');
+  const [utmContent, setUtmContent] = useState('');
 
   // Metrics
   const [metricsOpen, setMetricsOpen] = useState(false);
