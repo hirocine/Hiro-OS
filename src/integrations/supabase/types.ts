@@ -1058,6 +1058,54 @@ export type Database = {
           },
         ]
       }
+      marketing_integrations: {
+        Row: {
+          access_token: string | null
+          account_id: string | null
+          account_name: string | null
+          connected_at: string | null
+          connected_by: string | null
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          platform: string
+          status: string
+          status_message: string | null
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          connected_at?: string | null
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          platform: string
+          status?: string
+          status_message?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          connected_at?: string | null
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          platform?: string
+          status?: string
+          status_message?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       marketing_personas: {
         Row: {
           avatar_url: string | null
