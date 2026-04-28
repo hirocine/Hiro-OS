@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Pencil, Trash2, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, Layers, ArrowRight } from 'lucide-react';
+import { CardContent } from '@/components/ui/card';
 import { useMarketingPillars, type MarketingPillar, type MarketingPillarInput } from '@/hooks/useMarketingPillars';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,9 +56,19 @@ export function PillarsContent() {
   const openEdit = (p: MarketingPillar) => { setEditing(p); setDialogOpen(true); };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={openNew}>
+    <div className="space-y-4">
+      {/* Header da seção com botão integrado */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Layers className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold leading-tight">Pilares de Conteúdo</h2>
+            <p className="text-sm text-muted-foreground">Os temas centrais que sua marca representa</p>
+          </div>
+        </div>
+        <Button onClick={openNew} size="sm">
           <Plus className="h-4 w-4 mr-2" /> Novo Pilar
         </Button>
       </div>
@@ -65,59 +76,70 @@ export function PillarsContent() {
       {loading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
       ) : pillars.length === 0 ? (
-        <EmptyState
-          icon={Layers}
-          title="Defina seus pilares de conteúdo"
-          description="Os 3 a 5 temas centrais que sua marca representa. Pilares organizam suas ideias e posts em torno de uma narrativa coerente."
-          action={{ label: 'Criar primeiro pilar', onClick: openNew }}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card
+            className="group cursor-pointer hover:shadow-md hover:border-primary/40 transition-all"
+            onClick={openNew}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Plus className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold">Criar primeiro pilar</h3>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
+                    3 a 5 temas centrais que sua marca representa. Organizam ideias e posts em torno de uma narrativa coerente.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <>
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Distribuição real</h3>
-              <span className="text-xs text-muted-foreground">
-                <strong className="text-foreground font-numeric">{totalPublished}</strong> posts publicados
-              </span>
-            </div>
+          {totalPublished > 0 && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Distribuição real</h3>
+                <span className="text-xs text-muted-foreground">
+                  <strong className="text-foreground font-numeric">{totalPublished}</strong> posts publicados
+                </span>
+              </div>
 
-            {totalPublished === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">
-                Nenhum post publicado ainda. A distribuição aparecerá conforme posts forem publicados.
-              </p>
-            ) : (
-              <>
-                <div className="h-3 w-full rounded-full overflow-hidden bg-muted flex">
-                  {chartData.map((d, i) => {
-                    const pct = (d.value / totalPublished) * 100;
-                    return (
-                      <div
-                        key={i}
-                        className="h-full transition-all"
-                        style={{ width: `${pct}%`, backgroundColor: d.color }}
-                        title={`${d.name}: ${d.value} (${pct.toFixed(0)}%)`}
-                      />
-                    );
-                  })}
-                </div>
+              <div className="h-3 w-full rounded-full overflow-hidden bg-muted flex">
+                {chartData.map((d, i) => {
+                  const pct = (d.value / totalPublished) * 100;
+                  return (
+                    <div
+                      key={i}
+                      className="h-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: d.color }}
+                      title={`${d.name}: ${d.value} (${pct.toFixed(0)}%)`}
+                    />
+                  );
+                })}
+              </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
-                  {chartData.map((d, i) => {
-                    const pct = (d.value / totalPublished) * 100;
-                    return (
-                      <div key={i} className="flex items-center gap-1.5 text-xs">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
-                        <span className="font-medium">{d.name}</span>
-                        <span className="text-muted-foreground font-numeric">
-                          {d.value} ({pct.toFixed(0)}%)
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </Card>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                {chartData.map((d, i) => {
+                  const pct = (d.value / totalPublished) * 100;
+                  return (
+                    <div key={i} className="flex items-center gap-1.5 text-xs">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="font-medium">{d.name}</span>
+                      <span className="text-muted-foreground font-numeric">
+                        {d.value} ({pct.toFixed(0)}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stats.map(({ pillar, posts, ideasCount, realPct }) => {

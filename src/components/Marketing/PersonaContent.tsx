@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Loader2, User, MoreVertical } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,15 +43,25 @@ export function PersonaContent() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={openNew}>
+      {/* Header da seção com botão integrado */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <UserCircle className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold leading-tight">Persona / ICP</h2>
+            <p className="text-sm text-muted-foreground">Quem é o cliente ideal da Hiro Films</p>
+          </div>
+        </div>
+        <Button onClick={openNew} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Nova Persona
         </Button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
+        <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : personas.length === 0 ? (
@@ -62,17 +72,17 @@ export function PersonaContent() {
           >
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Plus className="h-6 w-6 text-primary" />
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Plus className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold">Criar primeira persona</h3>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold">Criar primeira persona</h3>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />
+                  </div>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
                     Defina o cliente ideal da Hiro Films: segmento, dores, gatilhos e canais.
                   </p>
-                  <Button variant="link" size="sm" className="px-0 mt-2">
-                    Começar
-                  </Button>
                 </div>
               </div>
             </CardContent>
