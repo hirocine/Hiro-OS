@@ -187,7 +187,7 @@ function KpiCard({
           <span>{emoji}</span>
           <span>{label}</span>
         </div>
-        <div className="text-3xl font-semibold mt-2 font-numeric">{value}</div>
+        <div className="text-3xl font-semibold mt-2">{value}</div>
         <div className="mt-1">
           <ChangeBadge value={change} />
         </div>
@@ -218,13 +218,13 @@ function AccountKpiCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="text-3xl sm:text-4xl font-bold font-numeric tracking-tight text-foreground">
+        <div className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           {value}
         </div>
         {subtitle && (
           <p
             className={cn(
-              'text-xs font-medium font-numeric',
+              'text-xs font-medium',
               subtone === 'positive' && 'text-success',
               subtone === 'negative' && 'text-destructive',
               subtone === 'muted' && 'text-muted-foreground'
@@ -403,7 +403,7 @@ function GenderAgeHero({ audience }: { audience: { gender_age: Record<string, nu
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Perfil dominante
           </p>
-          <p className="text-2xl sm:text-3xl font-bold font-numeric tracking-tight mt-1">
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">
             {dominantAge ? `${dominantAge.key} anos` : '—'}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
