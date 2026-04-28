@@ -188,6 +188,16 @@ export default function MarketingHome() {
   }, [posts, pillars]);
   const distributionData = distribution.filter((d) => d.value > 0);
 
+  // === Posts publicados nos últimos 30 dias (para Estratégia) ===
+  const postsThisMonth = useMemo(() => {
+    const cutoff = subDays(new Date(), 30);
+    return posts.filter((p) => {
+      if (p.status !== 'publicado') return false;
+      const d = getPostTimestamp(p);
+      return d ? isAfter(d, cutoff) : false;
+    });
+  }, [posts]);
+
   // === Alerts ===
   const alerts = useMemo(() => {
     const list: { icon: string; text: string }[] = [];
