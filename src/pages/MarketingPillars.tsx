@@ -71,18 +71,12 @@ export default function MarketingPillars() {
       {loading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
       ) : pillars.length === 0 ? (
-        <Card className="p-12 text-center max-w-2xl mx-auto">
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <Layers className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Defina seus pilares de conteúdo</h3>
-          <p className="text-muted-foreground mb-6">
-            Os 3 a 5 temas centrais que sua marca representa. Pilares organizam suas ideias e posts em torno de uma narrativa coerente.
-          </p>
-          <Button onClick={openNew}>
-            <Plus className="h-4 w-4 mr-2" /> Criar primeiro pilar
-          </Button>
-        </Card>
+        <EmptyState
+          icon={Layers}
+          title="Defina seus pilares de conteúdo"
+          description="Os 3 a 5 temas centrais que sua marca representa. Pilares organizam suas ideias e posts em torno de uma narrativa coerente."
+          action={{ label: 'Criar primeiro pilar', onClick: openNew }}
+        />
       ) : (
         <>
           {/* Donut chart */}
