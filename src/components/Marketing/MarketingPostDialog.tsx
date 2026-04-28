@@ -42,17 +42,6 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function slugify(s: string | undefined | null): string {
-  if (!s) return '';
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 50);
-}
 
 export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
