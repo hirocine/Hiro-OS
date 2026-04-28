@@ -48,6 +48,7 @@ import { cn, formatRelativeTime } from '@/lib/utils';
 import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarketingPostMetrics';
 import { useMarketingAccountSnapshots } from '@/hooks/useMarketingAccountSnapshots';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
+import { useMarketingGA4 } from '@/hooks/useMarketingGA4';
 import { getPillarColor } from '@/lib/marketing-colors';
 import { getPostPlatformLabel, getPostFormatLabel } from '@/lib/marketing-posts-config';
 import { supabase } from '@/integrations/supabase/client';
