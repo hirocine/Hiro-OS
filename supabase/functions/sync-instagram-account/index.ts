@@ -135,32 +135,44 @@ Deno.serve(async (req) => {
       const capturedAt = new Date(`${day}T12:00:00.000Z`).toISOString();
       const isToday = day === todayStr;
 
-      const payload = {
+      // Lifetime counters (followers/follows/media) só são reais pro dia de HOJE.
+      // Para dias passados ficam null para não poluir o gráfico de evolução.
+      const payload: Record<string, unknown> = {
         platform: "instagram",
         account_id: accountId,
-        followers_count: userData.followers_count ?? 0,
-        follows_count: userData.follows_count ?? 0,
-        media_count: userData.media_count ?? 0,
+        followers_count: isToday ? (userData.followers_count ?? 0) : null,
+        follows_count: isToday ? (userData.follows_count ?? 0) : null,
+        media_count: isToday ? (userData.media_count ?? 0) : null,
         reach_day: metrics.reach,
         views_day: metrics.views,
         profile_views_day: metrics.profile_views,
         followers_delta: isToday ? followers_delta : null,
         captured_at: capturedAt,
-        raw_response: { user: userData, day_metrics: metrics },
+        raw_response: { user: isToday ? userData : null, day_metrics: metrics },
       };
 
       const { data: existing } = await supabase
         .from("marketing_account_snapshots")
-        .select("id")
+        .select("id, followers_count, follows_count, media_count")
         .eq("platform", "instagram")
         .eq("account_id", accountId)
         .eq("captured_date", day)
         .maybeSingle();
 
       if (existing) {
+        // Ao reprocessar um dia passado, preservar contadores lifetime já coletados
+        // (que podem ter sido capturados pelo cron diário em outro dia).
+        const updatePayload = isToday
+          ? payload
+          : {
+              ...payload,
+              followers_count: existing.followers_count ?? null,
+              follows_count: existing.follows_count ?? null,
+              media_count: existing.media_count ?? null,
+            };
         await supabase
           .from("marketing_account_snapshots")
-          .update(payload)
+          .update(updatePayload)
           .eq("id", existing.id);
       } else {
         await supabase.from("marketing_account_snapshots").insert(payload);

@@ -680,7 +680,7 @@ export default function MarketingDashboard() {
 
     // posts delta: latest media_count - media_count from 7 days ago
     const earliestIn7 = last7[0];
-    const newPosts7 = latestAccount && earliestIn7
+    const newPosts7 = latestAccount && earliestIn7 && latestAccount.media_count != null && earliestIn7.media_count != null
       ? Math.max(0, latestAccount.media_count - earliestIn7.media_count)
       : 0;
 
@@ -697,10 +697,12 @@ export default function MarketingDashboard() {
   // ===== Daily series for charts =====
   const followersSeries = useMemo(
     () =>
-      accountSnapshots.map((s) => ({
-        date: s.captured_at.slice(0, 10),
-        followers: s.followers_count,
-      })),
+      accountSnapshots
+        .filter((s) => s.followers_count != null)
+        .map((s) => ({
+          date: s.captured_at.slice(0, 10),
+          followers: s.followers_count as number,
+        })),
     [accountSnapshots]
   );
 
@@ -921,8 +923,8 @@ export default function MarketingDashboard() {
                       alt={instagramIntegration.account_name ?? 'Instagram'}
                     />
                   ) : null}
-                  <AvatarFallback className="bg-muted">
-                    <Instagram className="h-6 w-6 text-muted-foreground" />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-yellow-500/20 animate-pulse">
+                    <Instagram className="h-6 w-6 text-foreground/70" />
                   </AvatarFallback>
                 </Avatar>
                 <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center ring-2 ring-card">
@@ -961,18 +963,6 @@ export default function MarketingDashboard() {
                     : syncStatus.text}
                 </p>
               </div>
-
-              {/* Ação */}
-              <Button
-                onClick={handleSync}
-                disabled={syncing}
-                variant="outline"
-                size="sm"
-                className="hidden sm:inline-flex gap-2"
-              >
-                <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-                Sincronizar
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -1081,9 +1071,19 @@ export default function MarketingDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  {followersSeries.length === 0 ? (
-                    <div className="h-full flex items-center justify-center">
-                      <EmptyState compact icon={CalendarIcon} title="" description="Sem snapshots no período." />
+                  {followersSeries.length < 2 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-2">
+                      <Users className="h-8 w-8 text-muted-foreground/60" />
+                      <p className="text-sm font-medium text-foreground">
+                        Coletando histórico de seguidores
+                      </p>
+                      <p className="text-xs text-muted-foreground max-w-sm">
+                        A API do Instagram não fornece histórico de seguidores. O gráfico
+                        ganha forma à medida que cada dia é capturado pelo sistema.
+                      </p>
+                      <p className="text-xs text-muted-foreground tabular-nums mt-1">
+                        {followersSeries.length}/7 dias coletados
+                      </p>
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
