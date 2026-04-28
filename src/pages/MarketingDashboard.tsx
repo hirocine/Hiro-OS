@@ -499,8 +499,8 @@ export default function MarketingDashboard() {
             </CardHeader>
             <CardContent>
               {platformData.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">
-                  Sem dados.
+                <div className="h-48 flex items-center justify-center">
+                  <EmptyState compact icon={PieIcon} title="" description="Sem dados." />
                 </div>
               ) : (
                 <div className="h-48">
