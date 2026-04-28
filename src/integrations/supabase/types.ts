@@ -1053,11 +1053,11 @@ export type Database = {
           captured_at: string
           captured_date: string | null
           created_at: string
-          followers_count: number
+          followers_count: number | null
           followers_delta: number | null
-          follows_count: number
+          follows_count: number | null
           id: string
-          media_count: number
+          media_count: number | null
           platform: string
           profile_views_day: number
           raw_response: Json | null
@@ -1069,11 +1069,11 @@ export type Database = {
           captured_at?: string
           captured_date?: string | null
           created_at?: string
-          followers_count?: number
+          followers_count?: number | null
           followers_delta?: number | null
-          follows_count?: number
+          follows_count?: number | null
           id?: string
-          media_count?: number
+          media_count?: number | null
           platform?: string
           profile_views_day?: number
           raw_response?: Json | null
@@ -1085,11 +1085,11 @@ export type Database = {
           captured_at?: string
           captured_date?: string | null
           created_at?: string
-          followers_count?: number
+          followers_count?: number | null
           followers_delta?: number | null
-          follows_count?: number
+          follows_count?: number | null
           id?: string
-          media_count?: number
+          media_count?: number | null
           platform?: string
           profile_views_day?: number
           raw_response?: Json | null
