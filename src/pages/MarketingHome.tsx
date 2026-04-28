@@ -20,8 +20,10 @@ import {
 } from '@/components/ui/select';
 import { PostsCalendar } from '@/components/Marketing/PostsCalendar';
 import { MarketingPostDialog } from '@/components/Marketing/MarketingPostDialog';
+import { StrategyOverview } from '@/components/Marketing/StrategyOverview';
 import { useMarketingPosts, type MarketingPost } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingActivePersona } from '@/hooks/useMarketingActivePersona';
 import { getPillarColor } from '@/lib/marketing-colors';
 import {
   POST_PLATFORMS, POST_STATUSES, getPostPlatformLabel,
@@ -82,6 +84,7 @@ function KpiCard({ label, value, icon: Icon, current, previous }: KpiProps) {
 export default function MarketingHome() {
   const { posts, deletePost } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
+  const { persona: activePersona } = useMarketingActivePersona();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
