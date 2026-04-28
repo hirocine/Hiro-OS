@@ -801,7 +801,7 @@ export default function MarketingDashboard() {
                         />
                         <YAxis
                           tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
                           axisLine={false}
                           tickLine={false}
                           domain={['dataMin - 10', 'dataMax + 10']}
@@ -855,7 +855,7 @@ export default function MarketingDashboard() {
                           />
                           <YAxis
                             tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
                             axisLine={false}
                             tickLine={false}
                           />
@@ -906,7 +906,7 @@ export default function MarketingDashboard() {
                           />
                           <YAxis
                             tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
                             axisLine={false}
                             tickLine={false}
                           />
