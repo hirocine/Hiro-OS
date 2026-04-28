@@ -516,26 +516,66 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
 
                 <div className="flex flex-wrap gap-2 pt-1">
                   <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
-                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do Instagram
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button type="button" variant="outline" size="sm" disabled className="gap-2">
-                            <RefreshCw className="h-3.5 w-3.5" /> Sincronizar do LinkedIn
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>Disponível após configurar integração no Bloco 5</TooltipContent>
-                    </Tooltip>
+                    {(() => {
+                      const igEligible = platform === 'instagram' && status === 'publicado' && !!publishedUrl.trim();
+                      const igDisabled = !igEligible || !instagramConnected || syncingPlatform !== null;
+                      const igTooltip = !instagramConnected
+                        ? 'Configure a integração do Instagram em Admin → Integrações'
+                        : !igEligible
+                        ? 'Disponível apenas para posts publicados do Instagram com URL preenchida'
+                        : 'Sincronizar métricas do Instagram';
+                      const liEligible = platform === 'linkedin' && status === 'publicado' && !!publishedUrl.trim();
+                      const liDisabled = !liEligible || !linkedinConnected || syncingPlatform !== null;
+                      const liTooltip = !linkedinConnected
+                        ? 'Configure a integração do LinkedIn em Admin → Integrações'
+                        : !liEligible
+                        ? 'Disponível apenas para posts publicados do LinkedIn com URL preenchida'
+                        : 'Sincronizar métricas do LinkedIn';
+                      return (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={igDisabled}
+                                  onClick={() => handleSync('instagram')}
+                                  className="gap-2"
+                                >
+                                  {syncingPlatform === 'instagram'
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <RefreshCw className="h-3.5 w-3.5" />}
+                                  Sincronizar do Instagram
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{igTooltip}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={liDisabled}
+                                  onClick={() => handleSync('linkedin')}
+                                  className="gap-2"
+                                >
+                                  {syncingPlatform === 'linkedin'
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <RefreshCw className="h-3.5 w-3.5" />}
+                                  Sincronizar do LinkedIn
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{liTooltip}</TooltipContent>
+                          </Tooltip>
+                        </>
+                      );
+                    })()}
                   </TooltipProvider>
                 </div>
               </div>
