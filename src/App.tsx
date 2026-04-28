@@ -53,8 +53,7 @@ const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
 
 const MarketingPillars = lazy(() => import("./pages/MarketingPillars"));
 const MarketingDashboard = lazy(() => import("./pages/MarketingDashboard"));
-const MarketingGallery = lazy(() => import("./pages/MarketingGallery"));
-const MarketingRanking = lazy(() => import("./pages/MarketingRanking"));
+const MarketingPosts = lazy(() => import("./pages/MarketingPosts"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -122,8 +121,9 @@ const App = () => (
                 
                 <Route path="marketing/pilares" element={<MarketingPillars />} />
                 <Route path="marketing/dashboard" element={<MarketingDashboard />} />
-                <Route path="marketing/galeria" element={<MarketingGallery />} />
-                <Route path="marketing/ranking" element={<MarketingRanking />} />
+                <Route path="marketing/posts" element={<MarketingPosts />} />
+                <Route path="marketing/galeria" element={<Navigate to="/marketing/posts" replace />} />
+                <Route path="marketing/ranking" element={<Navigate to="/marketing/posts?view=ranking" replace />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
                 <Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />
