@@ -622,6 +622,7 @@ export default function MarketingDashboard() {
   }, [periodPreset, resolvedRange]);
 
   const ga4 = useMarketingGA4(snapshotsRange);
+  const { syncNow: syncGA4 } = ga4;
 
   const {
     snapshots: accountSnapshots,
