@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Loader2, User, UserCircle, MoreVertical } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PageHeader } from '@/components/ui/page-header';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,7 +25,7 @@ import { type MarketingPersona, useMarketingPersonas } from '@/hooks/useMarketin
 import { MarketingPersonaDialog } from '@/components/Marketing/MarketingPersonaDialog';
 import { MarketingPersonaDetailsDialog } from '@/components/Marketing/MarketingPersonaDetailsDialog';
 
-export default function MarketingPersonaPage() {
+export function PersonaContent() {
   const { personas, loading, deletePersona } = useMarketingPersonas();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<MarketingPersona | null>(null);
@@ -45,17 +43,13 @@ export default function MarketingPersonaPage() {
   };
 
   return (
-    <ResponsiveContainer>
-      <PageHeader
-        title="Persona / ICP"
-        subtitle="Defina o perfil de cliente ideal da Hiro Films"
-        actions={
-          <Button onClick={openNew}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Persona
-          </Button>
-        }
-      />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={openNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Persona
+        </Button>
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
@@ -173,6 +167,6 @@ export default function MarketingPersonaPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ResponsiveContainer>
+    </div>
   );
 }

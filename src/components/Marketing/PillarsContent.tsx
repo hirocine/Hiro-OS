@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Pencil, Trash2, Layers } from 'lucide-react';
@@ -15,7 +14,7 @@ import { cn } from '@/lib/utils';
 
 interface PostCount { pillar_id: string | null }
 
-export default function MarketingPillars() {
+export function PillarsContent() {
   const { pillars, loading, createPillar, updatePillar, deletePillar } = useMarketingPillars();
   const { ideas } = useMarketingIdeas();
   const [postCounts, setPostCounts] = useState<PostCount[]>([]);
@@ -57,16 +56,12 @@ export default function MarketingPillars() {
   const openEdit = (p: MarketingPillar) => { setEditing(p); setDialogOpen(true); };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <PageHeader
-        title="Pilares de Conteúdo"
-        subtitle="Os temas centrais que sua marca representa"
-        actions={
-          <Button onClick={openNew}>
-            <Plus className="h-4 w-4 mr-2" /> Novo Pilar
-          </Button>
-        }
-      />
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button onClick={openNew}>
+          <Plus className="h-4 w-4 mr-2" /> Novo Pilar
+        </Button>
+      </div>
 
       {loading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
@@ -79,7 +74,6 @@ export default function MarketingPillars() {
         />
       ) : (
         <>
-          {/* Donut chart */}
           <Card className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4">Distribuição real (posts publicados)</h3>
             {totalPublished === 0 ? (
@@ -116,7 +110,6 @@ export default function MarketingPillars() {
             )}
           </Card>
 
-          {/* Pillar cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stats.map(({ pillar, posts, ideasCount, realPct }) => {
               const c = getPillarColor(pillar.color);

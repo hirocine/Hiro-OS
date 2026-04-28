@@ -49,9 +49,7 @@ const MarketingHome = lazy(() => import("./pages/MarketingHome"));
 const MarketingIntegrations = lazy(() => import("./pages/MarketingIntegrations"));
 const MarketingReferences = lazy(() => import("./pages/MarketingReferences"));
 const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
-const MarketingPersona = lazy(() => import("./pages/MarketingPersona"));
-
-const MarketingPillars = lazy(() => import("./pages/MarketingPillars"));
+const MarketingStrategy = lazy(() => import("./pages/MarketingStrategy"));
 const MarketingDashboard = lazy(() => import("./pages/MarketingDashboard"));
 const MarketingPosts = lazy(() => import("./pages/MarketingPosts"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -117,9 +115,9 @@ const App = () => (
                 <Route path="marketing" element={<MarketingHome />} />
                 <Route path="marketing/referencias" element={<MarketingReferences />} />
                 <Route path="marketing/ideias" element={<MarketingIdeas />} />
-                <Route path="marketing/persona" element={<MarketingPersona />} />
-                
-                <Route path="marketing/pilares" element={<MarketingPillars />} />
+                <Route path="marketing/estrategia" element={<MarketingStrategy />} />
+                <Route path="marketing/persona" element={<Navigate to="/marketing/estrategia?aba=persona" replace />} />
+                <Route path="marketing/pilares" element={<Navigate to="/marketing/estrategia?aba=pilares" replace />} />
                 <Route path="marketing/dashboard" element={<MarketingDashboard />} />
                 <Route path="marketing/posts" element={<MarketingPosts />} />
                 <Route path="marketing/galeria" element={<Navigate to="/marketing/posts" replace />} />
