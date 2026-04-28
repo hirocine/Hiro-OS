@@ -1071,9 +1071,19 @@ export default function MarketingDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  {followersSeries.length === 0 ? (
-                    <div className="h-full flex items-center justify-center">
-                      <EmptyState compact icon={CalendarIcon} title="" description="Sem snapshots no período." />
+                  {followersSeries.length < 2 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-2">
+                      <Users className="h-8 w-8 text-muted-foreground/60" />
+                      <p className="text-sm font-medium text-foreground">
+                        Coletando histórico de seguidores
+                      </p>
+                      <p className="text-xs text-muted-foreground max-w-sm">
+                        A API do Instagram não fornece histórico de seguidores. O gráfico
+                        ganha forma à medida que cada dia é capturado pelo sistema.
+                      </p>
+                      <p className="text-xs text-muted-foreground tabular-nums mt-1">
+                        {followersSeries.length}/7 dias coletados
+                      </p>
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
