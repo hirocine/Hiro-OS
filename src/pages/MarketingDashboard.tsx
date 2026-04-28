@@ -1396,9 +1396,7 @@ export default function MarketingDashboard() {
             Performance dos conteúdos
           </h2>
           <span className="text-xs text-muted-foreground font-numeric">
-            {periodPreset === 'custom' && customRange
-              ? `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`
-              : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+            {periodLabel}
           </span>
         </div>
 
