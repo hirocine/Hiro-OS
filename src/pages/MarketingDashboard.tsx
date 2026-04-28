@@ -240,7 +240,7 @@ function topEntries(obj: Record<string, number> | null | undefined, n: number) {
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
-  const { instagramConnected, loading: integrationsLoading } = useMarketingIntegrations();
+  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading } = useMarketingIntegrations();
   const [period, setPeriod] = useState<Period>('30');
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
 
