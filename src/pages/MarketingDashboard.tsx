@@ -117,29 +117,8 @@ interface DateRange {
   prevEnd: Date;
 }
 
-function getRange(period: Period): DateRange {
-  const now = new Date();
-  if (period === 'this_month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = now;
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    return { start, end, prevStart, prevEnd };
-  }
-  if (period === 'last_month') {
-    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth() - 1, 0, 23, 59, 59);
-    return { start, end, prevStart, prevEnd };
-  }
-  const days = parseInt(period, 10);
-  const end = now;
-  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const prevEnd = new Date(start.getTime() - 1);
-  const prevStart = new Date(prevEnd.getTime() - days * 24 * 60 * 60 * 1000);
-  return { start, end, prevStart, prevEnd };
-}
+// (getRange substituído por resolvePeriod + resolvePrevRange acima)
+
 
 function inRange(d: Date | null, r: { start: Date; end: Date }) {
   if (!d) return false;
