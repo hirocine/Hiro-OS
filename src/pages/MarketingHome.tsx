@@ -1,14 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, Calendar, Layers, Plus, Trophy, Bell, CheckCircle,
+  ArrowRight, Calendar, Plus, Trophy, Bell, CheckCircle,
   FileText, Eye, Heart, UserPlus, TrendingUp, TrendingDown, X,
 } from 'lucide-react';
 import { format, parseISO, subDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import {
-  PieChart, Pie, Cell, ResponsiveContainer as RechartsContainer, Tooltip,
-} from 'recharts';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -186,7 +183,7 @@ export default function MarketingHome() {
       };
     });
   }, [posts, pillars]);
-  const distributionData = distribution.filter((d) => d.value > 0);
+  
 
   // === Posts publicados nos últimos 30 dias (para Estratégia) ===
   const postsThisMonth = useMemo(() => {
