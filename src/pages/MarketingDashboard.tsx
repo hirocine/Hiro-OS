@@ -1336,18 +1336,11 @@ export default function MarketingDashboard() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Performance dos conteúdos
           </h2>
-          <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
-            <SelectTrigger className="h-9 w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PERIOD_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <span className="text-xs text-muted-foreground font-numeric">
+            {periodPreset === 'custom' && customRange
+              ? `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`
+              : PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? ''}
+          </span>
         </div>
 
         {!loading && publishedPosts.length === 0 ? (
