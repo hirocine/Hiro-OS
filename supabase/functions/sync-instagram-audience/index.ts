@@ -31,12 +31,16 @@ Deno.serve(async (req) => {
     const accountId = integration.account_id;
     const apiVersion = "v22.0";
 
-    const metrics = [
-      "audience_gender_age",
-      "audience_city",
-      "audience_country",
-      "audience_locale",
-    ];
+    // Nova métrica follower_demographics (Meta depreciou as legacy audience_* em 2024)
+    const breakdowns = ["age", "gender", "city", "country"] as const;
+
+    const prefixKeys = (obj: Record<string, number>, prefix: string): Record<string, number> => {
+      const out: Record<string, number> = {};
+      for (const [k, v] of Object.entries(obj)) {
+        out[`${prefix}${k}`] = v;
+      }
+      return out;
+    };
 
     const result: Record<string, Record<string, number>> = {
       gender_age: {},
@@ -46,24 +50,42 @@ Deno.serve(async (req) => {
     };
     const rawData: Record<string, unknown> = {};
 
-    for (const metric of metrics) {
+    for (const breakdown of breakdowns) {
       try {
-        const res = await fetch(
-          `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=${metric}&period=lifetime&access_token=${token}`,
-        );
-        const data = await res.json();
-        rawData[metric] = data;
+        const url = `https://graph.instagram.com/${apiVersion}/${accountId}/insights` +
+          `?metric=follower_demographics` +
+          `&period=lifetime` +
+          `&metric_type=total_value` +
+          `&breakdown=${breakdown}` +
+          `&access_token=${token}`;
 
-        const value = data.data?.[0]?.values?.[0]?.value;
-        if (value && typeof value === "object") {
-          if (metric === "audience_gender_age") result.gender_age = value;
-          else if (metric === "audience_city") result.cities = value;
-          else if (metric === "audience_country") result.countries = value;
-          else if (metric === "audience_locale") result.locales = value;
+        const res = await fetch(url);
+        const data = await res.json();
+        rawData[`follower_demographics_${breakdown}`] = data;
+
+        const results = data?.data?.[0]?.total_value?.breakdowns?.[0]?.results;
+        if (Array.isArray(results)) {
+          const dict: Record<string, number> = {};
+          for (const r of results) {
+            const key = Array.isArray(r.dimension_values)
+              ? r.dimension_values.join(".")
+              : String(r.dimension_values ?? "unknown");
+            dict[key] = r.value ?? 0;
+          }
+
+          if (breakdown === "age") {
+            result.gender_age = { ...result.gender_age, ...prefixKeys(dict, "age:") };
+          } else if (breakdown === "gender") {
+            result.gender_age = { ...result.gender_age, ...prefixKeys(dict, "gender:") };
+          } else if (breakdown === "city") {
+            result.cities = dict;
+          } else if (breakdown === "country") {
+            result.countries = dict;
+          }
         }
       } catch (e) {
         console.warn(
-          `Metric ${metric} failed:`,
+          `follower_demographics breakdown=${breakdown} failed:`,
           e instanceof Error ? e.message : String(e),
         );
       }
