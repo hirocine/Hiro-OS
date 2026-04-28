@@ -600,7 +600,9 @@ function LocaleList({ locales }: { locales: Record<string, number> }) {
 export default function MarketingDashboard() {
   const navigate = useNavigate();
   const { publishedPosts, pillars, loading } = useMarketingPostMetrics();
-  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading, fetchIntegrations } = useMarketingIntegrations();
+  const { instagramConnected, instagram: instagramIntegration, loading: integrationsLoading, fetchIntegrations, integrations } = useMarketingIntegrations();
+  const ga4Integration = integrations.find((i) => i.platform === 'google_analytics');
+  const ga4Connected = ga4Integration?.status === 'connected';
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('30');
   const [customRange, setCustomRange] = useState<PeriodDateRange | null>(null);
   const [customPickerOpen, setCustomPickerOpen] = useState(false);
