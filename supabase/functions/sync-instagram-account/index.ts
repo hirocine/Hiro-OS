@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     // 2. Dados básicos da conta
     const userRes = await fetch(
-      `https://graph.instagram.com/${apiVersion}/${accountId}?fields=followers_count,follows_count,media_count,name,username&access_token=${token}`,
+      `https://graph.instagram.com/${apiVersion}/${accountId}?fields=followers_count,follows_count,media_count,name,username,profile_picture_url&access_token=${token}`,
     );
     const userData = await userRes.json();
     if (userData.error) {
@@ -168,10 +168,17 @@ Deno.serve(async (req) => {
       upsertedDays += 1;
     }
 
-    // 6. Atualizar last_sync_at
+    // 6. Atualizar last_sync_at + foto de perfil + username
+    const integrationUpdate: Record<string, unknown> = {
+      last_sync_at: new Date().toISOString(),
+      profile_picture_url: userData.profile_picture_url ?? null,
+    };
+    if (userData.username) {
+      integrationUpdate.account_name = `@${userData.username}`;
+    }
     await supabase
       .from("marketing_integrations")
-      .update({ last_sync_at: new Date().toISOString() })
+      .update(integrationUpdate)
       .eq("platform", "instagram");
 
     return new Response(
