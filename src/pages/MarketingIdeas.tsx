@@ -299,7 +299,7 @@ function KanbanColumn({
 
 export default function MarketingIdeas() {
   const navigate = useNavigate();
-  const { ideas, loading, updateStatus, deleteIdea, duplicateIdea } = useMarketingIdeas();
+  const { ideas, loading, updateStatus, deleteIdea, duplicateIdea, fetchIdeas } = useMarketingIdeas();
   const { pillars } = useMarketingPillars();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 200);
