@@ -105,6 +105,11 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(m.file_url ?? '');
       setPublishedUrl(m.published_url ?? '');
       setIdeaId(m.idea_id ?? '');
+      setDestinationUrl((m as unknown as { destination_url?: string }).destination_url ?? 'https://hiro.film');
+      setUtmSource((m as unknown as { utm_source?: string }).utm_source ?? '');
+      setUtmMedium((m as unknown as { utm_medium?: string }).utm_medium ?? '');
+      setUtmCampaign((m as unknown as { utm_campaign?: string }).utm_campaign ?? '');
+      setUtmContent((m as unknown as { utm_content?: string }).utm_content ?? '');
       setViews(m.views ?? 0);
       setLikes(m.likes ?? 0);
       setCommentsCount(m.comments ?? 0);
@@ -137,6 +142,8 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setFileUrl(prefill?.file_url ?? '');
       setPublishedUrl(prefill?.published_url ?? '');
       setIdeaId(prefill?.idea_id ?? '');
+      setDestinationUrl('https://hiro.film');
+      setUtmSource(''); setUtmMedium(''); setUtmCampaign(''); setUtmContent('');
       setViews(0); setLikes(0); setCommentsCount(0); setShares(0);
       setSaves(0); setReach(0); setProfileClicks(0); setNewFollowers(0);
       setMetricsUpdatedAt(null); setMetricsSource(null);
@@ -149,6 +156,20 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
     if (reach <= 0) return 0;
     return ((likes + commentsCount + shares + saves) / reach) * 100;
   }, [likes, commentsCount, shares, saves, reach]);
+
+  const generatedUtmUrl = useMemo(() => {
+    if (!destinationUrl.trim()) return '';
+    try {
+      const u = new URL(destinationUrl.trim());
+      if (utmSource) u.searchParams.set('utm_source', utmSource);
+      if (utmMedium) u.searchParams.set('utm_medium', utmMedium);
+      if (utmCampaign) u.searchParams.set('utm_campaign', utmCampaign);
+      if (utmContent) u.searchParams.set('utm_content', utmContent);
+      return u.toString();
+    } catch {
+      return destinationUrl.trim();
+    }
+  }, [destinationUrl, utmSource, utmMedium, utmCampaign, utmContent]);
 
   const addHashtag = () => {
     const parts = hashtagInput.split(/[\s,]+/).map((s) => s.replace(/^#/, '').trim().toLowerCase()).filter(Boolean);
