@@ -257,9 +257,7 @@ function KanbanColumn({
           />
         ))}
         {ideas.length === 0 && (
-          <div className="text-xs text-muted-foreground text-center py-6">
-            Sem ideias
-          </div>
+          <EmptyState compact icon={Lightbulb} title="" description="Sem ideias" />
         )}
       </div>
     </div>
