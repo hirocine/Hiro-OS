@@ -189,7 +189,7 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
 }
 
 export function MobileSidebar() {
-  const { isAdmin, canAccessSuppliers } = useAuthContext();
+  const { isAdmin, canAccessSuppliers, canAccessMarketing } = useAuthContext();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const isPWA = useIsPWA();
@@ -216,14 +216,14 @@ export function MobileSidebar() {
     const allItems = [
       ...operacoesNavigation,
       ...(canAccessSuppliers ? producaoNavigation : []),
-      ...marketingNavigation,
+      ...(canAccessMarketing ? marketingNavigation : []),
       ...(isAdmin ? adminNavigation : []),
     ];
     const match = allItems.find(item =>
       item.children?.some(c => !c.isSection && c.name.toLowerCase().includes(query))
     );
     if (match) setExpandedItem(match.name);
-  }, [searchQuery, canAccessSuppliers, isAdmin]);
+  }, [searchQuery, canAccessSuppliers, canAccessMarketing, isAdmin]);
 
   // Expose open function for TopBar
   useEffect(() => {
@@ -433,7 +433,7 @@ export function MobileSidebar() {
             )}
 
             {/* Marketing Section */}
-            {(filteredMarketingNav.length > 0 || !searchQuery) && (
+            {canAccessMarketing && (filteredMarketingNav.length > 0 || !searchQuery) && (
               <>
                 <div className="px-4 my-3">
                   <Separator />

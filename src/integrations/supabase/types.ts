@@ -3292,6 +3292,7 @@ export type Database = {
           user_metadata: Json
         }[]
       }
+      has_marketing_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3369,7 +3370,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "producao"
+      app_role: "admin" | "user" | "producao" | "marketing"
       platform_category:
         | "cloud"
         | "ai"
@@ -3507,7 +3508,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "producao"],
+      app_role: ["admin", "user", "producao", "marketing"],
       platform_category: [
         "cloud",
         "ai",

@@ -6,7 +6,7 @@ import { AuthenticationError, wrapAsync } from '@/lib/errors';
 import type { Result } from '@/types/common';
 import type { Json } from '@/integrations/supabase/types';
 
-export type UserRole = 'admin' | 'user' | 'producao';
+export type UserRole = 'admin' | 'user' | 'producao' | 'marketing';
 
 interface AuthContextType {
   user: User | null;
@@ -18,7 +18,9 @@ interface AuthContextType {
   canDelete: boolean;
   canImport: boolean;
   isProducao: boolean;
+  isMarketing: boolean;
   canAccessSuppliers: boolean;
+  canAccessMarketing: boolean;
   signUp: (email: string, password: string, metadata?: { full_name?: string; position?: string; department?: string }) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<Result<void>>;
   signInWithGoogle: () => Promise<Result<void>>;
@@ -269,7 +271,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = role === 'admin';
   const isProducao = role === 'producao';
+  const isMarketing = role === 'marketing';
   const canAccessSuppliers = isAdmin || isProducao;
+  const canAccessMarketing = isAdmin || isProducao || isMarketing;
 
   return (
     <AuthContext.Provider value={{
@@ -282,7 +286,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       canDelete: isAdmin,
       canImport: isAdmin,
       isProducao,
+      isMarketing,
       canAccessSuppliers,
+      canAccessMarketing,
       signUp,
       signIn,
       signInWithGoogle,
