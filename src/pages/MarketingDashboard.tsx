@@ -1114,30 +1114,38 @@ export default function MarketingDashboard() {
                     </div>
                   ) : (
                     <RechartsContainer width="100%" height="100%">
-                      <LineChart data={snapshots}>
+                      <AreaChart data={snapshots} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="postsViewsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fontSize: 11 }}
-                          tickFormatter={(v) =>
-                            new Date(v + 'T12:00:00').toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                            })
-                          }
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={fmtChartDate}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <RTooltip
-                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                          labelFormatter={(v) => new Date(v + 'T12:00:00').toLocaleDateString('pt-BR')}
+                        <YAxis
+                          tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
+                          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', style: { fontVariantNumeric: 'tabular-nums' } } as any}
+                          axisLine={false}
+                          tickLine={false}
                         />
-                        <Line
+                        <RTooltip content={<ChartTooltip unit="views" />} />
+                        <Area
                           type="monotone"
                           dataKey="views"
                           stroke="hsl(var(--primary))"
-                          strokeWidth={2}
+                          strokeWidth={2.5}
+                          fill="url(#postsViewsGradient)"
                           dot={false}
+                          activeDot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                         />
-                      </LineChart>
+                      </AreaChart>
                     </RechartsContainer>
                   )}
                 </div>
