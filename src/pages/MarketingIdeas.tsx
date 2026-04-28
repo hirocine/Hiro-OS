@@ -381,7 +381,7 @@ export default function MarketingIdeas() {
     <ResponsiveContainer>
       <PageHeader
         title="Ideias"
-        subtitle="Banco de ideias de marketing organizado por status"
+        subtitle="Banco de ideias organizado por status"
         actions={
           <Button onClick={() => handleAdd('rascunho')}>
             <Plus className="h-4 w-4 mr-2" /> Nova Ideia
