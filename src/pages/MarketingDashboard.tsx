@@ -622,6 +622,7 @@ export default function MarketingDashboard() {
   }, [periodPreset, resolvedRange]);
 
   const ga4 = useMarketingGA4(snapshotsRange);
+  const { syncNow: syncGA4 } = ga4;
 
   const {
     snapshots: accountSnapshots,
@@ -931,13 +932,36 @@ export default function MarketingDashboard() {
   const handleSync = async () => {
     try {
       setSyncing(true);
-      await syncNow();
+      const results = await Promise.allSettled([
+        syncNow(),
+        ga4Connected ? syncGA4() : Promise.resolve(null),
+      ]);
       await fetchIntegrations();
-      toast.success('Conta Instagram sincronizada com sucesso');
-    } catch (e) {
-      toast.error('Falha ao sincronizar', {
-        description: e instanceof Error ? e.message : String(e),
-      });
+
+      const igResult = results[0];
+      const gaResult = results[1];
+      const igOk = igResult.status === 'fulfilled';
+      const gaOk = gaResult.status === 'fulfilled';
+
+      if (igOk && (gaOk || !ga4Connected)) {
+        toast.success(
+          ga4Connected
+            ? 'Instagram e Google Analytics sincronizados'
+            : 'Conta Instagram sincronizada com sucesso'
+        );
+      } else if (!igOk && !gaOk) {
+        toast.error('Falha ao sincronizar', {
+          description: igResult.status === 'rejected'
+            ? (igResult.reason instanceof Error ? igResult.reason.message : String(igResult.reason))
+            : undefined,
+        });
+      } else {
+        const failed = !igOk ? 'Instagram' : 'Google Analytics';
+        const reason = !igOk ? igResult.reason : (gaResult as PromiseRejectedResult).reason;
+        toast.warning(`${failed} falhou ao sincronizar`, {
+          description: reason instanceof Error ? reason.message : String(reason),
+        });
+      }
     } finally {
       setSyncing(false);
     }
