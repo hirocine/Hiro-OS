@@ -150,13 +150,26 @@ function MobileNavItemWithChildren({ item, isActive, onNavClick, isAdmin: isAdmi
       <Collapsible open={expanded}>
         <CollapsibleContent>
           <div className="mt-0.5 space-y-0.5 px-1.5 pb-1.5">
-            {item.children!.map((child) => {
-              const active = isActive(child.href);
+            {item.children!.map((child, idx) => {
+              if (child.isSection) {
+                return (
+                  <p
+                    key={`section-${idx}`}
+                    className={cn(
+                      "text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 pt-2 pb-1",
+                      idx === 0 && "pt-1"
+                    )}
+                  >
+                    {child.name}
+                  </p>
+                );
+              }
+              const active = isActive(child.href!);
               return (
                 <NavLink
                   key={child.href}
-                  to={child.href}
-                  onClick={(e) => onNavClick(e, child.href)}
+                  to={child.href!}
+                  onClick={(e) => onNavClick(e, child.href!)}
                   className={cn(
                     "flex items-center gap-3 px-1.5 py-2.5 rounded-lg transition-all duration-200 text-sm border border-transparent",
                     active
