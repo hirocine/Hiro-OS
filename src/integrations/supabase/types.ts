@@ -1098,6 +1098,93 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_ga4_dimensions: {
+        Row: {
+          captured_at: string
+          captured_date: string
+          countries_breakdown: Json | null
+          devices_breakdown: Json | null
+          id: string
+          mediums_breakdown: Json | null
+          property_id: string
+          sources_breakdown: Json | null
+          top_pages: Json | null
+        }
+        Insert: {
+          captured_at?: string
+          captured_date: string
+          countries_breakdown?: Json | null
+          devices_breakdown?: Json | null
+          id?: string
+          mediums_breakdown?: Json | null
+          property_id: string
+          sources_breakdown?: Json | null
+          top_pages?: Json | null
+        }
+        Update: {
+          captured_at?: string
+          captured_date?: string
+          countries_breakdown?: Json | null
+          devices_breakdown?: Json | null
+          id?: string
+          mediums_breakdown?: Json | null
+          property_id?: string
+          sources_breakdown?: Json | null
+          top_pages?: Json | null
+        }
+        Relationships: []
+      }
+      marketing_ga4_snapshots: {
+        Row: {
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          captured_at: string
+          captured_date: string
+          conversions: number | null
+          engagement_rate: number | null
+          id: string
+          new_users: number | null
+          page_views: number | null
+          property_id: string
+          raw_response: Json | null
+          sessions: number | null
+          top_source: string | null
+          total_users: number | null
+        }
+        Insert: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          captured_at?: string
+          captured_date: string
+          conversions?: number | null
+          engagement_rate?: number | null
+          id?: string
+          new_users?: number | null
+          page_views?: number | null
+          property_id: string
+          raw_response?: Json | null
+          sessions?: number | null
+          top_source?: string | null
+          total_users?: number | null
+        }
+        Update: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          captured_at?: string
+          captured_date?: string
+          conversions?: number | null
+          engagement_rate?: number | null
+          id?: string
+          new_users?: number | null
+          page_views?: number | null
+          property_id?: string
+          raw_response?: Json | null
+          sessions?: number | null
+          top_source?: string | null
+          total_users?: number | null
+        }
+        Relationships: []
+      }
       marketing_ideas: {
         Row: {
           created_at: string
@@ -1160,6 +1247,7 @@ export type Database = {
           last_sync_at: string | null
           platform: string
           profile_picture_url: string | null
+          refresh_token: string | null
           status: string
           status_message: string | null
           token_expires_at: string | null
@@ -1176,6 +1264,7 @@ export type Database = {
           last_sync_at?: string | null
           platform: string
           profile_picture_url?: string | null
+          refresh_token?: string | null
           status?: string
           status_message?: string | null
           token_expires_at?: string | null
@@ -1192,6 +1281,7 @@ export type Database = {
           last_sync_at?: string | null
           platform?: string
           profile_picture_url?: string | null
+          refresh_token?: string | null
           status?: string
           status_message?: string | null
           token_expires_at?: string | null
@@ -1342,6 +1432,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           created_by: string | null
+          destination_url: string | null
           engagement_rate: number | null
           external_id: string | null
           file_url: string | null
@@ -1368,6 +1459,11 @@ export type Database = {
           thumbnail_url: string | null
           title: string
           updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_url: string | null
           views: number
         }
         Insert: {
@@ -1378,6 +1474,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          destination_url?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -1404,6 +1501,11 @@ export type Database = {
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_url?: string | null
           views?: number
         }
         Update: {
@@ -1414,6 +1516,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          destination_url?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -1440,6 +1543,11 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_url?: string | null
           views?: number
         }
         Relationships: [
