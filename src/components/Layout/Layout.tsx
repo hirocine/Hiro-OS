@@ -7,6 +7,7 @@ import { UpdateNotification } from '@/components/PWA/UpdateNotification';
 import { OfflineIndicator } from '@/components/PWA/OfflineIndicator';
 import { InstallPrompt } from '@/components/PWA/InstallPrompt';
 import { HiroBubble } from './HiroBubble';
+import { LoadingScreenSkeleton } from '@/components/ui/loading-screen';
 import { useIsPWA } from '@/hooks/useIsPWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
