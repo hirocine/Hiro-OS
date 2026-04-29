@@ -135,6 +135,7 @@ export function useMarketingIdeas() {
       source: idea.source,
       format: idea.format,
       pillar_id: idea.pillar_id,
+      persona_id: idea.persona_id,
       tags: idea.tags,
       reference_ids: idea.reference_ids,
     });
