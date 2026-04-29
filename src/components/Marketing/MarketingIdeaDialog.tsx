@@ -18,6 +18,8 @@ import {
 } from '@/hooks/useMarketingIdeas';
 import { useMarketingReferences } from '@/hooks/useMarketingReferences';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingPersonas } from '@/hooks/useMarketingPersonas';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPillarColor } from '@/lib/marketing-colors';
 import { POST_FORMATS } from '@/lib/marketing-posts-config';
 
