@@ -1192,6 +1192,7 @@ export type Database = {
           description: string | null
           format: string | null
           id: string
+          persona_id: string | null
           pillar_id: string | null
           reference_ids: string[]
           source: string | null
@@ -1206,6 +1207,7 @@ export type Database = {
           description?: string | null
           format?: string | null
           id?: string
+          persona_id?: string | null
           pillar_id?: string | null
           reference_ids?: string[]
           source?: string | null
@@ -1220,6 +1222,7 @@ export type Database = {
           description?: string | null
           format?: string | null
           id?: string
+          persona_id?: string | null
           pillar_id?: string | null
           reference_ids?: string[]
           source?: string | null
@@ -1229,6 +1232,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "marketing_ideas_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_personas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "marketing_ideas_pillar_id_fkey"
             columns: ["pillar_id"]
@@ -1447,6 +1457,7 @@ export type Database = {
           metrics_source: string | null
           metrics_updated_at: string | null
           new_followers: number
+          persona_id: string | null
           pillar_id: string | null
           platform: string | null
           profile_clicks: number
@@ -1483,6 +1494,7 @@ export type Database = {
           metrics_source?: string | null
           metrics_updated_at?: string | null
           new_followers?: number
+          persona_id?: string | null
           pillar_id?: string | null
           platform?: string | null
           profile_clicks?: number
@@ -1519,6 +1531,7 @@ export type Database = {
           metrics_source?: string | null
           metrics_updated_at?: string | null
           new_followers?: number
+          persona_id?: string | null
           pillar_id?: string | null
           platform?: string | null
           profile_clicks?: number
@@ -1541,6 +1554,13 @@ export type Database = {
             columns: ["idea_id"]
             isOneToOne: false
             referencedRelation: "marketing_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_posts_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_personas"
             referencedColumns: ["id"]
           },
           {
