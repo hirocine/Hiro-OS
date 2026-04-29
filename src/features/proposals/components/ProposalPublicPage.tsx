@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useProposalDetails } from '../hooks/useProposalDetails';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle } from 'lucide-react';
@@ -12,7 +12,9 @@ import { ProposalEntregaveis } from './public/ProposalEntregaveis';
 import { ProposalServices } from './public/ProposalServices';
 import { ProposalInvestimento } from './public/ProposalInvestimento';
 import { ProposalProximosPassos } from './public/ProposalProximosPassos';
-import { ProposalDownloadButton } from './public/ProposalDownloadButton';
+const ProposalDownloadButton = lazy(() =>
+  import('./public/ProposalDownloadButton').then(m => ({ default: m.ProposalDownloadButton }))
+);
 import { ProposalFooter } from './public/ProposalFooter';
 
 function GlowSpot({ className }: { className: string }) {
