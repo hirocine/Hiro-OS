@@ -41,7 +41,7 @@ const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 const AVProjects = lazy(() => import("./pages/AVProjects"));
 const AVProjectDetails = lazy(() => import("./pages/AVProjectDetails"));
 const Capex = lazy(() => import("./pages/Capex"));
-import Proposals from "./pages/Proposals";
+const Proposals = lazy(() => import("./pages/Proposals"));
 const ProposalPublic = lazy(() => import("./pages/ProposalPublic"));
 const ProposalDetails = lazy(() => import("./pages/ProposalDetails"));
 const ProposalOverview = lazy(() => import("./pages/ProposalOverview"));
