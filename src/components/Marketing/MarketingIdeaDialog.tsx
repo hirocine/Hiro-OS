@@ -34,6 +34,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
   const { createIdea, updateIdea } = useMarketingIdeas();
   const { references } = useMarketingReferences();
   const { pillars } = useMarketingPillars();
+  const { personas } = useMarketingPersonas();
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -42,6 +43,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
   const [source, setSource] = useState<string>('');
   const [format, setFormat] = useState<string>('');
   const [pillarId, setPillarId] = useState<string>('');
+  const [personaId, setPersonaId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [referenceIds, setReferenceIds] = useState<string[]>([]);
