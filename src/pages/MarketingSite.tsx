@@ -10,6 +10,7 @@ import {
 const SITE_URL = 'https://hiro.film';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -136,7 +137,22 @@ export default function MarketingSite() {
         <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
 
         {/* KPIs adicionais: tempo médio, bounce, conversões */}
-        {ga4.snapshots.length > 0 && (
+        {ga4.loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-3 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : ga4.snapshots.length > 0 && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <AccountKpiCard
               icon={Eye}

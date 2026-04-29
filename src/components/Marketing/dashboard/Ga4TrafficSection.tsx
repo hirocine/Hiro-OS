@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, Eye, FileText, Globe, Trophy, Sparkles } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AccountKpiCard } from './AccountKpiCard';
 import {
   AreaChart,
@@ -35,7 +36,32 @@ export function Ga4TrafficSection({ ga4, periodLabel }: Props) {
         </div>
       </div>
 
-      {ga4.snapshots.length === 0 ? (
+      {ga4.loading ? (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-3 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <Skeleton className="h-4 w-40" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64 w-full" />
+            </CardContent>
+          </Card>
+        </>
+      ) : ga4.snapshots.length === 0 ? (
         <Card>
           <CardContent className="py-8">
             <EmptyState
