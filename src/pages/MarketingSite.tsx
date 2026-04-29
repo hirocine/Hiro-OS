@@ -4,7 +4,10 @@ import { toast } from 'sonner';
 import {
   Globe, RefreshCw, Plug, BarChart3, Users, Eye, FileText,
   TrendingDown, Target, MapPin,
+  ExternalLink,
 } from 'lucide-react';
+
+const SITE_URL = 'https://hiro.film';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
@@ -277,6 +280,39 @@ export default function MarketingSite() {
                 })}
               </div>
             )}
+          </CardContent>
+        </Card>
+        {/* Preview do Site */}
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              Preview de hiro.film
+              <span className="text-xs font-normal text-muted-foreground">— visualização em tempo real</span>
+            </CardTitle>
+            <a
+              href={SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition"
+            >
+              Abrir em nova aba <ExternalLink className="h-3 w-3" />
+            </a>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg overflow-hidden border border-border bg-muted relative">
+              <iframe
+                src={SITE_URL}
+                title="Preview hiro.film"
+                className="w-full h-[600px] bg-white"
+                loading="lazy"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Se o preview não carregar, o site pode estar bloqueando exibição em iframe (proteção de segurança).
+              Use o botão "Abrir em nova aba" acima.
+            </p>
           </CardContent>
         </Card>
       </div>
