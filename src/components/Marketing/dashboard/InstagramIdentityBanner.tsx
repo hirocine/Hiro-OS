@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Instagram } from 'lucide-react';
@@ -12,9 +13,10 @@ interface Integration {
 
 interface Props {
   integration: Integration | null | undefined;
+  rightAction?: ReactNode;
 }
 
-export function InstagramIdentityBanner({ integration }: Props) {
+export function InstagramIdentityBanner({ integration, rightAction }: Props) {
   const syncStatus = formatTimeAgo(integration?.last_sync_at);
 
   return (
