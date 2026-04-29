@@ -10,7 +10,6 @@ export interface AccountSnapshot {
   media_count: number | null;
   reach_day: number;
   views_day: number;
-  profile_views_day: number;
   followers_delta: number | null;
   captured_at: string;
 }

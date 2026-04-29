@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, BarChart3, Eye, FileText, RefreshCw } from 'lucide-react';
+import { Users, BarChart3, FileText, RefreshCw } from 'lucide-react';
 import { AccountKpiCard } from './AccountKpiCard';
 
 interface LatestAccount {
@@ -13,8 +13,6 @@ interface AccountKpis {
   followersDeltaPeriod: number;
   reachPeriod: number;
   reachChange: number | null;
-  profileViewsPeriod: number;
-  profileViewsChange: number | null;
   newPostsPeriod: number;
 }
 
@@ -35,8 +33,8 @@ export function AccountKpisSection({
 }: Props) {
   if (accountLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-2">
@@ -72,7 +70,7 @@ export function AccountKpisSection({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <AccountKpiCard
         icon={Users}
         label="Seguidores"
@@ -102,25 +100,6 @@ export function AccountKpisSection({
         subtone={
           accountKpis?.reachChange !== null && accountKpis?.reachChange !== undefined
             ? accountKpis.reachChange >= 0
-              ? 'positive'
-              : 'negative'
-            : 'muted'
-        }
-      />
-      <AccountKpiCard
-        icon={Eye}
-        label="Visitas no perfil"
-        value={(accountKpis?.profileViewsPeriod ?? 0).toLocaleString('pt-BR')}
-        subtitle={
-          accountKpis?.profileViewsChange !== null &&
-          accountKpis?.profileViewsChange !== undefined
-            ? `${accountKpis.profileViewsChange >= 0 ? '+' : ''}${accountKpis.profileViewsChange.toFixed(1)}% vs período anterior`
-            : 'sem comparação'
-        }
-        subtone={
-          accountKpis?.profileViewsChange !== null &&
-          accountKpis?.profileViewsChange !== undefined
-            ? accountKpis.profileViewsChange >= 0
               ? 'positive'
               : 'negative'
             : 'muted'

@@ -50,11 +50,10 @@ export default function MarketingInstagram() {
 
   const accountKpis = useMemo(() => {
     if (!accountSnapshots || accountSnapshots.length === 0) return null;
-    const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day' | 'profile_views_day') =>
+    const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day') =>
       arr.reduce((s, snap) => s + (snap[key] ?? 0), 0);
     const followersDeltaPeriod = accountSnapshots.reduce((s, snap) => s + (snap.followers_delta ?? 0), 0);
     const reachPeriod = sumKey(accountSnapshots, 'reach_day');
-    const profileViewsPeriod = sumKey(accountSnapshots, 'profile_views_day');
     const firstInPeriod = accountSnapshots[0];
     const newPostsPeriod =
       latestAccount && firstInPeriod &&
@@ -65,8 +64,6 @@ export default function MarketingInstagram() {
       followersDeltaPeriod,
       reachPeriod,
       reachChange: pctChange(reachPeriod, 0),
-      profileViewsPeriod,
-      profileViewsChange: pctChange(profileViewsPeriod, 0),
       newPostsPeriod,
     };
   }, [accountSnapshots, latestAccount, prevRange]);
