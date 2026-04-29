@@ -122,7 +122,6 @@ Deno.serve(async (req) => {
         media_count: isToday ? (userData.media_count ?? 0) : null,
         reach_day: metrics.reach,
         views_day: metrics.views,
-        profile_views_day: metrics.profile_views,
         followers_delta: isToday ? followers_delta : null,
         captured_at: capturedAt,
         raw_response: { user: isToday ? userData : null, day_metrics: metrics },
