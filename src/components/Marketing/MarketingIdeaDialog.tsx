@@ -90,6 +90,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
       source: source || null,
       format: format || null,
       pillar_id: pillarId || null,
+      persona_id: personaId || null,
       tags,
       reference_ids: referenceIds,
     };
