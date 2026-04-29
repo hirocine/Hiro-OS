@@ -13,6 +13,7 @@ export interface MarketingIdea {
   source: string | null;
   format: string | null;
   pillar_id: string | null;
+  persona_id: string | null;
   tags: string[];
   reference_ids: string[];
   created_by: string | null;
