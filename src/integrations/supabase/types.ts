@@ -1102,8 +1102,10 @@ export type Database = {
         Row: {
           captured_at: string
           captured_date: string
+          conversion_events: Json | null
           countries_breakdown: Json | null
           devices_breakdown: Json | null
+          exit_pages: Json | null
           id: string
           mediums_breakdown: Json | null
           property_id: string
@@ -1113,8 +1115,10 @@ export type Database = {
         Insert: {
           captured_at?: string
           captured_date: string
+          conversion_events?: Json | null
           countries_breakdown?: Json | null
           devices_breakdown?: Json | null
+          exit_pages?: Json | null
           id?: string
           mediums_breakdown?: Json | null
           property_id: string
@@ -1124,8 +1128,10 @@ export type Database = {
         Update: {
           captured_at?: string
           captured_date?: string
+          conversion_events?: Json | null
           countries_breakdown?: Json | null
           devices_breakdown?: Json | null
+          exit_pages?: Json | null
           id?: string
           mediums_breakdown?: Json | null
           property_id?: string
