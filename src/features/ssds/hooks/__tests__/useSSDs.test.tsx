@@ -186,7 +186,7 @@ describe('useSSDs', () => {
     ]
 
     let callCount = 0
-    vi.mocked(supabase.from).mockImplementation((table) => {
+    vi.mocked(supabase.from).mockImplementation(((table: string) => {
       if (table === 'equipments') {
         return {
           select: vi.fn().mockReturnThis(),
@@ -203,7 +203,7 @@ describe('useSSDs', () => {
         select: vi.fn().mockReturnThis(),
         in: vi.fn().mockResolvedValue({ data: [], error: null })
       } as any
-    })
+    }) as any)
 
     const { result } = renderHook(() => useSSDs(), {
       wrapper: createWrapper(),

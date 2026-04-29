@@ -1140,6 +1140,51 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_ga4_metrics_monthly: {
+        Row: {
+          aggregated_at: string
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          conversions: number
+          engagement_rate: number | null
+          id: string
+          month_start: string
+          new_users: number
+          page_views: number
+          property_id: string
+          sessions: number
+          total_users: number
+        }
+        Insert: {
+          aggregated_at?: string
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          conversions?: number
+          engagement_rate?: number | null
+          id?: string
+          month_start: string
+          new_users?: number
+          page_views?: number
+          property_id: string
+          sessions?: number
+          total_users?: number
+        }
+        Update: {
+          aggregated_at?: string
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          conversions?: number
+          engagement_rate?: number | null
+          id?: string
+          month_start?: string
+          new_users?: number
+          page_views?: number
+          property_id?: string
+          sessions?: number
+          total_users?: number
+        }
+        Relationships: []
+      }
       marketing_ga4_snapshots: {
         Row: {
           avg_session_duration: number | null
@@ -1397,6 +1442,124 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      marketing_post_metrics_monthly: {
+        Row: {
+          aggregated_at: string
+          comments: number
+          id: string
+          likes: number
+          likes_delta: number
+          month_start: string
+          post_id: string
+          reach: number
+          reach_delta: number
+          saves: number
+          shares: number
+          source: string | null
+          views: number
+          views_delta: number
+        }
+        Insert: {
+          aggregated_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          likes_delta?: number
+          month_start: string
+          post_id: string
+          reach?: number
+          reach_delta?: number
+          saves?: number
+          shares?: number
+          source?: string | null
+          views?: number
+          views_delta?: number
+        }
+        Update: {
+          aggregated_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          likes_delta?: number
+          month_start?: string
+          post_id?: string
+          reach?: number
+          reach_delta?: number
+          saves?: number
+          shares?: number
+          source?: string | null
+          views?: number
+          views_delta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_metrics_monthly_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_post_metrics_weekly: {
+        Row: {
+          aggregated_at: string
+          comments: number
+          id: string
+          likes: number
+          likes_delta: number
+          post_id: string
+          reach: number
+          reach_delta: number
+          saves: number
+          shares: number
+          source: string | null
+          views: number
+          views_delta: number
+          week_start: string
+        }
+        Insert: {
+          aggregated_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          likes_delta?: number
+          post_id: string
+          reach?: number
+          reach_delta?: number
+          saves?: number
+          shares?: number
+          source?: string | null
+          views?: number
+          views_delta?: number
+          week_start: string
+        }
+        Update: {
+          aggregated_at?: string
+          comments?: number
+          id?: string
+          likes?: number
+          likes_delta?: number
+          post_id?: string
+          reach?: number
+          reach_delta?: number
+          saves?: number
+          shares?: number
+          source?: string | null
+          views?: number
+          views_delta?: number
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_metrics_weekly_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketing_post_snapshots: {
         Row: {
@@ -3160,9 +3323,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      marketing_ga4_history: {
+        Row: {
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          conversions: number | null
+          engagement_rate: number | null
+          granularity: string | null
+          new_users: number | null
+          page_views: number | null
+          period_start: string | null
+          property_id: string | null
+          sessions: number | null
+          total_users: number | null
+        }
+        Relationships: []
+      }
+      marketing_post_metrics_history: {
+        Row: {
+          comments: number | null
+          granularity: string | null
+          likes: number | null
+          period_start: string | null
+          post_id: string | null
+          reach: number | null
+          saves: number | null
+          shares: number | null
+          source: string | null
+          views: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      aggregate_ga4_snapshots_to_monthly: { Args: never; Returns: undefined }
+      aggregate_post_snapshots_to_weekly: { Args: never; Returns: undefined }
+      aggregate_post_weekly_to_monthly: { Args: never; Returns: undefined }
       audit_data_access: {
         Args: never
         Returns: {
