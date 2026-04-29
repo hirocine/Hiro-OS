@@ -254,7 +254,13 @@ html, body {
   max-width: 100vw;
 }
 
-*:not(.proposal-page *), *::before, *::after {
+/*
+ * IMPORTANTE: este reset universal (max-width: 100%) previne overflow horizontal,
+ * mas exclui explicitamente dialogs/alertdialogs/popovers do Radix UI porque
+ * esses elementos são posicionados via `position: fixed` com transform de centro,
+ * e o `max-width: 100%` quebraria sua largura limitada (max-w-lg, max-w-md, etc).
+ */
+*:not(.proposal-page *):not([role="dialog"]):not([role="alertdialog"]):not([data-radix-popper-content-wrapper]):not([data-radix-popper-content-wrapper] *):not([role="dialog"] *):not([role="alertdialog"] *), *::before, *::after {
   box-sizing: border-box;
   max-width: 100%;
 }
