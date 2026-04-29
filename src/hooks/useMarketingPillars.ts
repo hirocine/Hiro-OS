@@ -26,6 +26,7 @@ export function useMarketingPillars() {
       const { data, error } = await supabase
         .from('marketing_pillars')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
       if (error) throw error;
       setPillars((data || []) as MarketingPillar[]);
@@ -81,7 +82,10 @@ export function useMarketingPillars() {
 
   const deletePillar = async (id: string) => {
     try {
-      const { error } = await supabase.from('marketing_pillars').delete().eq('id', id);
+      const { error } = await supabase
+        .from('marketing_pillars')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
       if (error) throw error;
       setPillars((prev) => prev.filter((p) => p.id !== id));
       toast.success('Pilar removido');

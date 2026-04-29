@@ -34,6 +34,7 @@ export function useMarketingPersonas() {
       const { data, error } = await supabase
         .from('marketing_personas')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       setPersonas((data || []) as MarketingPersona[]);
@@ -89,7 +90,10 @@ export function useMarketingPersonas() {
 
   const deletePersona = async (id: string) => {
     try {
-      const { error } = await supabase.from('marketing_personas').delete().eq('id', id);
+      const { error } = await supabase
+        .from('marketing_personas')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
       if (error) throw error;
       setPersonas((prev) => prev.filter((p) => p.id !== id));
       toast.success('Persona removida');
