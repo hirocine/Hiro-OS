@@ -34,6 +34,7 @@ import {
 } from '@/lib/marketing-dashboard-utils';
 
 import { InstagramIdentityBanner } from '@/components/Marketing/dashboard/InstagramIdentityBanner';
+import { SiteIdentityBanner } from '@/components/Marketing/dashboard/SiteIdentityBanner';
 import { AccountKpisSection } from '@/components/Marketing/dashboard/AccountKpisSection';
 import { AccountChartsSection } from '@/components/Marketing/dashboard/AccountChartsSection';
 import { AudienceSection } from '@/components/Marketing/dashboard/AudienceSection';
@@ -525,6 +526,8 @@ export default function MarketingDashboard() {
         {/* ===== Tráfego do site (GA4) ===== */}
         {ga4Connected && (
           <>
+            {/* Banner com identidade do Site */}
+            <SiteIdentityBanner integration={ga4Integration} />
             <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
             <div className="flex justify-end">
               <Button
