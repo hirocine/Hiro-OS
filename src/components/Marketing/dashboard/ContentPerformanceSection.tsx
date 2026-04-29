@@ -160,12 +160,16 @@ export function ContentPerformanceSection({
             <CardContent>
               <div className="h-64">
                 {snapshots.length === 0 ? (
-                  <div className="h-full flex items-center justify-center">
+                  <div className="h-full flex items-center justify-center px-4">
                     <EmptyState
                       compact
                       icon={CalendarIcon}
                       title=""
-                      description="Sem snapshots no período. As métricas começam a gerar histórico ao serem atualizadas."
+                      description={
+                        publishedPostsLength === 0
+                          ? 'Sem dados de evolução. Publique posts para começar a ver a curva.'
+                          : 'Sem dados de evolução no período. Os números aparecem conforme posts são sincronizados.'
+                      }
                     />
                   </div>
                 ) : (
@@ -215,7 +219,17 @@ export function ContentPerformanceSection({
               </CardHeader>
               <CardContent>
                 {topPosts.length === 0 ? (
-                  <EmptyState compact icon={Trophy} title="" description="Nenhum post publicado no período." />
+                  <div className="px-4 py-6">
+                    <EmptyState
+                      icon={Trophy}
+                      title={publishedPostsLength === 0 ? 'Nenhum post publicado ainda' : 'Nenhum post no período'}
+                      description={
+                        publishedPostsLength === 0
+                          ? 'Marque um post como "Publicado" para começar a rastrear performance.'
+                          : `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} no total, mas nenhum no período selecionado. Tente expandir o período.`
+                      }
+                    />
+                  </div>
                 ) : (
                   <ul className="divide-y divide-border">
                     {topPosts.map((p, i) => (
@@ -258,8 +272,17 @@ export function ContentPerformanceSection({
               </CardHeader>
               <CardContent>
                 {platformData.length === 0 ? (
-                  <div className="h-48 flex items-center justify-center">
-                    <EmptyState compact icon={PieIcon} title="" description="Sem dados." />
+                  <div className="h-48 flex items-center justify-center px-4">
+                    <EmptyState
+                      compact
+                      icon={PieIcon}
+                      title=""
+                      description={
+                        publishedPostsLength === 0
+                          ? 'Publique posts para ver a distribuição por plataforma.'
+                          : 'Os posts publicados ainda não têm plataforma definida. Edite-os para classificar.'
+                      }
+                    />
                   </div>
                 ) : (
                   <div className="h-48">
@@ -297,8 +320,21 @@ export function ContentPerformanceSection({
               </CardHeader>
               <CardContent className="p-0">
                 {pillarPerformance.length === 0 ? (
-                  <div className="px-4 py-2">
-                    <EmptyState compact icon={Layers} title="" description="Sem dados de pilares." />
+                  <div className="px-4 py-6">
+                    <EmptyState
+                      icon={Layers}
+                      title={publishedPostsLength > 0 ? 'Posts sem pilar atribuído' : 'Sem posts publicados ainda'}
+                      description={
+                        publishedPostsLength > 0
+                          ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem pilar. Edite os posts para classificá-los e ver a distribuição.`
+                          : 'Quando você publicar posts e atribuir pilares, a distribuição aparece aqui.'
+                      }
+                      action={
+                        publishedPostsLength > 0
+                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/posts') }
+                          : undefined
+                      }
+                    />
                   </div>
                 ) : (
                   <table className="w-full text-sm">
@@ -341,8 +377,21 @@ export function ContentPerformanceSection({
               </CardHeader>
               <CardContent className="p-0">
                 {formatPerformance.length === 0 ? (
-                  <div className="px-4 py-2">
-                    <EmptyState compact icon={ImageIcon} title="" description="Sem dados de formatos." />
+                  <div className="px-4 py-6">
+                    <EmptyState
+                      icon={ImageIcon}
+                      title={publishedPostsLength > 0 ? 'Posts sem formato definido' : 'Sem posts publicados ainda'}
+                      description={
+                        publishedPostsLength > 0
+                          ? `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} publicado${publishedPostsLength === 1 ? '' : 's'} sem formato. Edite os posts e selecione o formato (Reels, Carrossel, etc) para ver a performance.`
+                          : 'Quando você publicar posts e definir o formato, a performance aparece aqui.'
+                      }
+                      action={
+                        publishedPostsLength > 0
+                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/posts') }
+                          : undefined
+                      }
+                    />
                   </div>
                 ) : (
                   <table className="w-full text-sm">
