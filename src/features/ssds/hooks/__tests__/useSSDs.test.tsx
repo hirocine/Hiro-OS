@@ -186,7 +186,7 @@ describe('useSSDs', () => {
     ]
 
     let callCount = 0
-    vi.mocked(supabase.from).mockImplementation((table) => {
+    vi.mocked(supabase.from).mockImplementation(((table: string) => {
       if (table === 'equipments') {
         return {
           select: vi.fn().mockReturnThis(),
