@@ -124,6 +124,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setPlatform(prefill?.platform ?? '');
       setFormat(prefill?.format ?? '');
       setPillarId(prefill?.pillar_id ?? '');
+      setPersonaId(prefill?.persona_id ?? '');
       setStatus((prefill?.status as PostStatus) ?? 'em_producao');
       setScheduledLocal(
         prefill?.scheduled_at
