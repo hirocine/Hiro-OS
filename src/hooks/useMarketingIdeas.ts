@@ -117,7 +117,10 @@ export function useMarketingIdeas() {
 
   const deleteIdea = async (id: string) => {
     try {
-      const { error } = await supabase.from('marketing_ideas').delete().eq('id', id);
+      const { error } = await supabase
+        .from('marketing_ideas')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
       if (error) throw error;
       setIdeas((prev) => prev.filter((i) => i.id !== id));
       toast.success('Ideia removida');
