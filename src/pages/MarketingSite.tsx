@@ -134,6 +134,23 @@ export default function MarketingSite() {
       />
 
       <div className="space-y-6">
+        {/* Banner de identidade (igual Instagram) */}
+        <SiteIdentityBanner
+          integration={ga4Integration}
+          domain="hiro.film"
+          rightAction={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/marketing/dashboard')}
+              className="gap-2"
+            >
+              Ver dados completos
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          }
+        />
+
         {/* Reusa a section de tráfego com KPIs e gráficos */}
         <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
 
