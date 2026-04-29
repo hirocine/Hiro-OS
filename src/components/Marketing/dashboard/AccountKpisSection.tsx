@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Users, BarChart3, Eye, FileText, RefreshCw } from 'lucide-react';
 import { AccountKpiCard } from './AccountKpiCard';
 
