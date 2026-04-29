@@ -261,9 +261,9 @@ export default function MarketingInstagram() {
                     onClick={() => navigate('/marketing/social-media/instagram/posts')}
                     className="group relative aspect-square rounded-lg overflow-hidden bg-muted border border-border hover:border-primary/50 transition"
                   >
-                    {p.cover_url || p.thumbnail_url ? (
+                    {p.cover_url ? (
                       <img
-                        src={p.cover_url || p.thumbnail_url || ''}
+                        src={p.cover_url}
                         alt={p.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
