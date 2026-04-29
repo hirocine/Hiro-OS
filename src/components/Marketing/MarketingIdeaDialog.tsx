@@ -57,6 +57,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setSource(idea.source ?? '');
         setFormat(idea.format ?? '');
         setPillarId(idea.pillar_id ?? '');
+        setPersonaId(idea.persona_id ?? '');
         setTags(idea.tags ?? []);
         setReferenceIds(idea.reference_ids ?? []);
       } else {
@@ -66,6 +67,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setSource('');
         setFormat('');
         setPillarId('');
+        setPersonaId('');
         setTags([]);
         setTagInput('');
         setReferenceIds([]);
