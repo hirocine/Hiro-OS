@@ -508,9 +508,36 @@ export default function MarketingDashboard() {
           </>
         )}
 
+        {instagramConnected && (
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => navigate('/marketing/social-media/instagram')}
+            >
+              Ver mais Instagram
+              <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
+            </Button>
+          </div>
+        )}
+
         {/* ===== Tráfego do site (GA4) ===== */}
         {ga4Connected && (
-          <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
+          <>
+            <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => navigate('/marketing/social-media/site')}
+              >
+                Ver mais Site
+                <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
+              </Button>
+            </div>
+          </>
         )}
 
         {/* ===== Conteúdos publicados ===== */}
