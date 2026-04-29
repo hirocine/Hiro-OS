@@ -60,6 +60,8 @@ const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
 const MarketingStrategy = lazy(() => import("./pages/MarketingStrategy"));
 const MarketingDashboard = lazy(() => import("./pages/MarketingDashboard"));
 const MarketingPosts = lazy(() => import("./pages/MarketingPosts"));
+const MarketingInstagram = lazy(() => import("./pages/MarketingInstagram"));
+const MarketingSite = lazy(() => import("./pages/MarketingSite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
