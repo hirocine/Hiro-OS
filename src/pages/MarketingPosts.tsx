@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { PostsCalendar } from '@/components/Marketing/PostsCalendar';
+import { useMarketingPosts, type MarketingPost } from '@/hooks/useMarketingPosts';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -43,7 +45,7 @@ import { RankingList } from '@/components/Marketing/RankingList';
 type FormatFilter = 'all' | 'foto' | 'reels' | 'carrossel';
 type SourceFilter = 'all' | 'auto_discovered' | 'manual';
 type PillarFilter = 'all' | 'none' | string;
-type ViewMode = 'gallery' | 'ranking';
+type ViewMode = 'gallery' | 'ranking' | 'calendar';
 
 const FORMAT_OPTIONS: { value: FormatFilter; label: string }[] = [
   { value: 'all', label: 'Todos os formatos' },
@@ -99,6 +101,7 @@ function compactNumber(n: number) {
 export default function MarketingPosts() {
   const { posts, loading, refresh: refetch } = useMarketingGallery();
   const { pillars } = useMarketingPillars();
+  const { posts: marketingPosts, deletePost: deleteMarketingPost } = useMarketingPosts();
   const [search, setSearch] = useState('');
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
@@ -106,17 +109,46 @@ export default function MarketingPosts() {
   const [discovering, setDiscovering] = useState(false);
   const [selected, setSelected] = useState<GalleryPost | null>(null);
 
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialView: ViewMode = searchParams.get('view') === 'ranking' ? 'ranking' : 'gallery';
+
+  const initialView: ViewMode = (() => {
+    const queryView = searchParams.get('view');
+    if (queryView === 'ranking') return 'ranking';
+    if (queryView === 'calendar') return 'calendar';
+    if (queryView === 'gallery') return 'gallery';
+    if (location.pathname.includes('/calendario')) return 'calendar';
+    return 'gallery';
+  })();
   const [viewMode, setViewMode] = useState<ViewMode>(initialView);
+
+  const pageTitle = location.pathname.includes('/instagram/posts')
+    ? 'Posts do Instagram'
+    : location.pathname.includes('/calendario')
+    ? 'Calendário'
+    : 'Posts';
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
-    if (mode === 'ranking') {
-      setSearchParams({ view: 'ranking' }, { replace: true });
+    const next = new URLSearchParams(searchParams);
+    if (mode === 'gallery') {
+      next.delete('view');
     } else {
-      setSearchParams({}, { replace: true });
+      next.set('view', mode);
     }
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleCalendarCreate = (_date?: Date) => {
+    toast.info('Criar post pelo calendário será implementado em breve');
+  };
+
+  const handleCalendarEdit = (post: MarketingPost) => {
+    toast.info(`Editar post: ${post.title}`);
+  };
+
+  const handleCalendarDelete = async (id: string) => {
+    await deleteMarketingPost(id);
   };
 
   const pillarMap = useMemo(() => {
@@ -189,7 +221,7 @@ export default function MarketingPosts() {
   return (
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
-        title="Posts"
+        title={pageTitle}
         subtitle="Todos os posts publicados no Instagram, importados automaticamente."
         actions={
           <div className="flex items-center gap-2">
@@ -220,6 +252,19 @@ export default function MarketingPosts() {
               >
                 <Trophy className="h-3.5 w-3.5" />
                 Ranking
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('calendar')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5',
+                  viewMode === 'calendar'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <CalendarIcon className="h-3.5 w-3.5" />
+                Calendário
               </button>
             </div>
 
