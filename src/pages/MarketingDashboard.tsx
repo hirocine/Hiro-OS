@@ -491,7 +491,7 @@ export default function MarketingDashboard() {
                 className="gap-2"
                 onClick={() => navigate('/marketing/social-media/instagram')}
               >
-                Ver mais Instagram
+                Ver dados completos
                 <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
               </Button>
             ) : undefined
@@ -537,7 +537,7 @@ export default function MarketingDashboard() {
                   className="gap-2"
                   onClick={() => navigate('/marketing/social-media/site')}
                 >
-                  Ver mais Site
+                  Ver dados completos
                   <ArrowDown className="h-3.5 w-3.5 -rotate-90" />
                 </Button>
               }
