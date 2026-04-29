@@ -27,6 +27,8 @@ export interface GA4Dimensions {
   mediums_breakdown: Record<string, number> | null;
   devices_breakdown: Record<string, number> | null;
   countries_breakdown: Record<string, number> | null;
+  exit_pages: Array<{ path: string; exits: number; views: number; exit_rate: number }> | null;
+  conversion_events: Array<{ event_name: string; count: number }> | null;
   captured_at: string;
 }
 
