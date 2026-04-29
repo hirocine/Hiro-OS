@@ -41,7 +41,10 @@ export default function MarketingInstagram() {
     oldest: oldestAccount,
     loading: accountLoading,
     syncNow,
-  } = useMarketingAccountSnapshots(snapshotsRange);
+  } = useMarketingAccountSnapshots(snapshotsRange, {
+    includeAudience: false,
+    limit: 90,
+  });
 
   const [syncing, setSyncing] = useState(false);
 
