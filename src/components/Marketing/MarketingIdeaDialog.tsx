@@ -202,6 +202,52 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
           </div>
 
           <div className="space-y-2">
+            <Label>Persona</Label>
+            <Select value={personaId} onValueChange={setPersonaId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar persona (opcional)">
+                  {personaId && (() => {
+                    const persona = personas.find((p) => p.id === personaId);
+                    if (!persona) return null;
+                    return (
+                      <span className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
+                          <AvatarFallback className="text-[10px]">
+                            {persona.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {persona.name}
+                      </span>
+                    );
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {personas.length === 0 ? (
+                  <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                    Nenhuma persona cadastrada
+                  </div>
+                ) : (
+                  personas.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={p.avatar_url ?? undefined} alt={p.name} />
+                          <AvatarFallback className="text-[10px]">
+                            {p.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>Tags</Label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {tags.map((t) => (
