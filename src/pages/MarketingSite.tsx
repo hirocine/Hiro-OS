@@ -282,9 +282,6 @@ export default function MarketingSite() {
             )}
           </CardContent>
         </Card>
-          </CardContent>
-        </Card>
-
         {/* Preview do Site */}
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
