@@ -132,8 +132,12 @@ const App = () => (
                 {/* Social Media — Calendário multi-plataforma */}
                 <Route path="marketing/social-media/calendario" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
 
-                {/* Social Media — Instagram (Posts) */}
+                {/* Social Media — Instagram (mini-dashboard + posts) */}
+                <Route path="marketing/social-media/instagram" element={<MarketingGuard><MarketingInstagram /></MarketingGuard>} />
                 <Route path="marketing/social-media/instagram/posts" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
+
+                {/* Social Media — Site (GA4 detalhado) */}
+                <Route path="marketing/social-media/site" element={<MarketingGuard><MarketingSite /></MarketingGuard>} />
 
                 {/* Estratégia */}
                 <Route path="marketing/estrategia" element={<MarketingGuard><MarketingStrategy /></MarketingGuard>} />
