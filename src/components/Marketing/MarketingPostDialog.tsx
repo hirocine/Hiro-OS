@@ -96,6 +96,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setPlatform(m.platform ?? '');
       setFormat(m.format ?? '');
       setPillarId(m.pillar_id ?? '');
+      setPersonaId(m.persona_id ?? '');
       setStatus(m.status);
       setScheduledLocal(toLocalInput(m.scheduled_at));
       setCoverUrl(m.cover_url ?? '');
