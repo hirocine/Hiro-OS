@@ -187,6 +187,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       file_url: fileUrl.trim() || null,
       published_url: status === 'publicado' ? publishedUrl.trim() || null : null,
       pillar_id: pillarId || null,
+      persona_id: personaId || null,
       idea_id: ideaId || null,
       views, likes, comments: commentsCount, shares, saves, reach,
       profile_clicks: profileClicks, new_followers: newFollowers,
