@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   Globe, RefreshCw, Plug, BarChart3, Users, Eye, FileText,
   TrendingDown, Target, MapPin,
-  ExternalLink,
+  ExternalLink, ArrowRight,
 } from 'lucide-react';
 
 const SITE_URL = 'https://hiro.film';
@@ -25,6 +25,7 @@ import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
 import { useMarketingGA4 } from '@/hooks/useMarketingGA4';
 import { AccountKpiCard } from '@/components/Marketing/dashboard/AccountKpiCard';
 import { Ga4TrafficSection } from '@/components/Marketing/dashboard/Ga4TrafficSection';
+import { SiteIdentityBanner } from '@/components/Marketing/dashboard/SiteIdentityBanner';
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -133,6 +134,23 @@ export default function MarketingSite() {
       />
 
       <div className="space-y-6">
+        {/* Banner de identidade (igual Instagram) */}
+        <SiteIdentityBanner
+          integration={ga4Integration}
+          domain="hiro.film"
+          rightAction={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/marketing/dashboard')}
+              className="gap-2"
+            >
+              Ver dados completos
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          }
+        />
+
         {/* Reusa a section de tráfego com KPIs e gráficos */}
         <Ga4TrafficSection ga4={ga4} periodLabel={periodLabel} />
 
