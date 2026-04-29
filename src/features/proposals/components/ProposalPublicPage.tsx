@@ -148,11 +148,13 @@ export function ProposalPublicPage() {
         <ProposalNavbar validityDate={proposal.validity_date} />
       </div>
       <div className="no-print">
-        <ProposalDownloadButton
-          whatsappNumber={proposal.whatsapp_number}
-          projectName={proposal.project_name}
-          proposal={proposal}
-        />
+        <Suspense fallback={null}>
+          <ProposalDownloadButton
+            whatsappNumber={proposal.whatsapp_number}
+            projectName={proposal.project_name}
+            proposal={proposal}
+          />
+        </Suspense>
       </div>
 
       <ProposalHero
