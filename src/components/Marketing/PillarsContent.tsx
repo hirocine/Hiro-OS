@@ -28,6 +28,7 @@ export function PillarsContent() {
       const { data } = await supabase
         .from('marketing_posts')
         .select('pillar_id')
+        .is('deleted_at', null)
         .eq('status', 'publicado');
       setPostCounts((data || []) as PostCount[]);
     })();
