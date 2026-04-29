@@ -48,6 +48,7 @@ function toLocalInput(iso: string | null): string {
 export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
+  const { personas } = useMarketingPersonas();
   const { ideas } = useMarketingIdeas();
   const { instagramConnected, linkedinConnected } = useMarketingIntegrations();
   const fileRef = useRef<HTMLInputElement>(null);
