@@ -230,6 +230,17 @@ interface ColumnProps {
   activeId: string | null;
 }
 
+function getEmptyColumnHint(status: IdeaStatus): string {
+  switch (status) {
+    case 'rascunho':    return 'Adicione sua primeira ideia';
+    case 'validada':    return 'Arraste ideias da coluna anterior aqui';
+    case 'em_producao': return 'Ideias em produção aparecem aqui';
+    case 'publicada':   return 'Ideias publicadas aparecem aqui';
+    case 'descartada':  return 'Ideias descartadas vão pra cá';
+    default:            return 'Vazio';
+  }
+}
+
 function KanbanColumn({
   status,
   label,
@@ -290,7 +301,16 @@ function KanbanColumn({
           />
         ))}
         {ideas.length === 0 && (
-          <EmptyState compact icon={Lightbulb} title="" description="Sem ideias" />
+          <button
+            type="button"
+            onClick={() => onAdd(status)}
+            className="w-full text-left rounded-lg border border-dashed border-border/60 px-3 py-4 text-xs text-muted-foreground hover:border-border hover:text-foreground hover:bg-accent/30 transition cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Plus className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{getEmptyColumnHint(status)}</span>
+            </div>
+          </button>
         )}
       </div>
     </div>
