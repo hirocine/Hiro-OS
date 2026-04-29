@@ -427,7 +427,7 @@ export default function MarketingIdeas() {
   };
 
   const handleOpenPost = (postId: string) => {
-    navigate(`/marketing/posts?postId=${postId}`);
+    navigate(`/marketing/social-media/calendario?postId=${postId}`);
   };
 
   const handlePostDialogChange = (open: boolean) => {
@@ -531,7 +531,7 @@ export default function MarketingIdeas() {
               description: 'A ideia foi movida para "Em produção" automaticamente.',
               action: {
                 label: 'Abrir post',
-                onClick: () => navigate(`/marketing/posts?postId=${post.id}`),
+                onClick: () => navigate(`/marketing/social-media/calendario?postId=${post.id}`),
               },
             });
             fetchIdeas?.();

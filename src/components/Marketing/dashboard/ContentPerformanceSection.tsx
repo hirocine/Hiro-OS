@@ -331,7 +331,7 @@ export function ContentPerformanceSection({
                       }
                       action={
                         publishedPostsLength > 0
-                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/posts') }
+                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/social-media/calendario') }
                           : undefined
                       }
                     />
@@ -388,7 +388,7 @@ export function ContentPerformanceSection({
                       }
                       action={
                         publishedPostsLength > 0
-                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/posts') }
+                          ? { label: 'Ir aos posts', onClick: () => onNavigate('/marketing/social-media/calendario') }
                           : undefined
                       }
                     />
