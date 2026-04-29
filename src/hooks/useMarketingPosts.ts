@@ -53,7 +53,7 @@ export function useMarketingPosts(options: FetchOptions = {}) {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-      let q = supabase.from('marketing_posts').select('*').order('scheduled_at', { ascending: true });
+      let q = supabase.from('marketing_posts').select('*').is('deleted_at', null).order('scheduled_at', { ascending: true });
       if (scheduled_from) q = q.gte('scheduled_at', scheduled_from);
       if (scheduled_to) q = q.lte('scheduled_at', scheduled_to);
       const { data, error } = await q;
