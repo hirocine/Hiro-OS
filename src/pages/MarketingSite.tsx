@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   Globe, RefreshCw, Plug, BarChart3, Users, Eye, FileText,
   TrendingDown, Target, MapPin,
-  ExternalLink,
+  ExternalLink, ArrowRight,
 } from 'lucide-react';
 
 const SITE_URL = 'https://hiro.film';
