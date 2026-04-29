@@ -58,7 +58,8 @@ export function useMarketingAccountSnapshots(
     let query = supabase
       .from('marketing_account_snapshots')
       .select('*')
-      .order('captured_at', { ascending: true });
+      .order('captured_at', { ascending: false })
+      .limit(limit);
 
     if (range.start) {
       query = query.gte('captured_at', range.start.toISOString());
@@ -69,20 +70,27 @@ export function useMarketingAccountSnapshots(
       query = query.lte('captured_at', endOfDay.toISOString());
     }
 
-    const { data: snapshotsData } = await query;
+    const [snapshotsResult, audienceResult] = await Promise.all([
+      query,
+      includeAudience
+        ? supabase
+            .from('marketing_account_audience')
+            .select('*')
+            .order('captured_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
-    const { data: audienceData } = await supabase
-      .from('marketing_account_audience')
-      .select('*')
-      .order('captured_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const snapshotsData = ((snapshotsResult.data ?? []) as AccountSnapshot[])
+      .slice()
+      .reverse();
 
-    setSnapshots((snapshotsData ?? []) as AccountSnapshot[]);
-    setAudience((audienceData ?? null) as AccountAudience | null);
+    setSnapshots(snapshotsData);
+    setAudience((audienceResult.data ?? null) as AccountAudience | null);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startKey, endKey]);
+  }, [startKey, endKey, includeAudience, limit]);
 
   useEffect(() => {
     fetchData();
