@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Camera, FileText, Settings, HardDrive, Key, Users, CheckSquare, Film, Search, ChevronRight, Lock, Building2, UserCheck, Receipt, Clapperboard, BarChart3, TrendingUp, ScrollText, Layers, Bell, Cog, Megaphone, Bookmark, Lightbulb, UserCircle, CalendarDays, Trophy, Images, Target, Calendar, Instagram } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -52,7 +52,17 @@ const marketingNavigation: NavigationItem[] = [
     children: [
       { name: 'Métricas', isSection: true },
       { name: 'Dashboard', href: '/marketing/dashboard', icon: BarChart3 },
-      { name: 'Posts', href: '/marketing/posts', icon: Images },
+
+      { name: 'Social Media', isSection: true },
+      { name: 'Calendário', href: '/marketing/social-media/calendario', icon: Calendar },
+      {
+        name: 'Instagram',
+        href: '/marketing/social-media/instagram/posts',
+        icon: Instagram,
+        children: [
+          { name: 'Posts', href: '/marketing/social-media/instagram/posts', icon: Images },
+        ],
+      },
 
       { name: 'Estratégia', isSection: true },
       { name: 'Pilares & Persona', href: '/marketing/estrategia', icon: Target },

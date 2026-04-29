@@ -377,7 +377,7 @@ export default function MarketingHome() {
                 <Trophy className="h-4 w-4" /> Top 5 posts
               </CardTitle>
               <Button asChild variant="ghost" size="sm">
-                <Link to="/marketing/posts?view=ranking">
+                <Link to="/marketing/social-media/calendario?view=ranking">
                   Ver ranking completo <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>

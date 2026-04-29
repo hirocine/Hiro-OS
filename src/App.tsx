@@ -52,7 +52,8 @@ const PPVideoEditDetail = lazy(() => import("./pages/PPVideoEditDetail"));
 const CRM = lazy(() => import("./pages/CRM"));
 const CRMContactDetail = lazy(() => import("./pages/CRMContactDetail"));
 const CRMDealDetail = lazy(() => import("./pages/CRMDealDetail"));
-const MarketingHome = lazy(() => import("./pages/MarketingHome"));
+// MarketingHome desativado: rota /marketing redireciona pro Dashboard
+// const MarketingHome = lazy(() => import("./pages/MarketingHome"));
 const MarketingIntegrations = lazy(() => import("./pages/MarketingIntegrations"));
 const MarketingReferences = lazy(() => import("./pages/MarketingReferences"));
 const MarketingIdeas = lazy(() => import("./pages/MarketingIdeas"));
@@ -119,16 +120,30 @@ const App = () => (
                 <Route path="crm" element={<CRM />} />
                 <Route path="crm/contatos/:id" element={<CRMContactDetail />} />
                 <Route path="crm/deals/:id" element={<CRMDealDetail />} />
-                <Route path="marketing" element={<MarketingGuard><MarketingHome /></MarketingGuard>} />
-                <Route path="marketing/referencias" element={<MarketingGuard><MarketingReferences /></MarketingGuard>} />
-                <Route path="marketing/ideias" element={<MarketingGuard><MarketingIdeas /></MarketingGuard>} />
+                {/* Marketing — entrada principal redireciona pro Dashboard */}
+                <Route path="marketing" element={<Navigate to="/marketing/dashboard" replace />} />
+                <Route path="marketing/home" element={<Navigate to="/marketing/dashboard" replace />} />
+
+                {/* Métricas */}
+                <Route path="marketing/dashboard" element={<MarketingGuard><MarketingDashboard /></MarketingGuard>} />
+
+                {/* Social Media — Calendário multi-plataforma */}
+                <Route path="marketing/social-media/calendario" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
+
+                {/* Social Media — Instagram (Posts) */}
+                <Route path="marketing/social-media/instagram/posts" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
+
+                {/* Estratégia */}
                 <Route path="marketing/estrategia" element={<MarketingGuard><MarketingStrategy /></MarketingGuard>} />
+                <Route path="marketing/ideias" element={<MarketingGuard><MarketingIdeas /></MarketingGuard>} />
+                <Route path="marketing/referencias" element={<MarketingGuard><MarketingReferences /></MarketingGuard>} />
+
+                {/* Redirects de URLs antigas (compatibilidade) */}
+                <Route path="marketing/posts" element={<Navigate to="/marketing/social-media/calendario" replace />} />
+                <Route path="marketing/galeria" element={<Navigate to="/marketing/social-media/calendario" replace />} />
+                <Route path="marketing/ranking" element={<Navigate to="/marketing/social-media/calendario?view=ranking" replace />} />
                 <Route path="marketing/persona" element={<Navigate to="/marketing/estrategia?aba=persona" replace />} />
                 <Route path="marketing/pilares" element={<Navigate to="/marketing/estrategia?aba=pilares" replace />} />
-                <Route path="marketing/dashboard" element={<MarketingGuard><MarketingDashboard /></MarketingGuard>} />
-                <Route path="marketing/posts" element={<MarketingGuard><MarketingPosts /></MarketingGuard>} />
-                <Route path="marketing/galeria" element={<Navigate to="/marketing/posts" replace />} />
-                <Route path="marketing/ranking" element={<Navigate to="/marketing/posts?view=ranking" replace />} />
                 <Route path="esteira-de-pos" element={<PostProduction />} />
                 <Route path="esteira-de-pos/:id" element={<PPVideoDetail />} />
                 <Route path="esteira-de-pos/:id/editar" element={<PPVideoEditDetail />} />
