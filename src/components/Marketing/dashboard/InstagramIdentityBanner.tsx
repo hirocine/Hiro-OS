@@ -72,6 +72,9 @@ export function InstagramIdentityBanner({ integration, rightAction }: Props) {
                 : syncStatus.text}
             </p>
           </div>
+          {rightAction && (
+            <div className="ml-auto shrink-0">{rightAction}</div>
+          )}
         </div>
       </CardContent>
     </Card>
