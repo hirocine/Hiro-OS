@@ -47,8 +47,8 @@ Deno.serve(async (req) => {
     const sinceStr = thirtyDaysAgo.toISOString().split("T")[0];
     const untilStr = today.toISOString().split("T")[0];
 
-    // Map: date (YYYY-MM-DD) → { reach, views, profile_views }
-    const dailyMetrics: Record<string, { reach: number; views: number; profile_views: number }> = {};
+    // Map: date (YYYY-MM-DD) → { reach, views }
+    const dailyMetrics: Record<string, { reach: number; views: number }> = {};
 
     // 3.1 Buscar reach + views
     try {
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
             const day = String(v.end_time ?? "").split("T")[0];
             if (!day) continue;
             if (!dailyMetrics[day]) {
-              dailyMetrics[day] = { reach: 0, views: 0, profile_views: 0 };
+              dailyMetrics[day] = { reach: 0, views: 0 };
             }
             if (m.name === "reach") dailyMetrics[day].reach = v.value ?? 0;
             if (m.name === "views") dailyMetrics[day].views = v.value ?? 0;
@@ -83,29 +83,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3.2 Buscar profile_views separadamente
-    try {
-      const pvRes = await fetch(
-        `https://graph.instagram.com/${apiVersion}/${accountId}/insights?metric=profile_views&period=day&since=${sinceStr}&until=${untilStr}&access_token=${token}`,
-      );
-      const pvData = await pvRes.json();
-      console.log(
-        "[sync-account] profile_views response:",
-        JSON.stringify(pvData).slice(0, 500),
-      );
-
-      const pvSeries = pvData?.data?.[0]?.values ?? [];
-      for (const v of pvSeries) {
-        const day = String(v.end_time ?? "").split("T")[0];
-        if (!day) continue;
-        if (!dailyMetrics[day]) {
-          dailyMetrics[day] = { reach: 0, views: 0, profile_views: 0 };
-        }
-        dailyMetrics[day].profile_views = v.value ?? 0;
-      }
-    } catch {
-      console.warn("profile_views not available (deprecated for some accounts)");
-    }
 
     console.log(
       `[sync-account] backfilling ${Object.keys(dailyMetrics).length} days`,

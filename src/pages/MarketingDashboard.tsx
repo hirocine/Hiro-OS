@@ -189,7 +189,7 @@ export default function MarketingDashboard() {
   const accountKpis = useMemo(() => {
     if (!accountSnapshots || accountSnapshots.length === 0) return null;
 
-    const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day' | 'profile_views_day') =>
+    const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day') =>
       arr.reduce((s, snap) => s + (snap[key] ?? 0), 0);
 
     const followersDeltaPeriod = accountSnapshots.reduce(
@@ -199,8 +199,6 @@ export default function MarketingDashboard() {
 
     const reachPeriod = sumKey(accountSnapshots, 'reach_day');
     const reachPrev = sumKey(prevAccountSnapshots, 'reach_day');
-    const profileViewsPeriod = sumKey(accountSnapshots, 'profile_views_day');
-    const profileViewsPrev = sumKey(prevAccountSnapshots, 'profile_views_day');
 
     const firstInPeriod = accountSnapshots[0];
     const newPostsPeriod =
@@ -213,8 +211,6 @@ export default function MarketingDashboard() {
       followersDeltaPeriod,
       reachPeriod,
       reachChange: pctChange(reachPeriod, reachPrev),
-      profileViewsPeriod,
-      profileViewsChange: pctChange(profileViewsPeriod, profileViewsPrev),
       newPostsPeriod,
     };
   }, [accountSnapshots, prevAccountSnapshots, latestAccount]);
@@ -236,15 +232,6 @@ export default function MarketingDashboard() {
       accountSnapshots.map((s) => ({
         date: s.captured_at.slice(0, 10),
         reach: s.reach_day,
-      })),
-    [accountSnapshots]
-  );
-
-  const profileViewsSeries = useMemo(
-    () =>
-      accountSnapshots.map((s) => ({
-        date: s.captured_at.slice(0, 10),
-        views: s.profile_views_day,
       })),
     [accountSnapshots]
   );
@@ -512,7 +499,6 @@ export default function MarketingDashboard() {
             <AccountChartsSection
               followersSeries={followersSeries}
               reachSeries={reachSeries}
-              profileViewsSeries={profileViewsSeries}
               periodLabel={periodLabel}
             />
 

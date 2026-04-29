@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     const apiVersion = "v22.0";
 
     // Nova métrica follower_demographics (Meta depreciou as legacy audience_* em 2024)
-    const breakdowns = ["age", "gender", "city", "country"] as const;
+    const breakdowns = ["age", "gender", "city", "country", "locale"] as const;
 
     const prefixKeys = (obj: Record<string, number>, prefix: string): Record<string, number> => {
       const out: Record<string, number> = {};
@@ -100,6 +100,8 @@ Deno.serve(async (req) => {
             result.cities = dict;
           } else if (breakdown === "country") {
             result.countries = dict;
+          } else if (breakdown === "locale") {
+            result.locales = dict;
           }
         }
       } catch (e) {
@@ -114,6 +116,7 @@ Deno.serve(async (req) => {
       gender_age: Object.keys(result.gender_age).length,
       cities: Object.keys(result.cities).length,
       countries: Object.keys(result.countries).length,
+      locales: Object.keys(result.locales).length,
     });
 
     const { error } = await supabase

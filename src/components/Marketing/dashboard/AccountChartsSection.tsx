@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, BarChart3, Eye } from 'lucide-react';
+import { Users, BarChart3 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   AreaChart,
@@ -16,14 +16,12 @@ import { fmtChartDate } from '@/lib/marketing-dashboard-utils';
 interface Props {
   followersSeries: { date: string; followers: number }[];
   reachSeries: { date: string; reach: number }[];
-  profileViewsSeries: { date: string; views: number }[];
   periodLabel: string;
 }
 
 export function AccountChartsSection({
   followersSeries,
   reachSeries,
-  profileViewsSeries,
   periodLabel,
 }: Props) {
   return (
@@ -96,7 +94,7 @@ export function AccountChartsSection({
         </CardContent>
       </Card>
 
-      {/* Daily reach + profile views */}
+      {/* Daily reach */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
           <CardHeader className="pb-2">
@@ -141,57 +139,6 @@ export function AccountChartsSection({
                       fill="url(#reachGradient)"
                       dot={false}
                       activeDot={{ fill: 'hsl(var(--warning))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-                    />
-                  </AreaChart>
-                </RechartsContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-elegant transition-all duration-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Visitas no perfil
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-56">
-              {profileViewsSeries.length === 0 ? (
-                <EmptyState compact icon={Eye} title="" description="Sem dados no período." />
-              ) : (
-                <RechartsContainer width="100%" height="100%">
-                  <AreaChart data={profileViewsSeries} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                    <defs>
-                      <linearGradient id="visitsGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                      tickFormatter={fmtChartDate}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tickFormatter={(v: number) => v.toLocaleString('pt-BR')}
-                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontFamily: 'Inter, system-ui, sans-serif', style: { fontVariantNumeric: 'tabular-nums' } } as any}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <RTooltip content={<ChartTooltip unit="visitas" />} />
-                    <Area
-                      type="monotone"
-                      dataKey="views"
-                      stroke="hsl(var(--success))"
-                      strokeWidth={2.5}
-                      fill="url(#visitsGradient)"
-                      dot={false}
-                      activeDot={{ fill: 'hsl(var(--success))', r: 4, strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                     />
                   </AreaChart>
                 </RechartsContainer>
