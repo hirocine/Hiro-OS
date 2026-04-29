@@ -4,7 +4,10 @@ import { toast } from 'sonner';
 import {
   Globe, RefreshCw, Plug, BarChart3, Users, Eye, FileText,
   TrendingDown, Target, MapPin,
+  ExternalLink,
 } from 'lucide-react';
+
+const SITE_URL = 'https://hiro.film';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
