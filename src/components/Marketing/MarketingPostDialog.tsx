@@ -21,8 +21,10 @@ import {
 import { PILLAR_COLORS, getPillarColor } from '@/lib/marketing-colors';
 import { type MarketingPost, type MarketingPostInput, useMarketingPosts } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingPersonas } from '@/hooks/useMarketingPersonas';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
