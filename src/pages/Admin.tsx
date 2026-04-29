@@ -87,6 +87,20 @@ const ACTION_LABELS: Record<string, string> = {
   'create_platform_access': 'Novo acesso cadastrado',
   'update_platform_access': 'Acesso editado',
   'delete_platform_access': 'Acesso excluído',
+
+  // Marketing — soft-delete / restore / hard-delete
+  'SOFT_DELETE_MARKETING_PILLARS':  'Pilar removido (lixeira)',
+  'SOFT_DELETE_MARKETING_PERSONAS': 'Persona removida (lixeira)',
+  'SOFT_DELETE_MARKETING_IDEAS':    'Ideia removida (lixeira)',
+  'SOFT_DELETE_MARKETING_POSTS':    'Post removido (lixeira)',
+  'RESTORE_MARKETING_PILLARS':      'Pilar restaurado',
+  'RESTORE_MARKETING_PERSONAS':     'Persona restaurada',
+  'RESTORE_MARKETING_IDEAS':        'Ideia restaurada',
+  'RESTORE_MARKETING_POSTS':        'Post restaurado',
+  'HARD_DELETE_MARKETING_PILLARS':  'Pilar removido permanentemente (limpeza automática)',
+  'HARD_DELETE_MARKETING_PERSONAS': 'Persona removida permanentemente',
+  'HARD_DELETE_MARKETING_IDEAS':    'Ideia removida permanentemente',
+  'HARD_DELETE_MARKETING_POSTS':    'Post removido permanentemente',
   
   // Segurança e Sistema
   'security_scan_completed': 'Verificação de segurança concluída',
