@@ -111,7 +111,10 @@ export function useMarketingPosts(options: FetchOptions = {}) {
 
   const deletePost = async (id: string) => {
     try {
-      const { error } = await supabase.from('marketing_posts').delete().eq('id', id);
+      const { error } = await supabase
+        .from('marketing_posts')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
       if (error) throw error;
       setPosts((prev) => prev.filter((p) => p.id !== id));
       toast.success('Post removido');
