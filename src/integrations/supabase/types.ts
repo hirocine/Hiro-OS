@@ -1189,6 +1189,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description: string | null
           format: string | null
           id: string
@@ -1204,6 +1205,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           format?: string | null
           id?: string
@@ -1219,6 +1221,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           format?: string | null
           id?: string
@@ -1311,6 +1314,7 @@ export type Database = {
           company_size: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description: string | null
           id: string
           main_pains: string[]
@@ -1326,6 +1330,7 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
           main_pains?: string[]
@@ -1341,6 +1346,7 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
           main_pains?: string[]
@@ -1355,6 +1361,7 @@ export type Database = {
           color: string
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description: string | null
           id: string
           name: string
@@ -1365,6 +1372,7 @@ export type Database = {
           color?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name: string
@@ -1375,6 +1383,7 @@ export type Database = {
           color?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name?: string
@@ -1445,6 +1454,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           engagement_rate: number | null
           external_id: string | null
           file_url: string | null
@@ -1482,6 +1492,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -1519,6 +1530,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           engagement_rate?: number | null
           external_id?: string | null
           file_url?: string | null
@@ -3181,6 +3193,8 @@ export type Database = {
           setting_name: string
         }[]
       }
+      cleanup_old_post_snapshots: { Args: never; Returns: undefined }
+      cleanup_soft_deleted_marketing: { Args: never; Returns: undefined }
       create_notification_for_all_users: {
         Args: {
           _description?: string
