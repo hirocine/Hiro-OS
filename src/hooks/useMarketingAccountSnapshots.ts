@@ -32,9 +32,18 @@ export interface SnapshotsRange {
   end: Date | null;
 }
 
+export interface UseMarketingAccountSnapshotsOptions {
+  /** Se true, também busca dados de audiência (gênero/idade/cidades). Default: true. */
+  includeAudience?: boolean;
+  /** Limite máximo de snapshots a buscar. Default: 200 (cobre ~6 meses). */
+  limit?: number;
+}
+
 export function useMarketingAccountSnapshots(
-  range: SnapshotsRange = { start: null, end: null }
+  range: SnapshotsRange = { start: null, end: null },
+  options: UseMarketingAccountSnapshotsOptions = {}
 ) {
+  const { includeAudience = true, limit = 200 } = options;
   const [snapshots, setSnapshots] = useState<AccountSnapshot[]>([]);
   const [audience, setAudience] = useState<AccountAudience | null>(null);
   const [loading, setLoading] = useState(true);
