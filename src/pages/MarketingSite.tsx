@@ -25,6 +25,7 @@ import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
 import { useMarketingGA4 } from '@/hooks/useMarketingGA4';
 import { AccountKpiCard } from '@/components/Marketing/dashboard/AccountKpiCard';
 import { Ga4TrafficSection } from '@/components/Marketing/dashboard/Ga4TrafficSection';
+import { SiteIdentityBanner } from '@/components/Marketing/dashboard/SiteIdentityBanner';
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
