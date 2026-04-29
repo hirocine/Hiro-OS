@@ -21,8 +21,10 @@ import {
 import { PILLAR_COLORS, getPillarColor } from '@/lib/marketing-colors';
 import { type MarketingPost, type MarketingPostInput, useMarketingPosts } from '@/hooks/useMarketingPosts';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingPersonas } from '@/hooks/useMarketingPersonas';
 import { useMarketingIdeas } from '@/hooks/useMarketingIdeas';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -46,6 +48,7 @@ function toLocalInput(iso: string | null): string {
 export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, prefill, onSaved }: Props) {
   const { createPost, updatePost, uploadCover } = useMarketingPosts();
   const { pillars } = useMarketingPillars();
+  const { personas } = useMarketingPersonas();
   const { ideas } = useMarketingIdeas();
   const { instagramConnected, linkedinConnected } = useMarketingIntegrations();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -58,6 +61,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [platform, setPlatform] = useState<string>('');
   const [format, setFormat] = useState<string>('');
   const [pillarId, setPillarId] = useState<string>('');
+  const [personaId, setPersonaId] = useState<string>('');
   const [status, setStatus] = useState<PostStatus>('em_producao');
   const [scheduledLocal, setScheduledLocal] = useState<string>('');
   const [coverUrl, setCoverUrl] = useState<string>('');
@@ -92,6 +96,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setPlatform(m.platform ?? '');
       setFormat(m.format ?? '');
       setPillarId(m.pillar_id ?? '');
+      setPersonaId(m.persona_id ?? '');
       setStatus(m.status);
       setScheduledLocal(toLocalInput(m.scheduled_at));
       setCoverUrl(m.cover_url ?? '');
@@ -119,6 +124,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       setPlatform(prefill?.platform ?? '');
       setFormat(prefill?.format ?? '');
       setPillarId(prefill?.pillar_id ?? '');
+      setPersonaId(prefill?.persona_id ?? '');
       setStatus((prefill?.status as PostStatus) ?? 'em_producao');
       setScheduledLocal(
         prefill?.scheduled_at
@@ -181,6 +187,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
       file_url: fileUrl.trim() || null,
       published_url: status === 'publicado' ? publishedUrl.trim() || null : null,
       pillar_id: pillarId || null,
+      persona_id: personaId || null,
       idea_id: ideaId || null,
       views, likes, comments: commentsCount, shares, saves, reach,
       profile_clicks: profileClicks, new_followers: newFollowers,
@@ -302,6 +309,52 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
                       </SelectItem>
                     );
                   })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Persona</Label>
+              <Select value={personaId} onValueChange={setPersonaId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar persona (opcional)">
+                    {personaId && (() => {
+                      const persona = personas.find((p) => p.id === personaId);
+                      if (!persona) return null;
+                      return (
+                        <span className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
+                            <AvatarFallback className="text-[10px]">
+                              {persona.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {persona.name}
+                        </span>
+                      );
+                    })()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {personas.length === 0 ? (
+                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      Nenhuma persona cadastrada
+                    </div>
+                  ) : (
+                    personas.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        <span className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={p.avatar_url ?? undefined} alt={p.name} />
+                            <AvatarFallback className="text-[10px]">
+                              {p.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {p.name}
+                        </span>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -17,6 +17,7 @@ export interface MarketingPost {
   file_url: string | null;
   published_url: string | null;
   pillar_id: string | null;
+  persona_id: string | null;
   idea_id: string | null;
   views: number;
   likes: number;

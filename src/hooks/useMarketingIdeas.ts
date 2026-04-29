@@ -13,6 +13,7 @@ export interface MarketingIdea {
   source: string | null;
   format: string | null;
   pillar_id: string | null;
+  persona_id: string | null;
   tags: string[];
   reference_ids: string[];
   created_by: string | null;
@@ -134,6 +135,7 @@ export function useMarketingIdeas() {
       source: idea.source,
       format: idea.format,
       pillar_id: idea.pillar_id,
+      persona_id: idea.persona_id,
       tags: idea.tags,
       reference_ids: idea.reference_ids,
     });

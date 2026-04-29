@@ -18,6 +18,8 @@ import {
 } from '@/hooks/useMarketingIdeas';
 import { useMarketingReferences } from '@/hooks/useMarketingReferences';
 import { useMarketingPillars } from '@/hooks/useMarketingPillars';
+import { useMarketingPersonas } from '@/hooks/useMarketingPersonas';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPillarColor } from '@/lib/marketing-colors';
 import { POST_FORMATS } from '@/lib/marketing-posts-config';
 
@@ -32,6 +34,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
   const { createIdea, updateIdea } = useMarketingIdeas();
   const { references } = useMarketingReferences();
   const { pillars } = useMarketingPillars();
+  const { personas } = useMarketingPersonas();
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -40,6 +43,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
   const [source, setSource] = useState<string>('');
   const [format, setFormat] = useState<string>('');
   const [pillarId, setPillarId] = useState<string>('');
+  const [personaId, setPersonaId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [referenceIds, setReferenceIds] = useState<string[]>([]);
@@ -53,6 +57,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setSource(idea.source ?? '');
         setFormat(idea.format ?? '');
         setPillarId(idea.pillar_id ?? '');
+        setPersonaId(idea.persona_id ?? '');
         setTags(idea.tags ?? []);
         setReferenceIds(idea.reference_ids ?? []);
       } else {
@@ -62,6 +67,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
         setSource('');
         setFormat('');
         setPillarId('');
+        setPersonaId('');
         setTags([]);
         setTagInput('');
         setReferenceIds([]);
@@ -84,6 +90,7 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
       source: source || null,
       format: format || null,
       pillar_id: pillarId || null,
+      persona_id: personaId || null,
       tags,
       reference_ids: referenceIds,
     };
@@ -190,6 +197,52 @@ export function MarketingIdeaDialog({ open, onOpenChange, idea, defaultStatus }:
                     </SelectItem>
                   );
                 })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Persona</Label>
+            <Select value={personaId} onValueChange={setPersonaId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar persona (opcional)">
+                  {personaId && (() => {
+                    const persona = personas.find((p) => p.id === personaId);
+                    if (!persona) return null;
+                    return (
+                      <span className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={persona.avatar_url ?? undefined} alt={persona.name} />
+                          <AvatarFallback className="text-[10px]">
+                            {persona.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {persona.name}
+                      </span>
+                    );
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {personas.length === 0 ? (
+                  <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                    Nenhuma persona cadastrada
+                  </div>
+                ) : (
+                  personas.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={p.avatar_url ?? undefined} alt={p.name} />
+                          <AvatarFallback className="text-[10px]">
+                            {p.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

@@ -392,6 +392,7 @@ export default function MarketingIdeas() {
       title: idea.title,
       caption: idea.description,
       pillar_id: idea.pillar_id,
+      persona_id: idea.persona_id,
       idea_id: idea.id,
       status: 'em_producao',
       scheduled_at: null,
