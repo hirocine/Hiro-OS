@@ -406,8 +406,16 @@ export default function MarketingPosts() {
               );
             })}
           </div>
-        ) : (
+        ) : viewMode === 'ranking' ? (
           <RankingList posts={filtered} pillars={pillars} onClick={handleOpenById} />
+        ) : (
+          <PostsCalendar
+            posts={marketingPosts}
+            pillars={pillars}
+            onCreate={handleCalendarCreate}
+            onEdit={handleCalendarEdit}
+            onDelete={handleCalendarDelete}
+          />
         )}
       </div>
 
