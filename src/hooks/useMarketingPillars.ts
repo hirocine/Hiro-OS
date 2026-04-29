@@ -26,6 +26,7 @@ export function useMarketingPillars() {
       const { data, error } = await supabase
         .from('marketing_pillars')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
       if (error) throw error;
       setPillars((data || []) as MarketingPillar[]);
