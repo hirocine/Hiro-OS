@@ -34,6 +34,7 @@ export function useMarketingPersonas() {
       const { data, error } = await supabase
         .from('marketing_personas')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       setPersonas((data || []) as MarketingPersona[]);
