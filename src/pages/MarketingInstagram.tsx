@@ -9,9 +9,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
-import { PeriodPicker, type PeriodPreset, type PeriodDateRange, PERIOD_OPTIONS } from '@/components/Marketing/PeriodPicker';
-import { format as formatDate } from 'date-fns';
-import { ptBR as ptBRLocale } from 'date-fns/locale';
+import { PeriodPicker, type PeriodPreset, type PeriodDateRange } from '@/components/Marketing/PeriodPicker';
 
 import { resolvePeriod, resolvePrevRange, pctChange } from '@/lib/marketing-dashboard-utils';
 import { useMarketingIntegrations } from '@/hooks/useMarketingIntegrations';
@@ -20,8 +18,6 @@ import { useMarketingPostMetrics, type PostWithMetrics } from '@/hooks/useMarket
 
 import { InstagramIdentityBanner } from '@/components/Marketing/dashboard/InstagramIdentityBanner';
 import { AccountKpisSection } from '@/components/Marketing/dashboard/AccountKpisSection';
-import { AccountChartsSection } from '@/components/Marketing/dashboard/AccountChartsSection';
-import { AudienceSection } from '@/components/Marketing/dashboard/AudienceSection';
 
 export default function MarketingInstagram() {
   const navigate = useNavigate();
@@ -41,32 +37,14 @@ export default function MarketingInstagram() {
 
   const {
     snapshots: accountSnapshots,
-    audience,
     latest: latestAccount,
     oldest: oldestAccount,
     loading: accountLoading,
     syncNow,
-    syncAudience,
   } = useMarketingAccountSnapshots(snapshotsRange);
 
   const [syncing, setSyncing] = useState(false);
-  const [syncingAudience, setSyncingAudience] = useState(false);
 
-  const periodLabel = useMemo(() => {
-    if (periodPreset === 'all') {
-      return oldestAccount?.captured_at
-        ? `Desde ${formatDate(new Date(oldestAccount.captured_at), "dd 'de' MMM yyyy", { locale: ptBRLocale })}`
-        : 'Todo o período';
-    }
-    if (periodPreset === 'custom' && customRange) {
-      return `${formatDate(customRange.start, 'dd/MM/yy', { locale: ptBRLocale })} → ${formatDate(customRange.end, 'dd/MM/yy', { locale: ptBRLocale })}`;
-    }
-    const preset = PERIOD_OPTIONS.find(o => o.value === periodPreset)?.label ?? '';
-    const range = `${formatDate(resolvedRange.start, 'dd/MM', { locale: ptBRLocale })} → ${formatDate(resolvedRange.end, 'dd/MM', { locale: ptBRLocale })}`;
-    return `${preset} · ${range}`;
-  }, [periodPreset, customRange, resolvedRange, oldestAccount]);
-
-  // KPIs derived
   const accountKpis = useMemo(() => {
     if (!accountSnapshots || accountSnapshots.length === 0) return null;
     const sumKey = (arr: typeof accountSnapshots, key: 'reach_day' | 'views_day' | 'profile_views_day') =>
@@ -90,22 +68,6 @@ export default function MarketingInstagram() {
     };
   }, [accountSnapshots, latestAccount, prevRange]);
 
-  const followersSeries = useMemo(
-    () =>
-      accountSnapshots
-        .filter((s) => s.followers_count != null)
-        .map((s) => ({ date: s.captured_at.slice(0, 10), followers: s.followers_count as number })),
-    [accountSnapshots]
-  );
-  const reachSeries = useMemo(
-    () => accountSnapshots.map((s) => ({ date: s.captured_at.slice(0, 10), reach: s.reach_day })),
-    [accountSnapshots]
-  );
-  const profileViewsSeries = useMemo(
-    () => accountSnapshots.map((s) => ({ date: s.captured_at.slice(0, 10), views: s.profile_views_day })),
-    [accountSnapshots]
-  );
-
   const recentPosts = useMemo<PostWithMetrics[]>(
     () =>
       [...publishedPosts]
@@ -115,7 +77,7 @@ export default function MarketingInstagram() {
           const db = b.scheduled_at ? new Date(b.scheduled_at).getTime() : 0;
           return db - da;
         })
-        .slice(0, 6),
+        .slice(0, 10),
     [publishedPosts]
   );
 
@@ -131,20 +93,6 @@ export default function MarketingInstagram() {
       });
     } finally {
       setSyncing(false);
-    }
-  };
-
-  const handleSyncAudience = async () => {
-    try {
-      setSyncingAudience(true);
-      await syncAudience();
-      toast.success('Audiência sincronizada');
-    } catch (e) {
-      toast.error('Falha ao sincronizar audiência', {
-        description: e instanceof Error ? e.message : String(e),
-      });
-    } finally {
-      setSyncingAudience(false);
     }
   };
 
@@ -166,7 +114,7 @@ export default function MarketingInstagram() {
     <ResponsiveContainer maxWidth="7xl">
       <PageHeader
         title="Instagram"
-        subtitle="Métricas detalhadas da conta Instagram"
+        subtitle="Visão geral da conta Instagram"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <PeriodPicker
@@ -198,7 +146,20 @@ export default function MarketingInstagram() {
       />
 
       <div className="space-y-6">
-        <InstagramIdentityBanner integration={instagramIntegration} />
+        <InstagramIdentityBanner
+          integration={instagramIntegration}
+          rightAction={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/marketing/dashboard')}
+              className="gap-2"
+            >
+              Ver dados completos
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          }
+        />
 
         <AccountKpisSection
           accountSnapshotsLength={accountSnapshots.length}
@@ -207,23 +168,6 @@ export default function MarketingInstagram() {
           accountKpis={accountKpis}
           onSync={handleSync}
         />
-
-        {accountSnapshots.length > 0 && (
-          <>
-            <AccountChartsSection
-              followersSeries={followersSeries}
-              reachSeries={reachSeries}
-              profileViewsSeries={profileViewsSeries}
-              periodLabel={periodLabel}
-            />
-
-            <AudienceSection
-              audience={audience}
-              syncingAudience={syncingAudience}
-              onSyncAudience={handleSyncAudience}
-            />
-          </>
-        )}
 
         {/* Posts recentes preview */}
         <Card>
@@ -254,8 +198,8 @@ export default function MarketingInstagram() {
                 }}
               />
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                {recentPosts.map((p) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {recentPosts.slice(0, 10).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => navigate('/marketing/social-media/instagram/posts')}
