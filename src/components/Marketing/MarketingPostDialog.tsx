@@ -61,6 +61,7 @@ export function MarketingPostDialog({ open, onOpenChange, post, defaultDate, pre
   const [platform, setPlatform] = useState<string>('');
   const [format, setFormat] = useState<string>('');
   const [pillarId, setPillarId] = useState<string>('');
+  const [personaId, setPersonaId] = useState<string>('');
   const [status, setStatus] = useState<PostStatus>('em_producao');
   const [scheduledLocal, setScheduledLocal] = useState<string>('');
   const [coverUrl, setCoverUrl] = useState<string>('');
