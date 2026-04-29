@@ -203,7 +203,7 @@ describe('useSSDs', () => {
         select: vi.fn().mockReturnThis(),
         in: vi.fn().mockResolvedValue({ data: [], error: null })
       } as any
-    })
+    }) as any)
 
     const { result } = renderHook(() => useSSDs(), {
       wrapper: createWrapper(),
