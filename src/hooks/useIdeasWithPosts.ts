@@ -29,6 +29,7 @@ export function useIdeasWithPosts(ideaIds: string[]) {
       const { data, error } = await supabase
         .from('marketing_posts')
         .select('id, idea_id, status, scheduled_at, created_at')
+        .is('deleted_at', null)
         .in('idea_id', ideaIds)
         .order('created_at', { ascending: false });
 
