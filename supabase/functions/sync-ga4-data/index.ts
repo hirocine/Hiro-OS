@@ -30,15 +30,49 @@ async function runReport(
   accessToken: string,
   body: Record<string, unknown>,
 ): Promise<{ rows?: Array<{ dimensionValues: Array<{ value: string }>; metricValues: Array<{ value: string }> }>; error?: { message: string } }> {
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  return await res.json();
+  const maxAttempts = 4;
+  let lastErr: unknown = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      // Retry em 429 (rate limit) e 5xx (server error)
+      if (res.status === 429 || res.status >= 500) {
+        const retryAfter = res.headers.get("retry-after");
+        const baseDelay = retryAfter ? parseInt(retryAfter) * 1000 : 0;
+        const backoff = baseDelay || Math.min(1000 * 2 ** (attempt - 1), 8000);
+        const jitter = Math.floor(Math.random() * 250);
+        console.warn(`[sync-ga4] runReport HTTP ${res.status}, retry ${attempt}/${maxAttempts} in ${backoff + jitter}ms`);
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, backoff + jitter));
+          continue;
+        }
+        return { error: { message: `GA4 API HTTP ${res.status} after ${maxAttempts} attempts` } };
+      }
+
+      return await res.json();
+    } catch (err) {
+      lastErr = err;
+      const backoff = Math.min(1000 * 2 ** (attempt - 1), 8000);
+      const jitter = Math.floor(Math.random() * 250);
+      console.warn(`[sync-ga4] runReport network error, retry ${attempt}/${maxAttempts} in ${backoff + jitter}ms`, err);
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, backoff + jitter));
+        continue;
+      }
+    }
+  }
+
+  const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  return { error: { message: `GA4 API failed after ${maxAttempts} attempts: ${errMsg}` } };
 }
 
 Deno.serve(async (req) => {
