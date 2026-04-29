@@ -27,6 +27,8 @@ export interface GA4Dimensions {
   mediums_breakdown: Record<string, number> | null;
   devices_breakdown: Record<string, number> | null;
   countries_breakdown: Record<string, number> | null;
+  exit_pages: Array<{ path: string; exits: number; views: number; exit_rate: number }> | null;
+  conversion_events: Array<{ event_name: string; count: number }> | null;
   captured_at: string;
 }
 
@@ -71,8 +73,8 @@ export function useMarketingGA4(range: GA4Range = { start: null, end: null }) {
         logger.error('Failed to fetch ga4 dimensions', { module: 'marketing', error: dimsErr });
       }
 
-      setSnapshots((snaps ?? []) as GA4Snapshot[]);
-      setDimensions((dims ?? null) as GA4Dimensions | null);
+      setSnapshots((snaps ?? []) as unknown as GA4Snapshot[]);
+      setDimensions((dims ?? null) as unknown as GA4Dimensions | null);
     } finally {
       setLoading(false);
     }

@@ -216,6 +216,64 @@ Deno.serve(async (req) => {
       mediums_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
     });
 
+    // 5) Top exit pages (problemas — usuários saindo daqui)
+    const exitPagesData = await runReport(apiUrl, accessToken, {
+      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dimensions: [{ name: "pagePath" }],
+      metrics: [{ name: "exits" }, { name: "screenPageViews" }],
+      orderBys: [{ metric: { metricName: "exits" }, desc: true }],
+      limit: 10,
+    });
+
+    const exit_pages = (exitPagesData.rows ?? []).map((r) => {
+      const exits = parseInt(r.metricValues[0].value) || 0;
+      const views = parseInt(r.metricValues[1].value) || 0;
+      return {
+        path: r.dimensionValues[0].value,
+        exits,
+        views,
+        exit_rate: views > 0 ? exits / views : 0,
+      };
+    });
+
+    // 6) Eventos de conversão (cliques em WhatsApp, etc)
+    const conversionsData = await runReport(apiUrl, accessToken, {
+      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dimensions: [{ name: "eventName" }],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: {
+        filter: {
+          fieldName: "eventName",
+          stringFilter: {
+            matchType: "PARTIAL_REGEXP",
+            value: "click|whatsapp|contact|conversion|generate_lead",
+            caseSensitive: false,
+          },
+        },
+      },
+      orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+      limit: 20,
+    });
+
+    const conversion_events = (conversionsData.rows ?? []).map((r) => ({
+      event_name: r.dimensionValues[0].value,
+      count: parseInt(r.metricValues[0].value) || 0,
+    }));
+
+    // 7) Países (origem geográfica)
+    const countriesData = await runReport(apiUrl, accessToken, {
+      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dimensions: [{ name: "country" }],
+      metrics: [{ name: "sessions" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+      limit: 10,
+    });
+
+    const countries_breakdown: Record<string, number> = {};
+    (countriesData.rows ?? []).forEach((r) => {
+      countries_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
+    });
+
     const today = new Date().toISOString().slice(0, 10);
     await supabase.from("marketing_ga4_dimensions").upsert({
       property_id: propertyId,
@@ -224,6 +282,9 @@ Deno.serve(async (req) => {
       top_pages,
       devices_breakdown,
       mediums_breakdown,
+      exit_pages,
+      conversion_events,
+      countries_breakdown,
     }, { onConflict: "property_id,captured_date" });
 
     await supabase
