@@ -38,7 +38,7 @@ export function Layout() {
             : "pl-64"
         )}
       >
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingScreenSkeleton />}>
           <Outlet />
         </Suspense>
       </main>
