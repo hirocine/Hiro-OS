@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, Users, Eye, FileText, Globe, Trophy, Sparkles } from 'lucide-react';
+import { BarChart3, Users, Eye, FileText, Globe, Trophy, Sparkles, Smartphone } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AccountKpiCard } from './AccountKpiCard';
@@ -143,7 +143,7 @@ export function Ga4TrafficSection({ ga4, periodLabel }: Props) {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -209,6 +209,52 @@ export function Ga4TrafficSection({ ga4, periodLabel }: Props) {
                           </span>
                         </li>
                       ))}
+                    </ul>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Smartphone className="h-4 w-4" />
+                  Dispositivos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const list = topEntries(ga4.dimensions?.devices_breakdown ?? null, 6);
+                  if (list.length === 0) {
+                    return <p className="text-sm text-muted-foreground">Sem dados ainda.</p>;
+                  }
+                  const deviceLabels: Record<string, string> = {
+                    mobile: 'Mobile',
+                    desktop: 'Desktop',
+                    tablet: 'Tablet',
+                    smart_tv: 'Smart TV',
+                  };
+                  return (
+                    <ul className="space-y-3">
+                      {list.map((e) => {
+                        const label = deviceLabels[e.key] ?? e.key;
+                        return (
+                          <li key={e.key} className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2 text-sm">
+                              <span className="font-medium truncate">{label}</span>
+                              <span className="text-xs text-muted-foreground font-numeric shrink-0">
+                                {e.value.toLocaleString('pt-BR')} · {e.pct.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                                style={{ width: `${e.pct}%` }}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   );
                 })()}
