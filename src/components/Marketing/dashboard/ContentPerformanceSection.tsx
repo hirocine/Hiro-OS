@@ -250,106 +250,58 @@ export function ContentPerformanceSection({
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Top 5 posts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {topPosts.length === 0 ? (
-                  <div className="px-4 py-6">
-                    <EmptyState
-                      icon={Trophy}
-                      title={publishedPostsLength === 0 ? 'Nenhum post publicado ainda' : 'Nenhum post no período'}
-                      description={
-                        publishedPostsLength === 0
-                          ? 'Marque um post como "Publicado" para começar a rastrear performance.'
-                          : `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} no total, mas nenhum no período selecionado. Tente expandir o período.`
-                      }
-                    />
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-border">
-                    {topPosts.map((p, i) => (
-                      <li key={p.id} className="flex items-center gap-3 py-2.5">
-                        <span className="w-5 text-xs text-muted-foreground font-numeric">{i + 1}</span>
-                        {p.cover_url ? (
-                          <img
-                            src={p.cover_url}
-                            alt={p.title}
-                            className="h-10 w-10 rounded-md object-cover"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
-                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{p.title}</div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {p.platform && (
-                              <Badge variant="secondary" className="text-[10px]">
-                                {getPostPlatformLabel(p.platform)}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-sm font-semibold font-numeric">
-                          {(p.views ?? 0).toLocaleString('pt-BR')} views
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Distribuição por plataforma</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {platformData.length === 0 ? (
-                  <div className="h-48 flex items-center justify-center px-4">
-                    <EmptyState
-                      compact
-                      icon={PieIcon}
-                      title=""
-                      description={
-                        publishedPostsLength === 0
-                          ? 'Publique posts para ver a distribuição por plataforma.'
-                          : 'Os posts publicados ainda não têm plataforma definida. Edite-os para classificar.'
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div className="h-48">
-                    <RechartsContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={platformData}
-                          dataKey="value"
-                          nameKey="name"
-                          innerRadius={40}
-                          outerRadius={70}
-                          paddingAngle={2}
-                        >
-                          {platformData.map((d) => (
-                            <Cell key={d.key} fill={d.color} />
-                          ))}
-                        </Pie>
-                        <RTooltip
-                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                          formatter={(v: number) => v.toLocaleString('pt-BR')}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Top 5 posts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {topPosts.length === 0 ? (
+                <div className="px-4 py-6">
+                  <EmptyState
+                    icon={Trophy}
+                    title={publishedPostsLength === 0 ? 'Nenhum post publicado ainda' : 'Nenhum post no período'}
+                    description={
+                      publishedPostsLength === 0
+                        ? 'Marque um post como "Publicado" para começar a rastrear performance.'
+                        : `Você tem ${publishedPostsLength} post${publishedPostsLength === 1 ? '' : 's'} no total, mas nenhum no período selecionado. Tente expandir o período.`
+                    }
+                  />
+                </div>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {topPosts.map((p, i) => (
+                    <li key={p.id} className="flex items-center gap-3 py-2.5">
+                      <span className="w-5 text-xs text-muted-foreground font-numeric">{i + 1}</span>
+                      {p.cover_url ? (
+                        <img
+                          src={p.cover_url}
+                          alt={p.title}
+                          className="h-10 w-10 rounded-md object-cover"
                         />
-                        <Legend wrapperStyle={{ fontSize: 11 }} />
-                      </PieChart>
-                    </RechartsContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{p.title}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {p.platform && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {getPostPlatformLabel(p.platform)}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold font-numeric">
+                        {(p.views ?? 0).toLocaleString('pt-BR')} views
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card>
