@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
 
     // 1) Snapshots diários (últimos 30 dias)
     const dailyReport = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "date" }],
       metrics: [
         { name: "sessions" },
@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
 
     // 2) Dimensões agregadas (origem, top pages, devices)
     const sourcesData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "sessionSource" }],
       metrics: [{ name: "sessions" }],
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
     });
 
     const pagesData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "pagePath" }],
       metrics: [{ name: "screenPageViews" }],
       orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
@@ -213,13 +213,13 @@ Deno.serve(async (req) => {
     });
 
     const devicesData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "deviceCategory" }],
       metrics: [{ name: "sessions" }],
     });
 
     const mediumsData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "sessionMedium" }],
       metrics: [{ name: "sessions" }],
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
@@ -248,7 +248,7 @@ Deno.serve(async (req) => {
 
     // 5) Top exit pages (problemas — usuários saindo daqui)
     const exitPagesData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "pagePath" }],
       metrics: [{ name: "exits" }, { name: "screenPageViews" }],
       orderBys: [{ metric: { metricName: "exits" }, desc: true }],
@@ -268,7 +268,7 @@ Deno.serve(async (req) => {
 
     // 6) Eventos de conversão (cliques em WhatsApp, etc)
     const conversionsData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "eventName" }],
       metrics: [{ name: "eventCount" }],
       dimensionFilter: {
@@ -292,7 +292,7 @@ Deno.serve(async (req) => {
 
     // 7) Países (origem geográfica)
     const countriesData = await runReport(apiUrl, accessToken, {
-      dateRanges: [{ startDate: "30daysAgo", endDate: "yesterday" }],
+      dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensions: [{ name: "country" }],
       metrics: [{ name: "sessions" }],
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
