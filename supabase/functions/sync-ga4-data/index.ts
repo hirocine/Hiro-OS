@@ -84,9 +84,18 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Permitir bypass do cache via body (útil pro cron noturno)
+    let force = false;
+    try {
+      const body = await req.json().catch(() => ({}));
+      force = body?.force === true;
+    } catch {
+      // body vazio é OK
+    }
+
     const { data: integration, error: intErr } = await supabase
       .from("marketing_integrations")
-      .select("access_token, refresh_token, token_expires_at, status, account_id")
+      .select("access_token, refresh_token, token_expires_at, status, account_id, last_sync_at")
       .eq("platform", "google_analytics")
       .maybeSingle();
 
@@ -99,6 +108,27 @@ Deno.serve(async (req) => {
     }
     if (!integration.refresh_token) {
       throw new Error("Refresh token ausente. Reconecte sua conta Google Analytics.");
+    }
+
+    // CACHE: se sincronizou há menos de 5min e não foi forçado, retorna sucesso sem chamar API
+    const CACHE_DURATION_MS = 5 * 60 * 1000;
+    if (!force && integration.last_sync_at) {
+      const lastSyncMs = new Date(integration.last_sync_at).getTime();
+      const elapsedMs = Date.now() - lastSyncMs;
+
+      if (elapsedMs < CACHE_DURATION_MS) {
+        const remainingSec = Math.ceil((CACHE_DURATION_MS - elapsedMs) / 1000);
+        console.log(`[sync-ga4] cache hit, last sync ${Math.round(elapsedMs / 1000)}s ago, skip`);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            cached: true,
+            message: `Sincronizado recentemente. Próximo sync em ${remainingSec}s`,
+            secondsUntilNextSync: remainingSec,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     const propertyId = integration.account_id;

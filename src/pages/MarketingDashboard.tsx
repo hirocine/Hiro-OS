@@ -371,12 +371,25 @@ export default function MarketingDashboard() {
       const igOk = igResult.status === 'fulfilled';
       const gaOk = gaResult.status === 'fulfilled';
 
+      const gaCached =
+        gaResult.status === 'fulfilled' &&
+        gaResult.value &&
+        typeof gaResult.value === 'object' &&
+        (gaResult.value as { cached?: boolean }).cached === true;
+
       if (igOk && (gaOk || !ga4Connected)) {
-        toast.success(
-          ga4Connected
-            ? 'Instagram e Google Analytics sincronizados'
-            : 'Conta Instagram sincronizada com sucesso'
-        );
+        if (gaCached) {
+          const seconds = (gaResult.value as { secondsUntilNextSync?: number }).secondsUntilNextSync ?? 0;
+          toast.success('Instagram sincronizado', {
+            description: `GA4: sincronizado recentemente. Próxima sync disponível em ${Math.ceil(seconds / 60)}min`,
+          });
+        } else {
+          toast.success(
+            ga4Connected
+              ? 'Instagram e Google Analytics sincronizados'
+              : 'Conta Instagram sincronizada com sucesso'
+          );
+        }
       } else if (!igOk && !gaOk) {
         toast.error('Falha ao sincronizar', {
           description: igResult.status === 'rejected'
@@ -458,10 +471,31 @@ export default function MarketingDashboard() {
               customPickerOpen={customPickerOpen}
               onCustomPickerOpenChange={setCustomPickerOpen}
             />
-            <Button onClick={handleSync} disabled={syncing} size="sm" className="gap-2">
-              <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
-              {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
-            </Button>
+            {(() => {
+              const lastSync = ga4Integration?.last_sync_at || instagramIntegration?.last_sync_at;
+              const elapsed = lastSync ? Date.now() - new Date(lastSync).getTime() : Infinity;
+              const canSync = !syncing && (!lastSync || elapsed > 60000);
+              const remainingSec = !canSync && !syncing && lastSync
+                ? Math.max(0, Math.ceil((60000 - elapsed) / 1000))
+                : 0;
+
+              return (
+                <Button
+                  onClick={handleSync}
+                  disabled={syncing || !canSync}
+                  size="sm"
+                  className="gap-2"
+                  title={!canSync && remainingSec > 0 ? `Aguarde ${remainingSec}s` : undefined}
+                >
+                  <RefreshCw className={cn('h-4 w-4', syncing && 'animate-spin')} />
+                  {syncing
+                    ? 'Sincronizando...'
+                    : !canSync && remainingSec > 0
+                      ? `Aguarde ${remainingSec}s`
+                      : 'Sincronizar agora'}
+                </Button>
+              );
+            })()}
           </div>
         }
       />
