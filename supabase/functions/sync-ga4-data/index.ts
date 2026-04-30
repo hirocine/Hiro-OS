@@ -383,8 +383,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         days_upserted: upserted,
-        sources: Object.keys(sources_breakdown).length,
-        pages: top_pages.length,
+        dimensions_days_upserted: dimensionsUpserted,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
