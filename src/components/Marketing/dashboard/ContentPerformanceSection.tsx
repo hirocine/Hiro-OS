@@ -409,26 +409,6 @@ export function ContentPerformanceSection({
                 )}
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Alertas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {alerts.length === 0 ? (
-                  <EmptyState compact icon={CheckCircle} title="" description="Tudo certo por aqui ✨" />
-                ) : (
-                  <ul className="space-y-2">
-                    {alerts.map((a, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <span className="mt-0.5">{a.icon}</span>
-                        <span className="flex-1">{a.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </>
       )}
