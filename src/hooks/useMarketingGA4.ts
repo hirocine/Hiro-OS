@@ -86,7 +86,9 @@ export function useMarketingGA4(range: GA4Range = { start: null, end: null }) {
     const { data, error } = await supabase.functions.invoke('sync-ga4-data', { body: {} });
     if (error) throw error;
     if (data && data.success === false) throw new Error(data.error || 'Falha na sincronização');
-    await fetchData();
+    if (!data?.cached) {
+      await fetchData();
+    }
     return data;
   }, [fetchData]);
 
