@@ -105,12 +105,18 @@ Deno.serve(async (req) => {
     // 5. UPSERT um snapshot por dia (backfill)
     let upsertedDays = 0;
     const sortedDays = Object.keys(dailyMetrics).sort();
-    const todayStr = new Date().toISOString().split("T")[0];
+
+    // FIX timezone: o "dia atual" para fins de salvar contadores lifetime é
+    // o ÚLTIMO dia retornado pela API (não new Date() que está em UTC).
+    // Isso evita bug onde sync à noite (horário local) cai no dia seguinte UTC,
+    // fazendo nenhum dia bater com `todayStr` e todos os snapshots ficarem com
+    // followers_count/media_count = NULL.
+    const mostRecentDay = sortedDays[sortedDays.length - 1] ?? null;
 
     for (const day of sortedDays) {
       const metrics = dailyMetrics[day];
       const capturedAt = new Date(`${day}T12:00:00.000Z`).toISOString();
-      const isToday = day === todayStr;
+      const isToday = day === mostRecentDay;
 
       // Lifetime counters (followers/follows/media) só são reais pro dia de HOJE.
       // Para dias passados ficam null para não poluir o gráfico de evolução.
