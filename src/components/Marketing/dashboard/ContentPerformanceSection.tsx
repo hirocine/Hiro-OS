@@ -183,7 +183,7 @@ export function ContentPerformanceSection({
             </CardHeader>
             <CardContent>
               <div className="h-64">
-                {snapshots.length === 0 ? (
+              {snapshots.length === 0 ? (
                   <div className="h-full flex items-center justify-center px-4">
                     <EmptyState
                       compact
@@ -195,6 +195,20 @@ export function ContentPerformanceSection({
                           : 'Sem dados de evolução no período. Os números aparecem conforme posts são sincronizados.'
                       }
                     />
+                  </div>
+                ) : snapshots.length < 2 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-2">
+                    <CalendarIcon className="h-8 w-8 text-muted-foreground/60" />
+                    <p className="text-sm font-medium text-foreground">
+                      Construindo histórico de views
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-sm">
+                      A API do Instagram não fornece histórico de views por dia.
+                      O gráfico ganha forma à medida que cada dia é capturado pelo sistema.
+                    </p>
+                    <p className="text-xs text-muted-foreground font-numeric mt-1">
+                      {snapshots.length}/7 dias coletados
+                    </p>
                   </div>
                 ) : (
                   <RechartsContainer width="100%" height="100%">
