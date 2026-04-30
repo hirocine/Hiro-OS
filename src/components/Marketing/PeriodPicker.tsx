@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import type { DateRange as DayPickerRange } from 'react-day-picker';
 
 export type PeriodPreset =
+  | 'today'
   | '7' | '30' | '90'
   | 'this_month' | 'last_month'
   | 'all' | 'custom';
@@ -24,6 +25,7 @@ export interface PeriodDateRange {
 }
 
 export const PERIOD_OPTIONS: { value: PeriodPreset; label: string }[] = [
+  { value: 'today', label: 'Hoje' },
   { value: '7', label: 'Últimos 7 dias' },
   { value: '30', label: 'Últimos 30 dias' },
   { value: '90', label: 'Últimos 90 dias' },

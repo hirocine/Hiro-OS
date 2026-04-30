@@ -57,6 +57,12 @@ export function resolvePeriod(
     return { start: new Date(0), end };
   }
 
+  if (preset === 'today') {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    return { start, end };
+  }
+
   if (preset === 'this_month') {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     return { start, end };
