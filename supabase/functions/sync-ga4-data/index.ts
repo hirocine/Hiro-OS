@@ -195,81 +195,54 @@ Deno.serve(async (req) => {
       else upserted += 1;
     }
 
-    // 2) Dimensões agregadas (origem, top pages, devices)
+    // 2) Dimensões granulares POR DIA (não agregado)
+    // Todas as queries adicionam `date` como primeira dimensão.
+    // Frontend agrega via PeriodPicker.
+
+    // 2.1) Sources por dia
     const sourcesData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "sessionSource" }],
+      dimensions: [{ name: "date" }, { name: "sessionSource" }],
       metrics: [{ name: "sessions" }],
-      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
-      limit: 10,
+      limit: 10000,
     });
 
+    // 2.2) Top pages por dia
     const pagesData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "pagePath" }],
+      dimensions: [{ name: "date" }, { name: "pagePath" }],
       metrics: [{ name: "screenPageViews" }],
-      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
-      limit: 10,
+      limit: 10000,
     });
 
+    // 2.3) Devices por dia
     const devicesData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "deviceCategory" }],
+      dimensions: [{ name: "date" }, { name: "deviceCategory" }],
       metrics: [{ name: "sessions" }],
+      limit: 10000,
     });
 
+    // 2.4) Mediums por dia
     const mediumsData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "sessionMedium" }],
+      dimensions: [{ name: "date" }, { name: "sessionMedium" }],
       metrics: [{ name: "sessions" }],
-      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
-      limit: 10,
+      limit: 10000,
     });
 
-    const sources_breakdown: Record<string, number> = {};
-    (sourcesData.rows ?? []).forEach((r) => {
-      sources_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
-    });
-
-    const top_pages = (pagesData.rows ?? []).map((r) => ({
-      path: r.dimensionValues[0].value,
-      views: parseInt(r.metricValues[0].value) || 0,
-    }));
-
-    const devices_breakdown: Record<string, number> = {};
-    (devicesData.rows ?? []).forEach((r) => {
-      devices_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
-    });
-
-    const mediums_breakdown: Record<string, number> = {};
-    (mediumsData.rows ?? []).forEach((r) => {
-      mediums_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
-    });
-
-    // 5) Top exit pages (problemas — usuários saindo daqui)
+    // 2.5) Exit pages por dia
     const exitPagesData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "pagePath" }],
+      dimensions: [{ name: "date" }, { name: "pagePath" }],
       metrics: [{ name: "exits" }, { name: "screenPageViews" }],
-      orderBys: [{ metric: { metricName: "exits" }, desc: true }],
-      limit: 10,
+      limit: 10000,
     });
 
-    const exit_pages = (exitPagesData.rows ?? []).map((r) => {
-      const exits = parseInt(r.metricValues[0].value) || 0;
-      const views = parseInt(r.metricValues[1].value) || 0;
-      return {
-        path: r.dimensionValues[0].value,
-        exits,
-        views,
-        exit_rate: views > 0 ? exits / views : 0,
-      };
-    });
-
-    // 6) Eventos de conversão (cliques em WhatsApp, etc)
+    // 2.6) Conversion events por dia
     const conversionsData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "eventName" }],
+      dimensions: [{ name: "date" }, { name: "eventName" }],
       metrics: [{ name: "eventCount" }],
       dimensionFilter: {
         filter: {
@@ -281,41 +254,125 @@ Deno.serve(async (req) => {
           },
         },
       },
-      orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
-      limit: 20,
+      limit: 10000,
     });
 
-    const conversion_events = (conversionsData.rows ?? []).map((r) => ({
-      event_name: r.dimensionValues[0].value,
-      count: parseInt(r.metricValues[0].value) || 0,
-    }));
-
-    // 7) Países (origem geográfica)
+    // 2.7) Countries por dia
     const countriesData = await runReport(apiUrl, accessToken, {
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-      dimensions: [{ name: "country" }],
+      dimensions: [{ name: "date" }, { name: "country" }],
       metrics: [{ name: "sessions" }],
-      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
-      limit: 10,
+      limit: 10000,
     });
 
-    const countries_breakdown: Record<string, number> = {};
+    // 3) Reorganizar dados por dia
+    const toIsoDate = (raw: string) =>
+      `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
+
+    const sourcesByDay: Map<string, Record<string, number>> = new Map();
+    const pagesByDay: Map<string, Array<{ path: string; views: number }>> = new Map();
+    const devicesByDay: Map<string, Record<string, number>> = new Map();
+    const mediumsByDay: Map<string, Record<string, number>> = new Map();
+    const exitPagesByDay: Map<string, Array<{ path: string; exits: number; views: number; exit_rate: number }>> = new Map();
+    const conversionsByDay: Map<string, Array<{ event_name: string; count: number }>> = new Map();
+    const countriesByDay: Map<string, Record<string, number>> = new Map();
+
+    const ensureRecord = <T>(map: Map<string, T>, key: string, init: T): T => {
+      if (!map.has(key)) map.set(key, init);
+      return map.get(key)!;
+    };
+
+    (sourcesData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const source = r.dimensionValues[1].value;
+      const sessions = parseInt(r.metricValues[0].value) || 0;
+      const dayData = ensureRecord(sourcesByDay, day, {} as Record<string, number>);
+      dayData[source] = (dayData[source] ?? 0) + sessions;
+    });
+
+    (pagesData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const path = r.dimensionValues[1].value;
+      const views = parseInt(r.metricValues[0].value) || 0;
+      const arr = ensureRecord(pagesByDay, day, [] as Array<{ path: string; views: number }>);
+      arr.push({ path, views });
+    });
+
+    (devicesData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const device = r.dimensionValues[1].value;
+      const sessions = parseInt(r.metricValues[0].value) || 0;
+      const dayData = ensureRecord(devicesByDay, day, {} as Record<string, number>);
+      dayData[device] = (dayData[device] ?? 0) + sessions;
+    });
+
+    (mediumsData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const medium = r.dimensionValues[1].value;
+      const sessions = parseInt(r.metricValues[0].value) || 0;
+      const dayData = ensureRecord(mediumsByDay, day, {} as Record<string, number>);
+      dayData[medium] = (dayData[medium] ?? 0) + sessions;
+    });
+
+    (exitPagesData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const path = r.dimensionValues[1].value;
+      const exits = parseInt(r.metricValues[0].value) || 0;
+      const views = parseInt(r.metricValues[1].value) || 0;
+      const arr = ensureRecord(exitPagesByDay, day, [] as Array<{ path: string; exits: number; views: number; exit_rate: number }>);
+      arr.push({ path, exits, views, exit_rate: views > 0 ? exits / views : 0 });
+    });
+
+    (conversionsData.rows ?? []).forEach((r) => {
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const eventName = r.dimensionValues[1].value;
+      const count = parseInt(r.metricValues[0].value) || 0;
+      const arr = ensureRecord(conversionsByDay, day, [] as Array<{ event_name: string; count: number }>);
+      arr.push({ event_name: eventName, count });
+    });
+
     (countriesData.rows ?? []).forEach((r) => {
-      countries_breakdown[r.dimensionValues[0].value] = parseInt(r.metricValues[0].value) || 0;
+      const day = toIsoDate(r.dimensionValues[0].value);
+      const country = r.dimensionValues[1].value;
+      const sessions = parseInt(r.metricValues[0].value) || 0;
+      const dayData = ensureRecord(countriesByDay, day, {} as Record<string, number>);
+      dayData[country] = (dayData[country] ?? 0) + sessions;
     });
 
-    const today = new Date().toISOString().slice(0, 10);
-    await supabase.from("marketing_ga4_dimensions").upsert({
-      property_id: propertyId,
-      captured_date: today,
-      sources_breakdown,
-      top_pages,
-      devices_breakdown,
-      mediums_breakdown,
-      exit_pages,
-      conversion_events,
-      countries_breakdown,
-    }, { onConflict: "property_id,captured_date" });
+    // 4) UPSERT 1 linha por dia (granular)
+    const allDays = new Set<string>([
+      ...sourcesByDay.keys(),
+      ...pagesByDay.keys(),
+      ...devicesByDay.keys(),
+      ...mediumsByDay.keys(),
+      ...exitPagesByDay.keys(),
+      ...conversionsByDay.keys(),
+      ...countriesByDay.keys(),
+    ]);
+
+    let dimensionsUpserted = 0;
+    for (const day of allDays) {
+      const { error: dimErr } = await supabase
+        .from("marketing_ga4_dimensions")
+        .upsert(
+          {
+            property_id: propertyId,
+            captured_date: day,
+            sources_breakdown: sourcesByDay.get(day) ?? {},
+            top_pages: pagesByDay.get(day) ?? [],
+            devices_breakdown: devicesByDay.get(day) ?? {},
+            mediums_breakdown: mediumsByDay.get(day) ?? {},
+            exit_pages: exitPagesByDay.get(day) ?? [],
+            conversion_events: conversionsByDay.get(day) ?? [],
+            countries_breakdown: countriesByDay.get(day) ?? {},
+          },
+          { onConflict: "property_id,captured_date" },
+        );
+      if (dimErr) console.error(`[sync-ga4] upsert dimensions for ${day} failed:`, dimErr);
+      else dimensionsUpserted += 1;
+    }
+
+    console.log(`[sync-ga4] dimensions upserted: ${dimensionsUpserted} days`);
 
     await supabase
       .from("marketing_integrations")
