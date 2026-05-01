@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
+import hiroPreset from "./handoff/tailwind-preset";
 
 export default {
+	presets: [hiroPreset],
 	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
@@ -111,11 +113,6 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
-			},
-			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
 				shimmer: {
