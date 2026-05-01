@@ -4,18 +4,11 @@ import type { Config } from "tailwindcss";
  * Hiro OS — Tailwind preset.
  *
  * Usage in tailwind.config.ts:
- *
  *   import hiroPreset from "./handoff/tailwind-preset";
+ *   export default { presets: [hiroPreset], content: [...], ... };
  *
- *   export default {
- *     presets: [hiroPreset],
- *     content: ["./index.html", "./src/(asterisk)(asterisk)/(asterisk).{ts,tsx}"],
- *     // ... your project-specific extensions
- *   } satisfies Config;
- *
- * This preset is non-destructive: it ADDS our tokens as new keys
- * (text-os-fg-1, bg-os-surface, etc.) without removing Tailwind defaults.
- * Existing classes in the codebase keep working until you migrate them.
+ * Non-destructive: ADDS tokens as new keys (text-os-fg-1, bg-os-surface, etc.)
+ * without removing Tailwind defaults. Existing classes keep working.
  */
 const preset: Partial<Config> = {
   theme: {
