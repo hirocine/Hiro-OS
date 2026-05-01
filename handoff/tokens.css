@@ -1,0 +1,145 @@
+/* ============================================================
+   HIRO OS — Design Tokens
+   Source of truth. Import this once at the top of src/index.css.
+   ============================================================ */
+
+/* ---------- Webfonts ---------- */
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* ---------- Brand palette (exact from Hiro Films guide) ---------- */
+  --hf-black:       #000000;   /* Pantone Black 6 C */
+  --hf-gray-1:      #141414;
+  --hf-gray-2:      #282828;
+  --hf-gray-3:      #3A3A3A;
+  --hf-gray-4:      #4C4C4C;
+  --hf-gray-5:      #AAAAAA;
+  --hf-gray-6:      #BCBCBC;
+  --hf-gray-7:      #D3D3D3;
+  --hf-gray-8:      #EAEAEA;
+  --hf-white:       #FFFFFF;
+
+  --hf-green:       #4CFF5C;   /* Pantone 7487 C — primary accent */
+  --hf-green-1:     #46E84D;
+  --hf-green-2:     #40D340;
+  --hf-green-3:     #37BC37;
+  --hf-green-4:     #24A024;
+  --hf-green-soft:  #D6FFD9;
+  --hf-green-ink:   #0A2E0A;
+
+  /* ---------- OS surfaces ---------- */
+  --os-bg:           #FAFAFA;
+  --os-surface:      #FFFFFF;
+  --os-surface-2:    #F5F5F5;
+  --os-surface-3:    #EAEAEA;
+
+  --os-line:         #EAEAEA;
+  --os-line-2:       #D3D3D3;
+  --os-line-3:       #BCBCBC;
+
+  --os-fg-1:         #000000;
+  --os-fg-2:         #3A3A3A;
+  --os-fg-3:         #4C4C4C;
+  --os-fg-4:         #AAAAAA;
+
+  --os-accent:       #37BC37;   /* default green for product UI */
+  --os-accent-soft:  #D6FFD9;
+  --os-accent-ink:   #0A2E0A;
+  --os-accent-bright:#4CFF5C;
+
+  --os-warn:         #B8860B;
+  --os-warn-soft:    #FAF0D7;
+  --os-danger:       #C13030;
+  --os-danger-soft:  #FBE7E7;
+  --os-info:         #1F6FB8;
+  --os-info-soft:    #E1EDF8;
+
+  /* ---------- Type ---------- */
+  --ff-display: "Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ff-text:    "Helvetica Now Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ff-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --os-fs-micro:   11px;
+  --os-fs-xs:      12px;
+  --os-fs-sm:      13px;
+  --os-fs-base:    14px;
+  --os-fs-md:      15px;
+  --os-fs-lg:      17px;
+  --os-fs-xl:      20px;
+  --os-fs-2xl:     24px;
+  --os-fs-3xl:     32px;
+  --os-fs-4xl:     44px;
+  --os-fs-display: 72px;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --os-1: 4px;
+  --os-2: 8px;
+  --os-3: 12px;
+  --os-4: 16px;
+  --os-5: 20px;
+  --os-6: 24px;
+  --os-8: 32px;
+  --os-10: 40px;
+  --os-12: 48px;
+  --os-16: 64px;
+
+  /* ---------- Component heights ---------- */
+  --os-row-h:        36px;
+  --os-row-h-dense:  30px;
+  --os-row-h-tall:   48px;
+
+  /* ---------- Shadows (sparingly — only popovers) ---------- */
+  --os-shadow-pop: 0 12px 32px -12px rgba(0,0,0,0.18);
+}
+
+/* ---------- Base ---------- */
+html, body {
+  background: var(--os-bg);
+  color: var(--os-fg-1);
+  font-family: var(--ff-text);
+  font-size: var(--os-fs-base);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: var(--hf-green); color: var(--hf-green-ink); }
+
+/* ---------- Utility classes (used outside Tailwind when needed) ---------- */
+.os-tabular { font-variant-numeric: tabular-nums; }
+.os-eyebrow {
+  font-size: var(--os-fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--os-fg-3);
+  font-weight: 500;
+}
