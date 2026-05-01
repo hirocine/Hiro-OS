@@ -9,7 +9,7 @@ import type { Config } from "tailwindcss";
  *
  *   export default {
  *     presets: [hiroPreset],
- *     content: ["./index.html", "./src/**/*.{ts,tsx}"],
+ *     content: ["./index.html", "./src/(asterisk)(asterisk)/(asterisk).{ts,tsx}"],
  *     // ... your project-specific extensions
  *   } satisfies Config;
  *
