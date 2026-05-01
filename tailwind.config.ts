@@ -1,8 +1,6 @@
 import type { Config } from "tailwindcss";
-import hiroPreset from "./handoff/tailwind-preset";
 
 export default {
-	presets: [hiroPreset],
 	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
