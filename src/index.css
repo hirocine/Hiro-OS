@@ -1,4 +1,79 @@
-@import "../handoff/tokens.css";
+/* ============================================================
+   HIRO OS — Design Tokens (inline)
+   ============================================================ */
+
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Regular.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Medium.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica Now Text";
+  src: url("/fonts/HelveticaNowText-Bold.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+:root {
+  --hf-black: #000000;
+  --hf-gray-1: #141414;
+  --hf-gray-2: #282828;
+  --hf-gray-3: #3A3A3A;
+  --hf-gray-4: #4C4C4C;
+  --hf-gray-5: #AAAAAA;
+  --hf-gray-6: #BCBCBC;
+  --hf-gray-7: #D3D3D3;
+  --hf-gray-8: #EAEAEA;
+  --hf-white: #FFFFFF;
+  --hf-green: #4CFF5C;
+  --hf-green-1: #46E84D;
+  --hf-green-2: #40D340;
+  --hf-green-3: #37BC37;
+  --hf-green-4: #24A024;
+  --hf-green-soft: #D6FFD9;
+  --hf-green-ink: #0A2E0A;
+
+  --os-bg: #FAFAFA;
+  --os-surface: #FFFFFF;
+  --os-surface-2: #F5F5F5;
+  --os-surface-3: #EAEAEA;
+  --os-line: #EAEAEA;
+  --os-line-2: #D3D3D3;
+  --os-line-3: #BCBCBC;
+  --os-fg-1: #000000;
+  --os-fg-2: #3A3A3A;
+  --os-fg-3: #4C4C4C;
+  --os-fg-4: #AAAAAA;
+  --os-accent: #37BC37;
+  --os-accent-soft: #D6FFD9;
+  --os-accent-ink: #0A2E0A;
+  --os-accent-bright: #4CFF5C;
+  --os-warn: #B8860B;
+  --os-warn-soft: #FAF0D7;
+  --os-danger: #C13030;
+  --os-danger-soft: #FBE7E7;
+  --os-info: #1F6FB8;
+  --os-info-soft: #E1EDF8;
+}
 
 @tailwind base;
 @tailwind components;
